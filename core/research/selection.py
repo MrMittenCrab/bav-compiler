@@ -154,10 +154,18 @@ def _complete_sum(mapping, identities: tuple[str, ...]) -> float | None:
 def _revenue_offset_kind(
     americas_change, international_sum
 ) -> str | None:
-    """Classify an Americas-decline offset only from complete comparable sums."""
+    """Classify an Americas-decline offset only from complete comparable sums.
+
+    An offset requires an observed Americas decline and a strictly positive
+    international total. Observed zero is not missing; neither zero nor a
+    negative total is an offset or an international-growth claim.
+    Partial means ``0 < international_sum < abs(americas_change)``.
+    """
     if not _present(americas_change) or americas_change >= 0:
         return None
     if not _present(international_sum):
+        return None
+    if international_sum <= 0:
         return None
     decline = abs(americas_change)
     if international_sum > decline:
@@ -262,7 +270,7 @@ def geographic_materiality_rationale(conditions: GeographicClaimConditions) -> s
 
 
 def geographic_figure_question(conditions: GeographicClaimConditions) -> str:
-    if conditions.americas_profit_declined:
+    if conditions.revenue_offset is not None and conditions.americas_profit_declined:
         return (
             "Did international revenue growth offset Americas profit deterioration, "
             "including corporate/unallocated items?"

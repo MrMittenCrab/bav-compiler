@@ -7698,4 +7698,137 @@ The Step 8.1.7 claim that printed page 11 was fully inspected, and that no Word 
 
 Canonical Lululemon narrative, figures, completed PDF table-body wrap, Word renderer repairs, upstream inputs, unrelated products, all six Lululemon applications, analytical/admission controls, source traceability, optional Trainer behavior and research limitations are preserved. `DRIVER.md` and `STYLE.md` byte-for-byte unchanged. Reserved Forecast / Valuation / Overview remain 0 bytes. Immutable inspection copies, snapshots, receipts, retention records, failed attempts, pre-repair PDF evidence and historical RESULT entries are preserved. Accepted migration work was not reopened. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
 
+---
+
+# RESULT.md — Step 8.1.9 Repair nonpositive international-offset claims and complete Word coverage
+
+**Status:** COMPLETE (this bounded attempt; controller capture pending; visual evidence unverified; Review adjudicates Step closure)
+**Step:** 8.1.9 — Repair nonpositive international-offset claims and complete Word coverage
+**Work:** `368b46c5bcb843d59f6cd54df45691d0`
+**Plan:** `2ec618dccf6743428b3be9dfa897f29a`
+**Finding:** Selective Driver research and canonical publication
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged vs this child's start).
+TARGET SHA-256 `7f6de96abef3ae66efa75f8a65184eec24cad8fa4d31f2424cc7624450b9627f` (36138).
+SESSION SHA-256 `747c54e81121661522429be584fbb876ff2e653ae7c07f26f09cb3ea8c10066a` (4155).
+IMPLEMENTATION SHA-256 `cab45125304a41cee2f66e07d0736fb32f32c357ce4aa8ddab2d6b2ee13f85bd` (6696).
+No commit / push / sync / checkpoint / branch change. Interpreter `/Users/lizhiguo/Documents/Developer/.venv/bin/python` **3.14.0**.
+
+## Required plan change
+
+No required plan change. Parent Completion and Session Endpoint remain unresolved pending Review of the repaired offset gate and fresh page-11 Word captures. Human editorial sign-off remains pending and is not a technical completion blocker.
+
+## Authenticated baseline
+
+| Record | Value |
+|---|---|
+| Populated `IMPLEMENT_BASE_SHA` / `implementation-baseline.json` head / `PLAN_SHA` / B | `a3678eb89ea9e5ffdf58db2e1664271200582056` |
+| Branch | `checkpoint/20260913-183303` |
+| Reviewed checkpoint | `2662ed60799bd5cc8d36f6977c02c758f22bbf16` |
+| Authenticated preceding Plan | `55be2ca7d0a27b81662542bddcbbcaaa4ef9a5a5` |
+| Ancestry | `55be2ca7` (preceding Plan) → `2662ed60` (reviewed checkpoint / Step 8.1.8) → `a3678eb8` (this Plan / B) |
+| `.autocycle.toml` | `native_office = ["excel", "word"]` |
+
+Authentication used populated `IMPLEMENT_BASE_SHA`, branch ref, `implementation-baseline.json`, `.git/HEAD`, `refs/heads/checkpoint/20260913-183303` and `.git/logs/HEAD`. Queued native requests bind `requested_head` `a3678eb8…`. Fail-closed was not triggered. Ownership, recovery safeguards and unrelated work were not disturbed. No branch switch.
+
+## Repaired numerical conditions
+
+`_revenue_offset_kind` in `core/research/selection.py` now requires an observed Americas decline and a complete, comparable international total that is **strictly positive**. Partial means `0 < international_sum < abs(americas_change)`. Exact and greater classifications are unchanged. Observed zero is stored as `0.0` and is distinct from a missing component (`None`). Zero and negative totals produce `revenue_offset is None` and no international-growth assertion.
+
+Wording helpers consume that gate: selection conclusions, materiality rationale, opening paragraphs, geographic discussion, appendix claims and figure questions/captions. Independent profit-direction and signed corporate-burden gates are unchanged.
+
+| Probe (Americas change −100) | International total | `revenue_offset` | Rendered offset / growth claim |
+|---|---:|---|---|
+| china 10 + rest −30 | −20 | `None` | none |
+| china 20 + rest −20 | 0 | `None` | none |
+| china 0 + rest 0 (observed zero) | 0 | `None` | none |
+| china 25 + rest 15 | 40 | `partial` | partial-offset wording retained |
+| china 55 + rest 45 | 100 | `exact` | exact-offset wording retained |
+| china 80 + rest 40 | 120 | `greater` | greater-offset wording retained |
+| china missing + rest 40 | unavailable | `None` | none; `n/a` retained |
+| Americas +100 | 40 | `None` | none |
+
+Canonical Lululemon FY2025 remains greater-offset (`−81100` vs `595600`) and is unchanged.
+
+## Verification
+
+| Check | Measured result |
+|---|---|
+| `pytest core/tests/test_research_drivers.py::test_revenue_offset_kind_requires_positive_international_sum core/tests/test_research_drivers.py::test_geographic_claim_conditions_and_supported_wording` | **2 passed** in 0.60s |
+| `pytest core/tests/test_research_drivers.py core/tests/test_publication.py` | **46 passed** in 46.40s (prior 45 plus the focused nonpositive-offset regression; retained `test_pdf_relationship_body_text_stays_in_cells`) |
+| `test_fast_retailing_does_not_publish_drivers` | **passed** |
+| `python -m bav check Lululemon` | **0** |
+| Failed publication / check / header / body-cell tests | **none** |
+| Repaired `render_drivers_markdown` vs retained `Lululemon_Drivers.md` | **byte-identical** SHA-256 `618753d40cb6886c3b3939a7577f87db154d8fa3bb89fc8a6ed06d5472960984` (25091) |
+
+Canonical Markdown, figures and publications were not rebuilt or republished. Existing 8.1.7/8.1.8 build/publication comparisons, the repaired 16-page PDF inspection and all publication bytes remain applicable.
+
+`_pdf_table` body wrapping in `core/research/document.py` SHA-256 `3399e6edee9f8c43f53b76ac57eeaf74e63f58f95ff22978ddc904d50bb3da8a` (52654) is unchanged.
+
+## Geometry diagnosis
+
+Inspected failed receipt `252f66eb83114cff891cff13b40f1d51` and referenced result `.git/autocycle/office/evidence/word/49760e7b77934f3eaed52f724013c27a/result.json` before retrying. Both report `status=BLOCKED`, `failure_kind=native_capture`, `action=Unexpected Office window geometry`. No screenshot. That action is not a permission or external-dependency condition.
+
+Owned-slot diagnosis `.git/autocycle/step-8-1-9-inspect/word-geometry-diagnosis.json` (no screenshot):
+
+| Item | Measured |
+|---|---|
+| Available display | Color LCD main, **1710 × 1112** points (3420 × 2224 pixels @ 60 Hz) |
+| Failed requested bounds | `[40, 40, 1320, 1480]` (1280 × 1440); bottom **1480 > 1112** |
+| Actual owned Word window after that set | `[40, 39, 1320, 1112]` (1280 × 1073); `honoured=false` |
+| Exact owned identity | slot POSIX path match; window `word-view  -  Compatibility Mode`; pages **17** |
+| Prior supported `[40, 40, 1320, 1000]` @ 80% | honoured exactly; selection 13693–13717 `Gross-profit change uses`; page 11 |
+| Max honoured with top=40 @ 100% | `[40, 40, 1320, 1040]` (1280 × 1000) |
+| Requests with height ≥ 1080 | clamped to `[40, 39, 1320, 1112]` |
+
+Helper exact-match gate compares requested bounds to the AppleScript window rect. The 1440-tall request cannot be honoured on this 1112-point display, so capture failed before any bitmap. No capture-helper repair: identity and capture-validation gates stay intact. Subsequent requests use honoured bounds `[40, 40, 1320, 1040]` and overlapping views.
+
+## Fresh capture bindings
+
+Verified canonical and immutable inspection DOCX identity `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991` (246729). Native 17-page pagination preserved. Helper `/Users/lizhiguo/.autocycle/native_office.py` SHA-256 `4e78efa258db8d1a8646857074d33f1eadf9187dd77fec562a2e81346ab552f6`. `capabilities` → `excel word`. Provider did not screenshot.
+
+controller capture pending; visual evidence unverified. Fresh queued IDs (this invocation only). Manifest: `.git/autocycle/step-8-1-9-inspect/submitted-manifest.json`. Bound to the retained page-11 requirement, failed request `252f66eb83114cff891cff13b40f1d51` and `after_ns: 1790434815618260111`. `requested_head` `a3678eb8…`.
+
+| Request ID | Purpose | start–end | Zoom / bounds | Selected text | Supersedes |
+|---|---|---|---|---|---|
+| `cb7501a7a9e74ea3b4a9c5ce3a9427c4` | page-11 opening from first word through the GP/OP explanation | 13693–13717 | 80% `[40,40,1320,1040]` | `Gross-profit change uses` | `252f66eb83114cff891cff13b40f1d51` |
+| `5036b84999994d38a6d9fac130e47bca` | overlapping missing-comparison qualification and table landmark | 14190–14216 | 100% `[40,40,1320,1040]` | `y are not treated as zero.` | `252f66eb83114cff891cff13b40f1d51` |
+
+Queued SHA-256: `cb7501a7…` `4813ac0ce1290646265c95272c3c6216f7a6b7b6f4b55ea2b8cd0be6fdb94f56`; `5036b849…` `aff3c84a50e314a985fae6d1bef0e257aada36e00fbad895805082557a26ccac`. Timestamp UTC `2026-09-29T22:17:31Z`. Requested page numbers, selection success and queue success are not readability evidence.
+
+## Reconciled Word inventory (printed pages 1–17)
+
+Source hash for every carried row: `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991`. Native pagination **17**. Prior source-bound captures are reused only where the source hash and publication comparison demonstrate an unchanged rendered surface. Failed receipt `252f66eb…` and rejected 8.1.7/8.1.8 page-11 readability assertions remain history.
+
+| Page | Visible span | Source-bound captures | Disposition |
+|---:|---|---|---|
+| 1–10 | unchanged argument / appendix surfaces from the 8.1.7 inventory | prior `8ac1ed94…` captures | Carried forward (unchanged source + content_equal Word) |
+| 11 | Opening GP/OP explanation, missing-comparison qualification, overlapping table landmark | pending `cb7501a7…` and `5036b849…` | **Unresolved** until controller capture; `252f66eb…` geometry failure preserved |
+| 12–17 | unchanged later appendix / sources surfaces from the 8.1.7 inventory | prior `8ac1ed94…` captures | Carried forward (unchanged source + content_equal Word) |
+
+## Final output identity
+
+| Artifact | SHA-256 | Bytes |
+|---|---|---|
+| Canonical / inspection DOCX | `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991` | 246729 |
+| Canonical PDF (retained 8.1.7 repair) | `b633194329bb7bc6cbd927d65784127cfb5c17f1ad35f15d66387d2560a336fc` | 304346 |
+| `Lululemon_Drivers.md` | `618753d40cb6886c3b3939a7577f87db154d8fa3bb89fc8a6ed06d5472960984` | 25091 |
+| figures growth / geography / margin / cash | `2308545e…` / `9d99bf69…` / `55ccb38c…` / `289bb4e2…` | 54271 / 65707 / 52237 / 42449 |
+| `Lululemon_BAV.xlsx` | `32f7a354f4b3d2eb45b7123189b1e4b6a5d5683fcaf6849ae62e07e98d8c2b2d` | 229736 |
+| Forecast / Valuation / Overview | `e3b0c442…` | 0 |
+| `DRIVER.md` / `STYLE.md` | `33977c17…` / `4360b24b…` | 45356 / 1645 |
+
+PDF inspection applicability: retained 8.1.7 rasters still apply to PDF `b6331943…` (prior publication comparison showed no `pdf_pages` / `pdf_features` diffs; this attempt did not republish).
+
+## Exact remaining gaps
+
+- controller capture pending; visual evidence unverified for printed page 11 (`cb7501a7…`, `5036b849…`).
+- Whole-document Word acceptance still belongs to Review after those captures are inspected for continuous readable text.
+- Human editorial sign-off remains pending.
+- Parent Completion and Session Endpoint remain unresolved until generic wording and required rendered coverage are established.
+
+## Preservation checks
+
+Canonical Lululemon narrative and figures are unchanged under the repaired production path, so publications were not regenerated. Completed PDF table-body wrap, Word renderer repairs, upstream inputs, workbook calculations, unrelated products, all six Lululemon applications, admission controls, source traceability, optional Trainer behavior and research limitations are preserved. `DRIVER.md` and `STYLE.md` byte-for-byte unchanged. Reserved Forecast / Valuation / Overview remain 0 bytes. Immutable inspection copies, snapshots, receipts (including failed `252f66eb…`), retention records, rejected readability assertions and historical RESULT entries are preserved. Accepted migration work was not reopened. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
 

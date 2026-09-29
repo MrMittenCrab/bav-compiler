@@ -829,8 +829,8 @@ def _revenue_offset_sentence(kind: str | None) -> str:
     return ""
 
 
-def _geography_figure_alt(americas_profit_declined: bool) -> str:
-    if americas_profit_declined:
+def _geography_figure_alt(conditions) -> str:
+    if conditions.revenue_offset is not None and conditions.americas_profit_declined:
         return "Did international revenue growth offset Americas profit deterioration?"
     return "How did geographic revenue and operating-profit changes compare?"
 
@@ -1485,7 +1485,7 @@ def _geography_argument(view: DriversView, latest: int) -> list[str]:
             "not a causal attribution or organic-growth claim."
         ),
         (
-            f"![{_geography_figure_alt(conditions.americas_profit_declined)}]"
+            f"![{_geography_figure_alt(conditions)}]"
             "(../figures/drivers/geography.png)"
         ),
         (

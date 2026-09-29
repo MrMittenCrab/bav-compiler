@@ -30,7 +30,11 @@ from core.research.selection import (
     OFFSET_EXACT,
     OFFSET_GREATER,
     OFFSET_PARTIAL,
+    _revenue_offset_kind,
     geographic_claim_conditions,
+    geographic_figure_question,
+    geographic_materiality_rationale,
+    geographic_strongest_conclusion,
     select_driver_argument,
 )
 from core.research.publish import publish_company_research, verify_research_artifacts
@@ -672,3 +676,153 @@ def test_geographic_claim_conditions_and_supported_wording(tmp_path):
     assert "higher corporate/unallocated burden" not in only_text
     assert "Geographic contributions localize where revenue and profit changed" in only_text
     assert "Geographic evidence localizes revenue and profit changes" in only_text
+
+
+def _assert_no_offset_or_growth_claim(text: str) -> None:
+    lower = text.lower()
+    assert "only partially offset" not in lower
+    assert "exactly offset the americas" not in lower
+    assert "more than offset" not in lower
+    assert "international growth" not in lower
+    assert "international revenue offset" not in lower
+    assert "did international revenue growth offset" not in lower
+
+
+def test_revenue_offset_kind_requires_positive_international_sum(tmp_path):
+    assert _revenue_offset_kind(-100, -20) is None
+    assert _revenue_offset_kind(-100, 0) is None
+    assert _revenue_offset_kind(-100, 40) == OFFSET_PARTIAL
+    assert _revenue_offset_kind(-100, 100) == OFFSET_EXACT
+    assert _revenue_offset_kind(-100, 140) == OFFSET_GREATER
+    assert _revenue_offset_kind(-100, None) is None
+    assert _revenue_offset_kind(50, 40) is None
+    assert _revenue_offset_kind(None, 40) is None
+
+    company = resolve_company("Lululemon")
+    fin = prepare_company_input(company, tmp_path / "input")
+    base = assemble_drivers_view(fin, company.name)
+    latest = len(base.periods) - 1
+
+    def _offset_view(americas, china, rest):
+        return _render_geo_view(
+            base,
+            geo_revenue_amount_changes=_replace_latest_geo(
+                base.geo_revenue_amount_changes,
+                americas=americas,
+                china_mainland=china,
+                rest_of_world=rest,
+            ),
+            geo_contribution_amounts=_replace_latest_geo(
+                base.geo_contribution_amounts,
+                americas=americas,
+                china_mainland=china,
+                rest_of_world=rest,
+            ),
+        )
+
+    negative = _offset_view(-100.0, 10.0, -30.0)
+    zero_total = _offset_view(-100.0, 20.0, -20.0)
+    observed_zero = _offset_view(-100.0, 0.0, 0.0)
+    mixed_negative = _offset_view(-100.0, 40.0, -60.0)
+    partial = _offset_view(-100.0, 25.0, 15.0)
+    exact = _offset_view(-100.0, 55.0, 45.0)
+    greater = _offset_view(-100.0, 80.0, 40.0)
+    missing = _offset_view(-100.0, None, 40.0)
+    americas_growth = _offset_view(100.0, 25.0, 15.0)
+
+    negative_conditions = geographic_claim_conditions(negative, latest)
+    zero_conditions = geographic_claim_conditions(zero_total, latest)
+    observed_zero_conditions = geographic_claim_conditions(observed_zero, latest)
+    mixed_negative_conditions = geographic_claim_conditions(mixed_negative, latest)
+    missing_conditions = geographic_claim_conditions(missing, latest)
+    growth_conditions = geographic_claim_conditions(americas_growth, latest)
+    partial_conditions = geographic_claim_conditions(partial, latest)
+    exact_conditions = geographic_claim_conditions(exact, latest)
+    greater_conditions = geographic_claim_conditions(greater, latest)
+
+    assert negative_conditions.international_revenue == -20.0
+    assert zero_conditions.international_revenue == 0.0
+    assert observed_zero_conditions.international_revenue == 0.0
+    assert mixed_negative_conditions.international_revenue == -20.0
+    assert missing_conditions.international_revenue is None
+    assert negative_conditions.revenue_offset is None
+    assert zero_conditions.revenue_offset is None
+    assert observed_zero_conditions.revenue_offset is None
+    assert mixed_negative_conditions.revenue_offset is None
+    assert missing_conditions.revenue_offset is None
+    assert growth_conditions.revenue_offset is None
+    assert partial_conditions.revenue_offset == OFFSET_PARTIAL
+    assert exact_conditions.revenue_offset == OFFSET_EXACT
+    assert greater_conditions.revenue_offset == OFFSET_GREATER
+
+    for conditions in (
+        negative_conditions,
+        zero_conditions,
+        observed_zero_conditions,
+        mixed_negative_conditions,
+        missing_conditions,
+        growth_conditions,
+    ):
+        assert "offset" not in geographic_strongest_conclusion(conditions).lower()
+        assert "international revenue offset" not in geographic_materiality_rationale(
+            conditions
+        ).lower()
+        assert "international revenue growth" not in geographic_figure_question(
+            conditions
+        ).lower()
+
+    negative_text = render_drivers_markdown(negative)
+    zero_text = render_drivers_markdown(zero_total)
+    observed_zero_text = render_drivers_markdown(observed_zero)
+    mixed_negative_text = render_drivers_markdown(mixed_negative)
+    missing_text = render_drivers_markdown(missing)
+    growth_text = render_drivers_markdown(americas_growth)
+    partial_text = render_drivers_markdown(partial)
+    exact_text = render_drivers_markdown(exact)
+    greater_text = render_drivers_markdown(greater)
+
+    for text in (
+        negative_text,
+        zero_text,
+        observed_zero_text,
+        mixed_negative_text,
+        missing_text,
+        growth_text,
+    ):
+        _assert_no_offset_or_growth_claim(text)
+
+    for view in (
+        negative,
+        zero_total,
+        observed_zero,
+        mixed_negative,
+        missing,
+        americas_growth,
+    ):
+        assert "geographic_localization" in view.selection.main_body_ids
+
+    assert "n/a" in missing_text
+    assert "only partially offset the Americas revenue decline" in partial_text
+    assert "exactly offset the Americas revenue decline" in exact_text
+    assert "more than offset the Americas revenue decline" in greater_text
+    assert "Did international revenue growth offset Americas profit deterioration?" in greater_text
+    assert "Did international revenue growth offset Americas profit deterioration?" not in zero_text
+
+    empty_row = {identity: None for identity in base.geo_identities}
+    only_consolidated = _render_geo_view(
+        base,
+        geo_contributions=tuple(dict(empty_row) for _ in base.geo_contributions),
+        geo_revenue_amount_changes=tuple(
+            dict(empty_row) for _ in base.geo_revenue_amount_changes
+        ),
+        geo_contribution_amounts=tuple(
+            dict(empty_row) for _ in base.geo_contribution_amounts
+        ),
+        geo_profit_changes=tuple(dict(empty_row) for _ in base.geo_profit_changes),
+        geo_reconciling_profit_change=tuple(
+            None for _ in base.geo_reconciling_profit_change
+        ),
+    )
+    assert "geographic_localization" in only_consolidated.selection.main_body_ids
+    only_text = render_drivers_markdown(only_consolidated)
+    _assert_no_offset_or_growth_claim(only_text)
