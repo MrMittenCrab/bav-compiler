@@ -519,7 +519,6 @@ def _table_rows(
     return headers, tuple(rows)
 
 
-_TOKEN_SPLIT = re.compile(r"[/\s-]+")
 CHAR_WIDTH_PT = BODY_PT * 0.6
 CELL_INSET_MM = 4.0
 SHORT_IDENTIFIER_CHARS = 12
@@ -534,9 +533,33 @@ def _column_samples(
     return samples
 
 
+def _wrap_units(text: str) -> list[str]:
+    """Units at slashes, spaces and interior hyphens; a leading hyphen stays on the token."""
+    units: list[str] = []
+    buf = ""
+    for char in text:
+        if char == " ":
+            if buf:
+                units.append(buf)
+                buf = ""
+            continue
+        buf += char
+        if char == "/" or (char == "-" and len(buf) > 1):
+            units.append(buf)
+            buf = ""
+    if buf:
+        units.append(buf)
+    return units
+
+
 def _unbreakable_len(text: str) -> int:
-    tokens = [word for word in _TOKEN_SPLIT.split(text) if word]
-    return max((len(word) for word in tokens), default=4)
+    units = [unit for unit in _wrap_units(text) if unit]
+    return max((len(unit) for unit in units), default=4)
+
+
+def _column_inner_chars(width_mm: float) -> int:
+    inner_pt = max(0.0, width_mm * MM_PT - CELL_INSET_MM * MM_PT)
+    return max(1, int(inner_pt / CHAR_WIDTH_PT))
 
 
 def _column_floor_chars(samples: list[str]) -> int:
@@ -786,22 +809,23 @@ def _set_table_fixed(table, width_mm: float) -> None:
     tbl_pr.append(borders)
 
 
-def _soft_wrap_header(text: str) -> str:
-    """Break long headers at slashes, spaces or existing hyphens, never mid-word."""
-    if "/" in text:
-        return text.replace("/", "/\n")
-    if " " in text and len(text) > 18:
-        parts = text.split(" ")
-        lines: list[str] = [parts[0]]
-        for part in parts[1:]:
-            if len(lines[-1]) + 1 + len(part) <= 18:
-                lines[-1] = f"{lines[-1]} {part}"
-            else:
-                lines.append(part)
-        return "\n".join(lines)
-    if "-" in text and len(text) > 18:
-        return text.replace("-", "-\n")
-    return text
+def _soft_wrap_header(text: str, max_chars: int | None = None) -> str:
+    """Break headers at slashes, spaces or existing hyphens, never mid-word."""
+    units = _wrap_units(text)
+    if not units:
+        return text
+    longest = max(len(unit) for unit in units)
+    limit = longest if max_chars is None else max(int(max_chars), longest)
+    lines = [units[0]]
+    for unit in units[1:]:
+        previous = lines[-1]
+        joiner = "" if previous.endswith(("/", "-")) else " "
+        candidate = f"{previous}{joiner}{unit}"
+        if len(candidate) <= limit:
+            lines[-1] = candidate
+        else:
+            lines.append(unit)
+    return "\n".join(lines)
 
 
 def _fill_word_cell(cell, text: str, fonts: ResolvedFonts, size: float) -> None:
@@ -866,15 +890,17 @@ def _set_word_column_widths(table, widths_mm: list[float]) -> None:
 
 def _add_word_grid(document, block: TableBlock, fonts: ResolvedFonts, *, wide: bool) -> None:
     width_mm = (297 if wide else 210) - 2 * PAGE_MARGIN_MM
+    widths = _column_widths_mm(block, width_mm)
     table = document.add_table(rows=1 + len(block.rows), cols=len(block.headers))
     _set_table_fixed(table, width_mm)
     for index, header in enumerate(block.headers):
-        _fill_word_cell(table.rows[0].cells[index], _soft_wrap_header(header), fonts, BODY_PT)
+        wrapped = _soft_wrap_header(header, _column_inner_chars(widths[index]))
+        _fill_word_cell(table.rows[0].cells[index], wrapped, fonts, BODY_PT)
     _repeat_header_row(table.rows[0])
     for row_index, row in enumerate(block.rows, start=1):
         for col_index, value in enumerate(row):
             _fill_word_cell(table.rows[row_index].cells[col_index], value, fonts, BODY_PT)
-    _set_word_column_widths(table, _column_widths_mm(block, width_mm))
+    _set_word_column_widths(table, widths)
 
 
 def _add_word_stacked(document, block: TableBlock, fonts: ResolvedFonts) -> None:
@@ -1043,6 +1069,7 @@ def _pdf_styles(latin: str) -> dict[str, ParagraphStyle]:
             leading=leading,
             textColor=black,
             alignment=TA_LEFT,
+            splitLongWords=0,
         ),
         "label": ParagraphStyle(
             "BAVLabel",
@@ -1097,13 +1124,18 @@ def _escape_cell(text: str) -> str:
 
 
 def _pdf_table(block: TableBlock, styles, page_width: float) -> Table:
+    widths = _column_widths_mm(block, page_width / MM_PT)
     data = [
-        [Paragraph(_escape_cell(_soft_wrap_header(cell)), styles["cell"]) for cell in block.headers]
+        [
+            Paragraph(
+                _escape_cell(_soft_wrap_header(cell, _column_inner_chars(width))),
+                styles["cell"],
+            )
+            for cell, width in zip(block.headers, widths)
+        ]
     ]
     for row in block.rows:
         data.append([Paragraph(_escape_cell(cell), styles["cell"]) for cell in row])
-    ncols = len(block.headers)
-    widths = _column_widths_mm(block, page_width / MM_PT)
     col_ws = [width * MM_PT for width in widths]
     table = Table(data, colWidths=col_ws, repeatRows=1, splitByRow=1)
     table.setStyle(

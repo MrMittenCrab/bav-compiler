@@ -16,16 +16,23 @@ import pytest
 
 from core.__main__ import main
 from core.research.document import (
+    BODY_PT,
+    CELL_INSET_MM,
+    MM_PT,
     PAGE_MARGIN_MM,
     TableBlock,
+    _column_inner_chars,
     _column_widths_mm,
+    _register_pdf_fonts,
+    _soft_wrap_header,
     _table_layout,
     publication_filenames,
     publish_company_documents,
     publish_resolved_company,
+    require_publication_libraries,
 )
 from core.research.drivers import placeholder_filenames
-from core.research.style import LATIN_FACE
+from core.research.style import LATIN_FACE, resolve_required_fonts
 
 ROOT = Path(__file__).resolve().parents[2]
 CANONICAL = ROOT / "build" / "output" / "lululemon"
@@ -1181,6 +1188,132 @@ def test_publication_has_no_trailing_empty_section(tmp_path, monkeypatch):
     ]
     assert appendix
     assert appendix[0] > 0
+
+
+def _accounting_bridge_fixture() -> TableBlock:
+    headers = (
+        "Fiscal year",
+        "Revenue effect",
+        "Gross-margin effect",
+        "Interaction",
+        "Gross-profit change",
+        "SG&A change",
+        "Impairment change",
+        "Other operating-item change",
+        "Reconstructed operating-profit change",
+        "Reported operating-profit change",
+        "Residual",
+    )
+    rows = (
+        (
+            "FY2022",
+            "$1,069.3 million",
+            "-$143.1 million",
+            "-$42.4 million",
+            "$883.8 million",
+            "$532.4 million",
+            "$407.9 million",
+            "-$51.6 million",
+            "-$4.9 million",
+            "-$4.9 million",
+            "$0.0 million",
+        ),
+    )
+    return TableBlock(headers, rows, _table_layout(headers, rows))
+
+
+def test_accounting_bridge_header_words_remain_intact():
+    forbidden_lines = {"Gross-marg", "operating-profi", "Inter", "Impair", "action", "ment"}
+    for header in _accounting_bridge_fixture().headers:
+        wrapped = _soft_wrap_header(header)
+        assert wrapped.replace("\n", "").replace(" ", "") == header.replace(" ", "")
+        for line in wrapped.split("\n"):
+            assert line
+            assert line not in forbidden_lines
+            if line.endswith("-"):
+                assert len(line) > 1
+    gross = _soft_wrap_header("Gross-margin effect")
+    assert "Gross-marg" not in gross.split("\n")
+    assert "margin" in gross
+    reported = _soft_wrap_header("Reported operating-profit change")
+    assert "operating-profi" not in reported.split("\n")
+    assert "profit" in reported
+    assert "change" in reported
+
+
+def test_accounting_bridge_headers_fit_rendered_widths():
+    require_publication_libraries()
+    from reportlab.pdfbase import pdfmetrics
+
+    block = _accounting_bridge_fixture()
+    assert block.layout in {"landscape", "stacked"}
+    latin, _cjk = _register_pdf_fonts(resolve_required_fonts())
+    width_mm = (297 if block.layout == "landscape" else 210) - 2 * PAGE_MARGIN_MM
+    if block.layout == "stacked":
+        inner_pt = (210 - 2 * PAGE_MARGIN_MM) * MM_PT
+        for header in block.headers:
+            rendered = pdfmetrics.stringWidth(header, latin, BODY_PT)
+            assert rendered <= inner_pt + 0.5, (header, rendered, inner_pt)
+        return
+    widths = _column_widths_mm(block, width_mm)
+    assert abs(sum(widths) - width_mm) < 0.05
+    for header, col_mm in zip(block.headers, widths):
+        inner_pt = max(0.0, col_mm * MM_PT - CELL_INSET_MM * MM_PT)
+        wrapped = _soft_wrap_header(header, _column_inner_chars(col_mm))
+        assert "Gross-marg" not in wrapped.split("\n")
+        assert "operating-profi" not in wrapped.split("\n")
+        for line in wrapped.split("\n"):
+            rendered = pdfmetrics.stringWidth(line, latin, BODY_PT)
+            assert rendered <= inner_pt + 0.75, (header, line, rendered, inner_pt, col_mm)
+
+
+def test_published_accounting_bridge_headers_are_intact(tmp_path, monkeypatch):
+    company = _company(tmp_path, monkeypatch)
+    _copy_research(company.output)
+    published = publish_resolved_company(company)
+    import fitz
+
+    required = (
+        "Gross-margin",
+        "operating-profit",
+        "Interaction",
+        "Reconstructed",
+        "Reported",
+    )
+    forbidden_words = {"Gross-marg", "operating-profi"}
+    found = {item: False for item in required}
+    doc = fitz.open(published.pdf)
+    try:
+        for page in doc:
+            words = [word[4] for word in page.get_text("words")]
+            packed = "".join(words)
+            word_set = set(words)
+            for fragment in forbidden_words:
+                assert fragment not in word_set, (page.number, fragment, words)
+            for item in required:
+                if item in packed:
+                    found[item] = True
+            drawings = [drawing["rect"] for drawing in page.get_drawings()]
+            for word in page.get_text("words"):
+                token = word[4]
+                if token not in {"Gross-margin", "Gross-", "operating-profit", "operating-"}:
+                    continue
+                bbox = word[:4]
+                assert bbox[2] > bbox[0]
+                if not drawings:
+                    continue
+                containing = [
+                    rect
+                    for rect in drawings
+                    if rect[0] - 1 <= bbox[0] and bbox[2] <= rect[2] + 1
+                ]
+                if containing:
+                    cell = min(containing, key=lambda rect: rect[2] - rect[0])
+                    assert bbox[2] <= cell[2] + 1.0, (token, bbox, cell)
+    finally:
+        doc.close()
+    for item, present in found.items():
+        assert present, item
 
 
 def test_attribution_table_identifier_columns_are_usable(tmp_path, monkeypatch):
