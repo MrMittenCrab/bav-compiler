@@ -5,6 +5,7 @@ import hashlib
 import json
 import re
 import warnings
+from dataclasses import replace
 from datetime import date
 from pathlib import Path
 
@@ -25,7 +26,13 @@ from core.research.drivers import (
     render_drivers_markdown,
     selected_figure_names,
 )
-from core.research.selection import select_driver_argument
+from core.research.selection import (
+    OFFSET_EXACT,
+    OFFSET_GREATER,
+    OFFSET_PARTIAL,
+    geographic_claim_conditions,
+    select_driver_argument,
+)
 from core.research.publish import publish_company_research, verify_research_artifacts
 from core.research.style import (
     CJK_FACE,
@@ -445,3 +452,223 @@ def test_incompatible_compsales_are_not_trended(tmp_path):
     main = text.split("## Appendix", 1)[0]
     assert "25%, 13%, 4%" not in main
     assert "connected trend" not in main.lower() or "not" in main.lower()
+
+
+def _replace_latest(series, value):
+    values = list(series)
+    values[-1] = value
+    return tuple(values)
+
+
+def _replace_latest_geo(rows, **updates):
+    values = [dict(row) for row in rows]
+    values[-1].update(updates)
+    return tuple(values)
+
+
+def _render_geo_view(view, **replacements):
+    updated = replace(view, **replacements)
+    return replace(updated, selection=select_driver_argument(updated))
+
+
+def test_geographic_claim_conditions_and_supported_wording(tmp_path):
+    company = resolve_company("Lululemon")
+    fin = prepare_company_input(company, tmp_path / "input")
+    base = assemble_drivers_view(fin, company.name)
+    latest = len(base.periods) - 1
+    canonical = geographic_claim_conditions(base, latest)
+    assert canonical.revenue_offset == OFFSET_GREATER
+    assert canonical.americas_profit_declined
+    assert canonical.corporate_burden_increased
+    assert canonical.consolidated_profit_weaker
+    canonical_text = render_drivers_markdown(base)
+    assert "growth did not preserve the prior profit level" in canonical_text
+    assert (
+        "International revenue more than offset the Americas decline"
+        in canonical_text
+    )
+    assert "International growth more than offset the Americas revenue decline." in canonical_text
+    assert "left a weaker consolidated profit outcome" in canonical_text
+    assert "Americas profit decline and higher corporate/unallocated burden" in canonical_text
+    assert (
+        "Did international revenue growth offset Americas profit deterioration?"
+        in canonical_text
+    )
+    assert "geographic_localization" in base.selection.main_body_ids
+
+    positive = _render_geo_view(
+        base,
+        geo_consolidated_profit_change=_replace_latest(
+            base.geo_consolidated_profit_change, 100000.0
+        ),
+        geo_profit_changes=_replace_latest_geo(
+            base.geo_profit_changes, americas=80000.0
+        ),
+        geo_reconciling_profit_change=_replace_latest(
+            base.geo_reconciling_profit_change, 20000.0
+        ),
+    )
+    positive_text = render_drivers_markdown(positive)
+    assert "growth did not preserve the prior profit level" not in positive_text
+    assert "deteriorat" not in positive_text.lower()
+    assert "weaker consolidated profit" not in positive_text
+    assert "Americas profit decline" not in positive_text
+    assert "higher corporate/unallocated burden" not in positive_text
+    assert "Operating profit changed by $100.0 million." in positive_text
+    assert "geographic_localization" in positive.selection.main_body_ids
+
+    zero = _render_geo_view(
+        base,
+        geo_consolidated_profit_change=_replace_latest(
+            base.geo_consolidated_profit_change, 0.0
+        ),
+        geo_profit_changes=_replace_latest_geo(
+            base.geo_profit_changes, americas=0.0
+        ),
+    )
+    zero_text = render_drivers_markdown(zero)
+    assert "growth did not preserve the prior profit level" not in zero_text
+    assert "deteriorat" not in zero_text.lower()
+    assert "weaker consolidated profit" not in zero_text
+    assert "Operating profit changed by $0.0 million." in zero_text
+
+    missing_profit = _render_geo_view(
+        base,
+        geo_consolidated_profit_change=_replace_latest(
+            base.geo_consolidated_profit_change, None
+        ),
+        geo_profit_changes=_replace_latest_geo(
+            base.geo_profit_changes, americas=None
+        ),
+        geo_reconciling_profit_change=_replace_latest(
+            base.geo_reconciling_profit_change, None
+        ),
+    )
+    missing_text = render_drivers_markdown(missing_profit)
+    assert "growth did not preserve the prior profit level" not in missing_text
+    assert "deteriorat" not in missing_text.lower()
+    assert "weaker consolidated profit" not in missing_text
+    assert "declined" not in missing_text.split("## Appendix", 1)[0]
+    assert "geographic_localization" in missing_profit.selection.main_body_ids
+
+    negative = _render_geo_view(
+        base,
+        geo_consolidated_profit_change=_replace_latest(
+            base.geo_consolidated_profit_change, -50000.0
+        ),
+    )
+    negative_text = render_drivers_markdown(negative)
+    assert "growth did not preserve the prior profit level" in negative_text
+    assert "left a weaker consolidated profit outcome" in negative_text
+
+    americas_growth = _render_geo_view(
+        base,
+        geo_revenue_amount_changes=_replace_latest_geo(
+            base.geo_revenue_amount_changes, americas=81000.0
+        ),
+        geo_contribution_amounts=_replace_latest_geo(
+            base.geo_contribution_amounts, americas=81000.0
+        ),
+    )
+    growth_text = render_drivers_markdown(americas_growth)
+    assert geographic_claim_conditions(americas_growth, latest).revenue_offset is None
+    assert "offset the Americas decline" not in growth_text
+    assert "offset the Americas revenue decline" not in growth_text
+    assert "geographic_localization" in americas_growth.selection.main_body_ids
+
+    def _offset_view(americas, china, rest):
+        return _render_geo_view(
+            base,
+            geo_revenue_amount_changes=_replace_latest_geo(
+                base.geo_revenue_amount_changes,
+                americas=americas,
+                china_mainland=china,
+                rest_of_world=rest,
+            ),
+            geo_contribution_amounts=_replace_latest_geo(
+                base.geo_contribution_amounts,
+                americas=americas,
+                china_mainland=china,
+                rest_of_world=rest,
+            ),
+        )
+
+    partial = _offset_view(-100000.0, 30000.0, 20000.0)
+    exact = _offset_view(-100000.0, 60000.0, 40000.0)
+    greater = _offset_view(-100000.0, 80000.0, 40000.0)
+    assert geographic_claim_conditions(partial, latest).revenue_offset == OFFSET_PARTIAL
+    assert geographic_claim_conditions(exact, latest).revenue_offset == OFFSET_EXACT
+    assert geographic_claim_conditions(greater, latest).revenue_offset == OFFSET_GREATER
+    partial_text = render_drivers_markdown(partial)
+    exact_text = render_drivers_markdown(exact)
+    greater_text = render_drivers_markdown(greater)
+    assert "only partially offset the Americas revenue decline" in partial_text
+    assert "exactly offset the Americas revenue decline" in exact_text
+    assert "more than offset the Americas revenue decline" in greater_text
+    assert "more than offset" not in partial_text.split("## Appendix", 1)[0]
+
+    missing_region = _offset_view(-100000.0, None, 400000.0)
+    missing_conditions = geographic_claim_conditions(missing_region, latest)
+    assert missing_conditions.international_revenue is None
+    assert missing_conditions.revenue_offset is None
+    missing_region_text = render_drivers_markdown(missing_region)
+    assert "offset the Americas" not in missing_region_text
+    assert "n/a" in missing_region_text
+
+    burden_up_profit_up = _render_geo_view(
+        base,
+        geo_consolidated_profit_change=_replace_latest(
+            base.geo_consolidated_profit_change, 80000.0
+        ),
+        geo_reconciling_profit_change=_replace_latest(
+            base.geo_reconciling_profit_change, -20000.0
+        ),
+        geo_profit_changes=_replace_latest_geo(
+            base.geo_profit_changes, americas=100000.0
+        ),
+    )
+    mixed_up = render_drivers_markdown(burden_up_profit_up)
+    mixed_conditions = geographic_claim_conditions(burden_up_profit_up, latest)
+    assert mixed_conditions.corporate_burden_increased
+    assert not mixed_conditions.consolidated_profit_weaker
+    assert not mixed_conditions.americas_profit_declined
+    assert "deteriorat" not in mixed_up.lower()
+    assert "weaker consolidated profit" not in mixed_up
+    assert "Americas profit decline" not in mixed_up
+    assert "higher corporate/unallocated burden" not in mixed_up
+
+    burden_down_profit_down = _render_geo_view(
+        base,
+        geo_reconciling_profit_change=_replace_latest(
+            base.geo_reconciling_profit_change, 20000.0
+        ),
+    )
+    mixed_down = render_drivers_markdown(burden_down_profit_down)
+    assert geographic_claim_conditions(burden_down_profit_down, latest).corporate_burden_increased is False
+    assert "higher corporate/unallocated burden" not in mixed_down
+    assert "left a weaker consolidated profit outcome" in mixed_down
+    assert "Americas profit decline" in mixed_down
+
+    empty_row = {
+        identity: None for identity in base.geo_identities
+    }
+    only_consolidated = _render_geo_view(
+        base,
+        geo_contributions=tuple(dict(empty_row) for _ in base.geo_contributions),
+        geo_revenue_amount_changes=tuple(
+            dict(empty_row) for _ in base.geo_revenue_amount_changes
+        ),
+        geo_contribution_amounts=tuple(
+            dict(empty_row) for _ in base.geo_contribution_amounts
+        ),
+        geo_profit_changes=tuple(dict(empty_row) for _ in base.geo_profit_changes),
+        geo_reconciling_profit_change=tuple(
+            None for _ in base.geo_reconciling_profit_change
+        ),
+    )
+    assert "geographic_localization" in only_consolidated.selection.main_body_ids
+    only_text = render_drivers_markdown(only_consolidated)
+    assert "offset the Americas" not in only_text
+    assert "higher corporate/unallocated burden" not in only_text
+    assert "Geographic contributions localize where revenue and profit changed" in only_text
+    assert "Geographic evidence localizes revenue and profit changes" in only_text

@@ -38,7 +38,14 @@ from ..model.revenue_driver import (
     revenue_driver_applicable,
 )
 from ..model.revenue_per_store import compute_revenue_per_store_series
-from .selection import ResearchSelection, select_driver_argument
+from .selection import (
+    OFFSET_EXACT,
+    OFFSET_GREATER,
+    OFFSET_PARTIAL,
+    ResearchSelection,
+    geographic_claim_conditions,
+    select_driver_argument,
+)
 from .style import ResearchStyle, apply_research_style, finish_figure, new_figure
 
 RESERVED_MODULES = ("Forecast", "Valuation", "Overview")
@@ -806,6 +813,28 @@ def _opt_money(thousands: float | None, digits: int = 1) -> str:
     return _money(_millions(thousands, digits), digits=digits)
 
 
+def _contrib_pp(value: float | None) -> str:
+    if value is None:
+        return "n/a"
+    return _pp(value)
+
+
+def _revenue_offset_sentence(kind: str | None) -> str:
+    if kind == OFFSET_GREATER:
+        return "International growth more than offset the Americas revenue decline."
+    if kind == OFFSET_EXACT:
+        return "International growth exactly offset the Americas revenue decline."
+    if kind == OFFSET_PARTIAL:
+        return "International growth only partially offset the Americas revenue decline."
+    return ""
+
+
+def _geography_figure_alt(americas_profit_declined: bool) -> str:
+    if americas_profit_declined:
+        return "Did international revenue growth offset Americas profit deterioration?"
+    return "How did geographic revenue and operating-profit changes compare?"
+
+
 def _opt_pct(value: float | None, digits: int = 1) -> str:
     if value is None:
         return "n/a"
@@ -1246,12 +1275,14 @@ def _opening_paragraphs(view: DriversView, selection: ResearchSelection) -> list
         else f"{view.display_name} historical performance is reconstructed from the available BAV series."
     )
     if op_change is not None:
-        first += (
-            f" Operating profit changed by {_money(_millions(op_change))}, so "
-            "growth did not preserve the prior profit level."
-        )
+        first += f" Operating profit changed by {_money(_millions(op_change))}"
+        if op_change < 0:
+            first += ", so growth did not preserve the prior profit level."
+        else:
+            first += "."
     parts.append(first)
     if selection.selected("geographic_localization"):
+        conditions = geographic_claim_conditions(view, latest)
         contrib = view.geo_contributions[latest]
         amounts = (
             {}
@@ -1263,35 +1294,61 @@ def _opening_paragraphs(view: DriversView, selection: ResearchSelection) -> list
             if view.geo_profit_changes is None
             else view.geo_profit_changes[latest]
         )
-        reconciling = (
-            None
-            if view.geo_reconciling_profit_change is None
-            else view.geo_reconciling_profit_change[latest]
-        )
-        parts.append(
-            "International revenue more than offset the Americas decline "
-            f"({_pp(contrib.get('americas'))} Americas, "
-            f"{_pp(contrib.get('china_mainland'))} China Mainland, "
-            f"{_pp(contrib.get('rest_of_world'))} Rest of World"
+        reconciling = conditions.reconciling
+        detail = (
+            f"({_contrib_pp(contrib.get('americas'))} Americas, "
+            f"{_contrib_pp(contrib.get('china_mainland'))} China Mainland, "
+            f"{_contrib_pp(contrib.get('rest_of_world'))} Rest of World"
             + (
                 f"; Americas revenue {_money(_millions(amounts['americas']))}"
                 if amounts.get("americas") is not None
                 else ""
             )
-            + "), but Americas operating profit "
-            + (
-                f"{_money(_millions(profit['americas']))}"
-                if profit.get("americas") is not None
-                else "declined"
-            )
-            + (
-                f" and corporate/unallocated items {_money(_millions(reconciling))}"
-                if reconciling is not None
-                else ""
-            )
-            + " left a weaker consolidated profit outcome. That localizes "
-            "where dependence moved; it does not identify the regional mechanism."
+            + ")"
         )
+        if conditions.revenue_offset == OFFSET_GREATER:
+            lead = f"International revenue more than offset the Americas decline {detail}"
+        elif conditions.revenue_offset == OFFSET_EXACT:
+            lead = f"International revenue exactly offset the Americas decline {detail}"
+        elif conditions.revenue_offset == OFFSET_PARTIAL:
+            lead = (
+                f"International revenue only partially offset the Americas decline "
+                f"{detail}"
+            )
+        else:
+            lead = f"Geographic contributions localize where revenue and profit changed {detail}"
+        profit_bit = (
+            f"{_money(_millions(profit['americas']))}"
+            if profit.get("americas") is not None
+            else None
+        )
+        corp_bit = (
+            f"corporate/unallocated items {_money(_millions(reconciling))}"
+            if reconciling is not None
+            else None
+        )
+        if conditions.consolidated_profit_weaker and (
+            profit_bit is not None or corp_bit is not None
+        ):
+            contrast = ", but "
+            if profit_bit is not None:
+                contrast += f"Americas operating profit {profit_bit}"
+            if corp_bit is not None:
+                contrast += (" and " if profit_bit is not None else "") + corp_bit
+            contrast += " left a weaker consolidated profit outcome"
+            lead += contrast
+        elif profit_bit is not None or corp_bit is not None:
+            observed = []
+            if profit_bit is not None:
+                observed.append(f"Americas operating profit {profit_bit}")
+            if corp_bit is not None:
+                observed.append(corp_bit)
+            lead += ". " + " and ".join(observed)
+        lead += (
+            ". That localizes where dependence moved; it does not identify "
+            "the regional mechanism."
+        )
+        parts.append(lead)
     if selection.selected("cash_conversion") and cfo_change is not None and ni_change is not None:
         remainder = (
             None if view.cfo_unexplained is None else view.cfo_unexplained[latest]
@@ -1380,6 +1437,7 @@ def _growth_argument(view: DriversView, latest: int) -> list[str]:
 
 
 def _geography_argument(view: DriversView, latest: int) -> list[str]:
+    conditions = geographic_claim_conditions(view, latest)
     contrib = view.geo_contributions[latest]
     amounts = (
         {}
@@ -1391,27 +1449,22 @@ def _geography_argument(view: DriversView, latest: int) -> list[str]:
         if view.geo_profit_changes is None
         else view.geo_profit_changes[latest]
     )
-    reconciling = (
-        None
-        if view.geo_reconciling_profit_change is None
-        else view.geo_reconciling_profit_change[latest]
+    reconciling = conditions.reconciling
+    consolidated = conditions.consolidated_profit
+    offset_sentence = _revenue_offset_sentence(conditions.revenue_offset)
+    first = (
+        f"In {view.labels[latest]}, Americas revenue "
+        f"{_opt_money(amounts.get('americas')) if amounts else 'n/a'} "
+        f"while China Mainland {_opt_money(amounts.get('china_mainland')) if amounts else 'n/a'} "
+        f"and Rest of World {_opt_money(amounts.get('rest_of_world')) if amounts else 'n/a'}. "
+        f"Their contributions to consolidated revenue growth were "
+        f"{_contrib_pp(contrib.get('americas'))}, {_contrib_pp(contrib.get('china_mainland'))} "
+        f"and {_contrib_pp(contrib.get('rest_of_world'))}."
     )
-    consolidated = (
-        None
-        if view.geo_consolidated_profit_change is None
-        else view.geo_consolidated_profit_change[latest]
-    )
+    if offset_sentence:
+        first = f"{first} {offset_sentence}"
     paragraphs = [
-        (
-            f"In {view.labels[latest]}, Americas revenue "
-            f"{_opt_money(amounts.get('americas')) if amounts else 'n/a'} "
-            f"while China Mainland {_opt_money(amounts.get('china_mainland')) if amounts else 'n/a'} "
-            f"and Rest of World {_opt_money(amounts.get('rest_of_world')) if amounts else 'n/a'}. "
-            f"Their contributions to consolidated revenue growth were "
-            f"{_pp(contrib.get('americas'))}, {_pp(contrib.get('china_mainland'))} "
-            f"and {_pp(contrib.get('rest_of_world'))}. International growth more "
-            "than offset the Americas revenue decline."
-        ),
+        first,
         (
             "The profit localization is different. Americas operating profit "
             f"{_opt_money(profit.get('americas')) if profit else 'n/a'}; "
@@ -1431,7 +1484,10 @@ def _geography_argument(view: DriversView, latest: int) -> list[str]:
             + " This is reported segment evidence and arithmetic localization, "
             "not a causal attribution or organic-growth claim."
         ),
-        "![Did international revenue growth offset Americas profit deterioration?](../figures/drivers/geography.png)",
+        (
+            f"![{_geography_figure_alt(conditions.americas_profit_declined)}]"
+            "(../figures/drivers/geography.png)"
+        ),
         (
             "The aligned panels keep revenue and profit on separate scales and "
             "retain the corporate reconciliation on the profit side. Lower "

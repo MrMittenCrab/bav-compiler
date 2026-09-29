@@ -7563,4 +7563,139 @@ Measured Residual cell on page 14: `[244.9, 69.9, 348.0, 150.9]`; Stability `[34
 
 Canonical Markdown, figures, workbook, upstream inputs, unrelated products, completed Word renderer repairs, all six Lululemon applications, analytical/admission controls, source traceability, optional Trainer behavior and research limitations are unchanged. `DRIVER.md` and `STYLE.md` byte-for-byte unchanged. Reserved Forecast / Valuation / Overview remain 0 bytes. Immutable inspection copies, snapshots, receipts, retention records, failed attempts, pre-repair PDF evidence and historical RESULT entries are preserved. Accepted migration work was not reopened. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
 
+---
+
+# RESULT.md — Step 8.1.8 Establish fresh Word coverage and gate Driver conclusions
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 8.1.8 — Establish fresh Word coverage and gate Driver conclusions
+**Work:** `368b46c5bcb843d59f6cd54df45691d0`
+**Plan:** `826b5e94627f49ab8fb9b5becd956124`
+**Finding:** Selective Driver research and canonical publication
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged vs this child's start).
+TARGET SHA-256 `7f6de96abef3ae66efa75f8a65184eec24cad8fa4d31f2424cc7624450b9627f` (36138).
+SESSION SHA-256 `747c54e81121661522429be584fbb876ff2e653ae7c07f26f09cb3ea8c10066a` (4155).
+IMPLEMENTATION SHA-256 `467a36507ac21ba6ea919cd6d1aea75e587364e01a625e97d074e8937c8a4209` (6573).
+No commit / push / sync / checkpoint / branch change. Interpreter `/Users/lizhiguo/Documents/Developer/.venv/bin/python` **3.14.0**.
+
+## Required plan change
+
+No required plan change. Parent Completion and Session Endpoint remain unresolved pending Review, fresh page-11 Word capture, and human editorial sign-off. Human editorial sign-off is not required for technical acceptance of the generic narrative gates.
+
+## Authenticated baseline
+
+| Record | Value |
+|---|---|
+| Populated `IMPLEMENT_BASE_SHA` / `implementation-baseline.json` head / HEAD / `PLAN_SHA` | `55be2ca7d0a27b81662542bddcbbcaaa4ef9a5a5` |
+| Branch | `checkpoint/20260913-183303` |
+| Reviewed checkpoint | `e1b5e7771189db1caa8f37704f93871a8648bafa` |
+| Authenticated preceding Plan | `b783862ef3ac5cfe67b18439d1fdfefa265a5a3c` |
+| Ancestry | `b783862e` (preceding Plan) → `e1b5e777` (reviewed checkpoint / Step 8.1.7) → `55be2ca7` (this Plan / B / HEAD) |
+| `.autocycle.toml` | `native_office = ["excel", "word"]` |
+
+Authentication used populated `IMPLEMENT_BASE_SHA`, branch ref, `implementation-baseline.json`, `.git/HEAD` and `git log`. Fail-closed was not triggered. Ownership, recovery safeguards and unrelated work were not disturbed. No branch switch.
+
+## Numerical claim conditions
+
+Generic gates live in `core/research/selection.py` (`geographic_claim_conditions` and wording helpers) and are consumed by `core/research/drivers.py`. Selecting geographic analysis does not assert direction or offset. Missing international components are not summed as zero.
+
+Signed reconciling convention: reconciling items add to segment profit changes to equal the consolidated change; a negative reconciling change increases the corporate/unallocated burden. Revenue offset does not establish a profit offset.
+
+| Condition | Rule | Lululemon FY2025 observation | Canonical wording kept |
+|---|---|---|---|
+| Profit deterioration | relevant operating-profit change `< 0` | consolidated `−295082` | yes (`growth did not preserve the prior profit level`; figure deterioration question) |
+| Greater international revenue offset | Americas revenue `< 0` and complete; China Mainland + Rest of World complete and `> abs(Americas)` | `−81100` vs `393500 + 202100 = 595600` | yes (`more than offset`) |
+| Exact / partial offset | complete comparable sums `==` / `<` the Americas decline | not the Lululemon case | tests only |
+| Americas profit decline | Americas operating-profit change `< 0` | `−454900` | yes |
+| Weaker consolidated profit | consolidated operating-profit change `< 0` | `−295082` | yes |
+| Increased corporate burden | signed reconciling change `< 0` | `−62400` | yes |
+| Positive / zero / missing profit | no deterioration conclusion | tests only | n/a |
+| Americas growth or missing region | no Americas-decline offset claim | tests only | n/a |
+
+Final `Lululemon_Drivers.md` SHA-256 `618753d40cb6886c3b3939a7577f87db154d8fa3bb89fc8a6ed06d5472960984` (25091), byte-identical to the pre-repair canonical narrative. Figures unchanged. Conclusions are consistent across opening, geographic discussion, selected-claims conclusion and the geography figure question.
+
+## Verification
+
+| Check | Measured result |
+|---|---|
+| `pytest core/tests/test_research_drivers.py core/tests/test_publication.py` | **45 passed** in 45.32s (includes new `test_geographic_claim_conditions_and_supported_wording` and retained `test_pdf_relationship_body_text_stays_in_cells`) |
+| Focused claim cases | positive / zero / negative / missing profit; Americas growth; partial / exact / greater offsets; missing regional observation; opposite corporate vs consolidated directions; geographic selection from consolidated-profit change alone; ordinary `select_driver_argument` through `render_drivers_markdown` |
+| `test_fast_retailing_does_not_publish_drivers` | **passed** |
+| `python -m bav build Lululemon` | **0** (twice; second restore of 3-decimal contribution display) |
+| `python -m bav check Lululemon` | **0** (after rebuild and after publication restore) |
+| `python -m bav publish Lululemon` | **0** (twice) |
+| Failed publication / check / header / body-cell tests | **none** |
+
+`_pdf_table` body wrapping in `core/research/document.py` SHA-256 `3399e6edee9f8c43f53b76ac57eeaf74e63f58f95ff22978ddc904d50bb3da8a` (52654) is unchanged. The cell-boundary regression was not repeated as a repair.
+
+## Publication comparison
+
+Distinct first vs second publish, and second vs retained 8.1.7 identities, using `_content_equal` / `_metadata_diff`, excluding only established volatile metadata (`creationDate`, `modDate`, `id`):
+
+| Comparison | Result |
+|---|---|
+| first word `d9bec5e6…` / pdf `b2a81196…` vs second word `d9bec5e6…` / pdf `1a99f381…` (all 246729 / 304346) | **content_equal True**; `word_members` empty; `pdf_pages` empty; `word_core_fields` empty; `word_non_metadata_members` empty; `pdf_meta_fields` only the three volatile fields; `word_sha` False; `pdf_sha` True |
+| retained word `8ac1ed94…` / pdf `b6331943…` vs second | **content_equal True**; same empty layout/member diffs; `word_sha` True (ZIP timestamps); `pdf_sha` True; `pdf_meta_fields` only the three volatile fields |
+
+Canonical published files were restored to the retained identities after the comparison. Immutable inspection DOCX remains mode `0444`.
+
+## Final output identity
+
+| Artifact | SHA-256 | Bytes |
+|---|---|---|
+| Canonical / inspection DOCX | `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991` | 246729 |
+| Canonical PDF (retained 8.1.7 repair) | `b633194329bb7bc6cbd927d65784127cfb5c17f1ad35f15d66387d2560a336fc` | 304346 |
+| `Lululemon_Drivers.md` | `618753d40cb6886c3b3939a7577f87db154d8fa3bb89fc8a6ed06d5472960984` | 25091 |
+| figures growth / geography / margin / cash | `2308545e…` / `9d99bf69…` / `55ccb38c…` / `289bb4e2…` | 54271 / 65707 / 52237 / 42449 |
+| `Lululemon_BAV.xlsx` after canonical rebuild | `32f7a354f4b3d2eb45b7123189b1e4b6a5d5683fcaf6849ae62e07e98d8c2b2d` | 229736 |
+| Forecast / Valuation / Overview | `e3b0c442…` | 0 |
+| `DRIVER.md` / `STYLE.md` | `33977c17…` / `4360b24b…` | 45356 / 1645 |
+
+Workbook modules were not edited. Check accepted the rebuilt workbook. The prior 8.1.7 xlsx identity `37fb5ceb…` (229737) has no surviving copy on disk after `bav build`; this is a rebuild packaging identity, not a demonstrated calculation defect.
+
+## PDF inspection applicability
+
+Retained 8.1.7 rasters `.git/autocycle/step-8-1-7-inspect/pdf-pages/pdf-page-01.png` … `pdf-page-16.png` (16 pages) apply to the restored PDF `b6331943…`: publication comparison showed **no** `pdf_pages` or `pdf_features` diffs. No page or transition changed. The completed table-body wrap repair was not repeated.
+
+## Fresh Word binding
+
+Verified retained canonical and immutable inspection DOCX identity `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991`. Native 17-page pagination is carried from the unchanged source. Helper `/Users/lizhiguo/.autocycle/native_office.py` SHA-256 `4e78efa258db8d1a8646857074d33f1eadf9187dd77fec562a2e81346ab552f6`. `capabilities` → `excel word`. Office guidance read: `/Users/lizhiguo/Documents/Developer/autocycle/WORD_NATIVE_NAVIGATION.md`. Provider did not screenshot.
+
+controller capture pending; visual evidence unverified. Fresh queued ID (this invocation only). Manifest: `.git/autocycle/step-8-1-8-inspect/submitted-manifest.json`. Binds inspection copy `8ac1ed94…` and `requested_head` `55be2ca7d0a27b81662542bddcbbcaaa4ef9a5a5`. Bound to the retained page-11 requirement and `after_ns: 1790434815618260111`.
+
+| Request ID | Purpose | start–end | Zoom / bounds | Selected text | Supersedes |
+|---|---|---|---|---|---|
+| `252f66eb83114cff891cff13b40f1d51` | page-11 opening from first word through the missing-comparison qualification and overlapping table landmark | 13693–13717 | 100% `[40,40,1320,1480]` | `Gross-profit change uses` | `132ba62fd3254abc9b1fdd8ecc725fe2` |
+
+Queued path: `.git/autocycle/office/requests/252f66eb83114cff891cff13b40f1d51.json` SHA-256 `eee6add72c9e2b7de3e91831dbcf0a7097108a720ee52cf4e3d3d42a25eb14af`. Timestamp UTC `2026-09-29T22:03:56Z`. One already-diagnosed variable changed: zoom 80 → 100 with taller height 960 → 1440. Requested page numbers, selection success and queue success are not readability evidence.
+
+## Reconciled Word inventory (printed pages 1–17)
+
+Source hash for every carried row: `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991`. Native pagination **17**. Prior source-bound captures are reused only where the source hash and publication comparison demonstrate an unchanged rendered surface. The prior 8.1.7 page-11 readability adjudication is **not** reused.
+
+| Page | Visible span | Source-bound captures | Disposition |
+|---:|---|---|---|
+| 1–10 | unchanged argument / appendix surfaces from the 8.1.7 inventory | prior `8ac1ed94…` captures | Carried forward (unchanged source + content_equal Word) |
+| 11 | Opening GP/OP explanation, missing-comparison qualification, overlapping table landmark | pending `252f66eb…` | **Unresolved** until controller capture; prior `132ba62f…` assertion superseded |
+| 12–17 | unchanged later appendix / sources surfaces from the 8.1.7 inventory | prior `8ac1ed94…` captures | Carried forward (unchanged source + content_equal Word) |
+
+Empty review index, prior RESULT assertions, requested page numbers and capture-queue success do not resolve the missing page-11 fact.
+
+## Stale statements superseded
+
+The Step 8.1.7 claim that printed page 11 was fully inspected, and that no Word capture remained pending, is superseded. This entry does not rewrite that historical record and does not treat the rejected readability adjudication as acceptance.
+
+## Exact remaining gaps
+
+- controller capture pending; visual evidence unverified for printed page 11 (`252f66eb…`).
+- Whole-document Word acceptance still belongs to Review after that capture.
+- Human editorial sign-off remains pending.
+- Parent Completion and Session Endpoint remain unresolved until required page-11 evidence and Review of generic narrative behavior are established.
+- Rebuilt workbook identity `32f7a354…` differs from the overwritten 8.1.7 identity `37fb5ceb…`; Check passed and no workbook code was changed.
+
+## Preservation checks
+
+Canonical Lululemon narrative, figures, completed PDF table-body wrap, Word renderer repairs, upstream inputs, unrelated products, all six Lululemon applications, analytical/admission controls, source traceability, optional Trainer behavior and research limitations are preserved. `DRIVER.md` and `STYLE.md` byte-for-byte unchanged. Reserved Forecast / Valuation / Overview remain 0 bytes. Immutable inspection copies, snapshots, receipts, retention records, failed attempts, pre-repair PDF evidence and historical RESULT entries are preserved. Accepted migration work was not reopened. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
 

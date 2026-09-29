@@ -96,6 +96,180 @@ def _present(value) -> bool:
     return value is not None and not isinstance(value, str)
 
 
+OFFSET_GREATER = "greater"
+OFFSET_EXACT = "exact"
+OFFSET_PARTIAL = "partial"
+_INTERNATIONAL_REVENUE_IDS = ("china_mainland", "rest_of_world")
+_NEUTRAL_GEO_CONCLUSION = (
+    "Geographic evidence localizes revenue and profit changes without identifying causes."
+)
+_NEUTRAL_GEO_RATIONALE = (
+    "Geographic contributions localize where revenue and profit changed."
+)
+_NEUTRAL_GEO_FIGURE = (
+    "How did geographic revenue and operating-profit changes compare, "
+    "including corporate/unallocated items?"
+)
+
+
+@dataclass(frozen=True)
+class GeographicClaimConditions:
+    """Observed numeric gates for geographic conclusions.
+
+    Revenue offset, Americas profit decline, weaker consolidated profit and
+    increased corporate burden are independent. A missing component is not
+    treated as zero. Signed reconciling items add to segment profit changes
+    to equal the consolidated change; a negative reconciling change increases
+    the corporate/unallocated burden.
+    """
+
+    americas_revenue: float | None
+    international_revenue: float | None
+    revenue_offset: str | None
+    americas_profit: float | None
+    americas_profit_declined: bool
+    reconciling: float | None
+    corporate_burden_increased: bool
+    consolidated_profit: float | None
+    consolidated_profit_weaker: bool
+
+
+def _negative_change(value) -> bool:
+    return _present(value) and value < 0
+
+
+def _complete_sum(mapping, identities: tuple[str, ...]) -> float | None:
+    """Sum comparable components; any missing identity stays missing."""
+    if mapping is None or not identities:
+        return None
+    total = 0.0
+    for identity in identities:
+        value = mapping.get(identity)
+        if not _present(value):
+            return None
+        total += value
+    return total
+
+
+def _revenue_offset_kind(
+    americas_change, international_sum
+) -> str | None:
+    """Classify an Americas-decline offset only from complete comparable sums."""
+    if not _present(americas_change) or americas_change >= 0:
+        return None
+    if not _present(international_sum):
+        return None
+    decline = abs(americas_change)
+    if international_sum > decline:
+        return OFFSET_GREATER
+    if international_sum == decline:
+        return OFFSET_EXACT
+    return OFFSET_PARTIAL
+
+
+def _international_identities(view) -> tuple[str, ...]:
+    identities = tuple(
+        identity
+        for identity in getattr(view, "geo_identities", ())
+        if identity != "americas"
+    )
+    return identities or _INTERNATIONAL_REVENUE_IDS
+
+
+def _geo_amounts_at(view, latest: int) -> dict:
+    amounts = getattr(view, "geo_revenue_amount_changes", None)
+    if amounts and latest < len(amounts):
+        return amounts[latest] or {}
+    fallback = getattr(view, "geo_contribution_amounts", None)
+    if fallback and latest < len(fallback):
+        return fallback[latest] or {}
+    return {}
+
+
+def _geo_profit_at(view, latest: int) -> dict:
+    profits = getattr(view, "geo_profit_changes", None)
+    if profits and latest < len(profits):
+        return profits[latest] or {}
+    return {}
+
+
+def geographic_claim_conditions(view, latest: int) -> GeographicClaimConditions:
+    amounts = _geo_amounts_at(view, latest)
+    profit = _geo_profit_at(view, latest)
+    americas_revenue = amounts.get("americas")
+    international_revenue = _complete_sum(amounts, _international_identities(view))
+    americas_profit = profit.get("americas")
+    reconciling_series = getattr(view, "geo_reconciling_profit_change", None)
+    reconciling = (
+        None
+        if reconciling_series is None or latest >= len(reconciling_series)
+        else reconciling_series[latest]
+    )
+    consolidated_series = getattr(view, "geo_consolidated_profit_change", None)
+    consolidated = (
+        None
+        if consolidated_series is None or latest >= len(consolidated_series)
+        else consolidated_series[latest]
+    )
+    return GeographicClaimConditions(
+        americas_revenue=americas_revenue if _present(americas_revenue) else None,
+        international_revenue=international_revenue,
+        revenue_offset=_revenue_offset_kind(americas_revenue, international_revenue),
+        americas_profit=americas_profit if _present(americas_profit) else None,
+        americas_profit_declined=_negative_change(americas_profit),
+        reconciling=reconciling if _present(reconciling) else None,
+        corporate_burden_increased=_negative_change(reconciling),
+        consolidated_profit=consolidated if _present(consolidated) else None,
+        consolidated_profit_weaker=_negative_change(consolidated),
+    )
+
+
+def geographic_strongest_conclusion(conditions: GeographicClaimConditions) -> str:
+    if (
+        conditions.revenue_offset is not None
+        and conditions.americas_profit_declined
+        and conditions.consolidated_profit_weaker
+        and conditions.corporate_burden_increased
+    ):
+        return (
+            "International revenue offset was insufficient to offset the "
+            "Americas profit decline and higher corporate/unallocated burden."
+        )
+    if (
+        conditions.revenue_offset is not None
+        and conditions.americas_profit_declined
+        and conditions.consolidated_profit_weaker
+    ):
+        return (
+            "International revenue offset was insufficient to offset the "
+            "Americas profit decline."
+        )
+    if conditions.revenue_offset == OFFSET_GREATER:
+        return (
+            "International revenue more than offset the Americas revenue decline "
+            "without establishing a profit offset."
+        )
+    return _NEUTRAL_GEO_CONCLUSION
+
+
+def geographic_materiality_rationale(conditions: GeographicClaimConditions) -> str:
+    if conditions.revenue_offset is not None and conditions.consolidated_profit_weaker:
+        return (
+            "The location of dependence changed: international revenue offset "
+            "did not prevent consolidated profit deterioration."
+        )
+    return _NEUTRAL_GEO_RATIONALE
+
+
+def geographic_figure_question(conditions: GeographicClaimConditions) -> str:
+    if conditions.americas_profit_declined:
+        return (
+            "Did international revenue growth offset Americas profit deterioration, "
+            "including corporate/unallocated items?"
+        )
+    return _NEUTRAL_GEO_FIGURE
+
+
 def _latest_index(view) -> int | None:
     for index in range(len(view.periods) - 1, -1, -1):
         return index
@@ -406,52 +580,15 @@ def _growth_questions(view, latest: int) -> list[ResearchQuestion]:
 
 def _geography_questions(view, latest: int) -> list[ResearchQuestion]:
     contrib = view.geo_contributions[latest] if latest < len(view.geo_contributions) else {}
-    amounts = (
-        view.geo_contribution_amounts[latest]
-        if view.geo_contribution_amounts and latest < len(view.geo_contribution_amounts)
-        else {}
+    profit = _geo_profit_at(view, latest)
+    conditions = geographic_claim_conditions(view, latest)
+    has_evidence = (
+        any(_present(value) for value in contrib.values())
+        or any(_present(value) for value in profit.values())
+        or _present(conditions.consolidated_profit)
     )
-    profit = (
-        view.geo_profit_changes[latest]
-        if view.geo_profit_changes and latest < len(view.geo_profit_changes)
-        else {}
-    )
-    reconciling = (
-        None
-        if view.geo_reconciling_profit_change is None
-        or latest >= len(view.geo_reconciling_profit_change)
-        else view.geo_reconciling_profit_change[latest]
-    )
-    consolidated_profit = (
-        None
-        if view.geo_consolidated_profit_change is None
-        or latest >= len(view.geo_consolidated_profit_change)
-        else view.geo_consolidated_profit_change[latest]
-    )
-    if not any(_present(value) for value in contrib.values()) and not any(
-        _present(value) for value in profit.values()
-    ):
+    if not has_evidence:
         return []
-    intl_rev = 0.0
-    am_rev = amounts.get("americas") if amounts else None
-    for identity in ("china_mainland", "rest_of_world"):
-        value = amounts.get(identity) if amounts else None
-        if _present(value):
-            intl_rev += value
-    am_profit = profit.get("americas")
-    intl_profit = 0.0
-    for identity in ("china_mainland", "rest_of_world"):
-        value = profit.get(identity)
-        if _present(value):
-            intl_profit += value
-    offset = (
-        _present(am_rev)
-        and am_rev < 0
-        and intl_rev > abs(am_rev)
-        and _present(am_profit)
-        and _present(consolidated_profit)
-        and consolidated_profit < 0
-    )
     return [
         ResearchQuestion(
             identifier="geographic_localization",
@@ -463,16 +600,11 @@ def _geography_questions(view, latest: int) -> list[ResearchQuestion]:
             population="reported geographic segments plus corporate/unallocated items",
             periods=_period_labels(view, (latest - 1, latest) if latest else (latest,)),
             outcome="consolidated revenue and operating profit",
-            materiality_rationale=(
-                "The location of dependence changed: international revenue offset "
-                "did not prevent consolidated profit deterioration."
-                if offset
-                else "Geographic contributions localize where revenue and profit changed."
-            ),
+            materiality_rationale=geographic_materiality_rationale(conditions),
             temporal_character="latest adjacent year; persistence is not established",
             magnitude=(
-                f"consolidated operating-profit change {consolidated_profit}"
-                if _present(consolidated_profit)
+                f"consolidated operating-profit change {conditions.consolidated_profit}"
+                if _present(conditions.consolidated_profit)
                 else "geographic revenue contributions available"
             ),
             mechanisms=(
@@ -525,15 +657,10 @@ def _geography_questions(view, latest: int) -> list[ResearchQuestion]:
                     dependencies=("historical_segment.income_from_operations",),
                     mechanism_support="none",
                     counterevidence="",
-                    status="supported" if _present(consolidated_profit) else "unavailable",
+                    status="supported" if _present(conditions.consolidated_profit) else "unavailable",
                 ),
             ),
-            strongest_conclusion=(
-                "International revenue offset was insufficient to offset the "
-                "Americas profit decline and higher corporate/unallocated burden."
-                if offset
-                else "Geographic evidence localizes revenue and profit changes without identifying causes."
-            ),
+            strongest_conclusion=geographic_strongest_conclusion(conditions),
             unresolved_requirement=(
                 "Regional price/volume, currency and cost evidence before any "
                 "organic-growth or mechanism claim."
@@ -541,16 +668,13 @@ def _geography_questions(view, latest: int) -> list[ResearchQuestion]:
             reopening_condition=(
                 "Compatible regional volume, currency and allocated-cost series appear."
             ),
-            publication=PUBLICATION_MAIN if offset or _present(consolidated_profit) else PUBLICATION_APPENDIX,
+            publication=PUBLICATION_MAIN,
             publication_reason=(
                 "Aligned revenue/profit contrast adds distinct information about "
                 "where growth and profit changed."
             ),
-            figure_purpose="geography" if offset or _present(consolidated_profit) else None,
-            figure_question=(
-                "Did international revenue growth offset Americas profit deterioration, "
-                "including corporate/unallocated items?"
-            ),
+            figure_purpose="geography",
+            figure_question=geographic_figure_question(conditions),
         )
     ]
 
