@@ -1,6 +1,5 @@
-# Step 8.1.10 — Complete continuous Word readability evidence
-
-AUTOCYCLE_PLAN: {"finding_key": "Selective Driver research and canonical publication", "kind": "work", "minor": 10, "objective": "Complete continuous Word readability evidence", "plan_id": "6fd648af2fda42709a3a47ccc2d27baa", "step_id": "8.1.10", "work_id": "368b46c5bcb843d59f6cd54df45691d0"}
+# Step 8.1.10 — Reconcile complete Word readability evidence
+AUTOCYCLE_PLAN: {"finding_key": "Selective Driver research and canonical publication", "kind": "work", "objective": "Reconcile complete Word readability evidence", "plan_id": "72d0075a4cd54964ac20836c8265402f", "step_id": "8.1.10", "work_id": "368b46c5bcb843d59f6cd54df45691d0"}
 
 ## Completion
 
@@ -8,40 +7,40 @@ The canonical Lululemon build and publication produce a selective, independently
 
 ## Bounded objective
 
-Establish ordinary source-bound evidence of continuous printed-page-11 readability and reconcile it with the retained actual-page inventory for the unchanged 17-page canonical Lululemon DOCX.
+Finish the existing attempt by reconciling the inspected page-11 sequence with directly inspected, source-bound evidence covering all 17 actual Word pages. Preserve completed implementation and unchanged publications.
 
-## Evidence acquisition
+## Evidence reconciliation
 
-- Authenticate baseline, branch, ancestry and attempt binding through normal controller records, preferring populated `IMPLEMENT_BASE_SHA`. Reviewed checkpoint: `6b7fa6777190253f72db28fdfdb2602b94e5e81b`.
-- Verify canonical and immutable inspection DOCX SHA-256 `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991`; preserve source bytes and native 17-page pagination.
-- Inspect receipts `cb7501a7a9e74ea3b4a9c5ce3a9427c4` and `5036b84999994d38a6d9fac130e47bca` with their captures. Retain them as partial evidence: the opening and qualification/table views do not establish visible overlap.
-- Obtain fresh ordinary source-bound native Word evidence independently covering the entire missing span. The current review supplies no observation-recovery association; do not manufacture one or relabel the rejected replacement evidence as accepted.
-- Follow applicable Office guidance and owned-slot controls. Reuse the diagnosed supported window bounds `[40,40,1320,1040]` where current display geometry permits; preserve identity and capture-validation gates.
-- Capture a readable sequence from the first gross-profit explanation sentence through the entire operating-profit explanation, missing-disclosure and missing-comparison qualifications, and the bridge-table heading and identifying row.
-- Ensure every adjacent view shares legible text or a distinctive table landmark. Adjust scroll position or zoom to expose actual overlap; selection offsets and requested page numbers are navigation aids only.
-- Inspect each retained image directly. Record its first and last readable text and the exact shared landmark with the adjacent image. Obtain another view for any clipped sentence, obscured qualification or discontinuity.
-- Bind evidence to the canonical source hash, current Plan/HEAD, receipt, capture path/hash, timestamp, actual page and visible span. Preserve the saved requirement and `after_ns: 1790434815618260111`.
-- Successful capture, native page recognition, queue status and DOCX text extraction do not establish rendered readability.
+- Authenticate baseline, branch, ancestry and attempt binding through normal controller records, preferring populated `IMPLEMENT_BASE_SHA`. Reviewed checkpoint: `a56d82d8448f253c7b3047e1e6a6775c6de85e5d`; authenticated preceding baseline: `9369a2b472f6849b1863f0c659fbf722a263df38`.
+- Confirm canonical `build/output/lululemon/Lululemon_BAV.docx` and immutable `.git/autocycle/step-8-1-6-word-inspect/Lululemon_BAV.docx` retain SHA-256 `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991` and native 17-page pagination.
+- Use `.git/autocycle/office/review-index.json` and RESULT.md's actual-page inventory as locators, not proof of coverage.
+- Preserve ordinary receipts `bb38cf405dbd47b39ea1eec710334a42` and `38924b112b204a39b1964fa5bd6dfe4a`, with captures `.git/autocycle/office/evidence/word/eccbbd56e57b4c7ba9669003c8f7e2c6/view.png` and `.git/autocycle/office/evidence/word/4a6004f296794d10bc542723d11cb7d9/view.png`.
+- Integrate their reviewed readable overlap: the complete gross-profit and operating-profit explanations, missing-disclosure and missing-comparison qualifications, bridge headings and identifying rows. This establishes the inspected local span, not whole-document acceptance.
+- Resolve the retained inventory references to full receipt, result and capture paths. Check hashes, retention, source identity and original Plan/HEAD bindings; establish applicability to the unchanged canonical DOCX.
+- Directly inspect the underlying visual evidence for every actual page 1–17. Map actual pages to printed labels and visible content landmarks; requested page numbers and selection offsets are navigation aids only.
+- Record each page's readable opening and ending, tables, figures, captions, qualifications and continuation spans. Where multiple views supply coverage, identify exact legible overlaps and account for page transitions.
+- Replace unsupported carry-forward assertions with inspected evidence or an explicit gap. Do not infer readability from extracted text, page count, successful capture, inventory prose or hashes alone.
+- Reconcile the page-11 sequence with the surrounding inventory, including any remaining bridge-table continuation. Confirm continuous coverage across all 17 actual pages.
 
-## Whole-document reconciliation
+## Gap handling
 
-- Inspect the retained actual-page inventory and its underlying source-bound evidence for pages 1–17.
-- Map actual Word pages to printed page labels and visible content landmarks; do not assume requested page numbers identify the captured page.
-- Carry forward unchanged surfaces only where source identity and retained evidence establish applicability. Record concrete receipt/capture references for each page or continuous span.
-- Integrate the independently verified page-11 sequence into that inventory. Resolve any concrete uncovered span with a bounded additional view.
-- Confirm that the reconciled inventory covers all 17 actual pages without unexplained gaps and that native pagination remains 17.
+- Obtain additional ordinary source-bound native Word views only for concrete uncovered or unreadable spans.
+- Follow applicable Office guidance and owned-slot controls. Reuse supported bounds `[40,40,1320,1040]` where display geometry permits; preserve identity and capture-validation gates.
+- Bind new observations to source hash, current Plan/HEAD, receipt, capture path/hash, retention timestamp, actual page and visible span. Preserve the saved requirement and `after_ns: 1790434815618260111`.
+- No observation-recovery association is authorized. Preserve failed and rejected replacement evidence without relabeling it as accepted.
+- Pending requests and unavailable access remain unresolved; retain exact gaps rather than asserting completion.
 
-## Preservation and verification
+## Preservation
 
-- Preserve the reviewed strictly positive international-offset gate, its focused regressions, profit-direction controls and signed corporate-burden gates. Do not replay completed implementation.
-- Carry forward applicable research/publication regressions, Fast Retailing control and canonical Lululemon Check results, clearly identified as retained results.
-- Do not rebuild or republish unchanged Markdown, figures, DOCX, PDF or workbooks. Preserve the repaired 16-page PDF inspection and completed renderer repairs.
-- Preserve upstream inputs, all six Lululemon applications, analytical and admission controls, traceability, optional Trainer behavior and research limitations.
+- Do not replay completed implementation or rebuild/republish unchanged Markdown, figures, DOCX, PDF or workbooks.
+- Preserve the strictly positive international-offset gate, profit-direction controls, signed corporate-burden gates, completed renderer repairs and repaired 16-page PDF inspection.
+- Carry forward applicable research/publication regressions, Fast Retailing control and canonical Lululemon Check results as retained verification after checking applicability.
+- Preserve upstream inputs, all six Lululemon applications, analytical/admission controls, traceability, optional Trainer behavior and research limitations.
 - Keep DRIVER.md and STYLE.md byte-for-byte unchanged and reserved research modules zero-byte. Preserve immutable snapshots, receipts, failed attempts and historical results.
 - Retain ownership, access, recovery and unrelated-work safeguards. Do not reopen accepted migration work. Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
 
 ## Reporting
 
-Append measured results to RESULT.md, superseding the rejected completion assertion without rewriting history. Record source identity, fresh evidence bindings, inspected overlapping spans, the reconciled actual-page inventory, pagination and any exact remaining gap.
+Append measured reconciliation to RESULT.md without rewriting history. Explicitly supersede rejected COMPLETE and REACHED assertions and stale pending-capture statements. Include concrete evidence bindings for all 17 actual pages, page-11 overlap, pagination, preservation checks and any remaining gap.
 
-Keep parent Completion and Session Endpoint unresolved while required continuous readability or whole-document coverage remains unverified. Distinguish retained verification from fresh observations and pending requests from inspected evidence. Human editorial sign-off remains separately pending and is not the technical blocker.
+Keep parent Completion and Session Endpoint unresolved until required whole-document readability is established. Distinguish fresh inspection from retained verification and technical acceptance from separately pending human editorial sign-off.
