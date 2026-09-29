@@ -779,6 +779,18 @@ def _repeat_header_row(row) -> None:
         tr_pr.append(OxmlElement("w:tblHeader"))
 
 
+def _prevent_row_split(row) -> None:
+    tr_pr = row._tr.get_or_add_trPr()
+    if tr_pr.find(qn("w:cantSplit")) is None:
+        tr_pr.append(OxmlElement("w:cantSplit"))
+
+
+def _keep_row_with_next(row) -> None:
+    for cell in row.cells:
+        for paragraph in cell.paragraphs:
+            paragraph.paragraph_format.keep_with_next = True
+
+
 def _set_table_fixed(table, width_mm: float) -> None:
     tbl = table._tbl
     tbl_pr = tbl.tblPr if tbl.tblPr is not None else OxmlElement("w:tblPr")
@@ -897,9 +909,13 @@ def _add_word_grid(document, block: TableBlock, fonts: ResolvedFonts, *, wide: b
         wrapped = _soft_wrap_header(header, _column_inner_chars(widths[index]))
         _fill_word_cell(table.rows[0].cells[index], wrapped, fonts, BODY_PT)
     _repeat_header_row(table.rows[0])
+    _keep_row_with_next(table.rows[0])
+    _prevent_row_split(table.rows[0])
     for row_index, row in enumerate(block.rows, start=1):
         for col_index, value in enumerate(row):
             _fill_word_cell(table.rows[row_index].cells[col_index], value, fonts, BODY_PT)
+        if row_index == 1:
+            _prevent_row_split(table.rows[row_index])
     _set_word_column_widths(table, widths)
 
 

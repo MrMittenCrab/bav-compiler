@@ -1355,6 +1355,104 @@ def test_attribution_table_identifier_columns_are_usable(tmp_path, monkeypatch):
         assert "operating" in row.cells[1].text.casefold()
 
 
+def _paragraph_keeps_with_next(paragraph) -> bool:
+    from docx.oxml.ns import qn
+
+    p_pr = paragraph._p.find(qn("w:pPr"))
+    if p_pr is None:
+        return False
+    keep = p_pr.find(qn("w:keepNext"))
+    if keep is None:
+        return False
+    return keep.get(qn("w:val")) not in {"0", "false", "off"}
+
+
+def _row_has_flag(row, flag: str) -> bool:
+    from docx.oxml.ns import qn
+
+    tr_pr = row._tr.trPr
+    return tr_pr is not None and tr_pr.find(qn(flag)) is not None
+
+
+def _row_keeps_with_next(row) -> bool:
+    paragraphs = [paragraph for cell in row.cells for paragraph in cell.paragraphs]
+    return bool(paragraphs) and all(
+        _paragraph_keeps_with_next(paragraph) for paragraph in paragraphs
+    )
+
+
+def test_word_table_header_groups_with_first_data_row(tmp_path, monkeypatch):
+    company = _company(tmp_path, monkeypatch)
+    _copy_research(company.output)
+    published = publish_resolved_company(company)
+    from docx import Document
+
+    document = Document(published.word)
+    grids = [table for table in document.tables if len(table.rows) >= 2]
+    assert grids
+    for table in grids:
+        header, first = table.rows[0], table.rows[1]
+        assert _row_has_flag(header, "w:tblHeader")
+        assert _row_has_flag(header, "w:cantSplit")
+        assert _row_has_flag(first, "w:cantSplit")
+        assert _row_keeps_with_next(header)
+        assert not _row_keeps_with_next(first)
+        assert not _row_has_flag(first, "w:tblHeader")
+
+
+def test_word_table_explanation_stays_adjacent(tmp_path, monkeypatch):
+    company = _company(tmp_path, monkeypatch)
+    _copy_research(company.output)
+    published = publish_resolved_company(company)
+    from docx import Document
+    from docx.oxml.ns import qn
+
+    document = Document(published.word)
+    preceding = None
+    found_body_before_table = False
+    for child in document.element.body:
+        if child.tag == qn("w:tbl"):
+            if preceding is not None:
+                texts = "".join(node.text or "" for node in preceding.iter(qn("w:t"))).strip()
+                style = ""
+                p_pr = preceding.find(qn("w:pPr"))
+                if p_pr is not None:
+                    style_el = p_pr.find(qn("w:pStyle"))
+                    if style_el is not None:
+                        style = style_el.get(qn("w:val")) or ""
+                if texts and not style.startswith("Heading"):
+                    keep = None if p_pr is None else p_pr.find(qn("w:keepNext"))
+                    assert keep is not None and keep.get(qn("w:val")) not in {
+                        "0",
+                        "false",
+                        "off",
+                    }, texts
+                    found_body_before_table = True
+            preceding = None
+            continue
+        if child.tag == qn("w:p"):
+            preceding = child
+    assert found_body_before_table
+
+
+def test_word_continued_table_does_not_chain_all_rows(tmp_path, monkeypatch):
+    company = _company(tmp_path, monkeypatch)
+    _copy_research(company.output)
+    published = publish_resolved_company(company)
+    from docx import Document
+
+    document = Document(published.word)
+    long_tables = [table for table in document.tables if len(table.rows) >= 4]
+    assert long_tables
+    for table in long_tables:
+        assert _row_has_flag(table.rows[0], "w:tblHeader")
+        assert _row_keeps_with_next(table.rows[0])
+        later = table.rows[2:]
+        assert later
+        assert all(not _row_keeps_with_next(row) for row in later)
+        assert all(not _row_has_flag(row, "w:tblHeader") for row in later)
+
+
 def test_publish_writes_only_under_canonical_output(tmp_path, monkeypatch):
     company = _company(tmp_path, monkeypatch)
     _copy_research(company.output)

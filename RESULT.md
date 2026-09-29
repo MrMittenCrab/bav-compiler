@@ -6622,4 +6622,158 @@ Pages beyond the settled Word count may fail closed; that is how actual paginati
 
 Selective research, six Lululemon applications, traceability, analytical/admission controls, optional Trainer, research limitations, immutable pre-repair evidence and zero-byte reserved modules are unchanged. `DRIVER.md` and `STYLE.md` byte-for-byte unchanged. Canonical Markdown, figures, workbook and upstream inputs were not regenerated except Word/PDF through `python -m bav publish Lululemon`.
 
+---
+
+# RESULT.md — Step 8.1.5 Repair Word table pagination and complete rendered inspection
+
+**Status:** COMPLETE (this bounded attempt; controller capture pending; visual evidence unverified; Review adjudicates Step closure)  
+**Step:** 8.1.5 — Repair Word table pagination and complete rendered inspection  
+**Work:** `368b46c5bcb843d59f6cd54df45691d0`  
+**Plan:** `fa4e432715e24892a5b55317c3f281ed`  
+**Finding:** Selective Driver research and canonical publication  
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged vs this child's start).  
+TARGET SHA-256 `7f6de96abef3ae66efa75f8a65184eec24cad8fa4d31f2424cc7624450b9627f` (36138).  
+SESSION SHA-256 `747c54e81121661522429be584fbb876ff2e653ae7c07f26f09cb3ea8c10066a` (4155).  
+IMPLEMENTATION SHA-256 `a3bd691108609aa6b75f87cd21b4b9a84f10f5600b914290bbfcd4fd20486a98` (6323).  
+No commit / push / sync / checkpoint / branch change. Interpreter `/Users/lizhiguo/Documents/Developer/.venv/bin/python` **3.14.0**.
+
+## Required plan change
+
+No required plan change. Human editorial sign-off remains pending. Complete rendered canonical Word inspection remains missing until controller captures of final bytes `97d1cbc7…` exist. Parent Completion and Session Endpoint remain unsatisfied while that Word readability gap is open.
+
+## Authenticated baseline
+
+| Record | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `implementation-baseline.json` head / HEAD | `030910a6d51f633c8b9106f131aa2a32cde21a0a` |
+| Branch | `checkpoint/20260913-183303` |
+| Reviewed checkpoint | `d1a92ed7be7c887e6e3455f5e0bb817fded12835` (Step 8.1.4) |
+| Authenticated preceding implementation baseline | `0678c7ab6ff28faed5d5081887d07e78d5e7e2da` |
+| Ancestry | `0678c7ab` → `d1a92ed7` (reviewed checkpoint) → `030910a6` (this Plan / B / HEAD) |
+| `latest-implementation` | stale HEAD `0678c7ab…` (Step 8.1.4); not used as B |
+| `.autocycle.toml` | `native_office = ["excel", "word"]` |
+
+Authentication used populated `IMPLEMENT_BASE_SHA`, branch ref, `implementation-baseline.json`, `.git/HEAD`, `refs/heads/checkpoint/20260913-183303` and `.git/logs/HEAD`. Fail-closed was not triggered. Ownership, recovery safeguards and unrelated work were not disturbed. No branch switch.
+
+## Review-index reconciliation
+
+`.git/autocycle/office/review-index.json` (`reviewed_head` `d1a92ed7…`) holds **40** entries that exactly match the retained 8.1.4 manifest IDs. Receipt `a0152890a9ae4208bd6744081737ca20` is present: CAPTURED page **9 of 16**, source SHA-256 `51cf53a925538fcae58585da54ad81adc60cc88979e7a16efe578a89fbba9291`, `copy_sha256` identical, `artifact_state` retained.
+
+| 8.1.4 bound bytes `51cf53a9…` | Count |
+|---|---|
+| CAPTURED | 32 (pages 1–16 × 100% and 60%) |
+| BLOCKED | 8 (pages 17–20 × two views; `Word page exceeds document pagination`) |
+
+That fail-closed envelope confirms settled count **16** for `51cf53a9…` only.
+
+`.git/autocycle/office/evidence/word/409581009d7f4b90810678f189044655/` is preserved (`artifact-retention.json` state `retained`; `view.png` SHA-256 `7ed90bd45b1975b330c3cc1de6d047dd38873bbbec282f2a9934444eba13edc1`; `rendered.json` SHA-256 `f89e8fb174fade653d6e332978903ee3f396b8de9f5b7dc91642e2e8d0d8e35a`). Rendered lines show the geographic operating-profit explanation and header on page 9 and all four data rows (FY2022–FY2025) on the following page. Historical page numbers are locators, not required final positions. Index was already consistent; it was not rewritten.
+
+## Stale 8.1.4 “no native captures” correction
+
+The Step 8.1.4 statement that no Word page of `51cf53a9…` had been natively captured is superseded. Those 32 CAPTURED rasters exist and were inspected as the **reviewed partial observation** of `51cf53a9…` (16 pages; page-9 stranded header). They are **not** applicable to final publication bytes `97d1cbc7…`. This entry does not claim complete inspection of the repaired document.
+
+## Repair
+
+`core/research/document.py` and `core/tests/test_publication.py` only. Generic row-keep logic; no company/page-specific breaks, no STYLE font-size change, no manual DOCX/PDF edits. Completed appendix, heading, attribution-width and PDF header-wrapping repairs retained.
+
+1. **`_keep_row_with_next`.** After the header cells are filled, every header paragraph gets `w:keepNext`, so the header stays with the first data row when they fit.
+2. **`_prevent_row_split`.** `w:cantSplit` on the header and the first data row so that pair cannot split mid-row. Later rows are not chained (`keepNext` remains false), so long tables still paginate with `w:tblHeader` repeats.
+3. Preceding Body/Heading `keep_with_next` (already applied when a table follows) is unchanged, so the explanation stays adjacent to that grouped start.
+
+## Regression results
+
+| Check | Measured |
+|---|---|
+| `pytest core/tests/test_publication.py` | **32 passed** in 41.80s (prior 29 plus header-to-first-row grouping, explanation adjacency, continued-table non-chaining) |
+| `python -m bav check Lululemon` | **0** |
+| `python -m bav publish Lululemon` | **0** (twice) |
+| Failed publication / check / header tests | **none** |
+
+Retained content, orientation-transition, header-width, reference, failure-preservation and repeat-publication coverage. Structural assertions do not establish Word pagination.
+
+## Publication hashes
+
+| Artifact | SHA-256 | Bytes | vs 8.1.4 |
+|---|---|---|---|
+| `Lululemon_BAV.docx` (canonical / both publishes) | `97d1cbc775d1158136de1709ba7d30f19b4c521f431be7dc4f461e26964a5c9c` | 246746 | changed (row-keep XML) |
+| first-publish retain | `97d1cbc7…` | 246746 | byte-identical to second |
+| `Lululemon_BAV.pdf` (canonical / second) | `f322db48105144dbc8502eb26c25eafdb8476d0d33e1c66fde1769cfb1dc4cb5` | 300148 | metadata only vs first |
+| first PDF retain | `2a478cd11d2a9aa1037b9b245a4730f5f3184f98082c26fe5582537dda652d63` | 300148 | content-equal to second |
+| 8.1.4 first PDF | `fc4c76483f548614d47f968e7a3e7a3c64a6ca9326da5a2ed6ebfaa113cca3ee` | 300148 | layout/raster-equal to 8.1.5 |
+| `Lululemon_Drivers.md` | `618753d40cb6886c3b3939a7577f87db154d8fa3bb89fc8a6ed06d5472960984` | 25091 | unchanged |
+| figures growth/geography/margin/cash | `2308545e…` / `9d99bf69…` / `55ccb38c…` / `289bb4e2…` | 54271 / 65707 / 52237 / 42449 | unchanged |
+| `Lululemon_BAV.xlsx` | `37fb5cebac0a7a60c6c3fef6a043f3e3f6d87a68c86fe9f5dab8f555fde75140` | 229737 | unchanged |
+| Forecast / Valuation / Overview | `e3b0c442…` | 0 | unchanged |
+| `DRIVER.md` / `STYLE.md` | `33977c17…` / `4360b24b…` | 45356 / 1645 | unchanged |
+
+Immutable inspection copy `.git/autocycle/step-8-1-5-word-inspect/Lululemon_BAV.docx` is byte-identical to the canonical publishes (`97d1cbc7…`, 246746, mode `0444`). Not opened in Office. First-publish retain under `.git/autocycle/step-8-1-5-inspect/first-publish/`. Superseded `51cf53a9…` copy, receipts and `40958100…` evidence are preserved.
+
+## Repeat-output comparison
+
+Existing `_content_equal` / `_metadata_diff` on separately retained first vs second publish: **content_equal True**. `word_members` empty; `pdf_pages` empty; `word_core_fields` empty; `word_non_metadata_members` empty; `pdf_meta_fields` only `creationDate`, `modDate`, `id`. Word SHA identical across the two publishes; PDF SHA differs only by volatile metadata.
+
+## Actual page counts
+
+| Surface | Count | Notes |
+|---|---|---|
+| Word (native, final bytes `97d1cbc7…`) | **unknown** | Prior 16-page count is for `51cf53a9…` only. Awaiting `word_visible_page.page_count` on `97d1cbc7…` |
+| Word sections (OOXML) | **4** | portrait argument; portrait appendix start; one landscape evidence section; portrait sources |
+| Publication PDF | **14** | Layout/raster-equal to 8.1.4; cannot establish Word pagination |
+
+## PDF inspection inventory (all 14 pages)
+
+`.git/autocycle/step-8-1-4-inspect/pdf-pages/` preserved. Existing `_pdf_documents_equal` / `_pdf_layout_diffs` / per-page render hashes: **equal** on every page vs 8.1.4 first-publish PDF. No changed or uncovered PDF pages. Independently generated PDF cannot establish Word rendering.
+
+Accounting-bridge header repair remains intact: page-9 words contain no `Gross-marg` or `operating-profi` tokens; hyphen wraps remain `Gross-` / `margin` and `operating-` / `profit`.
+
+Prior 8.1.4 PDF inventory still applies: argument before appendix; four figures with nearby interpretation; no blank final page; landscape evidence section; sources on page 14.
+
+## Word inspection inventory
+
+Reviewed partial observation (superseded bytes `51cf53a9…`, page 9 of 16): explanation + header stranded; four data rows begin on page 10. That is the pagination defect this repair targets.
+
+controller capture pending; visual evidence unverified. No Word page of `97d1cbc7…` has been natively captured. Prior `51cf53a9…` rasters must not be combined with the repaired bytes as acceptance.
+
+Forty fresh requests, all exit 0, all bind inspection copy `97d1cbc7…` and `requested_head` `030910a6…`. Each carries `replaces_request_id` for the matching 8.1.4 view and `replaces_source_sha256` `51cf53a9…`. Manifest: `.git/autocycle/step-8-1-5-inspect/requests/submitted-manifest.json`. Helper SHA-256 `4e78efa258db8d1a8646857074d33f1eadf9187dd77fec562a2e81346ab552f6` (104300). Pre-repair 8.1.4 requests/receipts are preserved and are not reused.
+
+Readable 100% `[40,40,1320,1000]` (replaces 8.1.4 ID):
+
+| Page | Request ID | Replaces |
+|---:|---|---|
+| 1 | `d05969eb32fd481698a338ceeee75c78` | `0c52b0a49d534fd6af27006ee2d6f893` |
+| 2 | `8d0704e53aa74d60b01022a4d6e94cfa` | `aaf8177e2d864324b0ffe135b9852495` |
+| 3 | `9fef51c42e7a46f492e9dc7a34f2e2fd` | `343d49a27bff461e9c2559cc18f62fcc` |
+| 4 | `82ec7763ecf14c33ad9fb1813289b0fc` | `00ab5e585ec8480c9ea2ae8f1c04a72d` |
+| 5 | `a02a8ccff5014cc9bac4b25b4c92b8d9` | `b644abfd182a4557a149bb2530cd4437` |
+| 6 | `d8c0270c66184d46b9fc0af24d073ee3` | `025328f6490a4be1986ee25af87cad28` |
+| 7 | `b6a74a42f7bb4731820539f35caf5f1c` | `71360700ae9f4fdba3eb72c1c12590f9` |
+| 8 | `6705298377044c8d98c21561bad2c101` | `ec9abfa77c0a4bbab88b1a137ea0c218` |
+| 9 | `1057f2813ab548c780191497328e288d` | `a0152890a9ae4208bd6744081737ca20` |
+| 10 | `1c7935283c8447d7b2077af29e9fb2dd` | `82d1a4ed61e8498ca17f30ed883ac389` |
+| 11 | `4af2c58a9ae84da2af93c62b9ed937c7` | `2b40fb0704e14c8f9be7011592c300ab` |
+| 12 | `d599b5238ab04f4b9770bd649ce3aeb5` | `31fca7579bd44885ab2a2c4dd65d3677` |
+| 13 | `e68eb232248646ac8b22ba1c3e2b40e5` | `13c3d102404e4bfc95788cff4cc3d69d` |
+| 14 | `3fad179b6f0d4e8291722286e093a10f` | `8dae61f19dad496ca8fcffbcd3db6a22` |
+| 15 | `18fd48d3944c460fb13cb0bb0258efd7` | `2f6f6337ccd247b88e2d740e443a3b81` |
+| 16 | `96bcd3c7169745a2a3d30570c10ade20` | `654f571a077545978fc2aae997fc77ca` |
+| 17 | `4ece79edfe4141868a1c5e409cfd4047` | `891d2c388617455e891e25a90457c245` |
+| 18 | `32068fc83e064c60ad17366b60f51017` | `7ce081138d7a41239595d06bcf7d0062` |
+| 19 | `677e9ae14d5b4b67965927b01b201189` | `d08f75df96524515854ef90a4f08f828` |
+| 20 | `f1efae72a6444d03b5e5bf4d2841799e` | `5ffe505191754451a83f231e343e0710` |
+
+Overlap 60% `[40,40,1400,1100]` pages 1→20: `c3491153…` `7442f9a2…` `e34d110e…` `e29670ca…` `876825ab…` `7d1bfeb2…` `a10b428c…` `a3169e9a…` `78aa3622…` `9748fc31…` `0907b45d…` `94d956d3…` `1691182c…` `2f2beabc…` `b5d9d0ee…` `a01394ee…` `bc64442c…` `1ca502ba…` `50686b57…` `3a4b1912…`.
+
+Pages beyond the settled Word count may fail closed; that is how actual pagination is confirmed. Overlap captures cover blank areas if any remain.
+
+## Remaining defects or gaps
+
+- Native Word pages of the final DOCX are uncaptured. Whole-document Word inspection, repaired table start beside explanation/header, appendix continued headers, heading/evidence adjacency, portrait/landscape transitions, figures/captions and STYLE-as-rendered in Word remain unresolved.
+- Actual Word page count for `97d1cbc7…` is unknown; requests 1–20 are a coverage envelope, not a measured inventory.
+- Human editorial sign-off is pending and is not required for technical acceptance.
+
+## Preservation checks
+
+Selective research, six Lululemon applications, traceability, analytical/admission controls, optional Trainer, research limitations, immutable pre-repair evidence and zero-byte reserved modules are unchanged. `DRIVER.md` and `STYLE.md` byte-for-byte unchanged. Canonical Markdown, figures, workbook and upstream inputs were not regenerated except Word/PDF through `python -m bav publish Lululemon`.
+
 
