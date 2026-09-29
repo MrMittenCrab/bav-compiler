@@ -16,6 +16,10 @@ import pytest
 
 from core.__main__ import main
 from core.research.document import (
+    PAGE_MARGIN_MM,
+    TableBlock,
+    _column_widths_mm,
+    _table_layout,
     publication_filenames,
     publish_company_documents,
     publish_resolved_company,
@@ -1069,6 +1073,153 @@ def test_lululemon_publication_preserves_analysis(tmp_path, monkeypatch):
     assert any(LATIN_FACE.casefold() in str(name).casefold() for name in fonts)
     with zipfile.ZipFile(published.word) as archive:
         assert sum(1 for name in archive.namelist() if name.startswith("word/media/")) >= 3
+
+
+def _word_story(document):
+    from docx.oxml.ns import qn
+
+    section = 0
+    items = []
+    for child in document.element.body:
+        tag = child.tag
+        if tag == qn("w:sectPr"):
+            continue
+        if tag == qn("w:tbl"):
+            items.append(("table", section, child))
+        elif tag == qn("w:p"):
+            texts = [node.text or "" for node in child.iter(qn("w:t"))]
+            style = child.find(qn("w:pPr"))
+            style_val = ""
+            if style is not None:
+                style_el = style.find(qn("w:pStyle"))
+                if style_el is not None:
+                    style_val = style_el.get(qn("w:val")) or ""
+            items.append(("p", section, "".join(texts), style_val))
+        p_pr = child.find(qn("w:pPr"))
+        if p_pr is not None and p_pr.find(qn("w:sectPr")) is not None:
+            section += 1
+    return items
+
+
+def _attribution_fixture() -> TableBlock:
+    headers = (
+        "Period",
+        "Theme",
+        "Attribution",
+        "Approximate amount",
+        "Source",
+        "Section",
+    )
+    rows = (
+        (
+            "FY2025",
+            "operating margin",
+            "Increased tariffs and the removal of the de minimis exemption "
+            "resulted in a reduction to gross profit for 2025 of approximately "
+            "$275 million.",
+            "approximately $275 million",
+            "LULU_FY2025_Annual_Report.pdf, Form 10-K pp. 28–29",
+            "Item 7 — Results of Operations",
+        ),
+    )
+    return TableBlock(headers, rows, _table_layout(headers, rows))
+
+
+def test_heading_accompanies_landscape_evidence(tmp_path, monkeypatch):
+    company = _company(tmp_path, monkeypatch)
+    _copy_research(company.output)
+    published = publish_resolved_company(company)
+    from docx import Document
+
+    document = Document(published.word)
+    story = _word_story(document)
+    headings = [item for item in story if item[0] == "p" and item[3].startswith("Heading")]
+    tables = [item for item in story if item[0] == "table"]
+    assert headings
+    assert tables
+    for index, item in enumerate(story):
+        if item[0] != "p" or not item[3].startswith("Heading"):
+            continue
+        following = None
+        for later in story[index + 1 :]:
+            if later[0] == "table":
+                following = later
+                break
+            if later[0] == "p" and later[3].startswith("Heading"):
+                break
+        if following is None:
+            continue
+        table_section = following[1]
+        page_width = int(document.sections[table_section].page_width)
+        page_height = int(document.sections[table_section].page_height)
+        if page_width > page_height:
+            assert item[1] == table_section, item[2]
+
+
+def test_publication_has_no_trailing_empty_section(tmp_path, monkeypatch):
+    company = _company(tmp_path, monkeypatch)
+    _copy_research(company.output)
+    published = publish_resolved_company(company)
+    from docx import Document
+
+    document = Document(published.word)
+    story = _word_story(document)
+    last = len(document.sections) - 1
+    visible = []
+    for item in story:
+        if item[1] != last:
+            continue
+        if item[0] == "table":
+            visible.append(item)
+        elif item[0] == "p" and item[2].strip():
+            visible.append(item)
+    assert visible
+    appendix = [
+        item[1]
+        for item in story
+        if item[0] == "p" and item[2].strip().casefold() == "appendix"
+    ]
+    assert appendix
+    assert appendix[0] > 0
+
+
+def test_attribution_table_identifier_columns_are_usable(tmp_path, monkeypatch):
+    block = _attribution_fixture()
+    assert block.layout == "landscape"
+    width_mm = 297 - 2 * PAGE_MARGIN_MM
+    widths = _column_widths_mm(block, width_mm)
+    assert abs(sum(widths) - width_mm) < 0.05
+    period, theme, _attribution, amount, _source, section = widths
+    assert period >= 16.0
+    assert theme >= 20.0
+    assert amount >= 22.0
+    assert section >= 20.0
+
+    company = _company(tmp_path, monkeypatch)
+    _copy_research(company.output)
+    published = publish_resolved_company(company)
+    from docx import Document
+    from docx.oxml.ns import qn
+
+    document = Document(published.word)
+    matched = None
+    for table in document.tables:
+        headers = [cell.text.replace("\n", " ") for cell in table.rows[0].cells]
+        if headers[:2] == ["Period", "Theme"]:
+            matched = table
+            break
+    assert matched is not None
+    grid = matched._tbl.find(qn("w:tblGrid"))
+    grid_mm = [int(col.get(qn("w:w"))) / 56.7 for col in grid.findall(qn("w:gridCol"))]
+    cell_mm = [cell.width.mm for cell in matched.rows[0].cells]
+    assert len(grid_mm) == len(cell_mm)
+    for grid_width, cell_width in zip(grid_mm, cell_mm):
+        assert abs(grid_width - cell_width) < 0.4
+    assert grid_mm[0] >= 16.0
+    assert grid_mm[1] >= 20.0
+    for row in matched.rows[1:]:
+        assert "FY2025" in row.cells[0].text
+        assert "operating" in row.cells[1].text.casefold()
 
 
 def test_publish_writes_only_under_canonical_output(tmp_path, monkeypatch):

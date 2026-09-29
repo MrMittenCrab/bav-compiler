@@ -519,26 +519,90 @@ def _table_rows(
     return headers, tuple(rows)
 
 
+_TOKEN_SPLIT = re.compile(r"[/\s-]+")
+CHAR_WIDTH_PT = BODY_PT * 0.6
+CELL_INSET_MM = 4.0
+SHORT_IDENTIFIER_CHARS = 12
+DXA_PER_MM = 56.7
+
+
+def _column_samples(
+    headers: tuple[str, ...], rows: tuple[tuple[str, ...], ...], index: int
+) -> list[str]:
+    samples = [headers[index] if index < len(headers) else ""]
+    samples.extend(row[index] if index < len(row) else "" for row in rows)
+    return samples
+
+
+def _unbreakable_len(text: str) -> int:
+    tokens = [word for word in _TOKEN_SPLIT.split(text) if word]
+    return max((len(word) for word in tokens), default=4)
+
+
+def _column_floor_chars(samples: list[str]) -> int:
+    token = max((_unbreakable_len(sample) for sample in samples), default=4)
+    short_ids = [
+        len(sample)
+        for sample in samples
+        if sample and len(sample) <= SHORT_IDENTIFIER_CHARS and " " not in sample
+    ]
+    return max(token, max(short_ids, default=0), 6)
+
+
+def _column_floor_mm(samples: list[str]) -> float:
+    return _column_floor_chars(samples) * CHAR_WIDTH_PT / MM_PT + CELL_INSET_MM
+
+
+def _table_min_width_pt(
+    headers: tuple[str, ...], rows: tuple[tuple[str, ...], ...]
+) -> float:
+    ncols = max(len(headers), max((len(row) for row in rows), default=0))
+    return sum(
+        _column_floor_mm(_column_samples(headers, rows, index)) * MM_PT
+        for index in range(ncols)
+    )
+
+
 def _table_layout(headers: tuple[str, ...], rows: tuple[tuple[str, ...], ...]) -> str:
     ncols = max(len(headers), max((len(row) for row in rows), default=0))
-    body_long = any(len(cell) > 40 for row in rows for cell in row)
-    char_w = BODY_PT * 0.5
-    min_width = 0.0
-    for index in range(ncols):
-        samples = [headers[index] if index < len(headers) else ""]
-        samples.extend(row[index] if index < len(row) else "" for row in rows)
-        longest_word = max(
-            (len(word) for sample in samples for word in sample.replace("/", " ").split()),
-            default=4,
-        )
-        min_width += max(longest_word, 6) * char_w
+    min_width = _table_min_width_pt(headers, rows)
     landscape_width = LANDSCAPE[0] - 2 * PAGE_MARGIN_MM * MM_PT
     portrait_width = PORTRAIT[0] - 2 * PAGE_MARGIN_MM * MM_PT
-    if body_long and min_width > landscape_width:
+    if min_width > landscape_width:
         return "stacked"
     if ncols >= 7 or min_width > portrait_width:
         return "landscape"
     return "portrait"
+
+
+def _is_appendix_heading(block: Block) -> bool:
+    return (
+        isinstance(block, Heading)
+        and block.level == 2
+        and block.text.casefold() == "appendix"
+    )
+
+
+def _leads_landscape_evidence(blocks: list[Block], index: int) -> bool:
+    for later in blocks[index + 1 :]:
+        if isinstance(later, Heading):
+            return False
+        if isinstance(later, TableBlock):
+            return later.layout == "landscape"
+        if isinstance(later, FigureBlock):
+            return False
+    return False
+
+
+def _block_wants_wide(blocks: list[Block], index: int) -> bool:
+    block = blocks[index]
+    if _is_appendix_heading(block):
+        return False
+    if isinstance(block, TableBlock):
+        return block.layout == "landscape"
+    if isinstance(block, (Heading, Body, ListBlock)):
+        return _leads_landscape_evidence(blocks, index)
+    return False
 
 
 def _blocks_from_ast(ast: dict, source: Path, fonts: ResolvedFonts) -> list[Block]:
@@ -696,7 +760,7 @@ def _set_table_fixed(table, width_mm: float) -> None:
     tbl = table._tbl
     tbl_pr = tbl.tblPr if tbl.tblPr is not None else OxmlElement("w:tblPr")
     width = OxmlElement("w:tblW")
-    width.set(qn("w:w"), str(int(width_mm * 56.7)))
+    width.set(qn("w:w"), str(int(width_mm * DXA_PER_MM)))
     width.set(qn("w:type"), "dxa")
     existing = tbl_pr.find(qn("w:tblW"))
     if existing is not None:
@@ -760,18 +824,44 @@ def _fill_word_cell(cell, text: str, fonts: ResolvedFonts, size: float) -> None:
 
 def _column_widths_mm(block: TableBlock, width_mm: float) -> list[float]:
     ncols = max(len(block.headers), 1)
-    weights: list[float] = []
+    floors: list[float] = []
+    extras: list[float] = []
     for index in range(ncols):
-        samples = [block.headers[index] if index < len(block.headers) else ""]
-        samples.extend(row[index] if index < len(row) else "" for row in block.rows)
-        longest_word = max(
-            (len(word) for sample in samples for word in re.split(r"[/\s-]+", sample) if word),
-            default=4,
-        )
+        samples = _column_samples(block.headers, block.rows, index)
+        floor_chars = _column_floor_chars(samples)
         longest = max((len(sample) for sample in samples), default=4)
-        weights.append(max(longest_word, 6) + 0.2 * longest)
-    total = sum(weights) or ncols
-    return [width_mm * weight / total for weight in weights]
+        floors.append(_column_floor_mm(samples))
+        extras.append(max(0.0, longest - floor_chars))
+    total_floor = sum(floors)
+    if total_floor >= width_mm:
+        scale = width_mm / total_floor if total_floor else 1.0
+        return [floor * scale for floor in floors]
+    leftover = width_mm - total_floor
+    extra_sum = sum(extras)
+    if extra_sum <= 0:
+        return [floor + leftover / ncols for floor in floors]
+    return [
+        floor + leftover * extra / extra_sum for floor, extra in zip(floors, extras)
+    ]
+
+
+def _set_word_column_widths(table, widths_mm: list[float]) -> None:
+    tbl = table._tbl
+    grid = tbl.find(qn("w:tblGrid"))
+    if grid is None:
+        grid = OxmlElement("w:tblGrid")
+        tbl.append(grid)
+    existing = list(grid.findall(qn("w:gridCol")))
+    while len(existing) < len(widths_mm):
+        col = OxmlElement("w:gridCol")
+        grid.append(col)
+        existing.append(col)
+    for col, width_mm in zip(existing, widths_mm):
+        col.set(qn("w:w"), str(int(round(width_mm * DXA_PER_MM))))
+    for row in table.rows:
+        for index, cell in enumerate(row.cells):
+            width = widths_mm[index] if index < len(widths_mm) else widths_mm[-1]
+            cell.width = Mm(width)
 
 
 def _add_word_grid(document, block: TableBlock, fonts: ResolvedFonts, *, wide: bool) -> None:
@@ -784,10 +874,7 @@ def _add_word_grid(document, block: TableBlock, fonts: ResolvedFonts, *, wide: b
     for row_index, row in enumerate(block.rows, start=1):
         for col_index, value in enumerate(row):
             _fill_word_cell(table.rows[row_index].cells[col_index], value, fonts, BODY_PT)
-    widths = _column_widths_mm(block, width_mm)
-    for row in table.rows:
-        for index, cell in enumerate(row.cells):
-            cell.width = Mm(widths[index] if index < len(widths) else widths[-1])
+    _set_word_column_widths(table, _column_widths_mm(block, width_mm))
 
 
 def _add_word_stacked(document, block: TableBlock, fonts: ResolvedFonts) -> None:
@@ -859,20 +946,14 @@ def _render_word(path: Path, company: str, fonts: ResolvedFonts, blocks: list[Bl
     current_wide = False
     for index, block in enumerate(blocks):
         following = blocks[index + 1] if index + 1 < len(blocks) else None
-        want_wide = isinstance(block, TableBlock) and block.layout == "landscape"
-        if isinstance(block, Body) and isinstance(following, TableBlock) and following.layout == "landscape":
-            want_wide = True
-        if want_wide != current_wide:
+        want_wide = _block_wants_wide(blocks, index)
+        appendix_break = _is_appendix_heading(block) and bool(index)
+        if appendix_break or want_wide != current_wide:
             section = document.add_section()
             _set_section_page(section, wide=want_wide)
             _word_header_footer(section, company, fonts)
             current_wide = want_wide
         if isinstance(block, Heading):
-            if block.level == 2 and block.text.casefold() == "appendix" and index:
-                section = document.add_section()
-                _set_section_page(section, wide=False)
-                _word_header_footer(section, company, fonts)
-                current_wide = False
             paragraph = _add_word_heading(document, block, fonts)
             if isinstance(following, (FigureBlock, Body, TableBlock)):
                 paragraph.paragraph_format.keep_with_next = True
@@ -881,7 +962,7 @@ def _render_word(path: Path, company: str, fonts: ResolvedFonts, blocks: list[Bl
             _apply_paragraph_format(paragraph, before=0, after=RELATED_PT)
             run = paragraph.add_run(block.text)
             _set_run_font(run, fonts, BODY_PT)
-            if isinstance(following, FigureBlock):
+            if isinstance(following, (FigureBlock, TableBlock)):
                 paragraph.paragraph_format.keep_with_next = True
         elif isinstance(block, ListBlock):
             for index, item in enumerate(block.items, start=1):
@@ -901,12 +982,14 @@ def _render_word(path: Path, company: str, fonts: ResolvedFonts, blocks: list[Bl
                 _add_word_stacked(document, block, fonts)
             else:
                 _add_word_grid(document, block, fonts, wide=block.layout == "landscape")
-            spacer = document.add_paragraph()
-            _apply_paragraph_format(spacer, before=0, after=SECTION_PT)
-    if current_wide:
-        section = document.add_section()
-        _set_section_page(section, wide=False)
-        _word_header_footer(section, company, fonts)
+            same_section_follows = (
+                following is not None
+                and not _is_appendix_heading(following)
+                and _block_wants_wide(blocks, index + 1) == current_wide
+            )
+            if same_section_follows:
+                spacer = document.add_paragraph()
+                _apply_paragraph_format(spacer, before=0, after=SECTION_PT)
     path.parent.mkdir(parents=True, exist_ok=True)
     document.save(path)
 
@@ -1107,20 +1190,14 @@ def _render_pdf(path: Path, company: str, fonts: ResolvedFonts, blocks: list[Blo
             skip_next = False
             continue
         following = blocks[index + 1] if index + 1 < len(blocks) else None
-        if isinstance(block, TableBlock) and block.layout == "landscape":
-            switch("landscape")
-            story.append(_pdf_table(block, styles, landscape_w))
-            story.append(Spacer(1, SECTION_PT))
-            continue
-        if isinstance(block, Body) and isinstance(following, TableBlock) and following.layout == "landscape":
-            switch("landscape")
-            story.append(Paragraph(_escape_xml(block.text), styles["body"]))
-            continue
-        switch("portrait")
-        if isinstance(block, Heading):
-            if block.level == 2 and block.text.casefold() == "appendix" and index:
-                switch("portrait")
+        if _is_appendix_heading(block) and index:
+            was = current
+            switch("portrait")
+            if was == "portrait":
                 story.append(PageBreak())
+        switch("landscape" if _block_wants_wide(blocks, index) else "portrait")
+        page_w = landscape_w if current == "landscape" else portrait_w
+        if isinstance(block, Heading):
             heading = Paragraph(_escape_xml(block.text), styles["heading"])
             if isinstance(following, Body):
                 story.append(
@@ -1136,7 +1213,7 @@ def _render_pdf(path: Path, company: str, fonts: ResolvedFonts, blocks: list[Blo
             if isinstance(following, FigureBlock):
                 story.append(
                     KeepTogether(
-                        [heading, _figure_flowable(following, styles, portrait_w)]
+                        [heading, _figure_flowable(following, styles, page_w)]
                     )
                 )
                 skip_next = True
@@ -1147,7 +1224,7 @@ def _render_pdf(path: Path, company: str, fonts: ResolvedFonts, blocks: list[Blo
             if isinstance(following, FigureBlock):
                 story.append(
                     KeepTogether(
-                        [paragraph, _figure_flowable(following, styles, portrait_w)]
+                        [paragraph, _figure_flowable(following, styles, page_w)]
                     )
                 )
                 skip_next = True
@@ -1159,7 +1236,7 @@ def _render_pdf(path: Path, company: str, fonts: ResolvedFonts, blocks: list[Blo
                     Paragraph(_escape_xml(f"{index}. {item}"), styles["body"])
                 )
         elif isinstance(block, FigureBlock):
-            story.append(_figure_flowable(block, styles, portrait_w))
+            story.append(_figure_flowable(block, styles, page_w))
         elif isinstance(block, TableBlock) and block.layout == "stacked":
             for row in block.rows:
                 group = []
@@ -1169,7 +1246,7 @@ def _render_pdf(path: Path, company: str, fonts: ResolvedFonts, blocks: list[Blo
                 group.append(Spacer(1, RELATED_PT))
                 story.append(KeepTogether(group))
         elif isinstance(block, TableBlock):
-            story.append(_pdf_table(block, styles, portrait_w))
+            story.append(_pdf_table(block, styles, page_w))
             story.append(Spacer(1, SECTION_PT))
     path.parent.mkdir(parents=True, exist_ok=True)
     document.build(
