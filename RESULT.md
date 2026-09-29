@@ -8250,4 +8250,157 @@ Fresh work this attempt is ordinary-receipt resolution plus direct raster inspec
 
 Strictly positive international-offset gate, profit-direction controls, signed corporate-burden gates, completed renderer repairs and repaired 16-page PDF inspection were not replayed. Canonical Markdown, figures, DOCX, PDF and workbooks were not rebuilt or republished. Upstream inputs, all six Lululemon applications, analytical/admission controls, traceability, optional Trainer behavior and research limitations are preserved. `DRIVER.md` and `STYLE.md` byte-for-byte unchanged. Reserved research modules remain 0 bytes. Immutable snapshots, receipts (including failed `252f66eb…`, partial `cb7501a7…` / `5036b849…`, and preserved ordinary `bb38cf40…` / `38924b11…`), retention records and historical RESULT entries are preserved. Ownership, access, recovery and unrelated-work safeguards retained. Accepted migration work was not reopened. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
 
+---
+
+# RESULT.md — Step 8.1.10 Reconcile continuous Word readability evidence
+
+**Status:** COMPLETE (this bounded attempt). Rejected parent COMPLETE / REACHED remain withdrawn. This append reports inspected ordinary-receipt rasters; it does not close parent Completion or the Session Endpoint.
+**Step:** 8.1.10 — Reconcile continuous Word readability evidence
+**Work:** `368b46c5bcb843d59f6cd54df45691d0`
+**Plan:** `3274556383814a959ef1653f50915c8b`
+**Finding:** Selective Driver research and canonical publication
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged vs this child's start).
+TARGET SHA-256 `7f6de96abef3ae66efa75f8a65184eec24cad8fa4d31f2424cc7624450b9627f` (36138).
+SESSION SHA-256 `747c54e81121661522429be584fbb876ff2e653ae7c07f26f09cb3ea8c10066a` (4155).
+IMPLEMENTATION SHA-256 `491d6f78a941c039f822174d11ba5509ef69ae185c1cc9a78b5c8ae3f78fef45` (6329).
+No commit / push / sync / checkpoint / branch change. Products were not rebuilt or republished. Helper `/Users/lizhiguo/.autocycle/native_office.py` was not invoked. Provider did not screenshot. No new Office request.
+
+Receipt-resolution log: `.git/autocycle/step-8-1-10-inspect/reconcile-receipts-c4bf05a3.json`. Prior log `.git/autocycle/step-8-1-10-inspect/reconcile-receipts.json` is preserved and was not overwritten.
+
+## Required plan change
+
+No required plan change. Parent Completion and Session Endpoint remain unresolved until Review independently accepts continuous whole-document readability. Human editorial sign-off remains separately pending and is not the technical blocker.
+
+## Authenticated baseline
+
+| Record | Value |
+|---|---|
+| Populated `IMPLEMENT_BASE_SHA` / `implementation-baseline.json` head / `PLAN_SHA` / B / HEAD | `c4bf05a38d4bedef588ac6f15e49296c56cbf1ed` |
+| Branch | `checkpoint/20260913-183303` |
+| Reviewed checkpoint | `53529b7056870033d33d7c37e59f9611630f37cc` |
+| Reviewed-checkpoint authenticated implementation baseline / parent | `25325eacf5929b891f32ff73dfb2b700b7a0a651` |
+| Ancestry (`.git/logs/HEAD`) | `25325eac` (preceding Plan / reviewed parent) → `53529b70` (reviewed checkpoint) → `c4bf05a3` (this Plan / B / HEAD) |
+| `latest-implementation` | stale HEAD `25325eac…`; not used as B |
+| `.autocycle.toml` | `native_office = ["excel", "word"]` |
+
+The reviewed-checkpoint parent `25325eac…` is recorded as ancestry only. Execution B is the subsequently recorded `IMPLEMENT_BASE_SHA` `c4bf05a3…`. Authentication used populated `IMPLEMENT_BASE_SHA`, branch ref, `implementation-baseline.json`, `.git/HEAD`, `refs/heads/checkpoint/20260913-183303` and `.git/logs/HEAD`. Fail-closed was not triggered. Ownership, recovery safeguards and unrelated work were not disturbed. No branch switch.
+
+## Publication identity
+
+Canonical `build/output/lululemon/Lululemon_BAV.docx` SHA-256 `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991` (246729) mode `0644`. Immutable inspection copy `.git/autocycle/step-8-1-6-word-inspect/Lululemon_BAV.docx` same SHA-256 (246729) mode `0444`. Every resolved receipt below binds that source hash and `word_visible_page.page_count` **17**.
+
+`.git/autocycle/office/review-index.json` SHA-256 `71696852bd06fefcad8e6fbeb309f706684c4103a7e288a9fb8afe10f4a8997b` `reviewed_head` `53529b7056870033d33d7c37e59f9611630f37cc` `entries` **[]**. The index supplies no evidence acceptance. Prior RESULT inventories were used only as locators. Each ordinary receipt, result, capture and retention path was resolved on disk; screenshot SHA-256s were recomputed and matched; the underlying `view.png` files were opened at 2560-wide resolution.
+
+## Stale statements superseded
+
+Any prior Step 8.1.10 wording that treated a RESULT inventory as independent whole-document proof, or that left `bb38cf40…` / `38924b11…` as pending controller capture, is superseded. Those two ordinary receipts remain captured and retained; they were re-opened here. Rejected COMPLETE / REACHED assertions that inferred whole-document readability from hashes, page count, capture success or inventory prose remain withdrawn. Failed `252f66eb…` (geometry BLOCKED) and non-overlapping partials `cb7501a7…` / `5036b849…` remain retained history and are not relabeled as accepted continuous coverage. This entry does not rewrite those historical records.
+
+## Fresh vs retained observations
+
+| Class | IDs | Binding | Use |
+|---|---|---|---|
+| Fresh ordinary (page 11) | `bb38cf405dbd47b39ea1eec710334a42`, `38924b112b204a39b1964fa5bd6dfe4a` | source `8ac1ed94…`; `after_ns: 1790434815618260111`; bounds `[40,40,1320,1040]`; `requested_head` `9369a2b4…` / `reviewed_head` `a56d82d8…` | Local page-11 overlap. Review already accepted this as local readability. Re-opened; still applicable to unchanged canonical bytes. Not whole-document acceptance. |
+| Retained 8.1.6 / 8.1.6-closer | pages 1–10, 12–16 (`b8450c72…` / `3556163f…`); pages 16 closer + 17 (`0d186bf0…` / `ef1d9db6…`) | same source hash; `after_ns` absent; ancestral requested/reviewed heads | Locators plus this attempt’s raster inspection. Ancestral heads and missing `after_ns` are recorded binding differences, not recapture authorization. Applicability is unchanged source `8ac1ed94…` versus current canonical and inspection DOCX. |
+
+No observation-recovery association. `replaces_request_id` was not used.
+
+## Page-11 overlap (preserved ordinary receipts; re-opened)
+
+| Binding | `bb38cf405dbd47b39ea1eec710334a42` | `38924b112b204a39b1964fa5bd6dfe4a` |
+|---|---|---|
+| Receipt | `.git/autocycle/office/receipts/bb38cf405dbd47b39ea1eec710334a42.json` SHA-256 `4465b0c71ca502a780f45d7dd9f171211bb8b2646ba31e83edd10550dba38448` | `.git/autocycle/office/receipts/38924b112b204a39b1964fa5bd6dfe4a.json` SHA-256 `9fd5e755d84872bc9d5e53988e29b4ab239c9e4e719f18004e486e1be9eddda6` |
+| Result | `.git/autocycle/office/evidence/word/eccbbd56e57b4c7ba9669003c8f7e2c6/result.json` | `.git/autocycle/office/evidence/word/4a6004f296794d10bc542723d11cb7d9/result.json` |
+| Capture | `.git/autocycle/office/evidence/word/eccbbd56e57b4c7ba9669003c8f7e2c6/view.png` `3161808e470773f72ec446ad53478b9c14a361e52bc387710baafb31b9d5fd48` (546309; 2560×2000) | `.git/autocycle/office/evidence/word/4a6004f296794d10bc542723d11cb7d9/view.png` `5080304e61cb5bffa60a064c43eb1b77b327cdaa86d5c80aed98797e26c56f3b` (522510; 2560×2000) |
+| Retention | `retained`; `captured_ns` `1790721704766796000` | `retained`; `captured_ns` `1790721720403135000` |
+| Locator | start 13889–13917; zoom 80 | start 14024–14053; zoom 100 |
+| `word_visible_page` | 11 of 17; matched `gross profit change uses` | 11 of 17; matched `the gross margin change` |
+| Printed footer | **Page 11**, then page-12 leaf | **Page 11**, then page-12 leaf |
+
+Direct re-inspection of both rasters (this attempt):
+
+| Capture | Opening readable text | Ending on printed page 11 | Continues onto printed page 12 |
+|---|---|---|---|
+| `eccbbd56…` | Complete `Gross-profit change uses prior gross margin on the revenue change, prior revenue on the gross-margin change, and an explicit interaction equal to the revenue change times the gross-margin change.` then complete operating-profit explanation | Signed-OM FY2022 row; footer **11** | FY2023–FY2025 signed-OM rows; `Management attributions are source-bound disclosures.`; first two attribution rows (tariffs; Americas) |
+| `4a6004f2…` | Mid-sentence `the gross-margin change.` then complete `Operating-profit change then subtracts disclosed SG&A, impairment or asset-related charges, and other reported operating-item changes.` | Same FY2022 signed-OM row; footer **11** | Same FY2023–FY2025 signed-OM rows and attributions heading |
+
+**Exact shared readable overlap** (local span only): complete operating-profit explanation; `Missing disclosure is omitted from the reconstruction, not treated as zero.`; `An expense increase reduces operating profit. Missing adjacent comparisons stay blank; they are not treated as zero.`; bridge headings Fiscal year / Revenue effect / Gross-margin effect / Interaction / Gross-profit change / SG&A change / Impairment change / Other operating-item change / Reconstructed / Reported / Residual; identifying GP/OP rows FY2022–FY2025; signed-OM identity and FY2022 row; printed-page-11 footer; page-12 FY2023–FY2025 signed-OM continuation. The 80% canvas additionally shows the complete gross-profit opening that the 100% canvas cuts at the top.
+
+Continuity with printed page 10: `867c1cfd…` ends with a peek of `Gross-profit change uses…`; the full opening is on `eccbbd56…`. Continuity with printed page 12: `024e5b75…` opens on signed-OM FY2023–FY2025 and the complete attributions table. Local continuity is established. Local readability is not extrapolated to the whole document.
+
+## Inspected actual-page spans (printed pages 1–17)
+
+Every row binds source SHA-256 `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991`. Screenshot hashes were recomputed this attempt and matched the receipts. Retention state is `retained` on every row. Requested page numbers, selection offsets and status-bar positions are navigation aids only. Printed labels and visible landmarks identify the leaf. Adjacent-page peeks are recorded as transitions, not as coverage of the peeked leaf.
+
+| Actual page | Printed label / landmarks | Opening → ending (this inspection) | Tables / figures / qualifications | Evidence (receipt SHA-256 / result / capture SHA-256 / `captured_ns`) | Overlap / transition | Disposition |
+|---:|---|---|---|---|---|---|
+| 1 | Footer **Page 1**; status 1 of 17 | Title `Lululemon BAV`; heading `Lululemon — Drivers`; FY2025 argument through signed CFO remainder independently unresolved | No table/figure | `ebdd8cb6f76c42c3915aeafc54f5e1c2` rec `fbbdd1a77684f289789c5d9691505ba4ac39700360af5f8526c680fb3741ea77` / `f147b8ceb0ca4daa8630216777428f25/result.json` / `e9f6d46d298e0800f1076358f759a9a2979c66057b543ce2485095450c53af0c` / `1790712962960390000` | Ends on a complete sentence; page 2 starts a new store-expansion paragraph | Inspected raster; retained observation |
+| 2 | Footer **Page 2**; status 2 of 17 | Store-expansion outpaced company-wide revenue… through figure question `Did store-count growth outpace consolidated revenue growth?` | Figure **Revenue growth versus store-count growth** (FY2022–FY2025 bars); caption/source; question | `022415dee0424a898ce0249fe981af4f` rec `69901cd4fb7e39d49726b3e28e3240b8f0ee50970c8ef979108e6d50323dd53a` / `fa489a7de471489a92bf6ed80bab6fa5/` `79a0bb260f3044b3ebbeee1cfaa3365fd054c886ea3430f69491381367da438f` / `1790712990841601000` | Figure + caption complete on this leaf | Inspected raster; retained observation |
+| 3 | Footer **Page 3**; status 3 of 17 | `In FY2025, Americas revenue −$81.1 million…` through management-attribution close `…not an independently verified causal estimate` | Figure **FY2025 geographic revenue and operating-profit change** (both panels); caption; question `Did international revenue growth offset Americas profit deterioration?` | `42d4e890c8ae46e8a3e4e2ec10f71a7f` rec `702335a7f9f539995737b9a3bd061e71565046d1bea2da5cbc1d1d0bb6041020` / `d1f65eccf38c47f6a1341e0e137a68aa/` `405597519821233b8aa2b4fffab85d77e415a99929d843e47fbafa4d244f6850` / `1790713019748878000` | Sentence continues onto page 4 (`and is not inserted into the accounting bridge`) | Inspected raster; continuation accounted |
+| 4 | Footer **Page 4**; status 4 of 17 | Continuation `and is not inserted into the accounting bridge.` through question `Which accounting components reconstructed the latest operating-margin change?` | Figure **FY2025 operating-margin bridge**; dashed reported line; caption; question | `c080b68abdb14df38f4edf217da66832` rec `4c1816f66100592a322cf6f2312cc7f9f4f28226422fc82ac047f10a1943b5f4` / `4303ca252dea45c582de6941f8458a9b/` `c7d5906255d1b07c2addbb7e271d98331e0088279c9b35d606928935fe23c918` / `1790713048294172000` | Shared split sentence with page 3 | Inspected raster; retained observation |
+| 5 | Footer **Page 5**; status 5 of 17 | `Reported CFO moved from $2,272.7 million…` through question `Did reported earnings continue to translate into operating cash flow?` | Figure **Cash from operations versus net income**; caption; diagnostic qualification | `ef1dc23ed089498b84d90cb318356fbe` rec `88a712b21883852c90c9d2fcd2867c654bdc4a2c062bc1f45d58956bc41d0b55` / `0d56baccc1c94f7ca7720122b5246c38/` `e7b304afa49cf78d13a08f135da7a4e793c41e5dd56acad357508ab913dbada3` / `1790713076660649000` | Argument ends; appendix starts page 6 | Inspected raster; retained observation |
+| 6 | Footer **Page 6**; status 6 of 17 | Headings `Appendix` / `Selected claims`; first five claim rows (footprint intensity; comparable-sales; sales per square foot; geographic localization; operating-margin bridge) | Selected-claims table | `1a2311db270540efb2cc653963b43c28` rec `9227e3c651965d3251c63dce5c1906b5020da2ffe36428e3377956a10e833563` / `2aae5fa15cf5453abcac08732a6445b8/` `7dfae44dbd6d325c3926657592050fe4b979dab386b399ea869fe1b459932ba6` / `1790713105116575000` | Remaining two claim rows open page 7 | Inspected raster; retained observation |
+| 7 | Footer **Page 7**; status 7 of 17 | Remaining claims (management-margin attribution; cash conversion); `Growth evidence`; historical levels FY2021–FY2025; intensity identity; FY2022 intensity row | Claims continuation; levels table; intensity-bridge header + FY2022 | `f27c96750d5049e8b452d12202e9d247` rec `954e1609daa17322f6827ee4793fe17f4639a9ab4a694e8d03061df35c258403` / `a71aaa26da51405483b35bb43228bc93/` `035fc87012d12a0bea5932655102fb14af2f763fce17126f3b182c8b59e1a118` / `1790713133850440000` | Intensity FY2023–FY2025 continue on page 8 | Inspected raster; retained observation |
+| 8 | Footer **Page 8**; status 8 of 17 | Intensity FY2023–FY2025 (zero residuals) through comparable-sales observations (FY2022 25% / FY2023 13% / FY2024 4% / FY2025 2%; additional FY2022 16% stores-only) | Intensity continuation; comparable-sales table | `33158e844c5747688914d69289742cf3` rec `d752ded0a53c4caaab52eeaff67b9e7a01192d2441b8bedf39a195dd58322047` / `f03ec625d9fc4055aea0f25ee1f89b45/` `502675a794c71a9f94fa968446606f12f8209e642d6e4075bfee27748fbe160d` / `1790713161128817000` | Portrait ends; landscape Geographic evidence opens page 9 | Inspected raster; retained observation |
+| 9 | Footer **Page 9**; header `lululemon BAV`; landscape; status 9 of 17 | `Geographic evidence`; revenue-level table FY2021–FY2025; contribution table FY2022–FY2025 | Two complete geographic tables; peek of page-10 OP-profit header + FY2022 start | `e8f746fa07b24d20a8a219093fec4913` rec `61ef2d9701e46c893dc01e5f409dfb0ef9c170cf42938675ce6bee83929afba6` / `e60f2289619a4a78b03f02e24f6952f5/` `5e7b0886172242013156d944d18984a15f0d09fa78848a205beb89195258e7dd` / `1790713189567141000` | Shared geographic-OP heading/FY2022 start with page 10 | Inspected raster; peek is not page-10 coverage |
+| 10 | Printed footer **Page 10**. Status bar 11 of 17 and `word_visible_page` 11 match the page-11 peek (`gross profit change uses`), not the printed leaf | Geographic operating-profit table FY2022–FY2025; `Margin evidence` identity; component-margin table FY2021–FY2025 | Both tables complete; peek of page-11 `Gross-profit change uses…` | `51e91d584e184a3d84231cb18aa6e722` rec `304eea18b91ec4109348cc2887fc8237d6cb2b715c6eca3ee6c9372b62d296c9` / `867c1cfd4dd34d32a82cbe322dc9ccad/` `2336ef897abb96ab56f37c2b88c7ef2adaccfe80ad77dd8dd8434baf74c06968` / `1790713245912669000` | Peek first words of page 11; full opening is on `eccbbd56…` | Inspected as printed page 10; peek is not page-11 coverage |
+| 11 | Printed **Page 11**; status 11 of 17 | Complete GP/OP explanations, missing-disclosure / missing-comparison qualifications, GP/OP table FY2022–FY2025, signed-OM identity + FY2022 | See overlap section | `bb38cf40…` / `eccbbd56…` and `38924b11…` / `4a6004f2…` (bindings above) | FY2022/FY2023 signed-OM adjacency onto page 12; also visible on `024e5b75…` | Fresh ordinary local overlap; re-opened |
+| 12 | Footer **Page 12**; status 12 of 17 | Signed-OM FY2023–FY2025; complete Management attributions (tariffs / Americas / China Mainland) | Attributions table (three rows); peek of Rest of World + `Cash evidence` | `33ef69ac434b4ef5a395247aada3c983` rec `a502105ecf71562f18797a21bfb4f4c1aa52c2a038f1a63f49265949706d7565` / `024e5b752ec54d8880315cd1428f079e/` `9209d54f69dbdc6b16d8452ae0f092208b6fe4afcccedf14a2b7a78e0e46ae28` / `1790713285137186000` | Shared FY2023–FY2025 signed-OM and attributions heading with page-11 pair; Rest of World opens page 13 | Inspected raster; bridge continuation closed |
+| 13 | Footer **Page 13**; status 13 of 17 | Rest of World attribution row; `Cash evidence`; CFO/NI table FY2021–FY2025 complete | Cash table; peek of `Relationship records` + footprint row | `e4a23b53c56f4485858157982e7792b2` rec `15fca9660e33d83e6a16094a12785b8f3c5e5a9e2e261f884e59a0be1dcb11b7` / `f2cccc12919147d7aeda228d5b08741f/` `3cbd34d274f7497e6c9e30f203e9e367da77df4c6592d171a068d7aaeb8accb5` / `1790713323673822000` | Shared Rest of World + Cash heading with page 12 peek; Relationship heading shared with page 14 | Inspected raster; peek is not page-14 coverage |
+| 14 | Footer **Page 14**; status 14 of 17 | `Relationship records` explanation; footprint / comparable-sales / SPSF rows | Three relationship rows; Residual wraps at hyphens inside its cell; peek of geographic-reconstruction / component-margin | `5d20fbc4b9304097bc560714dcecbc5d` rec `2faa3890e3e3aefe5135936f6afe4b22fc27bd5b83c9c4e064239c56cea0c2f9` / `3cfd472e24cf4ba4a6bb553298e18dd6/` `1748dac9c60af0740085f26fcd49ed344ed70dc938e656fbd824acba3959a1eb` / `1790713362712106000` | Shared geographic-reconstruction / component-margin start with page 15 | Inspected raster; peek is not page-15 coverage |
+| 15 | Printed footer **Page 15**. Status bar 16 of 17 and `word_visible_page` 16 match the page-16 peek (`latest adjacent operating margin`), not the printed leaf | Remaining relationship rows: geographic reconstruction; component-margin identity; component-margin contribution; gross-profit amount bridge; impairment; mix/markdowns | Six complete body rows; footer **15**; peek of page-16 last row | `7924156e2cb64201833e7b3b32fab14e` rec `7c3124b8421c41a76859f33893b7856bd6f8669713e8e46cad96abc6ab76f7cb` / `3bf32de7e045424a85217e037fafc254/` `e9824c901e1c38f711e05ac42abf5feff15e3800ababc3f252b38a5565737214` / `1790713419413031000` | Shared last-row header with page 16 | Inspected as printed page 15; peek is not page-16 coverage |
+| 16 | Footer **Page 16**. Status bar 17 of 17 and `word_visible_page` 17 match the page-17 residuals peek, not the printed leaf | Intact final row `latest adjacent operating-margin movement` (Kind / Residual / Stability / Contradictions / Result complete) | Single relationship row on an otherwise empty landscape leaf | `e4694647ff8540fdb98f0b781377ecb4` rec `1fce2e0709790c1ced7a63a11ed32c1c13103af7ab0d728ebc5ac79d0507a054` / `d4713875144e447ab4a550b908f06b0a/` `baf8344b42f059a5a362e0119c5c720093855b05aeb9a8b18898aea4cb26ea64` / `1790713447233918000`; closer `660b2532dcf44772a98f307d953964eb` rec `70104d5c52b47bb48ff2d511ca3d8d4a4a59661c2d998fc3470927a4ea37db7c` / `1d55ccd683614d9da20922859bc3a4b0/` `bd4fde2b65247ccc363abe253ac263d1178cbc6d6b4035e1540384a59d8963c7` / `1790715965392763000` | Shared last row with page 15 peek and with page-17 leftover | Inspected as printed page 16; peek is not page-17 coverage |
+| 17 | Status 17 of 17; header `lululemon BAV`; identified by page-16 leftover plus unique Sources ending, not by status bar alone | Complete residuals paragraph; heading `Sources and methodology`; ending through `Fiscal-year labels follow the issuer year mapping and are not derived from the calendar year of the period-end date.` | No table/figure | `a0fb0b7fb7c0414b97777af2774c90e5` rec `bb0b8f892cc92ae317dce50c02b524cf8981e8592fb9174b5b94be04d96f1b49` / `d0cfd7aff6474c38bc550b1cdae17d2c/` `b285df53df6da8022273470eedadd4c49de604f454a45e38a9616c03148fe9df` / `1790715978595133000`; overlap `1d55ccd6…` on residuals + Sources heading | Document ending inside this viewport | Inspected raster; retained observation |
+
+Verified coverage means: this attempt opened the named `view.png`, matched its receipt/retention hashes, and read the printed label plus the listed opening/ending/table/figure spans. Inventory assertions in earlier RESULT entries are locators only and are not reused as proof.
+
+## Pagination
+
+Native Word pagination remains **17** on every resolved receipt. Printed footers 1–16 were seen on the inspected canvases. Page 17 is identified by the page-16 leftover, `lululemon BAV` header, residuals / Sources body and the period-end-date ending. Landscape begins at printed page 9 and continues through printed page 16; page 17 returns to portrait sources.
+
+Navigation discrepancies resolved from visible content, not from `word_visible_page`:
+
+- Receipt `51e91d58…` reports page 11 because the canvas includes the page-11 peek `Gross-profit change uses`; the printed leaf is **Page 10** (geographic OP + margin tables).
+- Receipt `7924156e…` reports page 16 because the canvas includes the page-16 peek `latest adjacent operating-margin`; the printed leaf is **Page 15** (six relationship rows).
+- Receipts `e4694647…` / `660b2532…` report page 17 because the canvas includes the residuals peek; the printed leaf is **Page 16** (single relationship row).
+
+## Demonstrated gaps
+
+No uncovered, clipped, obscured or unreadable content-bearing span was identified that required a new ordinary source-bound view. Unavailable access: none. Pending captures: none. Failed/rejected evidence was not relabeled. Ancestral `requested_head` and missing `after_ns` on the retained 8.1.6 rasters are binding differences, not recapture authorization.
+
+This attempt does not treat the inspected-raster table as Review acceptance. Whole-document Word readability remains Review’s independent judgment.
+
+## Carried-forward verification (applicability confirmed; not re-run)
+
+Unchanged publication bytes: DOCX `8ac1ed94…`, PDF `b6331943…`, Drivers `618753d4…`. Therefore retained, not repeated this attempt:
+
+- Strictly positive international-offset gate and focused regressions plus `pytest core/tests/test_research_drivers.py core/tests/test_publication.py` **46 passed** (Step 8.1.9).
+- `test_fast_retailing_does_not_publish_drivers` **passed**.
+- Canonical `python -m bav check Lululemon` **0** (Step 8.1.9).
+- Repaired 16-page PDF inspection and renderer repairs remain applicable to PDF `b633194329bb7bc6cbd927d65784127cfb5c17f1ad35f15d66387d2560a336fc`.
+
+Fresh work this attempt is ordinary-receipt re-resolution plus direct raster inspection under current B `c4bf05a3…`. Those regressions are retained verification only.
+
+## Final output identity (unchanged)
+
+| Artifact | SHA-256 | Bytes |
+|---|---|---|
+| Canonical / inspection DOCX | `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991` | 246729 |
+| Canonical PDF | `b633194329bb7bc6cbd927d65784127cfb5c17f1ad35f15d66387d2560a336fc` | 304346 |
+| `Lululemon_Drivers.md` | `618753d40cb6886c3b3939a7577f87db154d8fa3bb89fc8a6ed06d5472960984` | 25091 |
+| `Lululemon_BAV.xlsx` | `32f7a354f4b3d2eb45b7123189b1e4b6a5d5683fcaf6849ae62e07e98d8c2b2d` | 229736 |
+| Forecast / Valuation / Overview | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `DRIVER.md` / `STYLE.md` | `33977c17d0b67f163638b5b844bfb318bf0d7a8af91d2d92c9c64c5bd00e87ea` / `4360b24bb849370a0fa48f21aa7cc83b8bf6b35c2ad9bac7e10de2829a107fc6` | 45356 / 1645 |
+
+## Exact remaining gaps
+
+- No pending Word capture. No additional view was requested.
+- Whole-document Word acceptance and parent Completion remain Review’s. This attempt reports inspected ordinary-receipt coverage; it does not close the Step or assert REACHED.
+- Human editorial sign-off remains pending and is not the technical blocker.
+- Session Endpoint remains unresolved pending Review.
+
+## Preservation checks
+
+Strictly positive international-offset gate, profit-direction controls, signed corporate-burden gates, completed renderer repairs and repaired 16-page PDF inspection were not replayed. Canonical Markdown, figures, DOCX, PDF and workbooks were not rebuilt or republished. Upstream inputs, all six Lululemon applications, analytical/admission controls, traceability, optional Trainer behavior and research limitations are preserved. `DRIVER.md` and `STYLE.md` byte-for-byte unchanged. Reserved research modules remain 0 bytes. Immutable snapshots, receipts (including failed `252f66eb…`, partial `cb7501a7…` / `5036b849…`, and preserved ordinary `bb38cf40…` / `38924b11…`), retention records and historical RESULT entries are preserved. Ownership, access, recovery and unrelated-work safeguards retained. Accepted migration work was not reopened. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
 
