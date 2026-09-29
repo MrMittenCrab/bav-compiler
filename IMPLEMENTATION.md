@@ -1,6 +1,6 @@
-# Step 8.1.4 — Repair PDF headers and complete Word readability inspection
+# Step 8.1.5 — Repair Word table pagination and complete rendered inspection
 
-AUTOCYCLE_PLAN: {"finding_key": "Selective Driver research and canonical publication", "kind": "work", "minor": 4, "objective": "Repair PDF headers and complete Word readability inspection", "plan_id": "f5f2f56879fa4628b2f140f401bb94f1", "step_id": "8.1.4", "work_id": "368b46c5bcb843d59f6cd54df45691d0"}
+AUTOCYCLE_PLAN: {"finding_key": "Selective Driver research and canonical publication", "kind": "work", "minor": 5, "objective": "Repair Word table pagination and complete rendered inspection", "plan_id": "fa4e432715e24892a5b55317c3f281ed", "step_id": "8.1.5", "work_id": "368b46c5bcb843d59f6cd54df45691d0"}
 
 ## Completion
 
@@ -8,32 +8,33 @@ The canonical Lululemon build and publication produce a selective, independently
 
 ## Bounded objective
 
-Repair fragmented PDF accounting-bridge headers and establish complete, source-bound rendered Word readability while preserving completed layout repairs and immutable evidence.
+Repair the geographic operating-profit table’s stranded Word explanation and header, then establish complete rendered readability of the final canonical publication.
 
 ## Work
 
-- Authenticate baseline, branch, ancestry and checkpoint binding through normal controller records, preferring populated `IMPLEMENT_BASE_SHA`. Reviewed checkpoint: `5ef0eb169184eda57434a32e5474508dee86368c`; its immediate parent is `e71fae6b846b5359397f607e32cef76d30824bb2`.
-- Preserve completed appendix pagination, heading grouping and attribution-column repairs. Treat `.git/autocycle/step-8-1-3-inspect/pdf-pages/pdf-page-09.png` as demonstrated defect evidence: ordinary header words fragment within “Gross-margin” and “reported operating-profit.” Historical page numbers are locators, not final pagination requirements.
-- Repair generic PDF header wrapping and width allocation in `core/research/document.py`, inspecting `_pdf_table`, `_pdf_styles`, `_soft_wrap_header` and shared width calculations. Fit ordinary words at meaningful boundaries without clipping, overflow, content loss or reduced STYLE font sizes; use existing wider or stacked layouts where necessary.
-- Add focused regressions in `core/tests/test_publication.py` demonstrating intact accounting-bridge header words and fitting text at actual rendered widths. Retain existing heading-transition, attribution-width, content, reference, failure-preservation and repeat-publication coverage.
-- Run relevant publication regressions, `python -m bav check Lululemon` and `python -m bav publish Lululemon`. Retain first outputs before repeating publication; compare distinct outputs using existing content/layout equivalence checks.
-- Inspect every final publication PDF page at readable resolution, including repaired headers, continued tables, figures, captions, orientation transitions and page breaks. Record actual page count and any remaining mechanical defects.
-- Reconcile existing Word requests and receipts against `.git/autocycle/office/review-index.json`. Receipt `3ce1737d4bd9420184680f6616c8e7bc` records page 12 of 16 against canonical DOCX SHA-256 `1092aa320bb8841b7a6ec4ef050d1993553ad160937132a356bd9204a692f521`; this is partial capture evidence, not whole-document acceptance.
-- Read applicable Office guidance and use authorized controller operations through the owned Word slot. Inspect applicable existing captures before requesting missing or inadequate views; avoid repeating completed capture work.
-- Bind inspection to final canonical DOCX bytes. Reuse earlier captures only after proving source and rendered-content applicability; if layout changes, establish fresh pagination and affected coverage without treating stale page numbers as current.
-- Inspect every actual Word page at readable resolution, with overlapping views where needed to cover entire pages. Confirm observed page identities and settled page count, including blank areas, portrait/landscape boundaries and final-page content.
-- Verify argument-before-appendix order, all four figures with nearby interpretations and qualifications, navigation, captions, appendix tables, intact labels, heading/evidence adjacency, page breaks, clipping, overflow, missing glyphs and STYLE compliance.
-- Maintain a page-by-page inspection inventory binding findings to canonical source hash, immutable inspection copy, renderer/version, requests, receipts, capture paths and hashes. Capture status, XML properties and independent publication PDF rasters do not establish Word readability.
-- Repair any remaining mechanical defects within this publication scope and reinspect affected outputs. Complete coverage must apply to final bytes; preserve superseded captures and associate replacement requests explicitly.
+- Authenticate the implementation baseline, branch, ancestry and checkpoint binding through normal controller records, preferring populated `IMPLEMENT_BASE_SHA`. Reviewed checkpoint: `d1a92ed7be7c887e6e3455f5e0bb817fded12835`; authenticated preceding implementation baseline: `0678c7ab6ff28faed5d5081887d07e78d5e7e2da`.
+- Reconcile `.git/autocycle/office/review-index.json` with retained requests and receipts. Receipt `a0152890a9ae4208bd6744081737ca20` binds the inspected page 9 of 16 to DOCX SHA-256 `51cf53a925538fcae58585da54ad81adc60cc88979e7a16efe578a89fbba9291`.
+- Preserve `.git/autocycle/office/evidence/word/409581009d7f4b90810678f189044655/` and its retention record. Its capture demonstrates the explanation and header on page 9 with all four data rows beginning on page 10. This is a pagination defect; historical page numbers are locators, not required final positions.
+- Inspect `_add_word_grid`, `_fill_word_cell`, `_repeat_header_row` and `_render_word` in `core/research/document.py`. Apply a generic pagination repair keeping the preceding explanation, header and first data row together when they fit, while permitting subsequent rows to paginate normally with repeated headers.
+- Avoid chaining entire long tables, introducing blank pages, hardcoding company/page-specific breaks, reducing STYLE font sizes or editing published documents manually. Preserve completed appendix, heading, attribution-width and PDF header-wrapping repairs.
+- Add focused coverage in `core/tests/test_publication.py` for header-to-first-row grouping, explanation adjacency and continued-table behavior. Retain existing content, orientation-transition, header-width, reference, failure-preservation and repeat-publication checks; structural assertions alone cannot establish Word pagination.
+- Run the publication regression suite and `python -m bav check Lululemon`. Run `python -m bav publish Lululemon`, retain the first outputs before repeating publication, and compare distinct outputs using existing content/layout equivalence checks.
+- Read applicable Office guidance and use authorized controller operations through the owned Word slot. Inspect existing applicable captures before requesting missing views; explicitly associate replacement requests with superseded evidence.
+- Bind inspection to final canonical DOCX bytes and an immutable inspection copy. Establish the settled native page count after the repair; inspect every actual page at readable resolution, using overlapping views wherever one capture omits content.
+- Confirm the repaired table begins with data beside its explanation and header. Inspect all appendix tables, continued headers, heading/evidence adjacency, portrait/landscape transitions, page breaks, blank areas and final-page content.
+- Verify argument-before-appendix order, all four figures with nearby interpretations and qualifications, navigation, captions, intact labels, clipping, overflow, missing glyphs and STYLE compliance throughout Word.
+- Maintain a page-by-page inventory identifying observed coverage, findings, canonical source hash, renderer/version, requests, receipts, capture paths and hashes. Capture status, XML properties and independently generated publication PDF pages do not establish Word readability.
+- Preserve `.git/autocycle/step-8-1-4-inspect/pdf-pages/` as prior PDF evidence. Establish applicability to every final PDF page through existing layout/raster comparisons; inspect changed or uncovered pages and verify the accounting-bridge header repair remains intact.
+- Repair remaining mechanical publication defects within this scope and reinspect affected outputs. Complete coverage must apply to final bytes; layout changes require renewed pagination and coverage assessment.
 
 ## Preservation and reporting
 
-Limit changes to the publication renderer, relevant tests and canonical DOCX/PDF regeneration. Preserve canonical Markdown, figures, workbooks, upstream inputs, unrelated products, completed research, all six Lululemon applications, traceability, analytical/admission controls, optional Trainer behavior and research limitations. Keep DRIVER.md and STYLE.md byte-for-byte unchanged and reserved research modules zero-byte.
+Limit production changes to the publication renderer, relevant tests and canonical DOCX/PDF regeneration. Preserve canonical Markdown, figures, workbooks, upstream inputs, unrelated products, all six Lululemon applications, traceability, analytical/admission controls, optional Trainer behavior and research limitations. Keep DRIVER.md and STYLE.md byte-for-byte unchanged and reserved research modules zero-byte.
 
-Preserve immutable copies, controller receipts, failed attempts and historical results. Reuse accepted evidence after confirming applicability; do not reopen accepted migration work or expand research scope.
+Preserve immutable snapshots, controller receipts, failed attempts and historical results. Reuse accepted evidence only after proving applicability; do not reopen accepted migration work or expand research scope.
 
-Append measured results to RESULT.md: authenticated baseline, repair, successful and failed checks, final publication hashes, distinct repeat-output comparisons, actual page counts, complete visual inventories, preservation checks and outstanding gaps. Correct stale capture-pending statements through a new entry without rewriting history.
+Append measured results to RESULT.md: authenticated baseline, repair, regression outcomes, publication hashes, distinct repeat-output comparisons, actual page counts, complete inspection inventories, preservation checks and remaining gaps. Supersede stale “no native captures” statements through a new entry, distinguishing the reviewed partial observation from complete inspection.
 
-Retain the missing requirement for complete rendered canonical Word inspection until qualifying evidence resolves it. Parent Completion and Session Endpoint remain unsatisfied while readability gaps or mechanical defects remain. Human editorial sign-off stays separate and pending; it is not required for technical acceptance.
+Keep complete rendered canonical Word inspection unresolved until qualifying evidence covers the final document. Parent Completion and Session Endpoint remain unsatisfied while mechanical defects or readability gaps remain. Human editorial sign-off remains separate and pending; it is not required for technical acceptance.
 
 Preserve ownership, access, recovery and unrelated-work safeguards. Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
