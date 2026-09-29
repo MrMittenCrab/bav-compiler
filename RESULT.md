@@ -5747,4 +5747,552 @@ Carried forward without repeating: Step 8.1 selective argument, six Lululemon ap
 
 Controller capture of the 16 hash-bound Word views is pending. Until receipts and page rasters exist, rendered Word readability — including complete page count and page-specific STYLE/defect coverage — stays unresolved. This attempt does not close that requirement.
 
+---
+
+# RESULT.md — Step 8.1.2 Repair Word viewport positioning and inspect every page
+
+**Status:** COMPLETE (this bounded attempt; repaired-view controller capture pending; Review adjudicates Step closure)  
+**Step:** 8.1.2 — Repair Word viewport positioning and inspect every page  
+**Work:** `368b46c5bcb843d59f6cd54df45691d0`  
+**Plan:** `838926ab1ebd4176b48e0d437a397faf`  
+**Finding:** Selective Driver research and canonical publication  
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged vs this child's start).  
+TARGET SHA-256 `7f6de96abef3ae66efa75f8a65184eec24cad8fa4d31f2424cc7624450b9627f` (36138).  
+SESSION SHA-256 `747c54e81121661522429be584fbb876ff2e653ae7c07f26f09cb3ea8c10066a` (4155).  
+IMPLEMENTATION SHA-256 `c7da4489de201fb53ed4d8c2e6dab6786dcfa63844e3f9769497bb0672a85655` (5812).  
+No commit / push / sync / checkpoint / branch change. Products not regenerated.
+
+## Required plan change
+
+No required plan change. Distinct-position proof and the remaining 19 Word pages stay unresolved until the controller captures the repaired diagnostic requests. Human editorial sign-off remains pending.
+
+## Authenticated baseline
+
+| Record | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / HEAD | `80707215408433025d5093d0b82b82877e5d06bd` |
+| Branch | `checkpoint/20260913-183303` |
+| Immediate parent | `5dd04ece3de9c3effd3b4febbbff53d53e6d82ee` (Step 8.1.1) |
+| Step 8.1.1 plan ancestor | `abe00ccc13bc30277bf2f0fe36e995d941a00871` |
+| Step 8.1 ancestor | `0303ccc242211a6bbfd4f6d3b75c97ba90f2a2e9` |
+| `implementation-baseline.json` head | `80707215408433025d5093d0b82b82877e5d06bd` |
+| Working tree at authentication | clean except this attempt's new test file |
+
+Ownership, recovery safeguards and unrelated work were not disturbed. No branch switch.
+
+## Correction of the stale “capture pending / zero inspected pages” account
+
+Step 8.1.1 recorded receipts **0** and **0 of unknown** inspected pages. That account is stale. After 8.1.1, the controller captured all 16 queued views (`CAPTURED`). Those receipts are preserved. They do **not** accept the document: every inspected raster repeats the opening page.
+
+Reviewed opening evidence (request `e6c0130340b242b7b9e3c977d2ffca80`, start 34, screenshot `fa75a995…`, 2560×1920): header `lululemon BAV`; Heading 1 `Lululemon — Drivers`; opening FY2025 revenue / store / profit paragraph; status bar **Page 1 of 20**; toolbar Aptos 10; print layout; window title `word-view  -  Compatibility Mode`. STYLE.md Regular-only black-on-white body is readable on this page. No figure on page 1. No missing-glyph boxes, clipping or overflow on this opening view.
+
+Repeated-opening failure (diagnostic controls; all `CAPTURED`; all show the same Drivers opening, not the requested interior/appendix content):
+
+| Request | Label | start | Screenshot SHA-256 | Visible page |
+|---|---|---:|---|---|
+| `e6c01303…` | heading1-opening | 34 | `fa75a995…` | Page 1 of 20 |
+| `5be9b36b…` | figure-margin | 5276 | `25fc427a…` | Page 1 of 20 (not margin figure) |
+| `05611dce…` | appendix-geographic-evidence | 10979 | `4dd0bfa6…` | Page 1 of 20 (not appendix) |
+| `cbdd3c60…` | appendix-sources | 22731 | `9a27923f…` | Page 1 of 20 (not sources) |
+
+The other twelve 8.1.1 rasters have distinct hashes (cursor/status-bar pixels) and are not treated as different pages. `CAPTURED` and a changed hash are not positioning success. Failed/misleading evidence is retained.
+
+## Viewport diagnosis
+
+`view()` populate/open/close each request on the owned `word-view.docx` slot. Open starts at page 1. `position()` set zoom then `selection start`/`selection end` of `selection of window 1`. `confirm_view` checked identity, those selection values, zoom and bounds only.
+
+Word 16.113.2 AppleScript `selection start` does **not** scroll print-layout. `confirm_view` therefore passed while the capture helper photographed page 1. Subsequent captures cannot inherit a previous viewport because `view()` closes the slot. Estimated OOXML offsets are not page locators; even a correct story offset was invisible.
+
+Active document identity was the owned slot (`word-view  -  Compatibility Mode`). Layout had settled enough for the status bar to report **Page 1 of 20**. No Word Save As PDF route is exposed; the independently generated publication PDF still cannot establish DOCX fidelity.
+
+## Repair
+
+Installed and maintained `/Users/lizhiguo/.autocycle/native_office.py` and `/Users/lizhiguo/Documents/Developer/autocycle/native_office.py` are byte-identical after the repair: SHA-256 `277aa08754a7545e7a597e857c1ed5efaf5de553ecfc58038dc81c7af0e00a18` (60363). Pre-repair `f54d7d1a…` (57480). `install.py` was not run (live AutoCycle refuses install). Only the Word position/confirm path changed.
+
+After bounds/activate: `print view`, `repaginate`, zoom, create the requested range, read `active end page number`, set selection, reset `vertical percent scrolled` of the active pane to 0, then `page scroll` the window down `(pageNum - 1)`. Optional `page` uses the same absolute page-scroll after checking `number of pages in document`. Word position timeout is 45s. `confirm_view` now errors `Word viewport did not follow selection` when the selection page is >1 and scroll percent is still 0. Page locators confirm `Unexpected Word page` instead of start/end.
+
+Focused verification, no Office: `PYTHONDONTWRITEBYTECODE=1 python3 automation/autocycle-fixes/test_word_viewport_positioning.py` → **7 passed**. Evidence: `.git/autocycle/step-8-1-2-word-viewport/{diagnosis,binding}.json`.
+
+## Distinct-position proof
+
+**Not demonstrated after the repair.** Four replacement requests were enqueued only (`native_office.py request`; `process` not invoked; provider did not screenshot). All bind source `014773bb…` and `requested_head` `80707215…`.
+
+| New request | start | Supersedes (preserved) |
+|---|---:|---|
+| `4a8552eb7cdf40c490fc3969f61ac997` | 0 | `ddff9743…`, `e6c01303…` |
+| `b36961eb51f747cea9a9a636e3aef55c` | 5276 | `5be9b36b…` |
+| `5c9a96d885444c18b113163af2a5a189` | 10979 | `05611dce…` |
+| `195319c89b834c3da4e4cd643da09a1e` | 22731 | `cbdd3c60…` |
+
+Receipts for these four: **none**. Full 20-page coverage was not requested.
+
+## Confirmed page count and page inventory
+
+| Item | Measured |
+|---|---|
+| Word page count | **20** from the reviewed opening status bar; not re-read from Word after the repair |
+| Pages with distinct native content | **1** (opening only) |
+| Pages visually inspected | **1 of 20** |
+| Pages without defects (this inspected opening) | opening: argument title and first paragraph readable; Aptos Regular 10 in the toolbar; no bold/italic; black on white; no tofu/clip/overflow on this page |
+| Pages 2–20, four figures, appendix tables, landscape transitions, captions, page breaks | **unresolved** |
+| Argument-before-appendix as rendered in Word | **unresolved** beyond the opening page |
+
+Structural OOXML from Step 8.1.1 remains supplement only.
+
+## Findings
+
+- Positioning/capture defect: selection without viewport follow. Repaired in the helper; not yet proven by a distinct interior/appendix raster.
+- No new publication-content defect is claimed. The opening page has no mechanical defect on the inspected view.
+- Missing coverage (pages 2–20) stays unresolved. Workflow failure of the 8.1.1 captures is not an external dependency and does not satisfy Completion.
+- Compatibility Mode in the window title is recorded; it is not treated as a document defect.
+
+## Product-preservation checks (after repair and enqueue)
+
+| Path | SHA-256 | Bytes | vs Step 8.1.1 |
+|---|---|---:|---|
+| `build/output/lululemon/Lululemon_BAV.docx` | `014773bb10424ce8fd8384d5bc1edb04a4c932bc13c73246802ffb1b76be15d7` | 254029 | unchanged |
+| inspection copy | `014773bb…` | 254029 | unchanged; mode `0444` |
+| `Lululemon_BAV.pdf` | `afbad9da9c5862169b350f9bcb34437a9f4eae918995f9f2b9fa298cd67e889c` | 301886 | unchanged |
+| `research/Lululemon_Drivers.md` | `618753d40cb6886c3b3939a7577f87db154d8fa3bb89fc8a6ed06d5472960984` | 25091 | unchanged |
+| `figures/drivers/{growth,geography,margin,cash}.png` | `2308545e…` / `9d99bf69…` / `55ccb38c…` / `289bb4e2…` | 54271 / 65707 / 52237 / 42449 | unchanged |
+| Forecast / Valuation / Overview | `e3b0c442…` | 0 | unchanged |
+| `DRIVER.md` | `33977c17d0b67f163638b5b844bfb318bf0d7a8af91d2d92c9c64c5bd00e87ea` | 45356 | unchanged |
+| `STYLE.md` | `4360b24bb849370a0fa48f21aa7cc83b8bf6b35c2ad9bac7e10de2829a107fc6` | 1645 | unchanged |
+
+Carried forward without repeating: selective research, six Lululemon applications, integrated figures, appendix, traceability, regressions, editorial-review reporting. Human editorial sign-off remains pending and is not required for technical acceptance.
+
+## Remaining toward Completion
+
+Controller must capture the four repaired diagnostic views and those rasters must show distinct opening, interior and appendix content. Only then can actual page locators be used for all 20 pages. Until that proof exists, whole-document Word inspection remains unresolved.
+
+---
+
+# RESULT.md — Step 8.1.2 continuation: range-select repair, distinct-page proof, full-page requests
+
+**Status:** COMPLETE (this bounded continuation; controller-owned page-locator capture pending; Review adjudicates Step closure)  
+**Step:** 8.1.2 — Repair Word viewport positioning and inspect every page  
+**Work:** `368b46c5bcb843d59f6cd54df45691d0`  
+**Plan:** `838926ab1ebd4176b48e0d437a397faf`  
+**Finding:** Selective Driver research and canonical publication  
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged vs this child's start).  
+TARGET SHA-256 `7f6de96abef3ae66efa75f8a65184eec24cad8fa4d31f2424cc7624450b9627f` (36138).  
+SESSION SHA-256 `747c54e81121661522429be584fbb876ff2e653ae7c07f26f09cb3ea8c10066a` (4155).  
+IMPLEMENTATION SHA-256 `c7da4489de201fb53ed4d8c2e6dab6786dcfa63844e3f9769497bb0672a85655` (5812).  
+No commit / push / sync / checkpoint / branch change. Products not regenerated.
+
+This record appends the continuation. The earlier 8.1.2 page-scroll account is preserved and is not rewritten.
+
+## Required plan change
+
+No required plan change. Controller-owned rasters for pages 2–9 and 11–19, the four figures, landscape transitions and overlapping bottoms remain unresolved until the queued page-locator requests are captured. Human editorial sign-off remains pending.
+
+## Authenticated baseline
+
+| Record | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / HEAD | `80707215408433025d5093d0b82b82877e5d06bd` |
+| Branch | `checkpoint/20260913-183303` |
+| Immediate parent | `5dd04ece3de9c3effd3b4febbbff53d53e6d82ee` (Step 8.1.1) |
+| `implementation-baseline.json` head | `80707215408433025d5093d0b82b82877e5d06bd` |
+| Working tree | `RESULT.md` dirty; `automation/autocycle-fixes/test_word_viewport_positioning.py` untracked |
+
+Ownership, recovery safeguards and unrelated work were not disturbed. No branch switch.
+
+## Viewport diagnosis (updated)
+
+The 8.1.1 controller rasters and the first 8.1.2 page-scroll repair remain the demonstrated defect trail:
+
+1. Pre-repair helper `f54d7d1a…` set `selection start`/`end` only. All 16 `CAPTURED` views repeated the opening page. Those receipts are now `BLOCKED` by `review-evidence` (`Retained Word capture lacks bound visible-page evidence`). Failed evidence is retained.
+2. Page-scroll helper `277aa087…` (60363) added `page scroll` and `Word viewport did not follow selection`. Native baseline `.git/autocycle/office-bridge-baseline-20260927-014117/result.json` failed at confirm:interior-argument with exactly that error. Source/copy SHA remained `014773bb…`. Page-scroll therefore did not move the print-layout viewport.
+3. Installed/maintained helper is now `a7ea3811e71f9731277ceb63d85132aea770a53546b775d5a931407ba28d26be` (69605), byte-identical. Guidance: `/Users/lizhiguo/Documents/Developer/autocycle/WORD_NATIVE_NAVIGATION.md`. Positioning selects the native range (`select (create range)` or `navigate`/`select pageRange`) after `print view` + `repaginate`. `word_page_map` is collected before final positioning because `navigate` changes selection. Independent ScreenCaptureKit + Accessibility + Vision must match four unique whole words (≥16 characters) from the requested page’s native text. Status-bar numbers, toolbar and selection page are not acceptance. Word position timeout remains 45s.
+
+`view()` still populate/open/close each request on the owned `word-view.docx` slot, so captures cannot inherit a previous viewport. Estimated OOXML offsets are not page locators. Word Save As PDF is not exposed; the publication PDF still cannot establish DOCX fidelity.
+
+## Repair verification
+
+Focused, no Office:
+
+| Check | Measured |
+|---|---|
+| `PYTHONDONTWRITEBYTECODE=1 python3 automation/autocycle-fixes/test_word_viewport_positioning.py` | **8 passed** — installed=maintained=`a7ea3811…`; range-select not page-scroll; page locator; unique-text accept/reject; legacy receipt rejected; page map before position |
+| `python3 -m unittest test_word_viewport` in `/Users/lizhiguo/Documents/Developer/autocycle` | **12 passed** |
+
+`process` was not invoked. Provider did not screenshot. Helper files were not rewritten in this continuation (`install.py` already deployed `a7ea3811…`).
+
+## Distinct-position proof
+
+Native consumer run on the bound canonical DOCX (same SHA-256 `014773bb…`) after the range-select install. Slot was `/private/tmp/autocycle-word-investigation/office/word-view.docx`, not the AutoCycle controller slot. Copies retained at `.git/autocycle/step-8-1-2-word-viewport/consumer-distinct/`. Independent `word_visible_page` proof; a `CAPTURED` hash alone is not used.
+
+| Page | Request | Screenshot SHA-256 | Status bar | Visible content | Unique matched text |
+|---:|---|---|---|---|---|
+| 1 | `page: 1` | `a7c57b2cadae682fe855f95f886edbb3840ce89e98f7a9155ca9d362d0f33724` (355167) | Page 1 of 20 | Heading `Lululemon — Drivers`; FY2025 opening argument | `lululemon bav lululemon drivers` |
+| 10 | `page: 10` | `2653e396149536eb1c472a4516860a3a6fdf17b10f61930c471376ba829af916` (311983) | Page 10 of 20 | Appendix table FY2023–FY2025 Americas/China/RoW/unallocated; footer Page 10; next heading `Margin evidence` | `million 140 5 million` |
+| 20 | `page: 20` | `947fe72343d385216951b09ac6b7e10748992b92fc4b1f78a459d68a92926bd9` (286181) | Page 20 of 20 | Prior-page footer Page 19; page-20 header `Lululemon BAV`; residuals sentence | `residuals are computed from` |
+
+These three rasters are not the same opening view. Word pagination after layout is **20**.
+
+The four offset diagnostic requests from the earlier attempt remain queued (no receipts): `4a8552eb…` start 0, `b36961eb…` 5276, `5c9a96d8…` 10979, `195319c8…` 22731. They still supersede the preserved 8.1.1 failures.
+
+## Confirmed page count and page-locator enqueue
+
+Because distinct opening / appendix-interior / appendix-end native content is demonstrated, actual page locators were queued through `native_office.py request` only. All bind inspection copy `014773bb…` and `requested_head` `80707215…`.
+
+| Set | Zoom / bounds | Request IDs (pages 1→20) |
+|---|---|---|
+| Readable | 100%; `[40,40,1320,1000]` | `47631363…` `0e720c98…` `1bd83fb7…` `cb6d5f74…` `3df4e710…` `4e102aec…` `be98993f…` `c2665b13…` `b6f7b480…` `08f980ac…` `760562bf…` `4501035d…` `0f08b380…` `a489c37e…` `a0fd54e9…` `592a8896…` `b7b16d89…` `35a766d7…` `015f4a12…` `dfaca427…` |
+| Overlap / fuller page | 60%; `[40,40,1400,1100]` | `d607d274…` `7668673d…` `7330ca46…` `e30e3179…` `7b4f9948…` `35675bd7…` `49d9c59c…` `bc2eec2a…` `588b5a49…` `0fbd2483…` `b14c7f4a…` `88dd5e2d…` `0ef2f23e…` `1fdf5b60…` `87cf15d1…` `c834e762…` `5cd5f2cb…` `92398694…` `1de341fa…` `389ebaea…` |
+
+Controller receipts for these 40 requests: **none**. Manifest: `.git/autocycle/step-8-1-2-word-viewport/requests/submitted-page-locators.json`.
+
+## Page-by-page inspection inventory
+
+| Pages | Route | Result |
+|---|---|---|
+| 1 | Consumer native raster + prior 8.1.1 opening `e6c01303…` / `fa75a995…` | Inspected. Argument title and first paragraph. Aptos Regular; heading 14 pt in toolbar on consumer view; black on white; no tofu/clip/overflow on the visible opening. No figure on this page. No mechanical defect on this view. |
+| 10 | Consumer native raster | Inspected. Appendix **Margin evidence** table (FY2023–FY2025 signed millions including −$454.9 / −$295.082). Footer Page 10. Table column headers are clipped at the top of the 100% canvas — overlapping 60% request queued. Next-page heading `Margin evidence` visible below the footer (overlap, not a duplicated opening). |
+| 20 | Consumer native raster | Inspected. Appendix residuals (`component operating-margin identity residual is 0`; contributions residual `1.31839e-16`). Sparse last page. The page-20 locator also shows the page-19 footer; independent text still matched page 20. |
+| 2–9, 11–19 | Controller page locators | **unresolved** — queued, not captured |
+| Four figures and adjacent interpretation | expected on argument pages ~2–5 | **unresolved** in Word |
+| Navigation, remaining tables, landscape transitions, captions, page breaks | | **unresolved** except the page-10 table fragment |
+| Argument-before-appendix as rendered | page 1 argument; page 10 appendix | consistent with Step 8.1 structural pages 1–5 / appendix from 6; pages 2–9 unverified in Word |
+
+STYLE.md on inspected views: Regular-only black-on-white body; Aptos in the toolbar; no bold/italic emphasis; grayscale readable. Compatibility Mode in the window title is recorded, not treated as a document defect.
+
+## Findings
+
+- Positioning defect: selection without viewport follow. Page-scroll repair failed natively. Current helper selects the native range and requires unique canvas text.
+- Distinct opening / page 10 appendix / page 20 residuals are demonstrated on the bound DOCX. They are not controller-slot acceptance.
+- Page 10 100% view clips table headers — coverage gap, not yet a document defect.
+- No new publication-content defect is claimed on pages 1, 10 or 20.
+- Missing controller coverage (pages 2–9, 11–19, four figures) stays unresolved. Workflow capture pending is not an external dependency and does not satisfy Completion.
+
+## Product-preservation checks (after diagnosis, tests and enqueue)
+
+| Path | SHA-256 | Bytes | vs prior 8.1.2 record |
+|---|---|---:|---|
+| `build/output/lululemon/Lululemon_BAV.docx` | `014773bb10424ce8fd8384d5bc1edb04a4c932bc13c73246802ffb1b76be15d7` | 254029 | unchanged |
+| inspection copy | `014773bb…` | 254029 | unchanged; mode `0444` |
+| `Lululemon_BAV.pdf` | `afbad9da9c5862169b350f9bcb34437a9f4eae918995f9f2b9fa298cd67e889c` | 301886 | unchanged |
+| `research/Lululemon_Drivers.md` | `618753d40cb6886c3b3939a7577f87db154d8fa3bb89fc8a6ed06d5472960984` | 25091 | unchanged |
+| `figures/drivers/{growth,geography,margin,cash}.png` | `2308545e…` / `9d99bf69…` / `55ccb38c…` / `289bb4e2…` | 54271 / 65707 / 52237 / 42449 | unchanged |
+| Forecast / Valuation / Overview | `e3b0c442…` | 0 | unchanged |
+| `DRIVER.md` | `33977c17d0b67f163638b5b844bfb318bf0d7a8af91d2d92c9c64c5bd00e87ea` | 45356 | unchanged |
+| `STYLE.md` | `4360b24bb849370a0fa48f21aa7cc83b8bf6b35c2ad9bac7e10de2829a107fc6` | 1645 | unchanged |
+
+Carried forward without repeating: selective research, six Lululemon applications, integrated figures, appendix, traceability, regressions, editorial-review reporting. Human editorial sign-off remains pending and is not required for technical acceptance.
+
+## Remaining toward Completion
+
+Controller must capture the 40 page-locator views (and the four still-queued offset diagnostics). Those rasters must carry `word_visible_page` proof and show the requested pages, not a repeated opening. Pages 2–9 and 11–19, all four figures, landscape transitions and the clipped page-10 headers stay unresolved until those owned-slot captures exist.
+
+---
+
+# RESULT.md — Step 8.1.2 re-verification: queued locators still uncaptured
+
+**Status:** COMPLETE (this bounded re-verification; controller-owned page-locator capture still pending; Review adjudicates Step closure)  
+**Step:** 8.1.2 — Repair Word viewport positioning and inspect every page  
+**Work:** `368b46c5bcb843d59f6cd54df45691d0`  
+**Plan:** `838926ab1ebd4176b48e0d437a397faf`  
+**Finding:** Selective Driver research and canonical publication  
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged).  
+TARGET SHA-256 `7f6de96abef3ae66efa75f8a65184eec24cad8fa4d31f2424cc7624450b9627f` (36138).  
+SESSION SHA-256 `747c54e81121661522429be584fbb876ff2e653ae7c07f26f09cb3ea8c10066a` (4155).  
+IMPLEMENTATION SHA-256 `c7da4489de201fb53ed4d8c2e6dab6786dcfa63844e3f9769497bb0672a85655` (5812).  
+No commit / push / sync / checkpoint / branch change. Products not regenerated. `process` not invoked. Provider did not screenshot. Queued requests were not resubmitted.
+
+This record appends the re-verification. Earlier 8.1.2 page-scroll, range-select and enqueue accounts are preserved and are not rewritten.
+
+## Required plan change
+
+No required plan change. Controller-owned rasters for pages 2–9 and 11–19, the four figures, landscape transitions and overlapping bottoms remain unresolved until the already-queued page-locator requests are captured. Human editorial sign-off remains pending.
+
+## Authenticated baseline
+
+| Record | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `HEAD` (`refs/heads/checkpoint/20260913-183303`) | `80707215408433025d5093d0b82b82877e5d06bd` |
+| Branch | `checkpoint/20260913-183303` |
+| Immediate parent (reflog) | `5dd04ece3de9c3effd3b4febbbff53d53e6d82ee` (Step 8.1.1) |
+| `implementation-baseline.json` head | `80707215408433025d5093d0b82b82877e5d06bd` |
+| `latest-implementation` file | stale `abe00ccc…` (Step 8.1.1); not used as B |
+| Working tree | `RESULT.md` dirty; `automation/autocycle-fixes/test_word_viewport_positioning.py` untracked |
+
+Ownership, recovery safeguards and unrelated work were not disturbed. No branch switch.
+
+## Viewport diagnosis (re-inspected, not rewritten)
+
+Preserved 8.1.1 controller rasters still demonstrate the pre-repair defect. Visual re-inspection of the four diagnostic controls:
+
+| Request | start | Screenshot SHA-256 | Visible canvas | Status bar |
+|---|---:|---|---|---|
+| `e6c01303…` | 34 | `fa75a995…` | Drivers opening; Aptos 10 Regular; no figure | Page 1 of 20 |
+| `5be9b36b…` | 5276 | `25fc427a…` | same opening, not margin figure | Page 1 of 20 |
+| `05611dce…` | 10979 | `4dd0bfa6…` | same opening, not appendix geographic evidence; 3102 words | Page 1 of 20 |
+| `cbdd3c60…` | 22731 | `9a27923f…` | same opening canvas and 3102-word count, not sources | chrome OCR on this pass: Page 1 of 2 |
+
+`CAPTURED` without `word_visible_page` is not positioning success. `review-evidence` still BLOCKS those retained Word receipts (`Retained Word capture lacks bound visible-page evidence`). Failed evidence is retained.
+
+Repair remains the installed range-select helper. No further helper edit: SHA-256 `a7ea3811e71f9731277ceb63d85132aea770a53546b775d5a931407ba28d26be` (69605), installed = maintained. Word 16.113.2. `capabilities` → `excel word`. Save As PDF is not exposed. Publication PDF still cannot establish DOCX fidelity.
+
+`view()` still populate/open/close each request on the owned slot, so captures cannot inherit a previous viewport. Estimated OOXML offsets are not page locators.
+
+## Repair verification
+
+| Check | Measured |
+|---|---|
+| `PYTHONDONTWRITEBYTECODE=1 python3 automation/autocycle-fixes/test_word_viewport_positioning.py` | **8 passed** |
+| Helper rewrite / `install.py` / `process` | **not run** |
+
+Evidence: `.git/autocycle/step-8-1-2-word-viewport/reverify-20260928.json`.
+
+## Distinct-position proof
+
+Unchanged from the prior 8.1.2 consumer run on bound SHA-256 `014773bb…` (slot `/private/tmp/autocycle-word-investigation/office/word-view.docx`, not the AutoCycle controller slot). Rasters re-inspected:
+
+| Page | Screenshot SHA-256 | Status bar | Visible content |
+|---:|---|---|---|
+| 1 | `a7c57b2c…` | Page 1 of 20 | Heading `Lululemon — Drivers`; FY2025 opening argument; Aptos (toolbar 14 pt on this locator) |
+| 10 | `2653e396…` | Page 10 of 20 | Appendix table FY2023–FY2025 including −$454.9 / −$295.082; footer Page 10; next heading `Margin evidence`; table headers clipped at 100% |
+| 20 | `947fe723…` | Page 20 of 20 | Prior-page footer Page 19; residuals sentence (`identity residual is 0`; contributions `1.31839e-16`) |
+
+These three views are distinct. They are not controller-slot acceptance. Word pagination after layout remains **20**.
+
+The four offset diagnostics (`4a8552eb…` 0, `b36961eb…` 5276, `5c9a96d8…` 10979, `195319c8…` 22731) and the 40 page-locator requests remain queued. Receipts: **none**. Not resubmitted (no failed stage or changed condition).
+
+## Confirmed page count and page inventory
+
+| Item | Measured |
+|---|---|
+| Word page count | **20** (opening status bar + consumer `word_visible_page.page_count`) |
+| Controller-owned pages with distinct native content | **1** (opening only; interiors repeat it) |
+| Pages visually inspected this attempt | **1, 10, 20** (opening via owned-slot 8.1.1 raster; 10/20 via consumer rasters) |
+| Pages 2–9, 11–19 | **unresolved** — queued, not captured |
+| Four figures and adjacent interpretation | **unresolved** in Word |
+| Navigation, remaining tables, landscape transitions, captions, page breaks | **unresolved** except the page-10 table fragment |
+| Argument-before-appendix as rendered | page 1 argument; page 10 appendix; pages 2–9 unverified in Word |
+
+Page 1 (inspected, no mechanical defect on this view): argument title and first paragraph; Aptos Regular; black on white; no tofu/clip/overflow; no figure.  
+Page 10 (inspected): appendix table; header row clipped at 100% — coverage gap, not claimed as a document defect; 60% overlap request still queued.  
+Page 20 (inspected): sparse residuals; page-19 footer visible above the page-20 header.
+
+STYLE.md on inspected views: Regular-only black-on-white body; Aptos in the toolbar; no bold/italic emphasis; grayscale readable. Compatibility Mode is recorded, not treated as a document defect.
+
+## Findings
+
+- Positioning/capture defect remains demonstrated on the 8.1.1 owned-slot rasters. The range-select repair is still deployed; it is still not proven by a controller-slot interior/appendix raster.
+- Distinct opening / page 10 / page 20 remain demonstrated only on the consumer slot.
+- No new publication-content defect is claimed. Page-10 header clipping stays a coverage gap.
+- Missing controller coverage (pages 2–9, 11–19, four figures) stays unresolved. Workflow capture pending is not an external dependency and does not satisfy Completion.
+
+## Product-preservation checks (after re-verification)
+
+| Path | SHA-256 | Bytes | vs prior 8.1.2 record |
+|---|---|---:|---|
+| `build/output/lululemon/Lululemon_BAV.docx` | `014773bb10424ce8fd8384d5bc1edb04a4c932bc13c73246802ffb1b76be15d7` | 254029 | unchanged |
+| inspection copy | `014773bb…` | 254029 | unchanged; mode `0444` |
+| `Lululemon_BAV.pdf` | `afbad9da9c5862169b350f9bcb34437a9f4eae918995f9f2b9fa298cd67e889c` | 301886 | unchanged |
+| `research/Lululemon_Drivers.md` | `618753d40cb6886c3b3939a7577f87db154d8fa3bb89fc8a6ed06d5472960984` | 25091 | unchanged |
+| `figures/drivers/{growth,geography,margin,cash}.png` | `2308545e…` / `9d99bf69…` / `55ccb38c…` / `289bb4e2…` | 54271 / 65707 / 52237 / 42449 | unchanged |
+| Forecast / Valuation / Overview | `e3b0c442…` | 0 | unchanged |
+| `DRIVER.md` | `33977c17d0b67f163638b5b844bfb318bf0d7a8af91d2d92c9c64c5bd00e87ea` | 45356 | unchanged |
+| `STYLE.md` | `4360b24bb849370a0fa48f21aa7cc83b8bf6b35c2ad9bac7e10de2829a107fc6` | 1645 | unchanged |
+
+Carried forward without repeating: selective research, six Lululemon applications, integrated figures, appendix, traceability, regressions, editorial-review reporting. Human editorial sign-off remains pending and is not required for technical acceptance.
+
+## Remaining toward Completion
+
+Controller capture is pending for the 44 already-queued Word requests. Those rasters must carry `word_visible_page` proof and show the requested pages, not a repeated opening. Pages 2–9 and 11–19, all four figures, landscape transitions and the clipped page-10 headers stay unresolved until those owned-slot captures exist.
+
+---
+
+# RESULT.md — Step 8.1.2 fresh controller handoff after process-default change
+
+**Status:** COMPLETE (this bounded attempt; controller capture pending; visual evidence unverified; Review adjudicates Step closure)  
+**Step:** 8.1.2 — Repair Word viewport positioning and inspect every page  
+**Work:** `368b46c5bcb843d59f6cd54df45691d0`  
+**Plan:** `838926ab1ebd4176b48e0d437a397faf`  
+**Finding:** Selective Driver research and canonical publication  
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged).  
+TARGET SHA-256 `7f6de96abef3ae66efa75f8a65184eec24cad8fa4d31f2424cc7624450b9627f` (36138).  
+SESSION SHA-256 `747c54e81121661522429be584fbb876ff2e653ae7c07f26f09cb3ea8c10066a` (4155).  
+IMPLEMENTATION SHA-256 `c7da4489de201fb53ed4d8c2e6dab6786dcfa63844e3f9769497bb0672a85655` (5812).  
+No commit / push / sync / checkpoint / branch change. Products not regenerated. `process` not invoked. Provider did not screenshot.
+
+This record appends the 2026-09-29 attempt. Earlier 8.1.2 page-scroll, range-select, enqueue and re-verification accounts are preserved and are not rewritten.
+
+## Required plan change
+
+No required plan change. Controller-owned rasters for pages 2–9 and 11–19, the four figures, landscape transitions and overlapping bottoms remain unresolved until the fresh page-locator requests are captured and independently prove the requested pages. Human editorial sign-off remains pending.
+
+## Authenticated baseline
+
+| Record | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `HEAD` (`refs/heads/checkpoint/20260913-183303`) | `80707215408433025d5093d0b82b82877e5d06bd` |
+| Branch | `checkpoint/20260913-183303` |
+| Immediate parent | `5dd04ece3de9c3effd3b4febbbff53d53e6d82ee` (Step 8.1.1) |
+| Ancestry | `80707215…` → `5dd04ece…` → `abe00ccc…` → `0303ccc2…` → `bbd2327a…` |
+| `implementation-baseline.json` head | `80707215408433025d5093d0b82b82877e5d06bd` |
+| `latest-implementation` file | stale `abe00ccc…` (Step 8.1.1); not used as B |
+| Working tree | `RESULT.md` dirty; `automation/autocycle-fixes/test_word_viewport_positioning.py` untracked |
+
+Ownership, recovery safeguards and unrelated work were not disturbed. No branch switch.
+
+Canonical `build/output/lululemon/Lululemon_BAV.docx` and immutable inspection copy `.git/autocycle/step-8-1-1-word-inspect/Lululemon_BAV.docx` both SHA-256 `014773bb10424ce8fd8384d5bc1edb04a4c932bc13c73246802ffb1b76be15d7` (254029). Inspection copy mode `0444`. No mismatch.
+
+## Correction of the stale “capture pending / zero inspected pages” account
+
+Step 8.1.1 recorded receipts **0** and **0 of unknown** inspected pages. That account remains stale and is not rewritten. After 8.1.1 the controller captured all 16 queued views (`CAPTURED`). Those receipts are preserved and `review-evidence` still BLOCKS them (`Retained Word capture lacks bound visible-page evidence`). They do **not** accept the document: every inspected raster repeats the opening page.
+
+Re-inspected opening and diagnostic-control rasters this attempt:
+
+| Request | start | Screenshot SHA-256 | Visible canvas | Status bar |
+|---|---:|---|---|---|
+| `e6c01303…` | 34 | `fa75a995…` | Drivers opening; Aptos 10 Regular; no figure | Page 1 of 20 |
+| `5be9b36b…` | 5276 | `25fc427a…` | same opening, not margin figure | Page 1 of 20 |
+| `05611dce…` | 10979 | `4dd0bfa6…` | same opening, not appendix geographic evidence | Page 1 of 20 |
+| `cbdd3c60…` | 22731 | `9a27923f…` | same opening, not sources | Page 1 of 20 |
+
+`CAPTURED` and a changed hash are not positioning success. Failed evidence is retained. Queued later replacements without receipts are not whole-document acceptance.
+
+## Viewport diagnosis and repair
+
+The demonstrated defect is unchanged: pre-repair helper `f54d7d1a…` set `selection start`/`end` only. Word 16.113.2 did not scroll print-layout. `view()` populate/open/close each request on the owned `word-view.docx` slot, so every capture started at page 1.
+
+Page-scroll helper `277aa087…` failed natively (`Word viewport did not follow selection`). Current positioning still selects the native range (`select (create range)` or `navigate`/`select pageRange`) after `print view` + `repaginate`, collects `word_page_map` before final positioning, and requires unique canvas text (`unique-page-text-in-captured-canvas`). Status-bar numbers and a `CAPTURED` hash are not acceptance.
+
+Installed and maintained helpers are byte-identical SHA-256 `dcf5f081f669ed3a69a2737e4690c0bec7ff6cd051dcf156d31067eb86620ef7` (69707). Prior recorded helper `a7ea3811…` (69605) differs only in `process()`: it now defaults to `native_handoff_ids()` instead of walking the entire queue. The Word position/confirm path was not rewritten. This is the changed condition that justified fresh requests: the prior 44 queued IDs remain receiptless (`receipts=0`) and do not authorize delegation.
+
+Word 16.113.2. `capabilities` → `excel word`. Save As PDF is not exposed. Publication PDF still cannot establish DOCX fidelity. Estimated OOXML offsets are not page locators.
+
+Focused verification, no Office: `PYTHONDONTWRITEBYTECODE=1 python3 automation/autocycle-fixes/test_word_viewport_positioning.py` → **8 passed**. Expected helper hash updated to `dcf5f081…`. `install.py` / helper rewrite / `process` were not run.
+
+Evidence: `.git/autocycle/step-8-1-2-word-viewport/attempt-20260929.json`.
+
+## Distinct-position proof
+
+Preserved consumer native rasters on bound SHA-256 `014773bb…` (slot `/private/tmp/autocycle-word-investigation/office/word-view.docx`, not the AutoCycle controller slot) were re-inspected. Independent `word_visible_page` proof; a `CAPTURED` hash alone is not used.
+
+| Page | Screenshot SHA-256 | Status bar | Visible content |
+|---:|---|---|---|
+| 1 | `a7c57b2cadae682fe855f95f886edbb3840ce89e98f7a9155ca9d362d0f33724` (355167) | Page 1 of 20 | Heading `Lululemon — Drivers`; FY2025 opening argument; Aptos Regular |
+| 10 | `2653e396149536eb1c472a4516860a3a6fdf17b10f61930c471376ba829af916` (311983) | Page 10 of 20 | Appendix table FY2023–FY2025 including −$454.9 / −$295.082; footer Page 10; next heading `Margin evidence`; table headers clipped at 100% |
+| 20 | `947fe72343d385216951b09ac6b7e10748992b92fc4b1f78a459d68a92926bd9` (286181) | Page 20 of 20 | Prior-page footer Page 19; residuals sentence (`identity residual is 0`; contributions `1.31839e-16`) |
+
+These three views are distinct. They are not controller-slot acceptance. Word pagination after layout remains **20**.
+
+## Fresh controller requests
+
+Pre-existing unbound queue entries were not deleted, modified or reused. Fresh requests were submitted only through `python3 /Users/lizhiguo/.autocycle/native_office.py request`. All 44 bind inspection copy `014773bb…` and `requested_head` `80707215…`. Exit 0 each. Receipts for these 44: **none**. Manifest: `.git/autocycle/step-8-1-2-word-viewport/requests-20260929/submitted-manifest.json`.
+
+Diagnostic offsets (supersede preserved 8.1.1 failures and the still-queued 8.1.2 replacements):
+
+| New request | start | Supersedes (preserved) |
+|---|---:|---|
+| `3399c6b7dfe34841a70f48ec824f5341` | 0 | `4a8552eb…`, `ddff9743…`, `e6c01303…` |
+| `96958b63ceeb46728a7e2d75b7ac1843` | 5276 | `b36961eb…`, `5be9b36b…` |
+| `814e0d24b664460380f894cbcfa02e5b` | 10979 | `5c9a96d8…`, `05611dce…` |
+| `60f3c8d296c84662b51e3c88b28f869f` | 22731 | `195319c8…`, `cbdd3c60…` |
+
+Readable page locators (100%; `[40,40,1320,1000]`):
+
+| Page | New request | Supersedes |
+|---:|---|---|
+| 1 | `859c80e30b614e149b7ca7384f8927c3` | `47631363…` |
+| 2 | `c0ff6d5b1acb41bca9ad6f6ebef75bbb` | `0e720c98…` |
+| 3 | `72b7f8acf84b482daede2ad597279e44` | `1bd83fb7…` |
+| 4 | `6b7587f7253840ec83a51b5a64268e9c` | `cb6d5f74…` |
+| 5 | `f548f3e513ef41fe8326e6eae16d52b9` | `3df4e710…` |
+| 6 | `3ef18938bb224afba578a99018144f85` | `4e102aec…` |
+| 7 | `2800f29a021b4e96a39979cbc55db870` | `be98993f…` |
+| 8 | `34ff5fc5425c4da4acfca73b45d0ad56` | `c2665b13…` |
+| 9 | `1bd2db1bdecc4e2b809d657ae8a29226` | `b6f7b480…` |
+| 10 | `7f0f9b0e3ad24c428e649d90bdaee618` | `08f980ac…` |
+| 11 | `3f7d8f10e25849aa88cfca9110046439` | `760562bf…` |
+| 12 | `408b0f3999264384a895a811b49fd012` | `4501035d…` |
+| 13 | `ff59be30a6e24cb1b4b9133d9d5061a8` | `0f08b380…` |
+| 14 | `54b4a51d52154abf97933b0e8eef8f63` | `a489c37e…` |
+| 15 | `f4055d97534745c0a4855ab5c62bd7b6` | `a0fd54e9…` |
+| 16 | `60a1872b59f041d6bb6d2972cdc620ad` | `592a8896…` |
+| 17 | `e89a52012ff449b0951969d34a96a807` | `b7b16d89…` |
+| 18 | `ca225e512ec14ba3afa7add991cb8833` | `35a766d7…` |
+| 19 | `f4be4e0341d343b683090276fd9df4b2` | `015f4a12…` |
+| 20 | `01b54293b72a4a669f555cb52246afb3` | `dfaca427…` |
+
+Overlap / fuller-page locators (60%; `[40,40,1400,1100]`):
+
+| Page | New request | Supersedes |
+|---:|---|---|
+| 1 | `49f5c45a7dec4b23ab5cb6a22f37f8be` | `d607d274…` |
+| 2 | `ab603326709b4f9c985fada4d0e68293` | `7668673d…` |
+| 3 | `7e41ed782506418b88e3139b8dc67f2a` | `7330ca46…` |
+| 4 | `b306370cc2084211a07fae00bd01f32b` | `e30e3179…` |
+| 5 | `80b9f8a191f74dde925912c51e5eab7b` | `7b4f9948…` |
+| 6 | `4d5b74bcc04e45a6b21ae08fbe1fd425` | `35675bd7…` |
+| 7 | `6f368d72e3f7431f8934edd8f1d57a4b` | `49d9c59c…` |
+| 8 | `af430f2a3979446c85d4580e2479634d` | `bc2eec2a…` |
+| 9 | `b8dc29df3eb7479c97b8ab445afa475d` | `588b5a49…` |
+| 10 | `660809eafb53407e875e4fcd6ad7c43b` | `0fbd2483…` |
+| 11 | `8e59c88423cf49c886a6faa3fb37f763` | `b14c7f4a…` |
+| 12 | `2ace76a641c04e1b9ee04cf3054b9a25` | `88dd5e2d…` |
+| 13 | `68c519660b3f48878d2e773ff0b4247b` | `0ef2f23e…` |
+| 14 | `827b64dae0084e62adb0bd0508263694` | `1fdf5b60…` |
+| 15 | `9f4b87bc51bc4028a97925449cea84f7` | `87cf15d1…` |
+| 16 | `5a546885bad54385a0682ef33d92b8fa` | `c834e762…` |
+| 17 | `f9570072a049416caf8a2d5877982000` | `5cd5f2cb…` |
+| 18 | `45c5904920f441f782034bdfec909153` | `92398694…` |
+| 19 | `3f7b99568518414ca4b180898fef03a3` | `1de341fa…` |
+| 20 | `04ad3b0ae2d7489dbb2fe1b421712a24` | `389ebaea…` |
+
+controller capture pending; visual evidence unverified
+
+## Confirmed page count and page inventory
+
+| Item | Measured |
+|---|---|
+| Word page count | **20** (opening status bar + consumer `word_visible_page.page_count`) |
+| Controller-owned pages with distinct native content | **1** (opening only; interiors repeat it) |
+| Pages visually inspected this attempt | **1, 10, 20** (opening via owned-slot 8.1.1 raster; 10/20 via consumer rasters) |
+| Pages 2–9, 11–19 | **unresolved** — freshly queued, not captured |
+| Four figures and adjacent interpretation | **unresolved** in Word |
+| Navigation, remaining tables, landscape transitions, captions, page breaks | **unresolved** except the page-10 table fragment |
+| Argument-before-appendix as rendered | page 1 argument; page 10 appendix; pages 2–9 unverified in Word |
+
+Page 1 (inspected, no mechanical defect on this view): argument title and first paragraph; Aptos Regular; black on white; no tofu/clip/overflow; no figure.  
+Page 10 (inspected): appendix table; header row clipped at 100% — coverage gap, not claimed as a document defect; 60% overlap request freshly queued.  
+Page 20 (inspected): sparse residuals; page-19 footer visible above the page-20 header.
+
+STYLE.md on inspected views: Regular-only black-on-white body; Aptos in the toolbar; no bold/italic emphasis; grayscale readable. Compatibility Mode is recorded, not treated as a document defect.
+
+## Findings
+
+- Positioning/capture defect remains demonstrated on the 8.1.1 owned-slot rasters. Range-select repair remains deployed; it is still not proven by a controller-slot interior/appendix raster.
+- Distinct opening / page 10 / page 20 remain demonstrated only on the consumer slot.
+- Helper `process()` now requires declared handoff IDs. That is why the prior 44 queued locators stayed uncaptured.
+- No new publication-content defect is claimed. Page-10 header clipping stays a coverage gap.
+- Missing controller coverage (pages 2–9, 11–19, four figures) stays unresolved. Workflow capture pending is not an external dependency and does not satisfy Completion.
+
+## Product-preservation checks (after diagnosis, tests and fresh enqueue)
+
+| Path | SHA-256 | Bytes | vs prior 8.1.2 record |
+|---|---|---:|---|
+| `build/output/lululemon/Lululemon_BAV.docx` | `014773bb10424ce8fd8384d5bc1edb04a4c932bc13c73246802ffb1b76be15d7` | 254029 | unchanged |
+| inspection copy | `014773bb…` | 254029 | unchanged; mode `0444` |
+| `Lululemon_BAV.pdf` | `afbad9da9c5862169b350f9bcb34437a9f4eae918995f9f2b9fa298cd67e889c` | 301886 | unchanged |
+| `research/Lululemon_Drivers.md` | `618753d40cb6886c3b3939a7577f87db154d8fa3bb89fc8a6ed06d5472960984` | 25091 | unchanged |
+| `figures/drivers/{growth,geography,margin,cash}.png` | `2308545e…` / `9d99bf69…` / `55ccb38c…` / `289bb4e2…` | 54271 / 65707 / 52237 / 42449 | unchanged |
+| Forecast / Valuation / Overview | `e3b0c442…` | 0 | unchanged |
+| `DRIVER.md` | `33977c17d0b67f163638b5b844bfb318bf0d7a8af91d2d92c9c64c5bd00e87ea` | 45356 | unchanged |
+| `STYLE.md` | `4360b24bb849370a0fa48f21aa7cc83b8bf6b35c2ad9bac7e10de2829a107fc6` | 1645 | unchanged |
+
+Carried forward without repeating: selective research, six Lululemon applications, integrated figures, appendix, traceability, regressions, editorial-review reporting. Human editorial sign-off remains pending and is not required for technical acceptance.
+
+## Remaining toward Completion
+
+controller capture pending; visual evidence unverified. The 44 fresh Word requests must produce `word_visible_page` rasters of the requested pages, not a repeated opening. Pages 2–9 and 11–19, all four figures, landscape transitions and the clipped page-10 headers stay unresolved until those owned-slot captures exist.
+
 
