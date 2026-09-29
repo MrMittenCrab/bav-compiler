@@ -7271,4 +7271,126 @@ Printed-page-11 accounting-bridge 100% coverage and printed-page-17 residuals cl
 
 Generic row-pagination repair, heading/grouping/geographic/attribution-width/PDF-header repairs, canonical DOCX/PDF bytes and 17-page Word pagination are unchanged. Markdown, figures, workbooks, upstream inputs, unrelated products, all six Lululemon applications, analytical/admission controls, traceability, optional Trainer behavior and research limitations are unchanged. `DRIVER.md` SHA-256 `33977c17d0b67f163638b5b844bfb318bf0d7a8af91d2d92c9c64c5bd00e87ea` and `STYLE.md` `4360b24bb849370a0fa48f21aa7cc83b8bf6b35c2ad9bac7e10de2829a107fc6` byte-for-byte unchanged. Reserved Forecast / Valuation / Overview files remain 0 bytes. Immutable inspection copies, snapshots, receipts, retention records, failed attempts and historical RESULT entries are preserved. Accepted migration work was not reopened. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
 
+---
+
+# RESULT.md — Step 8.1.6 Complete page-11 Word readability coverage
+
+**Status:** COMPLETE (this bounded attempt; controller capture pending for the page-11 opening; visual evidence of that new request unverified; Review adjudicates Step closure)
+**Step:** 8.1.6 — Complete page-11 Word readability coverage
+**Work:** `368b46c5bcb843d59f6cd54df45691d0`
+**Plan:** `977d8864f9e14136bbe0f5c63c76bf2d`
+**Finding:** Selective Driver research and canonical publication
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged vs this child's start).
+TARGET SHA-256 `7f6de96abef3ae66efa75f8a65184eec24cad8fa4d31f2424cc7624450b9627f` (36138).
+SESSION SHA-256 `747c54e81121661522429be584fbb876ff2e653ae7c07f26f09cb3ea8c10066a` (4155).
+IMPLEMENTATION SHA-256 `41d61f7183a2b34deeeed83715c2ad78a00ea84387b9a59b4308af6ca96ff4f2` (5705).
+No commit / push / sync / checkpoint / branch change.
+
+## Required plan change
+
+No required plan change. Parent Completion and Session Endpoint remain unresolved while printed page 11’s opening gross-profit / operating-profit change explanation lacks a fully inspected readable canvas. Human editorial sign-off remains pending and is not required for technical acceptance.
+
+## Authenticated baseline
+
+| Record | Value |
+|---|---|
+| Populated `IMPLEMENT_BASE_SHA` / `implementation-baseline.json` head / HEAD / `PLAN_SHA` | `a5d110b720b1e8e0a15662e7ddd382e328bc60c3` |
+| Branch | `checkpoint/20260913-183303` |
+| Reviewed checkpoint | `ef1d9db61e91fc1d579d9eefc98ab78a87fbe44b` (Step 8.1.6) |
+| Authenticated preceding Plan baseline | `0d186bf0c6c05bf4aebbb2adf38006bdf596d6ef` |
+| Ancestry | `0d186bf0` → `ef1d9db6` (reviewed checkpoint) → `a5d110b7` (this Plan / B / HEAD) |
+| `latest-implementation` | stale HEAD `0d186bf0…`; not used as B |
+| `.autocycle.toml` | `native_office = ["excel", "word"]` |
+
+Authentication used populated `IMPLEMENT_BASE_SHA`, branch ref, `implementation-baseline.json`, `.git/HEAD`, `refs/heads/checkpoint/20260913-183303` and `.git/logs/HEAD`. Fail-closed was not triggered. Ownership, recovery safeguards and unrelated work were not disturbed. No branch switch.
+
+## Publication identity
+
+Canonical `build/output/lululemon/Lululemon_BAV.docx` and immutable inspection copy `.git/autocycle/step-8-1-6-word-inspect/Lululemon_BAV.docx` both SHA-256 `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991` (246729 bytes). Inspection copy mode `0444`. Products were not regenerated. Renderer: Microsoft Word **16.113.2** (carried forward). Helper `/Users/lizhiguo/.autocycle/native_office.py` SHA-256 `4e78efa258db8d1a8646857074d33f1eadf9187dd77fec562a2e81346ab552f6`. `capabilities` → `excel word`. Office guidance read: `/Users/lizhiguo/Documents/Developer/autocycle/WORD_NATIVE_NAVIGATION.md` and README Word request/slot rules. Authorized operations: helper `Workspace.populate`/`open`/`close` on the owned `word-view` slot copied from the inspection copy; `native_office.py request` for the replacement view. `process` was not invoked. Provider did not screenshot.
+
+## Review-index and four reviewed captures
+
+`.git/autocycle/office/review-index.json` SHA-256 `9ef883a6d99eda603bfd3dcae05409f4da0945f3ac811610893e0e980cb48490` `reviewed_head` `ef1d9db61e91fc1d579d9eefc98ab78a87fbe44b` holds **4** entries. Index was not rewritten. All bind source SHA-256 `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991`, inspection copy, `requested_head` `0d186bf0…`, `artifact_state` retained, `word_visible_page.page_count` **17**, and `captured_ns` after boundary `after_ns: 1790434815618260111`.
+
+| Request | Receipt SHA-256 | Capture | `word_visible_page` | `captured_ns` | Inspected visible region |
+|---|---|---|---|---|---|
+| `55a8a9d3afaa4cce8388b642c4df74cb` | `a4d453e1…` | `9ded8c8d9b294b28ab028fd6df0e6e42/view.png` `cce7cf8663bd8c0c7116aa692eea354081f034704249234a4092a681f58a94bf` | 11 of 17; matched `missing disclosure is omitted` | 1790715937614370000 | **Bridge table.** Closing qualification from `Missing disclosure is omitted… they are not treated as zero.` plus complete FY2022–FY2025 gross-profit / operating-profit change table (identities, signs, $ million units, zero residuals). Signed-OM explanation start and FY2022 row. Footer printed **page 11**. Overlap onto printed page 12 FY2023–FY2025 signed-OM rows. Opening sentences are above this viewport. |
+| `23767ad14fee41bb8e667ee8b68eb464` | `87f1061e…` | `dbcd53e11abf479b8de04361c04837a2/view.png` `53f4738eb5705f793e15e816e7f1f534b38d8728f95070c62af44e599d3a7259` | 11 of 17; matched `signed operating margin contributions` | 1790715951604227000 | **Signed-margin + continued rows.** Full signed operating-margin identity (pp / bps, signs, residual = reported − reconstructed). FY2022 on page 11; FY2023–FY2025 plus Management attributions table on printed page 12. Shared landmarks: page-11 footer, repeated `lululemon BAV` header, FY2022/FY2023 adjacency with `9ded8c8d…`. |
+| `660b2532dcf44772a98f307d953964eb` | `70104d5c…` | `1d55ccd683614d9da20922859bc3a4b0/view.png` `bd4fde2b65247ccc363abe253ac263d1178cbc6d6b4035e1540384a59d8963c7` | 17 of 17; matched `residuals are computed from` | 1790715965392763000 | **Page-16 final row + page-17 opening.** Intact relationship row `latest adjacent operating-margin movement`. Footer printed **page 16**. Page 17 residuals paragraph start and `Sources and methodology` heading; methodology body continues below. |
+| `a0fb0b7fb7c0414b97777af2774c90e5` | `bb0b8f89…` | `d0cfd7aff6474c38bc550b1cdae17d2c/view.png` `b285df53df6da8022273470eedadd4c49de604f454a45e38a9616c03148fe9df` | 17 of 17; matched `residuals are computed from` | 1790715978595133000 | **Page-17 residuals, Sources, ending.** Complete residuals paragraph; heading `Sources and methodology`; full final paragraph through `period-end date`. Overlaps `1d55ccd6…` on the residuals sentence and page-16 leftover row. Document ending is inside this viewport. |
+
+Receipt/source bindings verified: each receipt `source_sha256` and `copy_sha256` equal `8ac1ed94…`; screenshot hashes match review-index, retention records and files. Retention records say `retained`.
+
+## Stale pending statements superseded
+
+The prior Step 8.1.6 diagnose entry that left printed-page-11 bridge tables and printed-page-17 sources / ending pending those four IDs is superseded. This entry does not rewrite that historical record. The four reviewed captures establish **bridge-table and page-17 coverage**. The page-11 **opening** remains unresolved until visually inspected in full. Selecting the paragraph’s closing sentence (`55a8a9d3…` / `9ded8c8d…`) leaves its opening unverified. Requested page numbers, selection success and CAPTURED status alone do not establish that opening’s readability.
+
+## Missing span (exact)
+
+Printed page 11 opening paragraph, canonical wording:
+
+> Gross-profit change uses prior gross margin on the revenue change, prior revenue on the gross-margin change, and an explicit interaction equal to the revenue change times the gross-margin change. Operating-profit change then subtracts disclosed SG&A, impairment or asset-related charges, and other reported operating-item changes. Missing disclosure is omitted from the reconstruction, not treated as zero. An expense increase reduces operating profit. Missing adjacent comparisons stay blank; they are not treated as zero.
+
+| Span | Status |
+|---|---|
+| `Gross-profit change uses` … `explicit interaction equal to the revenue change times the gross-margin change.` | **Unverified at readable 100%-class zoom.** Prior page-11 100% `867c1cfd…` (`51e91d58…`) shows these words at the bottom of a printed-page-10 canvas, cut off after `charges, and`. Counted as page-10 evidence, not complete opening coverage. |
+| `Operating-profit change then subtracts disclosed SG&A, impairment or asset-related charges, and other reported operating-item changes.` | **Incomplete.** `867c1cfd…` ends at `charges, and`. `9ded8c8d…` starts at `Missing disclosure is omitted`. The clause `other reported operating-item changes.` is the uncovered middle. |
+| `Missing disclosure is omitted` … `they are not treated as zero.` | Visible on `9ded8c8d…`; overlaps the accepted table. |
+| GP/OP table FY2022–FY2025 | Readable on `9ded8c8d…`. |
+| Signed-OM identity and rows across pages 11–12 | Readable on `9ded8c8d…` / `dbcd53e1…`. |
+| Pages 16–17 residuals / Sources / ending | Readable on `1d55ccd6…` / `d0cfd7af…`. |
+
+60% overviews `52d07388…`, `5ac3128a…` and `2e946700…` still only locate the opening and its table adjacency; they do not establish detailed readability of identities, signs, units or qualifications. No product defect is established. This is a viewport gap.
+
+## Owned-slot diagnosis (one variable: zoom)
+
+Slot `.git/autocycle/office/word-view.docx` copied from the inspection copy (`8ac1ed94…`). Active document identity matched the slot POSIX path. Native story end **23277**. Page count **17**. Diagnosis JSON: `.git/autocycle/step-8-1-6-inspect/word-probe8-gp-open.json` SHA-256 `481a688999f28fde49e12e7f8abfd6f91ad15f36ab7ead4eca1a42058a46aea1`.
+
+| Probe | Change | Native start–end | Selection | Page | Zoom | Result |
+|---|---|---|---|---|---|---|
+| 8a | revalidate navigation lead | 13693–13717 | start/end match; `Gross-profit change uses` | 11 | 100 | Valid paragraph-opening locator. Same start as `page=11` navigation; at zoom 100 the historical canvas is printed page 10 plus a cut-off first line of page 11. Not proof of visible full-paragraph coverage. |
+| 8b | **only zoom** 100 → 80 | 13693–13717 | start/end match; `Gross-profit change uses` | 11 | 80 | Valid. Bounds unchanged `[40,40,1320,1000]`. One viewport variable changed after the revalidation. |
+
+No XML-estimated offsets and no table-interior ranges were used. Bounds/height were not changed in this attempt.
+
+## Actual-page inventory (printed pages 1–17)
+
+Source hash for every reused row: `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991`. Native pagination **17** unchanged. No additional regions were requested for pages 1–10 or 12–17.
+
+| Printed page | Readable coverage | Evidence |
+|---|---|---|
+| 1–10 | Full (reused) | Prior Step 8.1.6 inventory; page 10 from `51e91d58…` / `867c1cfd…` |
+| 11 opening identity | **Unresolved** | Pending `132ba62f…`; 60% views locate only |
+| 11 GP/OP table + closing qualification | Full | `9ded8c8d…` / `55a8a9d3…` |
+| 11–12 signed-OM + continued rows | Full | `dbcd53e1…` / `23767ad1…`; overlap `9ded8c8d…` and accepted page-12 `024e5b75…` |
+| 12–15 | Full (reused) | Prior inventory |
+| 16 final relationship row | Full | `1d55ccd6…`; prior `d4713875…` / `940950…` |
+| 17 residuals / Sources / ending | Full | `d0cfd7af…` overlapping `1d55ccd6…` |
+
+## Newly requested replacement
+
+controller capture pending; visual evidence unverified. Fresh queued ID (this invocation only). Manifest: `.git/autocycle/step-8-1-6-inspect/requests-opening/submitted-manifest.json`. Binds inspection copy `8ac1ed94…` and `requested_head` `a5d110b720b1e8e0a15662e7ddd382e328bc60c3`. Bound to missing-evidence requirement and boundary `after_ns: 1790434815618260111`.
+
+| Request ID | Purpose | start–end | Zoom / bounds | Verified selected text | Supersedes |
+|---|---|---|---|---|---|
+| `132ba62fd3254abc9b1fdd8ecc725fe2` | page-11 opening from first word, with more of the paragraph in view | 13693–13717 | 80% `[40,40,1320,1000]` | `Gross-profit change uses` | `51e91d584e184a3d84231cb18aa6e722` |
+
+Queued path: `.git/autocycle/office/requests/132ba62fd3254abc9b1fdd8ecc725fe2.json` SHA-256 `5b12ea0128a828f3c63decef58ff7f9e87c4d771033cf9f2a04137219613db80`. Timestamp UTC `2026-09-29T21:17:55Z`. Failed XML requests, four reviewed captures, receipts, retention records and diagnosis JSON are retained.
+
+## Carried-forward verification (applicability confirmed; not re-run)
+
+- Native page count **17** on `8ac1ed94…`.
+- Intact final relationship row on printed page 16 (`1d55ccd6…`, `d4713875…`, `940950…`).
+- `.git/autocycle/step-8-1-4-inspect/pdf-pages/` present (**14** PNG pages, `pdf-page-01.png` … `pdf-page-14.png`).
+- Canonical Check, publication regressions and distinct repeat-publication comparisons from the 8.1.6 repair entry remain applicable to unchanged product bytes `8ac1ed94…` / PDF `ddb93261…`.
+
+## Remaining toward Completion
+
+Printed page 11’s complete opening gross-profit / operating-profit change explanation (first word through `other reported operating-item changes.`, overlapping the accepted table) remains pending controller capture of `132ba62f…`. A viewport gap does not establish a product defect or external dependency. Remaining action if that capture still cuts off the opening: change only one already-diagnosed variable (taller bounds/height at zoom 100, or a later in-paragraph non-table range that still includes the first words in the canvas), not failed XML offsets and not table-interior ranges.
+
+## Preservation checks
+
+Generic row-pagination repair, heading/grouping/geographic/attribution-width/PDF-header repairs, canonical DOCX/PDF bytes and 17-page Word pagination are unchanged. Markdown, figures, workbooks, upstream inputs, unrelated products, all six Lululemon applications, analytical/admission controls, traceability, optional Trainer behavior and research limitations are unchanged. `DRIVER.md` SHA-256 `33977c17d0b67f163638b5b844bfb318bf0d7a8af91d2d92c9c64c5bd00e87ea` and `STYLE.md` `4360b24bb849370a0fa48f21aa7cc83b8bf6b35c2ad9bac7e10de2829a107fc6` byte-for-byte unchanged. Reserved Forecast / Valuation / Overview files remain 0 bytes. Immutable inspection copies, snapshots, receipts, retention records, failed attempts and historical RESULT entries are preserved. Accepted migration work was not reopened. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
 
