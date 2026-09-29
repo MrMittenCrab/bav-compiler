@@ -7165,3 +7165,110 @@ Each binds inspection copy `8ac1ed94…` and `requested_head` `f28bd17d2599edf6c
 
 Generic row-pagination repair, heading/grouping/geographic/attribution-width/PDF-header repairs, canonical DOCX/PDF bytes and 17-page Word pagination are unchanged. Markdown, figures, workbooks, upstream inputs, unrelated products, all six Lululemon applications, analytical/admission controls, traceability, optional Trainer behavior and research limitations are unchanged. `DRIVER.md` SHA-256 `33977c17d0b67f163638b5b844bfb318bf0d7a8af91d2d92c9c64c5bd00e87ea` and `STYLE.md` `4360b24bb849370a0fa48f21aa7cc83b8bf6b35c2ad9bac7e10de2829a107fc6` byte-for-byte unchanged. Reserved Forecast / Valuation / Overview files remain 0 bytes. Immutable inspection copies, snapshots, receipts, retention records, failed attempts and historical RESULT entries are preserved. Accepted migration work was not reopened. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
 
+---
+
+# RESULT.md — Step 8.1.6 Diagnose Word navigation and finish readability inspection
+
+**Status:** COMPLETE (this bounded attempt; controller capture pending for missing 100% regions; visual evidence of those new requests unverified; Review adjudicates Step closure)
+**Step:** 8.1.6 — Diagnose Word navigation and finish readability inspection
+**Work:** `368b46c5bcb843d59f6cd54df45691d0`
+**Plan:** `2d48f7ab35bd404e82935694e982daad`
+**Finding:** Selective Driver research and canonical publication
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged vs this child's start).
+TARGET SHA-256 `7f6de96abef3ae66efa75f8a65184eec24cad8fa4d31f2424cc7624450b9627f` (36138).
+SESSION SHA-256 `747c54e81121661522429be584fbb876ff2e653ae7c07f26f09cb3ea8c10066a` (4155).
+IMPLEMENTATION SHA-256 `454c88ba4e8988b4eef21397b07f213d4293252cf19a9ad1f88a20c08b97a2f2` (6222).
+No commit / push / sync / checkpoint / branch change.
+
+## Required plan change
+
+No required plan change. Parent Completion and Session Endpoint remain unresolved while printed-page-11 accounting-bridge detail and printed-page-17 residuals close / sources / ending lack readable 100% Word coverage. Human editorial sign-off remains pending and is not required for technical acceptance.
+
+## Authenticated baseline
+
+| Record | Value |
+|---|---|
+| Populated `IMPLEMENT_BASE_SHA` / `implementation-baseline.json` head / HEAD / `PLAN_SHA` | `0d186bf0c6c05bf4aebbb2adf38006bdf596d6ef` |
+| Branch | `checkpoint/20260913-183303` |
+| Reviewed checkpoint | `73de2f6de588dca5293a890e023e27c33a5dc195` (Step 8.1.6) |
+| Authenticated preceding implementation baseline | `f28bd17d2599edf6cbde9529967d965f2b79004d` |
+| Ancestry | `f28bd17d` → `73de2f6d` (reviewed checkpoint) → `0d186bf0` (this Plan / B / HEAD) |
+| `latest-implementation` | stale HEAD `f28bd17d…`; not used as B |
+| `.autocycle.toml` | `native_office = ["excel", "word"]` |
+
+Authentication used populated `IMPLEMENT_BASE_SHA`, branch ref, `implementation-baseline.json`, `.git/HEAD`, `refs/heads/checkpoint/20260913-183303` and `.git/logs/HEAD`. Fail-closed was not triggered. Ownership, recovery safeguards and unrelated work were not disturbed. No branch switch.
+
+## Publication identity
+
+Canonical `build/output/lululemon/Lululemon_BAV.docx` and immutable inspection copy `.git/autocycle/step-8-1-6-word-inspect/Lululemon_BAV.docx` both SHA-256 `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991` (246729 bytes). Inspection copy mode `0444`. Products were not regenerated. Renderer: Microsoft Word **16.113.2** (carried forward). Helper `/Users/lizhiguo/.autocycle/native_office.py` SHA-256 `4e78efa258db8d1a8646857074d33f1eadf9187dd77fec562a2e81346ab552f6`. `capabilities` → `excel word`. Office guidance read: `/Users/lizhiguo/Documents/Developer/autocycle/WORD_NATIVE_NAVIGATION.md` and README Word request/slot rules. Authorized operations: helper `Workspace.populate`/`open`/`close` on the owned `word-view` slot copied from the inspection copy; `native_office.py request` for replacement views. `process` was not invoked. Provider did not screenshot.
+
+## Review-index and failed-request reconciliation
+
+`.git/autocycle/office/review-index.json` `reviewed_head` `73de2f6de588dca5293a890e023e27c33a5dc195` holds the three gap-attempt entries. Index was not rewritten.
+
+| Request | Receipt | Status | Treatment |
+|---|---|---|---|
+| `420f463684c345b89013936b6ce09c11` | `.git/autocycle/office/receipts/420f463684c345b89013936b6ce09c11.json` | BLOCKED | Failed selection. Action: `673:700: execution error: Unexpected Word selection (-2700)`. Not readability evidence. XML estimate start 13642–13720. |
+| `9fb29087025a44dd9bb58b9390d9d7f2` | `.git/autocycle/office/receipts/9fb29087025a44dd9bb58b9390d9d7f2.json` | BLOCKED | Failed selection. Same `-2700`. Not readability evidence. XML estimate start 15004–15080. |
+| `e9becb15024c41c0a0fdbc77828e4623` | `.git/autocycle/office/receipts/e9becb15024c41c0a0fdbc77828e4623.json` | CAPTURED | See 940950 view below. |
+
+## Capture 940950 (request `e9becb15`) — inspected, not new page-17 sources evidence
+
+Path `.git/autocycle/office/evidence/word/9409505713234f1a87eee2df3ae276c9/view.png` SHA-256 `2e23b0c662517be2d37267fae7edd31f0d387db823d9fb0ae4c31abe163d4d4e` (351621). `word_visible_page` page 17 of 17, matched `residuals are computed from`. Rendered Vision `2e351c839e4cb4baeec011cd91070818ad84d48a6421679637acb4b3626eece0`. Timestamp bound: receipt `reviewed_head` `73de2f6d…`, controller pid 53731.
+
+Observed canvas: complete printed-page-16 relationship row `latest adjacent operating-margin movement` (Kind / Residual / Stability / Contradictions / Result intact) plus only the opening of printed page 17 (residuals start through `Sales-per-square-foot productivity and mix, markdowns`). `Sources and methodology` and the document ending are outside the viewport. No document clipping defect is established. This is readable page-16 relationship-row coverage and only page-17 opening coverage.
+
+## Owned-slot diagnosis (one variable at a time)
+
+Slot: `.git/autocycle/office/word-view.docx` copied from the inspection copy (`8ac1ed94…`). Active document identity matched the slot POSIX path. Native story end **23277**. Page count **17**. Print-view page starts: 11=`13693`, 12=`15942`, 16=`22114`, 17=`22340`. `content of text object` length 23889 ≠ story end; Python finds on that string are not Word story positions.
+
+| Probe | Change | Native start–end | Selection | Page | Zoom | Result |
+|---|---|---|---|---|---|---|
+| 1 | first page-11 range | 13693–13717 | start/end match; `Gross-profit change uses` | 11 | 183 then 100 | Valid paragraph locator at page-11 start (same start as `page=11` navigation; viewport still shows preceding landscape leaf). |
+| 2 | later computed offset | 15120–15143 | match, but text `SG&A/revenue), −Δ(impai` | 11 | 100 | Valid range; content-index arithmetic was wrong because page-11 table markers make `content_chars` 2327 ≠ span 2249. |
+| 3 | Word `execute find` | 0–23277 | whole story | 17 | 100 | Find does not shrink the range; not a locator. |
+| 4 | page-17 span-accurate Sources | 22838–22861 | match; `Sources and methodology` | 17 | 100 | Verified. Prior XML 22755–22880 was earlier in the residuals paragraph. |
+| 5 | story-scan Signed heading | 15060–15083 | match; `Signed operating-margin` | 11 | 100 | Verified. Failed XML 15004–15080 started in the GP table. |
+| 6 | mid-table 14740–14764 | requested 14740–14764 | **snapped** to 14597–14905 (FY2023–FY2024 rows) | 11 | 100 | `confirm_view` would raise `Unexpected Word selection`. Table-interior `start`/`end` fail validation. |
+| 7 | later paragraph before table | 14190–14216 | match; `y are not treated as zero.` | 11 | 100 | Verified. End of GP identity, immediately before the table. |
+
+Diagnosis: the two BLOCKED requests failed **selection validation** (inaccurate XML locators / table-boundary snap), not scrolling. The 940950 capture was a **viewport** issue: a valid in-range selection at residuals start still shows the preceding landscape page plus only the page-17 opening. XML character offsets were not reused as story positions.
+
+## Actual-page inventory (unchanged pages 1–10, 12–16)
+
+The prior Step 8.1.6 inventory for printed pages 1–10, 12–16 on `8ac1ed94…` remains applicable and is reused. No additional regions were requested there.
+
+Printed page 11 remains located at 60% (`52d07388…`, `5ac3128a…`, `2e946700…`) and connected to accepted printed-page-12 `024e5b75…` (`33ef69ac…`). Those 60% views do not establish 100% readability of the GP identity/table or the signed-OM identity/table portion.
+
+Printed page 17 remains only opening-covered at 100% (`940950…` / `d4713875…`). 60% `721b584f…` locates `Sources and methodology` and the first source sentence; not 100% readable.
+
+## Newly requested replacements
+
+controller capture pending; visual evidence unverified. Fresh queued IDs (this invocation only). Manifest: `.git/autocycle/step-8-1-6-inspect/requests-native/submitted-manifest.json`. Each binds inspection copy `8ac1ed94…` and `requested_head` `0d186bf0c6c05bf4aebbb2adf38006bdf596d6ef`. Zoom 100, bounds `[40,40,1320,1000]`. One locator variable changed per request (verified Word story `start`/`end`).
+
+| Request ID | Purpose | start–end | Verified selected text | Supersedes |
+|---|---|---|---|---|
+| `55a8a9d3afaa4cce8388b642c4df74cb` | page-11 GP identity close + table adjacency | 14190–14216 | `y are not treated as zero.` | `420f463684c345b89013936b6ce09c11` |
+| `23767ad14fee41bb8e667ee8b68eb464` | page-11 signed operating-margin identity | 15060–15083 | `Signed operating-margin` | `9fb29087025a44dd9bb58b9390d9d7f2` |
+| `660b2532dcf44772a98f307d953964eb` | page-17 Sources heading | 22838–22861 | `Sources and methodology` | `e9becb15024c41c0a0fdbc77828e4623` |
+| `a0fb0b7fb7c0414b97777af2774c90e5` | page-17 document ending | 23260–23275 | `period-end date` (span-accurate on page 17) | `e9becb15024c41c0a0fdbc77828e4623` |
+
+Queued paths: `.git/autocycle/office/requests/<id>.json`. Failed XML requests, 940950 capture, receipts and diagnosis JSON under `.git/autocycle/step-8-1-6-inspect/` are retained.
+
+## Carried-forward verification (applicability confirmed; not re-run)
+
+- Native page count **17** on `8ac1ed94…`.
+- Intact final relationship row on printed page 16 (`d4713875…` and `940950…`).
+- `.git/autocycle/step-8-1-4-inspect/pdf-pages/` present (**14** PNG pages, `pdf-page-01.png` … `pdf-page-14.png`).
+- Canonical Check, publication regressions and distinct repeat-publication comparisons from the 8.1.6 repair entry remain applicable to unchanged product bytes `8ac1ed94…` / PDF `ddb93261…`.
+
+## Remaining toward Completion
+
+Printed-page-11 accounting-bridge 100% coverage and printed-page-17 residuals close / sources / ending 100% coverage remain pending controller capture of the four fresh IDs. Selection/capture infrastructure failure would leave that evidence unresolved; it does not establish BLOCKED without a structured external dependency. Remaining action if those captures fail: retry only with a different already-diagnosed variable (viewport bounds/height, or a later page-17 paragraph start), not the failed XML offsets and not table-interior ranges.
+
+## Preservation checks
+
+Generic row-pagination repair, heading/grouping/geographic/attribution-width/PDF-header repairs, canonical DOCX/PDF bytes and 17-page Word pagination are unchanged. Markdown, figures, workbooks, upstream inputs, unrelated products, all six Lululemon applications, analytical/admission controls, traceability, optional Trainer behavior and research limitations are unchanged. `DRIVER.md` SHA-256 `33977c17d0b67f163638b5b844bfb318bf0d7a8af91d2d92c9c64c5bd00e87ea` and `STYLE.md` `4360b24bb849370a0fa48f21aa7cc83b8bf6b35c2ad9bac7e10de2829a107fc6` byte-for-byte unchanged. Reserved Forecast / Valuation / Overview files remain 0 bytes. Immutable inspection copies, snapshots, receipts, retention records, failed attempts and historical RESULT entries are preserved. Accepted migration work was not reopened. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+
