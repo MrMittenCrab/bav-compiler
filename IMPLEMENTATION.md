@@ -1,5 +1,5 @@
-# Step 8.1.6 — Complete final Word readability inspection
-AUTOCYCLE_PLAN: {"finding_key": "Selective Driver research and canonical publication", "kind": "work", "objective": "Complete final Word readability inspection", "plan_id": "661e36cc97194b9f8f179ff38aae241d", "step_id": "8.1.6", "work_id": "368b46c5bcb843d59f6cd54df45691d0"}
+# Step 8.1.6 — Diagnose Word navigation and finish readability inspection
+AUTOCYCLE_PLAN: {"finding_key": "Selective Driver research and canonical publication", "kind": "work", "objective": "Diagnose Word navigation and finish readability inspection", "plan_id": "2d48f7ab35bd404e82935694e982daad", "step_id": "8.1.6", "work_id": "368b46c5bcb843d59f6cd54df45691d0"}
 
 ## Completion
 
@@ -7,23 +7,24 @@ The canonical Lululemon build and publication produce a selective, independently
 
 ## Bounded objective
 
-Finish the existing attempt by inspecting readable overlapping Word views and completing an actual-page coverage inventory. Preserve the confirmed appendix row repair and the current 17-page publication.
+Finish the existing attempt by diagnosing Word selection and viewport positioning, then inspecting readable overlapping views of printed page 11 accounting bridges and printed page 17 final residuals and sources. Preserve completed implementation, publication bytes and 17-page pagination.
 
 ## Work
 
-- Authenticate baseline, branch, ancestry and checkpoint binding through normal controller records, preferring populated `IMPLEMENT_BASE_SHA`. Reviewed checkpoint: `3556163f0352e0743bd382caef44304f8bf04311`; reviewed implementation baseline: `b8450c72cdd35264e95a6dd92bb1ae7d5c21994d`.
+- Authenticate baseline, branch, ancestry and checkpoint binding through normal controller records, preferring populated `IMPLEMENT_BASE_SHA`. Reviewed checkpoint: `73de2f6de588dca5293a890e023e27c33a5dc195`; authenticated preceding implementation baseline: `f28bd17d2599edf6cbde9529967d965f2b79004d`.
 - Verify canonical `build/output/lululemon/Lululemon_BAV.docx` and its immutable inspection copy retain SHA-256 `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991`.
-- Reconcile `.git/autocycle/office/review-index.json`, retained receipts, source/revision bindings and captures. Inspect all applicable existing captures before requesting additional views.
-- Carry forward the reviewed 17-page native count and intact final relationship row on printed page 16. Capture `d4713875144e447ab4a550b908f06b0a/view.png` establishes that row, but only the beginning of printed page 17.
-- Count `867c1cfd4dd34d32a82cbe322dc9ccad/view.png` as observed coverage of printed page 10, despite its page-11 request. The 60% overview `52d07388d01f4550b24aad1f2b0aec5a/view.png` locates page 11 but does not establish detailed readability.
-- Build an inventory for actual printed pages 1–17. For each page record observed content and covered regions, full or partial coverage, remaining gaps, readability findings, source hash, renderer/version, request and receipt IDs, capture paths and hashes.
-- Read applicable Office guidance and use authorized controller operations through the owned Word slot. Request only missing readable regions, with sufficient overlap to connect adjacent views and establish page identity. Associate replacements with their superseded requests.
-- Prioritize complete printed-page-11 accounting bridges and printed-page-17 final sources. Inspect returned images before accepting coverage; adjust navigation or viewport when a request displays the preceding page.
-- Complete detailed inspection throughout the document: argument-before-appendix order, all four figures and nearby interpretations, qualifications, captions, navigation, geographic explanation and table, accounting bridges, remaining appendix tables and final sources.
-- Verify repeated headers, complete body rows, heading/evidence adjacency, orientation transitions, page breaks, blank areas, clipping, overflow, missing glyphs and STYLE compliance.
-- Do not equate successful requests, reported page counts, overview captures or independently rendered PDF pages with complete Word readability. Reuse older evidence only after establishing applicability to current bytes.
-- Preserve `.git/autocycle/step-8-1-4-inspect/pdf-pages/` and applicable recorded all-page PDF layout/raster comparisons. Carry forward recorded publication regressions, canonical Check and distinct repeat-publication comparisons after confirming their applicability; do not regenerate products or repeat completed checks merely to improve inspection coverage.
-- If a new mechanical defect is visible, record its exact page, region and bound evidence. Keep unresolved coverage and defects explicit; do not alter published documents manually or broaden this inspection into unrelated repairs.
+- Read applicable Office guidance and reconcile `.git/autocycle/office/review-index.json`, receipts, diagnostic results and retained captures with the existing actual-page inventory in RESULT.md.
+- Treat requests `420f463684c345b89013936b6ce09c11` and `9fb29087025a44dd9bb58b9390d9d7f2` as failed selections (`Unexpected Word selection (-2700)`), not readability evidence.
+- Treat capture `.git/autocycle/office/evidence/word/9409505713234f1a87eee2df3ae276c9/view.png` as readable page-16 relationship-row coverage and only page-17 opening coverage. Its missing final text is outside the viewport; no document clipping defect is established.
+- Through authorized controller operations in the owned Word slot, inspect active-document identity, native selection/range coordinates, selected text, page identity, zoom and viewport position. Determine whether failures arise from selection validation, inaccurate locators or scrolling.
+- Do not reuse estimated XML character offsets as verified Word story positions. Resolve short unique text anchors against Word’s actual text/range model where supported; otherwise use bounded page navigation and viewport movement.
+- Change one navigation or viewport variable at a time. Inspect each diagnostic result before retrying; avoid repeating unchanged failed requests. Associate replacement captures with their superseded requests.
+- Capture printed page 11 in readable overlapping regions covering the gross-profit-change identity and complete table, signed operating-margin contribution identity and the table portion on that page. Connect its continuation to accepted printed-page-12 evidence.
+- Capture printed page 17 in readable overlapping regions covering the entire residuals paragraph, `Sources and methodology`, every source/methodology paragraph and the document ending.
+- Establish actual printed-page identity and contiguous coverage from visible content and overlapping landmarks. A selection, requested page number, page count or CAPTURED status alone does not establish readability.
+- Inspect images for complete text and rows, signs and units, repeated headers, heading/evidence adjacency, page boundaries, clipping, overflow, missing glyphs and STYLE compliance. If a mechanical defect appears, record its exact region and bound evidence without manually editing products.
+- Reconcile the existing pages 1–17 inventory to actual visible coverage. Reuse applicable accepted views; request additional regions only where the inventory still lacks readable coverage.
+- Carry forward applicable canonical Check, publication regressions, distinct repeat-publication comparisons and all-page PDF inspection. Preserve `.git/autocycle/step-8-1-4-inspect/pdf-pages/`. Do not regenerate products or repeat completed verification merely to obtain better Word captures.
 
 ## Preservation and reporting
 
@@ -31,6 +32,8 @@ Preserve the generic row-pagination repair, completed heading/grouping/geographi
 
 Preserve immutable inspection copies, snapshots, receipts, retention records, failed attempts and historical results. Retain ownership, access, recovery and unrelated-work safeguards. Do not reopen accepted migration work. Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
 
-Append measured results to RESULT.md, including authenticated baseline, publication identity, the actual-page inventory, newly inspected evidence, carried-forward verification and preservation checks. Supersede stale “unknown page count” and “uncaptured” statements through a new entry without rewriting historical records. Distinguish requested pages from observed pages and partial inspection from complete readable coverage.
+Append measured diagnosis and inspection results to RESULT.md: authenticated baseline, source identity, navigation changes, actual observed pages and regions, overlapping coverage, request/receipt IDs, capture paths and hashes, renderer/version, capture timestamps, carried-forward verification and preservation checks. Bind new evidence to the current missing-evidence requirement and its recorded time boundary. Update stale pending statements through a new entry without rewriting history.
+
+Selection and capture infrastructure failures leave evidence unresolved; they do not establish BLOCKED without a structured external dependency. Preserve exact diagnostics and a concrete remaining action if coverage cannot be completed.
 
 Parent Completion and Session Endpoint remain unresolved while mechanical defects or final-document readability gaps remain. Human editorial sign-off remains separate and pending; it is not required for technical acceptance.
