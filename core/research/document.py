@@ -1191,7 +1191,15 @@ def _pdf_table(block: TableBlock, styles, page_width: float) -> Table:
         ]
     ]
     for row in block.rows:
-        data.append([Paragraph(_escape_cell(cell), styles["cell"]) for cell in row])
+        data.append(
+            [
+                Paragraph(
+                    _escape_cell(_soft_wrap_header(cell, _column_inner_chars(width))),
+                    styles["cell"],
+                )
+                for cell, width in zip(row, widths)
+            ]
+        )
     col_ws = [width * MM_PT for width in widths]
     table = Table(data, colWidths=col_ws, repeatRows=1, splitByRow=1)
     table.setStyle(

@@ -18,6 +18,7 @@ from core.__main__ import main
 from core.research.document import (
     BODY_PT,
     CELL_INSET_MM,
+    LANDSCAPE,
     MM_PT,
     PAGE_MARGIN_MM,
     TableBlock,
@@ -25,6 +26,8 @@ from core.research.document import (
     _column_inner_chars,
     _column_widths_mm,
     _ordinary_row_fits_page,
+    _pdf_styles,
+    _pdf_table,
     _register_pdf_fonts,
     _soft_wrap_header,
     _table_layout,
@@ -1267,6 +1270,185 @@ def test_accounting_bridge_headers_fit_rendered_widths():
         for line in wrapped.split("\n"):
             rendered = pdfmetrics.stringWidth(line, latin, BODY_PT)
             assert rendered <= inner_pt + 0.75, (header, line, rendered, inner_pt, col_mm)
+
+
+def _relationship_residual_fixture() -> TableBlock:
+    headers = (
+        "Relationship",
+        "Kind",
+        "Residual",
+        "Stability",
+        "Contradictions",
+        "Result",
+    )
+    rows = (
+        (
+            "footprint and intensity identity",
+            "identity",
+            "largest absolute identity residual is 0.000000",
+            "the identity holds whenever both factors are defined",
+            "4 aligned period(s) compare statement-derived consolidated revenue "
+            "growth with company-operated store-count growth. Result: supported "
+            "descriptively. Both consolidated revenue and company-operated store "
+            "counts grew. Period-end 2026-02-01: store-count growth 5.74% exceeded "
+            "revenue growth 4.86% (descriptive difference -0.878 pp). This is a "
+            "descriptive counterexample, not new-store contribution or proof that "
+            "expansion reduced productivity. Period-end 2026-02-01: period-end "
+            "Revenue per Store declined. That identity uses total-company revenue "
+            "divided by company-operated stores and cannot independently "
+            "demonstrate store productivity.",
+            "established",
+        ),
+        (
+            "comparable-sales coincidence",
+            "observed relationship",
+            "revenue-growth-minus-comparable-sales remains a descriptive difference",
+            "definitions, populations, and calendars change and are not one series",
+            "none required",
+            "established",
+        ),
+    )
+    return TableBlock(headers, rows, _table_layout(headers, rows))
+
+
+def _render_relationship_table_pdf(path: Path) -> TableBlock:
+    require_publication_libraries()
+    from reportlab.platypus import SimpleDocTemplate
+
+    block = _relationship_residual_fixture()
+    latin, _cjk = _register_pdf_fonts(resolve_required_fonts())
+    styles = _pdf_styles(latin)
+    page_w = LANDSCAPE[0] - 2 * PAGE_MARGIN_MM * MM_PT
+    table = _pdf_table(block, styles, page_w)
+    document = SimpleDocTemplate(
+        str(path),
+        pagesize=LANDSCAPE,
+        leftMargin=PAGE_MARGIN_MM * MM_PT,
+        rightMargin=PAGE_MARGIN_MM * MM_PT,
+        topMargin=16 * MM_PT,
+        bottomMargin=16 * MM_PT,
+    )
+    document.build([table])
+    return block
+
+
+def _grid_cells(page):
+    xs: set[float] = set()
+    ys: set[float] = set()
+    for drawing in page.get_drawings():
+        left, top, right, bottom = drawing["rect"]
+        if abs(right - left) < 0.4:
+            xs.add(round((left + right) / 2, 1))
+        elif abs(bottom - top) < 0.4:
+            ys.add(round((top + bottom) / 2, 1))
+        else:
+            xs.update((round(left, 1), round(right, 1)))
+            ys.update((round(top, 1), round(bottom, 1)))
+    x_edges = sorted(xs)
+    y_edges = sorted(ys)
+    return [
+        (x_edges[i], y_edges[j], x_edges[i + 1], y_edges[j + 1])
+        for i in range(len(x_edges) - 1)
+        for j in range(len(y_edges) - 1)
+    ]
+
+
+def _smallest_containing_rect(rects, bbox):
+    containing = [
+        rect
+        for rect in rects
+        if rect[0] - 1 <= bbox[0]
+        and bbox[2] <= rect[2] + 1
+        and rect[1] - 1 <= bbox[1]
+        and bbox[3] <= rect[3] + 1
+    ]
+    if not containing:
+        return None
+    return min(containing, key=lambda rect: (rect[2] - rect[0]) * (rect[3] - rect[1]))
+
+
+def test_pdf_relationship_body_text_stays_in_cells(tmp_path):
+    residual = "revenue-growth-minus-comparable-sales remains a descriptive difference"
+    stability = "definitions, populations, and calendars change and are not one series"
+    path = tmp_path / "relationship-body.pdf"
+    _render_relationship_table_pdf(path)
+    import fitz
+
+    def _words_in(cell):
+        found = []
+        for word in words:
+            cx = (word[0] + word[2]) / 2
+            cy = (word[1] + word[3]) / 2
+            if cell[0] - 1 <= cx <= cell[2] + 1 and cell[1] - 1 <= cy <= cell[3] + 1:
+                found.append(word)
+        return found
+
+    doc = fitz.open(path)
+    try:
+        assert doc.page_count == 1
+        page = doc[0]
+        packed = "".join(page.get_text().split())
+        assert "".join(residual.split()) in packed
+        assert "".join(stability.split()) in packed
+        cells = _grid_cells(page)
+        assert cells
+        words = list(page.get_text("words"))
+        residual_header = next(word for word in words if word[4] == "Residual")
+        stability_header = next(word for word in words if word[4] == "Stability")
+        residual_header_cell = _smallest_containing_rect(cells, residual_header[:4])
+        stability_header_cell = _smallest_containing_rect(cells, stability_header[:4])
+        assert residual_header_cell is not None
+        assert stability_header_cell is not None
+        coincidence = next(word for word in words if word[4] == "coincidence")
+        residual_cell = next(
+            cell
+            for cell in cells
+            if abs(cell[0] - residual_header_cell[0]) < 0.6
+            and abs(cell[2] - residual_header_cell[2]) < 0.6
+            and cell[1] - 1 <= coincidence[1] <= cell[3] + 1
+        )
+        stability_cell = next(
+            cell
+            for cell in cells
+            if abs(cell[0] - stability_header_cell[0]) < 0.6
+            and abs(cell[2] - stability_header_cell[2]) < 0.6
+            and cell[1] - 1 <= coincidence[1] <= cell[3] + 1
+        )
+        residual_words = _words_in(residual_cell)
+        stability_words = _words_in(stability_cell)
+        assert residual_words
+        assert stability_words
+        residual_text = " ".join(word[4] for word in residual_words)
+        stability_text = " ".join(word[4] for word in stability_words)
+        assert "descriptive" in residual_text
+        assert "difference" in residual_text
+        assert "revenue-growth-minus-comparable-sales".replace("-", "") in residual_text.replace(
+            "-", ""
+        ).replace(" ", "")
+        assert "definitions" in stability_text
+        assert "calendars" in stability_text
+        assert "series" in stability_text
+        for word in residual_words + stability_words:
+            bbox = word[:4]
+            cell = _smallest_containing_rect(cells, bbox)
+            assert cell is not None, word[4]
+            assert bbox[0] >= cell[0] - 1.0
+            assert bbox[2] <= cell[2] + 1.0
+            assert bbox[1] >= cell[1] - 1.0
+            assert bbox[3] <= cell[3] + 1.0
+        for word in residual_words:
+            assert word[2] <= residual_cell[2] + 1.0, word
+            assert word[2] <= stability_cell[0] + 0.5, word
+        for word in stability_words:
+            assert word[0] >= stability_cell[0] - 1.0, word
+            assert word[0] >= residual_cell[2] - 0.5, word
+        text_top = min(word[1] for word in residual_words)
+        text_bottom = max(word[3] for word in residual_words)
+        assert text_bottom - text_top <= residual_cell[3] - residual_cell[1] + 0.5
+        assert text_bottom <= residual_cell[3] + 1.0
+        assert residual_cell[3] - residual_cell[1] > residual_header_cell[3] - residual_header_cell[1]
+    finally:
+        doc.close()
 
 
 def test_published_accounting_bridge_headers_are_intact(tmp_path, monkeypatch):
