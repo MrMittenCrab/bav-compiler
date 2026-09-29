@@ -1,5 +1,5 @@
-# Step 8.1.6 — Diagnose Word navigation and finish readability inspection
-AUTOCYCLE_PLAN: {"finding_key": "Selective Driver research and canonical publication", "kind": "work", "objective": "Diagnose Word navigation and finish readability inspection", "plan_id": "2d48f7ab35bd404e82935694e982daad", "step_id": "8.1.6", "work_id": "368b46c5bcb843d59f6cd54df45691d0"}
+# Step 8.1.6 — Complete page-11 Word readability coverage
+AUTOCYCLE_PLAN: {"finding_key": "Selective Driver research and canonical publication", "kind": "work", "objective": "Complete page-11 Word readability coverage", "plan_id": "977d8864f9e14136bbe0f5c63c76bf2d", "step_id": "8.1.6", "work_id": "368b46c5bcb843d59f6cd54df45691d0"}
 
 ## Completion
 
@@ -7,33 +7,31 @@ The canonical Lululemon build and publication produce a selective, independently
 
 ## Bounded objective
 
-Finish the existing attempt by diagnosing Word selection and viewport positioning, then inspecting readable overlapping views of printed page 11 accounting bridges and printed page 17 final residuals and sources. Preserve completed implementation, publication bytes and 17-page pagination.
+Continue the same attempt: capture printed page 11’s complete opening gross-profit and operating-profit change explanation with overlapping bridge-table coverage, then reconcile the retained pages 1–17 inventory without regenerating products.
 
 ## Work
 
-- Authenticate baseline, branch, ancestry and checkpoint binding through normal controller records, preferring populated `IMPLEMENT_BASE_SHA`. Reviewed checkpoint: `73de2f6de588dca5293a890e023e27c33a5dc195`; authenticated preceding implementation baseline: `f28bd17d2599edf6cbde9529967d965f2b79004d`.
-- Verify canonical `build/output/lululemon/Lululemon_BAV.docx` and its immutable inspection copy retain SHA-256 `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991`.
-- Read applicable Office guidance and reconcile `.git/autocycle/office/review-index.json`, receipts, diagnostic results and retained captures with the existing actual-page inventory in RESULT.md.
-- Treat requests `420f463684c345b89013936b6ce09c11` and `9fb29087025a44dd9bb58b9390d9d7f2` as failed selections (`Unexpected Word selection (-2700)`), not readability evidence.
-- Treat capture `.git/autocycle/office/evidence/word/9409505713234f1a87eee2df3ae276c9/view.png` as readable page-16 relationship-row coverage and only page-17 opening coverage. Its missing final text is outside the viewport; no document clipping defect is established.
-- Through authorized controller operations in the owned Word slot, inspect active-document identity, native selection/range coordinates, selected text, page identity, zoom and viewport position. Determine whether failures arise from selection validation, inaccurate locators or scrolling.
-- Do not reuse estimated XML character offsets as verified Word story positions. Resolve short unique text anchors against Word’s actual text/range model where supported; otherwise use bounded page navigation and viewport movement.
-- Change one navigation or viewport variable at a time. Inspect each diagnostic result before retrying; avoid repeating unchanged failed requests. Associate replacement captures with their superseded requests.
-- Capture printed page 11 in readable overlapping regions covering the gross-profit-change identity and complete table, signed operating-margin contribution identity and the table portion on that page. Connect its continuation to accepted printed-page-12 evidence.
-- Capture printed page 17 in readable overlapping regions covering the entire residuals paragraph, `Sources and methodology`, every source/methodology paragraph and the document ending.
-- Establish actual printed-page identity and contiguous coverage from visible content and overlapping landmarks. A selection, requested page number, page count or CAPTURED status alone does not establish readability.
-- Inspect images for complete text and rows, signs and units, repeated headers, heading/evidence adjacency, page boundaries, clipping, overflow, missing glyphs and STYLE compliance. If a mechanical defect appears, record its exact region and bound evidence without manually editing products.
-- Reconcile the existing pages 1–17 inventory to actual visible coverage. Reuse applicable accepted views; request additional regions only where the inventory still lacks readable coverage.
-- Carry forward applicable canonical Check, publication regressions, distinct repeat-publication comparisons and all-page PDF inspection. Preserve `.git/autocycle/step-8-1-4-inspect/pdf-pages/`. Do not regenerate products or repeat completed verification merely to obtain better Word captures.
+- Authenticate baseline, branch, ancestry and checkpoint binding through normal controller records, preferring populated `IMPLEMENT_BASE_SHA`. Reviewed checkpoint: `ef1d9db61e91fc1d579d9eefc98ab78a87fbe44b`; its authenticated preceding Plan baseline is `0d186bf0c6c05bf4aebbb2adf38006bdf596d6ef`.
+- Verify canonical `build/output/lululemon/Lululemon_BAV.docx` and immutable `.git/autocycle/step-8-1-6-word-inspect/Lululemon_BAV.docx` retain SHA-256 `8ac1ed94e8fe5abf2bfb0626d5735bd79bae5096a5ebae52c51fefa117101991`.
+- Read applicable Office guidance and reconcile `.git/autocycle/office/review-index.json`, receipts, retention records and images with the actual-page inventory in RESULT.md.
+- Carry forward reviewed captures under `.git/autocycle/office/evidence/word/`: `9ded8c8d9b294b28ab028fd6df0e6e42/view.png` covers the complete gross-profit/operating-profit table; `dbcd53e11abf479b8de04361c04837a2/view.png` covers the signed-margin explanation and continued rows across pages 11–12; `1d55ccd683614d9da20922859bc3a4b0/view.png` and `d0cfd7aff6474c38bc550b1cdae17d2c/view.png` cover the page-16 final row and page-17 residuals, Sources and methodology, and document ending. Verify their receipt/source bindings before reuse.
+- Through authorized controller operations in the owned Word slot, confirm document identity and locate printed page 11’s opening `Gross-profit change uses`. Previously verified native story range `13693–13717` is a navigation lead to revalidate, not proof of visible coverage.
+- Adjust viewport position or bounds to show the paragraph from its first word through its closing qualification and into the bridge table. Retain additional overlapping views if necessary; selecting the paragraph’s closing sentence alone leaves its opening unverified.
+- Use Word’s actual selection/range model. Do not substitute estimated XML offsets or table-interior ranges that snap to different selections. Change one navigation or viewport variable at a time and inspect diagnostics before retrying.
+- Inspect retained images for the entire opening explanation, identities, signs, units, qualifications and overlap with the accepted table. Establish printed-page identity from visible content and shared landmarks; requested page numbers, selection success and CAPTURED status alone do not establish readability.
+- Reconcile actual readable coverage for all printed pages 1–17, preserving 17-page pagination. Reuse applicable accepted evidence for pages 1–10 and 12–17; request further regions only if reconciliation exposes a specific uncovered span.
+- Carry forward applicable canonical Check, publication regressions, distinct repeat-publication comparisons and all-page PDF inspection. Preserve `.git/autocycle/step-8-1-4-inspect/pdf-pages/`. Do not repeat completed checks or regenerate products merely to improve Word captures.
 
 ## Preservation and reporting
 
-Preserve the generic row-pagination repair, completed heading/grouping/geographic/attribution-width/PDF-header repairs, canonical DOCX/PDF bytes and 17-page Word pagination. Preserve Markdown, figures, workbooks, upstream inputs, unrelated products, all six Lululemon applications, analytical/admission controls, traceability, optional Trainer behavior and research limitations. Keep DRIVER.md and STYLE.md byte-for-byte unchanged and reserved research modules zero-byte.
+Preserve completed renderer repairs, canonical DOCX/PDF bytes, Markdown, figures, workbooks, upstream inputs, unrelated products, all six Lululemon applications, analytical/admission controls, traceability, optional Trainer behavior and research limitations. Keep DRIVER.md and STYLE.md byte-for-byte unchanged and reserved research modules zero-byte.
 
 Preserve immutable inspection copies, snapshots, receipts, retention records, failed attempts and historical results. Retain ownership, access, recovery and unrelated-work safeguards. Do not reopen accepted migration work. Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
 
-Append measured diagnosis and inspection results to RESULT.md: authenticated baseline, source identity, navigation changes, actual observed pages and regions, overlapping coverage, request/receipt IDs, capture paths and hashes, renderer/version, capture timestamps, carried-forward verification and preservation checks. Bind new evidence to the current missing-evidence requirement and its recorded time boundary. Update stale pending statements through a new entry without rewriting history.
+Append measured results to RESULT.md: authenticated baseline, source identity, actual visible regions, overlapping landmarks, request/receipt IDs, capture paths and hashes, renderer/version, timestamps, reconciled page inventory, carried-forward verification and preservation checks. Bind fresh evidence to the current missing-evidence requirement and boundary `after_ns: 1790434815618260111`.
 
-Selection and capture infrastructure failures leave evidence unresolved; they do not establish BLOCKED without a structured external dependency. Preserve exact diagnostics and a concrete remaining action if coverage cannot be completed.
+Supersede stale pending statements through a new entry: the four reviewed captures establish bridge-table and page-17 coverage; the page-11 opening remains unresolved until visually inspected in full.
 
-Parent Completion and Session Endpoint remain unresolved while mechanical defects or final-document readability gaps remain. Human editorial sign-off remains separate and pending; it is not required for technical acceptance.
+If coverage remains incomplete, record the exact missing span, diagnostics and next bounded action. A viewport gap does not establish a product defect or external dependency. Record any demonstrated mechanical defect without manually editing products.
+
+Parent Completion and Session Endpoint remain unresolved while required readability gaps or mechanical defects remain. Human editorial sign-off remains separate and pending; it is not required for technical acceptance.
