@@ -791,6 +791,46 @@ def _keep_row_with_next(row) -> None:
             paragraph.paragraph_format.keep_with_next = True
 
 
+def _estimate_wrapped_lines(text: str, width_mm: float) -> int:
+    """Estimate ordinary Word wrapping at spaces; explicit breaks stay separate."""
+    limit = _column_inner_chars(width_mm)
+    lines = 0
+    for paragraph in (text or "").split("\n"):
+        words = paragraph.split()
+        if not words:
+            lines += 1
+            continue
+        current = 0
+        lines += 1
+        for word in words:
+            extra = len(word) if current == 0 else len(word) + 1
+            if current and current + extra > limit:
+                lines += 1
+                current = len(word)
+            else:
+                current += extra
+    return max(1, lines)
+
+
+def _usable_page_height_mm(*, wide: bool) -> float:
+    return (210 if wide else 297) - 2 * PAGE_MARGIN_MM
+
+
+def _ordinary_row_fits_page(
+    values: tuple[str, ...], widths_mm: list[float], *, wide: bool
+) -> bool:
+    """True when the wrapped record is shorter than one usable page."""
+    if not values:
+        return True
+    line_mm = BODY_PT * LINE_SPACING / MM_PT
+    pad_mm = 4.0 / MM_PT
+    lines = max(
+        _estimate_wrapped_lines(value, width)
+        for value, width in zip(values, widths_mm)
+    )
+    return lines * line_mm + pad_mm <= _usable_page_height_mm(wide=wide)
+
+
 def _set_table_fixed(table, width_mm: float) -> None:
     tbl = table._tbl
     tbl_pr = tbl.tblPr if tbl.tblPr is not None else OxmlElement("w:tblPr")
@@ -914,7 +954,7 @@ def _add_word_grid(document, block: TableBlock, fonts: ResolvedFonts, *, wide: b
     for row_index, row in enumerate(block.rows, start=1):
         for col_index, value in enumerate(row):
             _fill_word_cell(table.rows[row_index].cells[col_index], value, fonts, BODY_PT)
-        if row_index == 1:
+        if _ordinary_row_fits_page(row, widths, wide=wide):
             _prevent_row_split(table.rows[row_index])
     _set_word_column_widths(table, widths)
 

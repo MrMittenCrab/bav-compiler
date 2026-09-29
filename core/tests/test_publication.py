@@ -21,8 +21,10 @@ from core.research.document import (
     MM_PT,
     PAGE_MARGIN_MM,
     TableBlock,
+    _add_word_grid,
     _column_inner_chars,
     _column_widths_mm,
+    _ordinary_row_fits_page,
     _register_pdf_fonts,
     _soft_wrap_header,
     _table_layout,
@@ -1451,6 +1453,64 @@ def test_word_continued_table_does_not_chain_all_rows(tmp_path, monkeypatch):
         assert later
         assert all(not _row_keeps_with_next(row) for row in later)
         assert all(not _row_has_flag(row, "w:tblHeader") for row in later)
+
+
+def test_word_ordinary_body_rows_stay_intact(tmp_path, monkeypatch):
+    company = _company(tmp_path, monkeypatch)
+    _copy_research(company.output)
+    published = publish_resolved_company(company)
+    from docx import Document
+
+    document = Document(published.word)
+    grids = [table for table in document.tables if len(table.rows) >= 2]
+    assert grids
+    found_relationship = False
+    for table in grids:
+        headers = [cell.text.replace("\n", " ") for cell in table.rows[0].cells]
+        values = tuple(tuple(cell.text for cell in row.cells) for row in table.rows[1:])
+        layout = _table_layout(tuple(headers), values)
+        wide = layout == "landscape"
+        width_mm = (297 if wide else 210) - 2 * PAGE_MARGIN_MM
+        widths = _column_widths_mm(TableBlock(tuple(headers), values, layout), width_mm)
+        for row, record in zip(table.rows[1:], values):
+            assert not _row_keeps_with_next(row)
+            if _ordinary_row_fits_page(record, widths, wide=wide):
+                assert _row_has_flag(row, "w:cantSplit"), record[0]
+            else:
+                assert not _row_has_flag(row, "w:cantSplit"), record[0]
+        if headers and headers[0].startswith("Relationship"):
+            found_relationship = True
+            last = table.rows[-1]
+            assert "movement" in last.cells[0].text
+            assert _row_has_flag(last, "w:cantSplit")
+            assert not _row_keeps_with_next(last)
+    assert found_relationship
+
+
+def test_word_oversized_record_may_continue():
+    require_publication_libraries()
+    from docx import Document
+
+    fonts = resolve_required_fonts()
+    huge = " ".join(["movement"] * 800)
+    block = TableBlock(
+        ("Relationship", "Kind"),
+        (("short identity", "identity"), (huge, "observed")),
+        "landscape",
+    )
+    width_mm = 297 - 2 * PAGE_MARGIN_MM
+    widths = _column_widths_mm(block, width_mm)
+    assert _ordinary_row_fits_page(block.rows[0], widths, wide=True)
+    assert not _ordinary_row_fits_page(block.rows[1], widths, wide=True)
+    document = Document()
+    _add_word_grid(document, block, fonts, wide=True)
+    table = document.tables[0]
+    assert _row_has_flag(table.rows[0], "w:tblHeader")
+    assert _row_keeps_with_next(table.rows[0])
+    assert _row_has_flag(table.rows[1], "w:cantSplit")
+    assert not _row_keeps_with_next(table.rows[1])
+    assert not _row_has_flag(table.rows[2], "w:cantSplit")
+    assert not _row_keeps_with_next(table.rows[2])
 
 
 def test_publish_writes_only_under_canonical_output(tmp_path, monkeypatch):
