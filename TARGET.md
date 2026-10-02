@@ -49,19 +49,20 @@ The completed Lululemon build contains:
 - `build/output/lululemon/research/Lululemon_Forecast.md`
 - `build/output/lululemon/research/Lululemon_Valuation.md`
 - `build/output/lululemon/research/Lululemon_Overview.md`
-- `build/output/lululemon/figures/drivers/growth.png`
-- `build/output/lululemon/figures/drivers/geography.png`
-- `build/output/lululemon/figures/drivers/margin.png`
 - `build/output/lululemon/supporting/build_status.json`
 - `build/output/lululemon/supporting/assumptions.json`
 - `build/output/lululemon/supporting/component_map.json`
 - `build/output/lululemon/supporting/rowmap.json`
+
+Driver figures under `build/output/<company>/figures/drivers/` are optional and claim-driven. No particular chart or schedule is mandatory; retain a figure only when it communicates a selected analytical relationship more clearly than prose.
 
 `python -m bav build Lululemon` reads the canonical Lululemon input and writes only under `build/output/lululemon/`. `python -m bav check Lululemon` checks that canonical output without requiring paths. `python -m bav publish Lululemon` renders canonical analysis and referenced figures into Word and PDF under `build/output/lululemon/`. These company-name interfaces generalize to supported companies. Build remains the primary product command; Check is diagnostic. Internal lookup may normalize company names to lowercase slugs.
 
 Benchmark and release are uses of canonical outputs, represented through Git tracking, tags or release packaging, not separate company data architectures. After canonical paths and dependencies are verified, remove obsolete generated artifacts and duplicate legacy, benchmark and release company trees, including obsolete Trainer and Answer Key outputs. Preserve original filings and canonical upstream data. Compatibility copies or symlinks require an active supported interface; do not maintain alternate active build architectures. Runtime must not silently fall back to obsolete benchmark, release or other legacy company paths.
 
 Root `README.md` documents the workbook / research / figures / publication architecture. Root `STYLE.md` is the single source of truth for human-facing BAV presentation and language conventions, applied to Markdown research, generated figures and rendered publications. Do not duplicate its specification in README or individual modules.
+
+Root `DRIVER.md` is the company-agnostic historical Driver design authority. Its publication hierarchy is headline conclusion, principal drivers, optional secondary signals, and an auditable appendix. Selection follows analytical importance and available evidence, not a fixed section count or issuer template. Company-specific applications remain labeled regression fixtures. The main body must stand alone while the appendix preserves the detailed analytical record.
 
 The research module sequence is Drivers, Forecast, Valuation, Overview:
 
@@ -86,7 +87,9 @@ Hong Kong company input may remain manual. Automatic HKEX scraping is not requir
 
 Analysis and exercises should follow materiality and the information actually supplied. Missing historical facts must not be invented.
 
-BAV supplies source-grounded equity-research analysis and historical target-assessment evidence for the current Lululemon M&A teamwork project. Identify historical growth and margin drivers, recurring versus episodic components, robust relationships and unresolved explanations. This scope does not authorize buyer-specific analysis, a deal recommendation, forecasting, valuation, price targets, scenarios or forward projections. Existing Fast Retailing analytical controls and regression coverage remain preserved; Fast Retailing is a regression case, not an additional strategy project.
+BAV supplies source-grounded equity-research analysis and historical target-assessment evidence for the current Lululemon M&A teamwork project. Identify historical growth and margin drivers, recurring versus episodic components, robust relationships and unresolved explanations. This scope does not authorize buyer-specific analysis, a deal recommendation, forecasting, valuation, price targets, scenarios or forward projections.
+
+Historical Driver publication is explicitly authorized for both Lululemon and Fast Retailing through the same company-agnostic selection and rendering path. Lululemon is the primary implementation and regression case; immediately after its acceptance, publish Fast Retailing from its own verified evidence as the portability demonstration. Preserve existing Fast Retailing analytical controls and regression coverage. Neither company must reproduce the other's driver categories, figures or section count, and unavailable mechanisms do not justify fabricated data, forced external research acquisition or broad workbook changes.
 
 ## Source-data architecture
 
