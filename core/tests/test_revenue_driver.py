@@ -685,6 +685,247 @@ def test_strategy_synthesis_links_deferred_spsf_without_promoting_it():
     assert disagreement.members[0].locator not in productivity.inference
 
 
+def _synthesis_record(synthesis):
+    return {
+        "lead": synthesis.lead,
+        "productivity_gap": synthesis.productivity_gap,
+        "untested": synthesis.untested,
+        "limits": synthesis.limits,
+        "navigation": synthesis.navigation,
+        "interpretations": tuple(
+            (
+                item.theme,
+                item.heading,
+                item.management_statement,
+                item.finding,
+                item.inference,
+                item.supporting_schedules,
+                item.counterexample,
+            )
+            for item in synthesis.interpretations
+        ),
+    }
+
+
+def test_director_sequences_historical_strategy_interpretation_before_composition(
+    monkeypatch,
+):
+    from composer.overview import (
+        compute_historical_strategy_synthesis as compose,
+    )
+    from director import driver_assessment as director_mod
+    from interpreter.historical_strategy import interpret_historical_strategy
+
+    fin = _store_fin(
+        {P0: 10, P1: 12, P2: 15},
+        {P0: 100.0, P1: 130.0, P2: 160.0},
+        _disclosure(THEME_STORE_EXPANSION),
+    )
+    analysis = director_mod.complete_revenue_driver_analysis(fin)
+    order: list[str] = []
+    captured: dict[str, object] = {}
+
+    def tracking_interpret(tests):
+        order.append("interpret")
+        judgment = interpret_historical_strategy(tests)
+        captured["judgment"] = judgment
+        return judgment
+
+    def tracking_word(financials, analysis_arg, judgment=None):
+        order.append("compose")
+        captured["passed_judgment"] = judgment
+        captured["passed_analysis"] = analysis_arg
+        return compose(financials, analysis_arg, judgment)
+
+    def boom_recompute(*args, **kwargs):
+        raise AssertionError("must not recompute supplied analysis")
+
+    monkeypatch.setattr(director_mod, "interpret_historical_strategy", tracking_interpret)
+    monkeypatch.setattr(director_mod, "word_historical_strategy", tracking_word)
+    monkeypatch.setattr(
+        director_mod, "complete_revenue_driver_analysis", boom_recompute
+    )
+
+    synthesis = director_mod.complete_historical_strategy_synthesis(fin, analysis)
+    assert order == ["interpret", "compose"]
+    assert captured["passed_judgment"] is captured["judgment"]
+    assert captured["passed_analysis"] is analysis
+    assert "historical growth pattern" in synthesis.lead
+
+
+def test_director_obtains_analysis_when_omitted_then_interprets(monkeypatch):
+    from composer.overview import (
+        compute_historical_strategy_synthesis as compose,
+    )
+    from director import driver_assessment as director_mod
+    from interpreter.historical_strategy import interpret_historical_strategy
+
+    fin = _store_fin(
+        {P0: 10, P1: 12, P2: 15},
+        {P0: 100.0, P1: 130.0, P2: 160.0},
+        _disclosure(THEME_STORE_EXPANSION),
+    )
+    real_complete = director_mod.complete_revenue_driver_analysis
+    calls: list[object] = []
+    order: list[str] = []
+
+    def tracking_complete(financials, periods=None):
+        calls.append(financials)
+        if periods is None:
+            return real_complete(financials)
+        return real_complete(financials, periods)
+
+    def tracking_interpret(tests):
+        order.append("interpret")
+        return interpret_historical_strategy(tests)
+
+    def tracking_word(financials, analysis_arg, judgment=None):
+        order.append("compose")
+        assert analysis_arg is not None
+        assert judgment is not None
+        return compose(financials, analysis_arg, judgment)
+
+    monkeypatch.setattr(
+        director_mod, "complete_revenue_driver_analysis", tracking_complete
+    )
+    monkeypatch.setattr(director_mod, "interpret_historical_strategy", tracking_interpret)
+    monkeypatch.setattr(director_mod, "word_historical_strategy", tracking_word)
+
+    synthesis = director_mod.complete_historical_strategy_synthesis(fin)
+    assert len(calls) == 1
+    assert order == ["interpret", "compose"]
+    assert "historical growth pattern" in synthesis.lead
+
+
+def test_composer_renders_supplied_judgment_without_interpretation_or_compute(
+    monkeypatch,
+):
+    from dataclasses import replace
+
+    from composer.overview import compute_historical_strategy_synthesis as compose
+    from director.driver_assessment import complete_revenue_driver_analysis
+    from interpreter.historical_strategy import interpret_historical_strategy
+
+    fin = _store_fin(
+        {P0: 10, P1: 12, P2: 15},
+        {P0: 100.0, P1: 130.0, P2: 160.0},
+        _disclosure(THEME_STORE_EXPANSION),
+    )
+    analysis = complete_revenue_driver_analysis(fin)
+    judgment = interpret_historical_strategy(analysis.tests)
+
+    def boom(*args, **kwargs):
+        raise AssertionError("Composer must not interpret or compute")
+
+    monkeypatch.setattr(
+        "interpreter.historical_strategy.interpret_historical_strategy", boom
+    )
+    monkeypatch.setattr(
+        "modeler.revenue_driver.compute_revenue_driver_analysis", boom
+    )
+    monkeypatch.setattr(
+        "director.driver_assessment.complete_revenue_driver_analysis", boom
+    )
+    monkeypatch.setattr(
+        "director.driver_assessment.interpret_historical_strategy", boom
+    )
+
+    synthesis = compose(fin, analysis, judgment)
+    assert "historical growth pattern" in synthesis.lead
+    assert synthesis.untested == UNTESTED_INITIATIVES
+    assert synthesis.limits == WHAT_HISTORY_ESTABLISHES
+
+    overview_src = (ROOT / "composer" / "overview.py").read_text()
+    assert "interpret_historical_strategy" not in overview_src
+    assert "complete_revenue_driver" not in overview_src
+    assert "compute_revenue_driver_analysis" not in overview_src
+
+    tiny = _tiny()
+    with pytest.raises(ValueError, match="admitted strategy disclosures"):
+        compose(tiny)
+    with pytest.raises(ValueError, match="admitted strategy disclosures"):
+        compose(tiny, analysis, judgment)
+    with pytest.raises(ValueError, match="completed revenue-driver analysis"):
+        compose(fin)
+    empty = replace(analysis, tests=())
+    with pytest.raises(ValueError, match="at least one driver test"):
+        compose(fin, empty)
+    with pytest.raises(ValueError, match="completed historical-strategy judgment"):
+        compose(fin, analysis)
+
+
+def test_historical_strategy_synthesis_records_match_across_orchestration_paths():
+    from director.driver_assessment import (
+        complete_historical_strategy_synthesis,
+        complete_revenue_driver_analysis,
+    )
+    from interpreter.historical_strategy import interpret_historical_strategy
+    from composer.overview import compute_historical_strategy_synthesis as compose
+
+    supported = _store_fin(
+        {P0: 10, P1: 12, P2: 15},
+        {P0: 100.0, P1: 130.0, P2: 160.0},
+        _disclosure(THEME_STORE_EXPANSION, role=ROLE_OBJECTIVE, text="We plan to open stores."),
+    )
+    mixed = _store_fin(
+        {P0: 10, P1: 12, P2: 15},
+        {P0: 100.0, P1: 130.0, P2: 120.0},
+        _disclosure(THEME_STORE_EXPANSION),
+    )
+    contradicted = _store_fin(
+        {P1: 10, P2: 12},
+        {P1: 130.0, P2: 100.0},
+        _disclosure(THEME_STORE_EXPANSION),
+    )
+    insufficient = _with_strategy(
+        _tiny(with_payments=False),
+        _disclosure(THEME_STORE_EXPANSION),
+    )
+    geo = _geo_tiny(
+        _snapshot(P1, values=_corp_values(rev=(80.0, 25.0, 15.0))),
+        _snapshot(P2, values=_corp_values(rev=(110.0, 15.0, 15.0))),
+    )
+    _with_strategy(geo, _disclosure(THEME_GEOGRAPHIC_GROWTH))
+    deferred = _attach_deferred(
+        _store_fin(
+            {P0: 10, P1: 12, P2: 15},
+            {P0: 100.0, P1: 130.0, P2: 160.0},
+            _disclosure(THEME_PRODUCTIVITY, role=ROLE_OPERATING_USE),
+            management=[_spsf(period=P2, value=1500)],
+        ),
+        _deferred_disagreement(period=P1),
+    )
+
+    for fin in (supported, mixed, contradicted, insufficient, geo, deferred):
+        analysis = complete_revenue_driver_analysis(fin)
+        judgment = interpret_historical_strategy(analysis.tests)
+        via_composer = compose(fin, analysis, judgment)
+        via_supplied = complete_historical_strategy_synthesis(fin, analysis)
+        via_omitted = complete_historical_strategy_synthesis(fin)
+        via_facade = compute_historical_strategy_synthesis(fin, analysis)
+        assert _synthesis_record(via_supplied) == _synthesis_record(via_composer)
+        assert _synthesis_record(via_omitted) == _synthesis_record(via_composer)
+        assert _synthesis_record(via_facade) == _synthesis_record(via_composer)
+
+    supported_row = compose(
+        supported,
+        complete_revenue_driver_analysis(supported),
+        interpret_historical_strategy(complete_revenue_driver_analysis(supported).tests),
+    ).interpretations[0]
+    assert "descriptively consistent" in supported_row.inference
+    mixed_lead = complete_historical_strategy_synthesis(mixed).lead
+    assert "mixed across periods or segments" in mixed_lead
+    contradicted_lead = complete_historical_strategy_synthesis(contradicted).lead
+    assert "contradicts" in contradicted_lead
+    insufficient_lead = complete_historical_strategy_synthesis(insufficient).lead
+    assert "cannot be treated as a demonstrated historical revenue driver" in insufficient_lead
+    geo_synthesis = complete_historical_strategy_synthesis(geo)
+    assert "contributed negatively" in geo_synthesis.interpretations[0].inference
+    assert "counterexamples" in geo_synthesis.lead
+    deferred_synthesis = complete_historical_strategy_synthesis(deferred)
+    assert DEFERRED_SPSF_LINK in deferred_synthesis.productivity_gap
+
+
 def test_interim_axis_is_rejected_when_operating_history_exists():
     fin = _store_fin(
         {P1: 10, P2: 12},
@@ -1188,10 +1429,21 @@ def test_phase_boundaries_and_structured_flags_survive_wording():
     assert any(item.startswith("Deferred ") for item in worded.limitations)
     interpreter_text = (root / "interpreter" / "revenue_driver.py").read_text()
     historical_text = (root / "interpreter" / "historical_strategy.py").read_text()
+    overview_text = (root / "composer" / "overview.py").read_text()
     assert "_is_counterexample_note" not in interpreter_text
     assert '"Deferred' not in interpreter_text
     assert '"Deferred' not in historical_text
     assert "THEME_LABELS" not in historical_text
+    assert "composer" not in historical_text
+    assert "interpret_historical_strategy" not in overview_text
+    checker_src = (root / "core" / "trainer" / "checker.py").read_text()
+    expected_src = (root / "core" / "model" / "historical_expected.py").read_text()
+    catalog_src = (root / "core" / "engine" / "component_catalog.py").read_text()
+    reference_src = (root / "core" / "engine" / "reference_model.py").read_text()
+    assert "word_lead" not in checker_src
+    assert "word_verdict_inference" not in expected_src
+    assert "interpret_historical_strategy" not in catalog_src
+    assert "word_verdict_inference" not in reference_src
 
     from modeler.revenue_driver import _conflicting_qualifier_fields
 

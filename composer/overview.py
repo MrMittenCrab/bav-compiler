@@ -27,7 +27,6 @@ from interpreter.historical_strategy import (
     LIMIT_DEFERRED_SPSF,
     HistoricalStrategyJudgment,
     StrategyThemeJudgment,
-    interpret_historical_strategy,
 )
 from interpreter.revenue_driver import (
     VERDICT_CONTRADICTED,
@@ -365,8 +364,9 @@ def compose_interpretations(
 def compute_historical_strategy_synthesis(
     financials,
     analysis: RevenueDriverAnalysis | None = None,
+    judgment: HistoricalStrategyJudgment | None = None,
 ) -> HistoricalStrategySynthesis:
-    """Connect admitted driver findings to source-bound strategy disclosures."""
+    """Word completed historical-strategy judgments for the Overview opening."""
     if not strategy_synthesis_applicable(financials):
         raise ValueError("strategy synthesis requires admitted strategy disclosures")
     if analysis is None:
@@ -374,7 +374,8 @@ def compute_historical_strategy_synthesis(
     tests = analysis.tests
     if not tests:
         raise ValueError("strategy synthesis requires at least one driver test")
-    judgment = interpret_historical_strategy(tests)
+    if judgment is None:
+        raise ValueError("strategy synthesis requires a completed historical-strategy judgment")
     return HistoricalStrategySynthesis(
         lead=word_lead(tests, judgment),
         interpretations=compose_interpretations(tests, judgment),

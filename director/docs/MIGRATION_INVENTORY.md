@@ -649,7 +649,7 @@ Git blob at B and at `86ebdec…`: SHA-256
 | `PROFESSIONAL_FALLBACK` | same | Opening when synthesis is inapplicable | `test_opening_without_strategy_stays_professional_fallback` |
 | `StrategyFindingInterpretation.heading`, `.management_statement`, `.finding` (finding + schedule clause), `.supporting_schedules`, rendered `.inference`, rendered `.counterexample` | Composer fields | Publication record | synthesis tests |
 | `HistoricalStrategySynthesis.lead`, `.navigation`, rendered limits/gap/untested | Composer fields | Overview opening | `_add_bav_opening` |
-| `compute_historical_strategy_synthesis` | `composer/overview.py` same name | Composer façade: require analysis, call Interpreter, word. Temporary optional analysis=None may call Modeler compute only | `test_strategy_synthesis_*` |
+| `compute_historical_strategy_synthesis` | `composer/overview.py` same name | Composer wording: require completed analysis and `HistoricalStrategyJudgment`; do not interpret or compute analysis | `test_strategy_synthesis_*` |
 | `_interpretations` | `compose_interpretations` | Assemble Composer fields from Interpreter + Modeler tests | same |
 
 `disclosure_locator` stays Extractor-shaped:
@@ -678,7 +678,10 @@ Company/period identity lines are Modeler facts displayed by Composer.
 **Imports:** Interpreter historical_strategy imports Modeler test records and
 verdict codes only — never `THEME_LABELS`. Composer overview imports
 `THEME_LABELS`, Interpreter codes, Extractor `disclosure_locator`, and
-catalog sheet-name constants. `_add_bav_opening` imports Composer only.
+catalog sheet-name constants; it does not invoke Interpreter. Director
+`complete_historical_strategy_synthesis` obtains analysis when needed, invokes
+`interpret_historical_strategy`, and passes the completed judgment to Composer.
+`_add_bav_opening` imports Composer only.
 
 ### 7.2 Validators and admission
 

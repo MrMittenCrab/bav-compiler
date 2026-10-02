@@ -23,6 +23,7 @@ from composer.revenue_driver import (
     word_revenue_assessment,
     word_theme,
 )
+from interpreter.historical_strategy import interpret_historical_strategy
 from interpreter.reported_margin import (
     interpret_disclosed_charges,
     interpret_latest_movement,
@@ -129,4 +130,8 @@ def complete_historical_strategy_synthesis(
         raise ValueError("strategy synthesis requires admitted strategy disclosures")
     if analysis is None:
         analysis = complete_revenue_driver_analysis(financials)
-    return word_historical_strategy(financials, analysis)
+    tests = analysis.tests
+    if not tests:
+        raise ValueError("strategy synthesis requires at least one driver test")
+    judgment = interpret_historical_strategy(tests)
+    return word_historical_strategy(financials, analysis, judgment)

@@ -10129,3 +10129,77 @@ This split does not establish Session 10 acceptance.
 
 None.
 
+---
+
+# RESULT.md — Step 10.4.1 Director-owned historical-strategy interpretation
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)  
+**Step:** 10.4.1 — Director-owned historical-strategy interpretation  
+**Work:** `b0acea18798147eb824094bee2a60f09`  
+**Plan:** `2b3133c3ba5e4c4caae9c727c827e416`  
+**Finding:** Split Driver assessment calculations, judgments and wording
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change.
+
+## Baseline B
+
+Authenticated from populated `IMPLEMENT_BASE_SHA`. Fail-closed was not required.
+
+| Record | Value | Result |
+|---|---|---|
+| `.git/autocycle/resume-state` `IMPLEMENT_BASE_SHA` | `1b83e19798701c0f0a22102948fd6e02367b0642` | Used as B |
+| `STATE_BRANCH` / `git HEAD` / branch tip | `checkpoint/20260913-183303` / same SHA | HEAD == B |
+| `implementation-baseline.json` `head` | same SHA | Bound |
+| Ancestry | HEAD equals B | Bound |
+| `work-state` allocated `10.4.1` | `source` = B, `work_id` = `b0acea18798147eb824094bee2a60f09` | Bound |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | `step_id` 10.4.1, same `work_id` | Bound |
+| `.git/autocycle/latest-implementation` | leftover `5fa23efa…` (Step 10.4) | Ignored: `IMPLEMENT_BASE_SHA` populated |
+
+B blobs (`git show B:path`, SHA-256 / bytes):
+
+| Path at B | Bytes | SHA-256 |
+|---|---:|---|
+| `director/driver_assessment.py` | 4671 | `526ee9473c96879202003948eb5d315726abe685cba4c5144e62b9c3ce89c7c2` |
+| `composer/overview.py` | 13849 | `5478ba65d258462355cec57fe416acae998f2735053835a2fff07f326da82014` |
+
+`core/model/revenue_strategy_synthesis.py` and `interpreter/historical_strategy.py` were unchanged (SHA-256 `743d0643…` / `f8a3d106…`).
+
+## Responsibility handoff
+
+Director `complete_historical_strategy_synthesis` now sequences: applicability → obtain completed revenue-driver analysis when omitted → empty-test guard → `interpret_historical_strategy` → Composer wording with the completed `HistoricalStrategyJudgment`.
+
+Composer `compute_historical_strategy_synthesis` requires completed analysis and judgment explicitly. It no longer invokes Interpreter or computes revenue analysis. Applicability, missing-analysis and empty-test messages stay the same and keep their prior order; missing judgment is a new explicit fail-closed after those checks.
+
+The delegating `core/model/revenue_strategy_synthesis.py` façade, research consumers and workbook-opening through Director are unchanged. Judgment decisions remain in Interpreter; wording, theme order, locators, qualifications, counterexamples, deferred-SPSF handling, navigation and fallback text remain in Composer.
+
+Inventory §7.1 Composer row and import note were updated to this handoff. Revenue and margin splits, numeric consumer boundaries, assessment ordering and first-name-wins deduplication were not reopened.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| B authentication (resume-state, baseline JSON, branch ref, HEAD==B, work-state 10.4.1) | B = `1b83e197…`; HEAD == B; fail-closed not required |
+| `git show B:` Director / Composer handoff files | hashes in the B table above |
+| Focused orchestration / Composer-only render / six-fixture synthesis-record equality | **8 passed** in 0.45s |
+| Import graph and numeric consumers | Modeler has no Interpreter/Composer imports; Interpreter has no Composer imports and does not parse Composer prose; `checker` / `historical_expected` / `component_catalog` / `reference_model` do not invoke assessment wording |
+| `/opt/anaconda3/bin/python -m pytest -q` on the eleven listed files | **559 passed**, 5 warnings (pre-existing Swig importlib), 223.56s |
+| `/opt/anaconda3/bin/python -m bav --help` | rc 0; ingest / validate-source / reconcile / build / check / publish / list |
+| `git diff --check` | rc 0 |
+| Native Office / company rebuild / publication | **Not run** — no workbook formula/dependency or presentation change; no canonical input or publication regeneration. SESSION native-verify condition was not met |
+
+Focused regressions prove Director interprets before composition, passes the completed judgment unchanged, does not recompute supplied analysis, obtains analysis on the omitted-analysis path, and that Composer can render a supplied judgment without Interpreter or Modeler computation. Supported, mixed, contradicted, insufficient, counterexample and deferred-evidence fixtures produce identical synthesis records on supplied-analysis, omitted-analysis, Composer-direct and façade paths.
+
+## Preservation
+
+Canonical inputs, source evidence, accounting signs, fiscal distinctions, precision, admission/comparison independence, residual qualifications, fail-closed controls, optional Trainer behavior and zero-byte research placeholders were not modified. No second-phase features. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+## Remaining toward Completion
+
+The broader `drivers.py` / `selection.py` split, management-emphasis eligibility correction, remaining component relocation, Trainer inversion, justified removals and final representative build/check/publication verification remain subsequent work. Inventory §16 behavior defects were not repaired.
+
+This handoff repair does not establish Session 10 acceptance.
+
+## Required plan change
+
+None.
+
