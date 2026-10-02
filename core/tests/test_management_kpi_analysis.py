@@ -27,8 +27,8 @@ from core.ingestion.management_kpi_identity import (
     FAMILY_SALES_PER_SQUARE_FOOT,
     POP_STORES_AND_ECOMMERCE,
 )
-from core.model.line_resolver import MissingLineError
-from core.model.management_kpi import (
+from modeler.line_resolver import MissingLineError
+from modeler.management_kpi import (
     MANAGEMENT_KPI_RATIO_TOLERANCE,
     REASON_CALENDAR_REPORTING_MISMATCH,
     REASON_CALENDAR_WEEK_MISMATCH,
@@ -40,19 +40,19 @@ from core.model.management_kpi import (
     compute_management_kpi_series,
     management_kpi_applicable,
 )
-from core.model.operating_kpi import (
+from modeler.operating_kpi import (
     OPERATING_KPI_RATIO_TOLERANCE,
     compute_operating_kpi_series,
     operating_kpi_applicable,
 )
-from core.model.operating_kpi_relationships import (
+from modeler.operating_kpi_relationships import (
     compute_operating_kpi_revenue_comparable_sales_relationship,
     compute_operating_kpi_revenue_store_relationship,
     operating_kpi_revenue_comparable_sales_relationship_applicable,
     operating_kpi_revenue_store_relationship_applicable,
 )
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO, ratio_or_na
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO, ratio_or_na
 from core.tests.test_historical_segment import _base_payload
 from core.tests.test_management_kpi_admission import (
     ANNUAL_NAMES,

@@ -8,23 +8,23 @@ import re
 
 from core.data.historical_operating_kpis import FAMILY_COMPARABLE_SALES_GROWTH
 from core.data.interface import StandardizedFinancials
-from core.model.geographic_segment import (
+from modeler.geographic_segment import (
     compute_geographic_segment_series,
     geographic_segment_applicable,
 )
-from core.model.inventory_analysis import (
+from modeler.inventory_analysis import (
     compute_inventory_analysis_series,
     inventory_analysis_applicable,
 )
-from core.model.line_resolver import MissingLineError, resolve_line
-from core.model.management_kpi import compute_management_kpi_series, management_kpi_applicable
-from core.model.operating_kpi import compute_operating_kpi_series, operating_kpi_applicable
-from core.model.operating_kpi_relationships import (
+from modeler.line_resolver import MissingLineError, resolve_line
+from modeler.management_kpi import compute_management_kpi_series, management_kpi_applicable
+from modeler.operating_kpi import compute_operating_kpi_series, operating_kpi_applicable
+from modeler.operating_kpi_relationships import (
     compute_operating_kpi_revenue_store_relationship,
 )
-from core.model.period_axis import PeriodAxisError, canonical_fiscal_periods
-from core.model.ratio_values import is_source_unavailable
-from core.model.revenue_per_store import compute_revenue_per_store_series
+from modeler.period_axis import PeriodAxisError, canonical_fiscal_periods
+from modeler.ratio_values import is_source_unavailable
+from modeler.revenue_per_store import compute_revenue_per_store_series
 from extractor.data.historical_strategy import (
     ROLE_ATTRIBUTION,
     THEME_COMPARABLE_SALES,

@@ -151,6 +151,15 @@ These files perform reproducible calculations from the same inputs and explicit
 assumptions. Destination: `modeler/` keeping the current basename unless a
 later split is listed.
 
+**Step 10.8 actual ownership.** Homogeneous calculation modules now execute
+from `modeler/<basename>.py`. Retained `core/model/<basename>.py` files for
+those modules are delegation-only compatibility façades. `judgment.py` and
+`normalization.py` remain at `core/model/` pending their inventory-defined
+Interpreter splits. Completed `revenue_driver.py`, `reported_margin.py` and
+`revenue_strategy_synthesis.py` splits are unchanged. Transitional
+dependencies remain on `core.model.judgment` / `core.model.normalization` and
+existing `core.data` / `core.ingestion` owners.
+
 | Current files | Disposition | Callers | Verification |
 |---|---|---|---|
 | `classification.py`, `financial_math.py`, `line_resolver.py`, `period_axis.py`, `ratio_values.py`, `source_values.py`, `source_availability.py`, `historical_expected.py` | Modeler | engine, tests | matching `core/tests/test_*.py` |
@@ -1243,7 +1252,7 @@ Subsequent reviewed steps execute this order. This step does not execute it.
 1. Create visible roots `director/`, `extractor/`, `modeler/`, `interpreter/`, `composer/`; keep `legacy/`. Add `extractor/README.md`. Move Extractor contract + `filing_json` loaders + `classify_extracted_payload` + management-KPI parse + provenance bind per §7.3 / §12.
 2. Move `STYLE.md` and `DRIVER.md` to `director/docs/` and apply §11 reference updates, including README identity if that step touches README. Protected planning docs stay.
 3. Split `revenue_driver.py`, `revenue_strategy_synthesis.py` and `reported_margin.py` per §7.0–7.1 and §7.4 (observations / identity validity / verdicts / wording). Then split `drivers.py` / `selection.py` per §5. Apply the management-emphasis removal in §9. Deduplicate reconstruction helpers. Assessment concatenation stays first-name-wins; façades may not choose judgments.
-4. Move remaining Modeler calculation modules, data payload, ingestion reconcile/standardize, engine workbook, `build_bav_workbook`, semantic I/O, check-context embed.
+4. Move remaining Modeler calculation modules, data payload, ingestion reconcile/standardize, engine workbook, `build_bav_workbook`, semantic I/O, check-context embed. **Step 10.8:** homogeneous calculation modules now live under `modeler/` with thin `core.model` façades; `judgment.py` and `normalization.py` stay pending Interpreter splits. Engine/Trainer inversion is already done in 10.7. Data/ingestion relocation remains later.
 5. Move Interpreter judgment functions and classification/normalization rationales / strategy inference.
 6. Move Composer `style.py`, `document.py`, `publish.py`, Drivers prose/plots, Overview opening/navigation. **Step 10.6:** `style.py`, `document.py` and `publish.py` now live under `composer/research/`. Drivers prose/plots already live there from 10.5. **Step 10.7:** Overview opening/navigation lives in `composer/workbook_opening.py`.
 7. Move Director CLI / `current_build` / `project_companies.json` / build-contract policy. Keep `python -m bav` and company name interfaces. Director `build_company` sequences Modeler → Interpreter → Composer before workbook write.

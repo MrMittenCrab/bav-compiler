@@ -23,19 +23,19 @@ from core.engine.component_catalog import (
 )
 from core.engine.reference_model import ReferenceModelBuilder
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.acquisition_cash import (
+from modeler.acquisition_cash import (
     acquisition_cash_applicable,
     acquisition_cash_availability,
     cash_after_ppe_capex_and_acquisitions_applicable,
     compute_acquisition_cash_series,
     resolve_acquisition_cash_source,
 )
-from core.model.financial_math import compute_anchor
-from core.model.historical_expected import acquisition_cash_expected_series
-from core.model.line_resolver import AmbiguousLineError, MissingLineError, resolve_line
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.ratio_values import UNDEFINED_RATIO
-from core.model.source_values import MissingHistoricalValueError
+from modeler.financial_math import compute_anchor
+from modeler.historical_expected import acquisition_cash_expected_series
+from modeler.line_resolver import AmbiguousLineError, MissingLineError, resolve_line
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.ratio_values import UNDEFINED_RATIO
+from modeler.source_values import MissingHistoricalValueError
 from core.tests.test_capex import P1, P2, _anchor, _dupont_row_by_label, _tiny
 from core.tests.test_normalization import _inject_formula_and_cached_value
 from core.trainer.checker import check_workbook

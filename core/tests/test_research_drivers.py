@@ -464,7 +464,7 @@ def test_output_depends_on_evidence_and_not_company_name(tmp_path):
     zero_text = render_drivers_markdown(zeroed)
     assert "0.00 pp" in zero_text or "+0.00 pp" in zero_text or "0.00" in zero_text
 
-    from core.model.line_resolver import resolve_line
+    from modeler.line_resolver import resolve_line
     cfo = resolve_line(fin.cash_flow, "operating_cash_flow", required=True).item
     latest = fin.periods[-1].end_date
     del cfo.values[latest]

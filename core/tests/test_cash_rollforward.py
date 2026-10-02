@@ -23,7 +23,7 @@ from core.engine.component_catalog import (
 )
 from core.engine.reference_model import ReferenceModelBuilder
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.cash_rollforward import (
+from modeler.cash_rollforward import (
     BEGINNING_CONCEPT,
     CHANGE_CONCEPT,
     ENDING_CONCEPT,
@@ -40,10 +40,10 @@ from core.model.cash_rollforward import (
     compute_cash_rollforward_series,
     resolve_cash_rollforward_sources,
 )
-from core.model.historical_expected import cash_rollforward_expected_series
-from core.model.line_resolver import AmbiguousLineError, MissingLineError, resolve_line
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.source_values import MissingHistoricalValueError
+from modeler.historical_expected import cash_rollforward_expected_series
+from modeler.line_resolver import AmbiguousLineError, MissingLineError, resolve_line
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.source_values import MissingHistoricalValueError
 from core.tests.test_capex import P1, P2, _dupont_row_by_label, _tiny
 from core.tests.test_normalization import _inject_formula_and_cached_value
 from core.trainer.checker import check_workbook

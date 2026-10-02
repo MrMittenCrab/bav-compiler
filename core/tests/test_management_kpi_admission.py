@@ -27,8 +27,8 @@ from extractor.data.extracted_kind import (
     classify_extracted_payload,
 )
 from extractor.data.management_kpi_json import load_management_kpi_document
-from core.model.operating_kpi import compute_operating_kpi_series
-from core.model.period_axis import canonical_fiscal_periods
+from modeler.operating_kpi import compute_operating_kpi_series
+from modeler.period_axis import canonical_fiscal_periods
 from core.tests.test_operating_kpi_analysis import _independent_from_counts
 from core.tests.test_operating_kpi_facts import (
     ADMIT_2022,

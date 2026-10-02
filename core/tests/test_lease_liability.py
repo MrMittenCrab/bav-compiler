@@ -23,26 +23,26 @@ from core.engine.component_catalog import (
 )
 from core.engine.reference_model import ReferenceModelBuilder
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.classification import (
+from modeler.classification import (
     AmbiguousClassificationOverrideError,
     reformulate_balance_sheet,
     resolve_classification_overrides,
 )
-from core.model.financial_math import compute_anchor
-from core.model.historical_expected import (
+from modeler.financial_math import compute_anchor
+from modeler.historical_expected import (
     expected_value_for_component,
     lease_liability_expected_series,
 )
 from core.model.judgment import classification_judgment_cases
-from core.model.lease_liability import (
+from modeler.lease_liability import (
     compute_lease_liability_series,
     lease_liability_applicable,
     lease_liability_availability,
     resolve_lease_liability_source,
 )
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.ratio_values import UNDEFINED_RATIO
-from core.model.source_values import MissingHistoricalValueError
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.ratio_values import UNDEFINED_RATIO
+from modeler.source_values import MissingHistoricalValueError
 from core.tests.test_normalization import _inject_formula_and_cached_value
 from core.trainer.check_context import (
     classification_overrides_for_check,
@@ -670,7 +670,7 @@ def test_split_lease_judgment_without_diagnostics(tmp_path):
 
 def test_lease_treatment_aggregate_and_split_resolution():
     from core.data.line_identity import line_identity
-    from core.model.lease_liability import (
+    from modeler.lease_liability import (
         InconsistentLeaseTreatmentError,
         lease_liability_treatment,
         resolve_lease_liability_source,
@@ -721,7 +721,7 @@ def test_lease_treatment_aggregate_and_split_resolution():
 def test_lease_interest_treatment_conditions_net_interest_and_nopat():
     from core.data.interface import HistoricalLeaseData
     from core.data.line_identity import line_identity
-    from core.model.lease_liability import resolve_lease_liability_source
+    from modeler.lease_liability import resolve_lease_liability_source
 
     fin = _tiny(lease=(100.0, 120.0), revenue=(1000.0, 1100.0))
     # Force reported net interest to 20 each period: ie=-20, ii=0
@@ -760,7 +760,7 @@ def test_lease_interest_treatment_conditions_net_interest_and_nopat():
 
 def test_lease_interest_missing_data_preserves_reported_net_interest():
     from core.data.line_identity import line_identity
-    from core.model.lease_liability import resolve_lease_liability_source
+    from modeler.lease_liability import resolve_lease_liability_source
 
     fin = _tiny()
     assert fin.historical_lease is None
@@ -822,7 +822,7 @@ def test_net_interest_formula_treatment_conditioned_for_split(tmp_path):
 def test_lease_interest_live_check_treatment_switch(tmp_path):
     from core.data.interface import HistoricalLeaseData
     from core.data.line_identity import line_identity
-    from core.model.lease_liability import resolve_lease_liability_source
+    from modeler.lease_liability import resolve_lease_liability_source
 
     fin = _tiny(standardized_split=True)
     d1, d2 = date(2024, 12, 31), date(2025, 12, 31)
@@ -892,7 +892,7 @@ def test_lease_interest_live_check_treatment_switch(tmp_path):
 def test_mixed_lease_treatment_fails_closed_on_anchor():
     from core.data.interface import HistoricalLeaseData
     from core.data.line_identity import line_identity
-    from core.model.lease_liability import (
+    from modeler.lease_liability import (
         InconsistentLeaseTreatmentError,
         resolve_lease_liability_source,
     )

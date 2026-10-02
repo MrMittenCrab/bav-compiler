@@ -20,7 +20,7 @@ from core.data.standardized_io import (
 )
 from extractor.data.filing_json import load_extracted_filing
 from core.ingestion.filing_validator import validate_extracted_filing
-from core.model.classification import (
+from modeler.classification import (
     UnclassifiedBalanceSheetLineError,
     classify_balance_sheet_line,
     is_balance_sheet_subtotal,
@@ -30,7 +30,7 @@ from core.engine.reference_model import (
     SOURCE_START_ROW,
     ReferenceModelBuilder,
 )
-from core.model.capex import (
+from modeler.capex import (
     capex_applicable,
     capex_availability,
     cash_after_ppe_capex_applicable,
@@ -38,24 +38,24 @@ from core.model.capex import (
     resolve_capex_source,
     resolve_operating_cash_source,
 )
-from core.model.deferred_tax import (
+from modeler.deferred_tax import (
     compute_deferred_tax_series,
     deferred_tax_applicable,
     deferred_tax_availability,
     resolve_deferred_tax_sources,
 )
-from core.model.financial_math import compute_anchor
-from core.model.fixed_asset import fixed_asset_applicable, fixed_asset_availability
-from core.model.lease_rou import (
+from modeler.financial_math import compute_anchor
+from modeler.fixed_asset import fixed_asset_applicable, fixed_asset_availability
+from modeler.lease_rou import (
     compute_lease_rou_series,
     lease_rou_applicable,
     lease_rou_availability,
     resolve_lease_rou_source,
 )
-from core.model.line_resolver import resolve_line, workbook_row_for
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.ratio_values import SOURCE_UNAVAILABLE
-from core.model.source_values import required_period_value
+from modeler.line_resolver import resolve_line, workbook_row_for
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.ratio_values import SOURCE_UNAVAILABLE
+from modeler.source_values import required_period_value
 from core.trainer.checker import check_workbook
 from core.trainer.semantic_io import load_semantic_map, parse_cell_ref
 from core.trainer.workbook import build_training_workbook
@@ -835,7 +835,7 @@ def test_non_current_income_taxes_payable_restored_sparse_axis():
 
 def test_four_period_reformulation_integrity(tmp_path: Path):
     """Sparse NCIT None is evidence-gated; all four periods reconcile."""
-    from core.model.classification import (
+    from modeler.classification import (
         check_reformulation_integrity,
         reformulate_balance_sheet,
     )
@@ -1088,7 +1088,7 @@ CFO_LESS_SBC = {
 
 
 def test_source_supported_sbc_four_period_diagnostics(tmp_path: Path):
-    from core.model.earnings_quality import (
+    from modeler.earnings_quality import (
         compute_earnings_quality_series,
         resolve_sbc_source,
         sbc_diagnostics_applicable,
@@ -1229,7 +1229,7 @@ CASH_AFTER_PPE_CAPEX_AND_ACQUISITIONS = {
 
 
 def test_source_supported_acquisition_cash_four_period_diagnostics(tmp_path: Path):
-    from core.model.acquisition_cash import (
+    from modeler.acquisition_cash import (
         acquisition_cash_applicable,
         cash_after_ppe_capex_and_acquisitions_applicable,
         compute_acquisition_cash_series,
@@ -1379,7 +1379,7 @@ CASH_AFTER_PPE_CAPEX_ACQUISITIONS_AND_REPURCHASES = {
 
 
 def test_source_supported_share_repurchase_four_period_diagnostics(tmp_path: Path):
-    from core.model.share_repurchase import (
+    from modeler.share_repurchase import (
         cash_after_ppe_capex_acquisitions_and_repurchases_applicable,
         compute_share_repurchase_series,
         resolve_share_repurchase_source,
@@ -1536,7 +1536,7 @@ CASH_MOVEMENT_FROM_FLOWS = {
 
 
 def test_source_supported_cash_rollforward_four_period_diagnostics(tmp_path: Path):
-    from core.model.cash_rollforward import (
+    from modeler.cash_rollforward import (
         cash_rollforward_applicable,
         compute_cash_rollforward_series,
         resolve_cash_rollforward_sources,
@@ -1682,7 +1682,7 @@ def test_source_supported_reported_margin_four_period_diagnostics(tmp_path: Path
         reported_margin_applicable,
         resolve_reported_margin_sources,
     )
-    from core.model.ratio_values import UNDEFINED_RATIO
+    from modeler.ratio_values import UNDEFINED_RATIO
 
     fin = standardized_from_payload(_load_json(STD_JSON))
     original_index, stored = next(
@@ -1803,7 +1803,7 @@ def test_source_supported_reported_margin_four_period_diagnostics(tmp_path: Path
 
 
 def test_source_supported_inventory_analysis_four_period_diagnostics(tmp_path: Path):
-    from core.model.inventory_analysis import (
+    from modeler.inventory_analysis import (
         compute_inventory_analysis_series,
         inventory_analysis_applicable,
         resolve_inventory_analysis_sources,
@@ -2005,7 +2005,7 @@ def test_source_supported_lease_rou_and_deferred_tax_aliases(
     tmp_path: Path, monkeypatch
 ):
     """G5: supplied ROU/DTA/DTL aliases activate existing diagnostics without mutation."""
-    from core.model import line_resolver as lr
+    from modeler import line_resolver as lr
     from core.tests.test_normalization import _inject_formula_and_cached_value
 
     fin = standardized_from_payload(_load_json(STD_JSON))

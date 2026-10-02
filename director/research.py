@@ -8,7 +8,7 @@ from pathlib import Path
 from composer.research.drivers import finding_sentence, publish_completed_drivers
 from composer.research.selection import select_driver_argument
 from core.data.interface import StandardizedFinancials
-from core.model.period_axis import canonical_fiscal_periods
+from modeler.period_axis import canonical_fiscal_periods
 from interpreter.selection import interpret_driver_selection
 from modeler.reported_margin import reported_operating_margin_applicable
 from modeler.research.drivers_view import (

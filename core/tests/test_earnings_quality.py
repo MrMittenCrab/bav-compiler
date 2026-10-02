@@ -22,18 +22,18 @@ from core.engine.component_catalog import (
 )
 from core.engine.reference_model import EARNINGS_QUALITY_SHEET, ReferenceModelBuilder
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.earnings_quality import (
+from modeler.earnings_quality import (
     UNDEFINED_RATIO,
     compute_earnings_quality_series,
     earnings_quality_availability,
     resolve_sbc_source,
     sbc_diagnostics_applicable,
 )
-from core.model.financial_math import compute_anchor
-from core.model.historical_expected import earnings_quality_expected_series
-from core.model.line_resolver import AmbiguousLineError, MissingLineError, resolve_line
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.source_values import MissingHistoricalValueError
+from modeler.financial_math import compute_anchor
+from modeler.historical_expected import earnings_quality_expected_series
+from modeler.line_resolver import AmbiguousLineError, MissingLineError, resolve_line
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.source_values import MissingHistoricalValueError
 from core.trainer.checker import check_workbook
 from core.trainer.semantic_io import load_semantic_map, parse_cell_ref
 from core.trainer.workbook import build_training_workbook, group_components_by_family

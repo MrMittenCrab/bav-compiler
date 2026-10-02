@@ -25,14 +25,14 @@ from core.engine.component_catalog import (
 )
 from core.engine.reference_model import ReferenceModelBuilder
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.financial_math import compute_anchor
-from core.model.historical_expected import (
+from modeler.financial_math import compute_anchor
+from modeler.historical_expected import (
     expected_value_for_component,
     profitability_change_expected_series,
 )
-from core.model.profitability_change import compute_profitability_change_series
-from core.model.profitability_drivers import ProfitabilityDriverSeries
-from core.model.ratio_values import UNDEFINED_RATIO
+from modeler.profitability_change import compute_profitability_change_series
+from modeler.profitability_drivers import ProfitabilityDriverSeries
+from modeler.ratio_values import UNDEFINED_RATIO
 from core.trainer.checker import check_workbook
 from core.trainer.semantic_io import load_semantic_map, parse_cell_ref
 from core.trainer.workbook import build_training_workbook, group_components_by_family
@@ -97,7 +97,7 @@ def test_ordinary_midpoint_attribution():
     rnoa = (0.12, 0.20, 0.30)
     anchor, drivers = _anchor_with_drivers(margin=margin, turnover=turnover, rnoa=rnoa)
     with patch(
-        "core.model.profitability_change.compute_profitability_driver_series",
+        "modeler.profitability_change.compute_profitability_driver_series",
         return_value=drivers,
     ):
         series = compute_profitability_change_series(anchor)
@@ -128,7 +128,7 @@ def test_profitability_change_edge_cases():
     rnoa = (0.2, 0.2, 0.25)
     anchor, drivers = _anchor_with_drivers(margin=margin, turnover=turnover, rnoa=rnoa)
     with patch(
-        "core.model.profitability_change.compute_profitability_driver_series",
+        "modeler.profitability_change.compute_profitability_driver_series",
         return_value=drivers,
     ):
         series = compute_profitability_change_series(anchor)
@@ -142,7 +142,7 @@ def test_profitability_change_edge_cases():
         margin=margin2, turnover=turnover2, rnoa=rnoa2
     )
     with patch(
-        "core.model.profitability_change.compute_profitability_driver_series",
+        "modeler.profitability_change.compute_profitability_driver_series",
         return_value=drivers2,
     ):
         series2 = compute_profitability_change_series(anchor2)
@@ -157,7 +157,7 @@ def test_profitability_change_edge_cases():
         margin=margin_n, turnover=turnover_n, rnoa=rnoa_n
     )
     with patch(
-        "core.model.profitability_change.compute_profitability_driver_series",
+        "modeler.profitability_change.compute_profitability_driver_series",
         return_value=drivers_n,
     ):
         series_n = compute_profitability_change_series(anchor_n)
@@ -172,7 +172,7 @@ def test_profitability_change_edge_cases():
         margin=margin_u, turnover=turnover_u, rnoa=rnoa_u
     )
     with patch(
-        "core.model.profitability_change.compute_profitability_driver_series",
+        "modeler.profitability_change.compute_profitability_driver_series",
         return_value=drivers_u,
     ):
         series_u = compute_profitability_change_series(anchor_u)
@@ -189,7 +189,7 @@ def test_profitability_change_edge_cases():
         margin=margin_t, turnover=turnover_t, rnoa=rnoa_t
     )
     with patch(
-        "core.model.profitability_change.compute_profitability_driver_series",
+        "modeler.profitability_change.compute_profitability_driver_series",
         return_value=drivers_t,
     ):
         series_t = compute_profitability_change_series(anchor_t)
@@ -203,7 +203,7 @@ def test_profitability_change_edge_cases():
         margin=margin_m, turnover=turnover_m, rnoa=rnoa_m
     )
     with patch(
-        "core.model.profitability_change.compute_profitability_driver_series",
+        "modeler.profitability_change.compute_profitability_driver_series",
         return_value=drivers_m,
     ):
         with pytest.raises(ValueError, match="does not reconcile"):
@@ -220,7 +220,7 @@ def test_profitability_change_edge_cases():
         rnoa_from_margin_turnover=(0.1, 0.2, 0.3),
     )
     with patch(
-        "core.model.profitability_change.compute_profitability_driver_series",
+        "modeler.profitability_change.compute_profitability_driver_series",
         return_value=drivers_l,
     ):
         with pytest.raises(ValueError, match="length mismatch"):

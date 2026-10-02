@@ -21,16 +21,16 @@ from core.engine.component_catalog import (
 )
 from core.engine.reference_model import ReferenceModelBuilder
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.financial_math import compute_anchor
-from core.model.goodwill_intangibles import (
+from modeler.financial_math import compute_anchor
+from modeler.goodwill_intangibles import (
     compute_goodwill_intangibles_series,
     goodwill_intangibles_applicable,
     goodwill_intangibles_availability,
 )
-from core.model.historical_expected import goodwill_intangibles_expected_series
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.ratio_values import UNDEFINED_RATIO
-from core.model.source_values import MissingHistoricalValueError
+from modeler.historical_expected import goodwill_intangibles_expected_series
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.ratio_values import UNDEFINED_RATIO
+from modeler.source_values import MissingHistoricalValueError
 from core.tests.test_normalization import _inject_formula_and_cached_value
 from core.trainer.checker import check_workbook
 from core.trainer.semantic_io import load_semantic_map, parse_cell_ref
@@ -131,7 +131,7 @@ def test_catalog_orders_and_expand_filters():
         range(98, 112)
     )
     periods = [date(2024, 12, 31), date(2025, 12, 31)]
-    from core.model.goodwill_intangibles import GoodwillIntangiblesAvailability
+    from modeler.goodwill_intangibles import GoodwillIntangiblesAvailability
 
     full = GoodwillIntangiblesAvailability(
         goodwill=True,

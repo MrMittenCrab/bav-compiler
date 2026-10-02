@@ -171,8 +171,8 @@ Forecasting and valuation remain dormant in this historical release.
 
 def write_availability(standardized_json: Path) -> Path:
     from core.data.standardized_io import standardized_from_payload
-    from core.model.period_axis import canonical_fiscal_periods
-    from core.model.source_availability import (
+    from modeler.period_axis import canonical_fiscal_periods
+    from modeler.source_availability import (
         assess_interest_availability,
         availability_payload,
     )

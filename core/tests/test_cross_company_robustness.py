@@ -21,11 +21,11 @@ from core.engine.reference_model import (
 )
 from core.ingestion.manual_hk import HKManualDocumentAdapter
 from core.ingestion.reconciler import reconcile_financials
-from core.model.financial_math import compute_anchor
-from core.model.historical_expected import expected_value_for_component
+from modeler.financial_math import compute_anchor
+from modeler.historical_expected import expected_value_for_component
 from core.model.normalization import compute_normalization_series, normalization_cases
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.per_share import compute_per_share_series
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.per_share import compute_per_share_series
 from core.tests.cross_company_fixtures import (
     PERIODS,
     ALL_ROBUST_CASES,

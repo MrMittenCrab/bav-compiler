@@ -15,21 +15,21 @@ from extractor.data.filing_json import load_extracted_filing
 from core.ingestion.filing_validator import validate_extracted_filing
 from core.ingestion.reconciler import reconcile_financials
 from core.engine.reference_model import ReferenceModelBuilder
-from core.model.classification import (
+from modeler.classification import (
     UnclassifiedBalanceSheetLineError,
     check_reformulation_integrity,
     classify_balance_sheet_line,
     is_balance_sheet_subtotal,
     reformulate_balance_sheet,
 )
-from core.model.financial_math import compute_anchor
+from modeler.financial_math import compute_anchor
 from core.model.judgment import classification_judgment_cases
-from core.model.lease_liability import (
+from modeler.lease_liability import (
     compute_lease_liability_series,
     lease_liability_applicable,
     resolve_lease_liability_source,
 )
-from core.model.period_axis import canonical_fiscal_periods
+from modeler.period_axis import canonical_fiscal_periods
 import pytest
 from scripts.audit_fast_retailing_benchmark import run_audit
 
@@ -658,13 +658,13 @@ def test_fast_retailing_audit_stages_include_lease_module():
 
 
 def test_fast_retailing_lease_rou_module_activates():
-    from core.model.financial_math import compute_anchor
-    from core.model.lease_rou import (
+    from modeler.financial_math import compute_anchor
+    from modeler.lease_rou import (
         compute_lease_rou_series,
         lease_rou_applicable,
         resolve_lease_rou_source,
     )
-    from core.model.source_values import required_period_value
+    from modeler.source_values import required_period_value
 
     fin = standardized_from_payload(_load_json(STD_JSON))
     periods = list(canonical_fiscal_periods(fin))
@@ -682,14 +682,14 @@ def test_fast_retailing_lease_rou_module_activates():
 
 
 def test_fast_retailing_goodwill_intangibles_module_activates():
-    from core.model.financial_math import compute_anchor
-    from core.model.goodwill_intangibles import (
+    from modeler.financial_math import compute_anchor
+    from modeler.goodwill_intangibles import (
         compute_goodwill_intangibles_series,
         goodwill_intangibles_applicable,
         goodwill_intangibles_availability,
     )
-    from core.model.line_resolver import resolve_line
-    from core.model.source_values import required_period_value
+    from modeler.line_resolver import resolve_line
+    from modeler.source_values import required_period_value
 
     fin = standardized_from_payload(_load_json(STD_JSON))
     periods = list(canonical_fiscal_periods(fin))
@@ -724,12 +724,12 @@ def test_fast_retailing_goodwill_intangibles_module_activates():
 
 
 def test_fast_retailing_deferred_tax_module_activates():
-    from core.model.deferred_tax import (
+    from modeler.deferred_tax import (
         compute_deferred_tax_series,
         deferred_tax_applicable,
         resolve_deferred_tax_sources,
     )
-    from core.model.source_values import required_period_value
+    from modeler.source_values import required_period_value
 
     fin = standardized_from_payload(_load_json(STD_JSON))
     periods = list(canonical_fiscal_periods(fin))
@@ -759,11 +759,11 @@ def test_fast_retailing_deferred_tax_module_activates():
 
 
 def test_fast_retailing_capex_module_activates():
-    from core.model.capex import (
+    from modeler.capex import (
         capex_applicable,
         compute_capex_series,
     )
-    from core.model.financial_math import compute_anchor
+    from modeler.financial_math import compute_anchor
 
     fin = standardized_from_payload(_load_json(STD_JSON))
     periods = list(canonical_fiscal_periods(fin))
@@ -834,12 +834,12 @@ def test_fast_retailing_capex_module_activates():
 
 
 def test_fast_retailing_cash_rollforward_five_period_diagnostics():
-    from core.model.cash_rollforward import (
+    from modeler.cash_rollforward import (
         cash_rollforward_applicable,
         compute_cash_rollforward_series,
         resolve_cash_rollforward_sources,
     )
-    from core.model.source_values import required_period_value
+    from modeler.source_values import required_period_value
 
     fin = standardized_from_payload(_load_json(STD_JSON))
     periods = list(canonical_fiscal_periods(fin))
@@ -897,7 +897,7 @@ def test_fast_retailing_reported_margin_five_period_diagnostics():
         reported_margin_applicable,
         resolve_reported_margin_sources,
     )
-    from core.model.source_values import required_period_value
+    from modeler.source_values import required_period_value
 
     fin = standardized_from_payload(_load_json(STD_JSON))
     periods = list(canonical_fiscal_periods(fin))
@@ -947,12 +947,12 @@ def test_fast_retailing_reported_margin_five_period_diagnostics():
 
 
 def test_fast_retailing_inventory_analysis_five_period_diagnostics():
-    from core.model.inventory_analysis import (
+    from modeler.inventory_analysis import (
         compute_inventory_analysis_series,
         inventory_analysis_applicable,
         resolve_inventory_analysis_sources,
     )
-    from core.model.source_values import required_period_value
+    from modeler.source_values import required_period_value
 
     fin = standardized_from_payload(_load_json(STD_JSON))
     periods = list(canonical_fiscal_periods(fin))
@@ -1025,8 +1025,8 @@ def test_fast_retailing_inventory_analysis_five_period_diagnostics():
 
 
 def test_fast_retailing_lease_repayment_module_activates():
-    from core.model.financial_math import compute_anchor
-    from core.model.lease_repayment import (
+    from modeler.financial_math import compute_anchor
+    from modeler.lease_repayment import (
         compute_lease_repayment_series,
         lease_repayment_applicable,
     )
@@ -1056,13 +1056,13 @@ def test_fast_retailing_lease_repayment_module_activates():
 
 def test_fast_retailing_historical_lease_interest_axis_and_treatment():
     from core.data.line_identity import line_identity
-    from core.model.lease_liability import (
+    from modeler.lease_liability import (
         InconsistentLeaseTreatmentError,
         compute_lease_liability_series,
         resolve_lease_liability_source,
     )
-    from core.model.line_resolver import resolve_line
-    from core.model.source_values import required_period_series
+    from modeler.line_resolver import resolve_line
+    from modeler.source_values import required_period_series
 
     fin = standardized_from_payload(_load_json(STD_JSON))
     provenance = _load_json(PROV_JSON)
@@ -1160,12 +1160,12 @@ def test_fast_retailing_historical_lease_interest_axis_and_treatment():
 
 
 def test_fast_retailing_ownership_attribution_g5():
-    from core.model.line_resolver import resolve_line
-    from core.model.ownership_attribution import (
+    from modeler.line_resolver import resolve_line
+    from modeler.ownership_attribution import (
         compute_ownership_attribution_series,
         ownership_attribution_applicable,
     )
-    from core.model.source_values import required_period_value
+    from modeler.source_values import required_period_value
 
     fin = standardized_from_payload(_load_json(STD_JSON))
     periods = list(canonical_fiscal_periods(fin))
@@ -1253,8 +1253,8 @@ def test_fast_retailing_share_basis_and_per_share_g6():
     from core.ingestion.filing_standardizer import standardize_reconciled
     from core.ingestion.filing_validator import validate_extracted_filing
     from core.ingestion.share_basis import resolve_historical_share_basis
-    from core.model.line_resolver import resolve_line
-    from core.model.source_values import required_period_value
+    from modeler.line_resolver import resolve_line
+    from modeler.source_values import required_period_value
     from core.trainer.workbook import build_training_workbook
     from core.trainer.checker import check_workbook
     from openpyxl import load_workbook
@@ -1433,8 +1433,8 @@ def test_fast_retailing_g7_retained_conflict_policy():
     )
     from core.ingestion.filing_validator import validate_extracted_filing
     from core.ingestion.share_basis import resolve_historical_share_basis
-    from core.model.line_resolver import resolve_line
-    from core.model.source_values import required_period_value
+    from modeler.line_resolver import resolve_line
+    from modeler.source_values import required_period_value
 
     committed_std = STD_JSON.read_bytes()
     committed_prov = PROV_JSON.read_bytes()
@@ -1649,7 +1649,7 @@ def _save_reopen_workbook(path: Path) -> None:
 
 def _count_source_unavailable(path: Path) -> int:
     from openpyxl import load_workbook
-    from core.model.ratio_values import SOURCE_UNAVAILABLE
+    from modeler.ratio_values import SOURCE_UNAVAILABLE
 
     wb = load_workbook(path, data_only=False)
     n = 0

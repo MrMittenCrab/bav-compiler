@@ -10789,4 +10789,134 @@ This export repair does not establish Session 10 acceptance.
 
 None.
 
+---
+
+# RESULT.md — Step 10.8 Relocate homogeneous Modeler calculations
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)  
+**Step:** 10.8 — Relocate homogeneous Modeler calculations  
+**Work:** `8b681f97ea3e4c4eaab8fad32a8dc593`  
+**Plan:** `fef73b2d9d2d4413a7fae6d94ff3e514`  
+**Finding:** Relocate homogeneous Modeler calculations
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change.
+
+## Baseline B
+
+Authenticated from populated `IMPLEMENT_BASE_SHA`. Fail-closed was not required.
+
+| Record | Value | Result |
+|---|---|---|
+| `.git/autocycle/resume-state` `IMPLEMENT_BASE_SHA` | `e82c1516912c0f97c8d33d0cbe2927508fd92fd4` | Used as B |
+| `STATE_BRANCH` / `.git/HEAD` / branch tip | `checkpoint/20260913-183303` / same SHA | HEAD == B at start; still HEAD after this attempt |
+| `implementation-baseline.json` `head` | same SHA | Bound |
+| `work-state` allocated `10.8` | `source` = B, `work_id` = `8b681f97ea3e4c4eaab8fad32a8dc593`, `status` = `opened` | Bound |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | `step_id` 10.8, same `work_id` | Bound |
+| Predecessor review SHA-256 | `6a61da1914dd8a4b2e6394dec00fdd4a4239e8e817e2afefb520ffc12d5a9247` | Bound |
+| `.git/autocycle/latest-implementation` | leftover `0d2bf8ef…` (Step 10.7.1) | Ignored: `IMPLEMENT_BASE_SHA` populated |
+
+Compared each destination with `git show B:core/model/<basename>.py`. All 36 assigned modules execute from `modeler/<basename>.py`. Thin `core.model` façades remain. `judgment.py` and `normalization.py` stay at `core/model/`. Completed `revenue_driver.py`, `reported_margin.py` and `revenue_strategy_synthesis.py` splits were not redesigned.
+
+## Relocation mappings
+
+Exact byte identity with B blob (9):
+
+| Destination | Bytes | SHA-256 |
+|---|---|---|
+| `modeler/ratio_values.py` | 873 | `470bb090ed62…` |
+| `modeler/earnings_quality_change.py` | 2962 | `9aea077f0dab…` |
+| `modeler/working_capital.py` | 4546 | `5a2bc2e79229…` |
+| `modeler/profitability_drivers.py` | 3356 | `76ccc556586e…` |
+| `modeler/profitability_change.py` | 4886 | `b0ae5ac1358a…` |
+| `modeler/roe_attribution.py` | 8084 | `d49b187099e6…` |
+| `modeler/per_share_attribution.py` | 3828 | `542af9cfcfa6…` |
+| `modeler/operating_forecast.py` | 9933 | `572ea799087b…` |
+| `modeler/ri_engine.py` | 2778 | `0d3f054d2b1f…` |
+
+Import-adjusted moves (27): relative `..data` / `..ingestion` became `core.data` / `core.ingestion`; `historical_expected.py` and `normalized_per_share.py` now import `NormalizationSeries` from `core.model.normalization`. No non-import diffs versus B. Sibling calculation imports remain relative inside `modeler/`.
+
+| Destination | B bytes | Current bytes |
+|---|---|---|
+| `modeler/classification.py` | 54325 | 54334 |
+| `modeler/financial_math.py` | 9673 | 9676 |
+| `modeler/line_resolver.py` | 11668 | 11674 |
+| `modeler/period_axis.py` | 1446 | 1449 |
+| `modeler/source_values.py` | 1423 | 1426 |
+| `modeler/source_availability.py` | 16311 | 16314 |
+| `modeler/historical_expected.py` | 76698 | 76708 |
+| `modeler/normalized_per_share.py` | 5157 | 5167 |
+| `modeler/revenue_per_store.py` | 9192 | 9195 |
+| `modeler/geographic_segment.py` | 47439 | 47445 |
+| `modeler/operating_kpi.py` | 4793 | 4799 |
+| `modeler/operating_kpi_relationships.py` | 31718 | 31727 |
+| `modeler/management_kpi.py` | 10821 | 10827 |
+| `modeler/earnings_quality.py` | 9117 | 9120 |
+| `modeler/per_share.py` | 3878 | 3881 |
+| `modeler/inventory_analysis.py` | 13161 | 13164 |
+| `modeler/cash_rollforward.py` | 10562 | 10565 |
+| `modeler/capex.py` | 6291 | 6294 |
+| `modeler/fixed_asset.py` | 4021 | 4024 |
+| `modeler/lease_liability.py` | 7458 | 7461 |
+| `modeler/lease_rou.py` | 3937 | 3940 |
+| `modeler/lease_repayment.py` | 3762 | 3765 |
+| `modeler/deferred_tax.py` | 4863 | 4866 |
+| `modeler/goodwill_intangibles.py` | 6941 | 6944 |
+| `modeler/acquisition_cash.py` | 6221 | 6224 |
+| `modeler/share_repurchase.py` | 6530 | 6533 |
+| `modeler/ownership_attribution.py` | 7671 | 7674 |
+
+Callers updated to canonical `modeler.*` owners: Modeler workbook/checking, Driver handoffs (`modeler/revenue_driver.py`, `modeler/reported_margin.py`, `modeler/research/drivers_view.py`, `composer/revenue_driver.py`, `director/research.py`), optional Legacy Trainer (`legacy/trainer/checker.py`), release/audit scripts, and affected analytical tests. `judgment.py` now imports `modeler.classification`; `normalization.py` now imports `modeler.financial_math` / `ratio_values` / `source_values`. Transitional dependencies remain on `core.model.judgment` / `core.model.normalization` and existing `core.data` / `core.ingestion` owners.
+
+Façades re-export `import *` plus current private names used by callers/tests: `classification._norm`, `line_resolver._EXPLICIT_CONCEPT_ALIASES`. Moved modules have no `__all__`. Canonical modules do not import their own façades.
+
+`director/docs/MIGRATION_INVENTORY.md` §4.4 records canonical destinations and remaining transitional dependencies. `docs/GOOGL_HISTORICAL_REFERENCE.md` now cites `modeler/line_resolver.py`.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| B authentication (resume-state, baseline JSON, work-state 10.8, branch, HEAD==B) | B = `e82c1516…`; HEAD == B; fail-closed not required |
+| B blob vs destinations | 9 exact; 27 import-only; 0 non-import diffs |
+| `test_modeler_calculation_ownership` | **4 passed** in 0.71s. Canonical files under `modeler/`; façade identity for public names and retained private imports; both import orders in fresh subprocesses; AST check that destinations do not import own façades |
+| Analytical-family + required regressions `/opt/anaconda3/bin/python -m pytest -q` (ownership, classification, line-resolver/identity, source-availability, normalized-per-share, revenue-per-store, geographic, operating/management KPI, earnings-quality, working-capital, profitability, ROE/per-share, inventory/cash/capex/fixed-asset/leases/tax/goodwill/acquisition/repurchase/ownership, operating-forecast, reference-integrity, normalization, cross-company, drivers-numeric, reported-margin, revenue-driver, build-contract, current-build, build-CLI, Engine/Trainer ownership, Trainer, Lululemon/FR benchmarks, historical-v1 exit gate) | **2754 passed**, **1 failed**, 5 warnings (pre-existing Swig importlib), 352.60s |
+| Known failure `test_ordinary_prepare_writes_resolution_and_keeps_revenue_per_store` | Pre-existing at B. `prepare_company_input` already `del staged` and does not write `management_kpi_page_resolution.json`. Failure is before this step’s import retarget. Not repaired (unrelated leftover; inventory §16 / later data-path work) |
+| Dormant/default-off | `test_operating_forecast.py`, `test_normal_v1_build_does_not_call_run_scenario`, `test_normal_historical_build_never_executes_dormant_forecast` passed. `operating_forecast.py` / `ri_engine.py` remain default-off |
+| `python -m bav build/check/publish` Lululemon and FastRetailing | rc 0 each. No `*_BAV_Trainer.xlsx`. Canonical `*_BAV.xlsx` / `.docx` / `.pdf`. Forecast/Valuation/Overview remain 0-byte `e3b0c442…` |
+| Sidecars vs pre-rebuild this attempt | component_map / assumptions / rowmap / build_status SHA-256 identical for both companies. Drivers.md unchanged |
+| Workbook formulas / deps | Lulu 861 components (824 formulas + 37 KPI facts); FR 577 formulas. Embedded map == sidecar; live cells match map; 0 yellow; no Trainer sheet; Overview has no exercise framing |
+| xlsx SHA vs pre-rebuild | Lulu `a23bb9e9…` (229736) → `c656d5fe…` (229737); FR `84119ba2…` (137905, Step 10.7 hash) → `3db78c0a…` (137902). Zip packaging only; maps/formulas unchanged |
+| `git diff --check` | rc 0 |
+| Native Office | **Not run** — semantic maps, rowmaps and formula identities unchanged; Drivers/presentation sidecars unchanged. SESSION native-verify condition was not newly met |
+
+## Artifact hashes after this attempt’s build/check/publish
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `build/output/lululemon/Lululemon_BAV.xlsx` | `c656d5fe142894e304fd7f6769073ac0dc8de9b07c0644b8a0899322d9d08c5e` | 229737 |
+| `build/output/lululemon/research/Lululemon_Drivers.md` | `3fea615d44b083c6dfa7aef77d11285d3d7ec8cd86ac7aa35f55984e6f6b3ed8` | 21884 |
+| `build/output/lululemon/research/Lululemon_Forecast.md` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `build/output/lululemon/research/Lululemon_Valuation.md` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `build/output/lululemon/research/Lululemon_Overview.md` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `build/output/lululemon/supporting/component_map.json` | `ff8266d44e5e6d981ff2d2c6c00ed171abe3a32f991cf8ae59fadb91e796107c` | 1202071 |
+| `build/output/fast_retailing/FastRetailing_BAV.xlsx` | `3db78c0a426529e489166b166ec2f2e8af24191928a1b60e08989ddfe3c06536` | 137902 |
+| `build/output/fast_retailing/research/FastRetailing_Drivers.md` | `5b3aca6c933fe2686ceddd9efd622003af933664fd3cfb2284649e44f020cc6d` | 10320 |
+| `build/output/fast_retailing/research/FastRetailing_Forecast.md` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `build/output/fast_retailing/research/FastRetailing_Valuation.md` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `build/output/fast_retailing/research/FastRetailing_Overview.md` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `build/output/fast_retailing/supporting/component_map.json` | `22ec286b66b77939ab92d9ea2372d5975684f16833bdadf39723e6a048746e4a` | 644555 |
+
+## Preservation
+
+Signatures, return types, company aliases, public `bav` commands, lazy loading, fail-closed behavior, optional JSON dual-output Trainer derivation and all 17 restored Engine/Trainer compatibility exports were not redesigned. Canonical source evidence, accounting signs, fiscal distinctions, precision, provenance, admission/comparison independence, residual qualifications, fail-closed controls, first-name-wins assessments, CFO classification, completed Driver handoffs and optional Trainer behavior remain. Attribution amounts, locators, counterfactual scope, `supported_as_attribution`, `not independently verified` and `outside the accounting bridge` remain. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+## Remaining toward Completion
+
+Data/ingestion relocation, classification/normalization Interpreter splits, unrelated Legacy/removal work, remaining test ownership migration and final repository-wide verification remain subsequent work. Inventory §16 behavior defects were not repaired, including the stale enrichment expectation that `prepare_company_input` still writes `management_kpi_page_resolution.json`. No Trainer expansion, report redesign or second-phase features.
+
+This relocation does not establish Session 10 acceptance.
+
+## Required plan change
+
+None.
+
 

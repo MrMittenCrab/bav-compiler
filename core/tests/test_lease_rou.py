@@ -22,19 +22,19 @@ from core.engine.component_catalog import (
 )
 from core.engine.reference_model import ReferenceModelBuilder
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.financial_math import compute_anchor
-from core.model.historical_expected import lease_rou_expected_series
-from core.model.lease_liability import lease_liability_applicable
-from core.model.lease_rou import (
+from modeler.financial_math import compute_anchor
+from modeler.historical_expected import lease_rou_expected_series
+from modeler.lease_liability import lease_liability_applicable
+from modeler.lease_rou import (
     compute_lease_rou_series,
     lease_rou_applicable,
     lease_rou_availability,
     resolve_lease_rou_source,
 )
-from core.model.line_resolver import AmbiguousLineError, resolve_line
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.ratio_values import UNDEFINED_RATIO
-from core.model.source_values import MissingHistoricalValueError
+from modeler.line_resolver import AmbiguousLineError, resolve_line
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.ratio_values import UNDEFINED_RATIO
+from modeler.source_values import MissingHistoricalValueError
 from core.tests.test_normalization import _inject_formula_and_cached_value
 from core.trainer.checker import check_workbook
 from core.trainer.semantic_io import load_semantic_map, parse_cell_ref

@@ -16,12 +16,12 @@ from core.engine.component_catalog import (
     expand_per_share_attribution_specs,
 )
 from core.engine.reference_model import PER_SHARE_SHEET, ReferenceModelBuilder
-from core.model.historical_expected import (
+from modeler.historical_expected import (
     expected_value_for_component,
     per_share_attribution_expected_series,
 )
-from core.model.per_share import PerShareSeries
-from core.model.per_share_attribution import compute_per_share_attribution_series
+from modeler.per_share import PerShareSeries
+from modeler.per_share_attribution import compute_per_share_attribution_series
 from core.trainer.checker import check_workbook
 from core.trainer.semantic_io import load_semantic_map, parse_cell_ref
 from core.trainer.workbook import build_training_workbook, group_components_by_family

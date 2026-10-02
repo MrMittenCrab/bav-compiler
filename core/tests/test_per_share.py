@@ -28,18 +28,18 @@ from core.engine.component_catalog import (
 from core.engine.reference_model import PER_SHARE_SHEET, ReferenceModelBuilder
 from core.ingestion.manual_hk import HKManualDocumentAdapter
 from core.ingestion.reconciler import merge_documents
-from core.model.financial_math import compute_anchor
-from core.model.historical_expected import (
+from modeler.financial_math import compute_anchor
+from modeler.historical_expected import (
     expected_value_for_component,
     per_share_expected_series,
 )
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.per_share import (
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.per_share import (
     SUPPORTED_SHARE_SCALE_BASIS,
     compute_per_share_series,
     per_share_available,
 )
-from core.model.ratio_values import UNDEFINED_RATIO
+from modeler.ratio_values import UNDEFINED_RATIO
 from core.trainer.checker import check_workbook
 from core.trainer.semantic_io import load_semantic_map, parse_cell_ref
 from core.trainer.workbook import build_training_workbook, group_components_by_family

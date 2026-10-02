@@ -21,13 +21,13 @@ from core.engine.component_catalog import (
 )
 from core.engine.reference_model import WORKING_CAPITAL_SHEET, ReferenceModelBuilder
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.financial_math import compute_anchor
-from core.model.historical_expected import (
+from modeler.financial_math import compute_anchor
+from modeler.historical_expected import (
     expected_value_for_component,
     working_capital_expected_series,
 )
-from core.model.ratio_values import UNDEFINED_RATIO
-from core.model.working_capital import (
+from modeler.ratio_values import UNDEFINED_RATIO
+from modeler.working_capital import (
     compute_working_capital_series,
     working_capital_applicable,
 )

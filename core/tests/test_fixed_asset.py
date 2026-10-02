@@ -22,16 +22,16 @@ from core.engine.component_catalog import (
 )
 from core.engine.reference_model import ReferenceModelBuilder
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.financial_math import compute_anchor
-from core.model.fixed_asset import (
+from modeler.financial_math import compute_anchor
+from modeler.fixed_asset import (
     compute_fixed_asset_series,
     fixed_asset_applicable,
     fixed_asset_availability,
 )
-from core.model.historical_expected import fixed_asset_expected_series
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.ratio_values import UNDEFINED_RATIO
-from core.model.source_values import MissingHistoricalValueError
+from modeler.historical_expected import fixed_asset_expected_series
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.ratio_values import UNDEFINED_RATIO
+from modeler.source_values import MissingHistoricalValueError
 from core.tests.test_normalization import _inject_formula_and_cached_value
 from core.trainer.checker import check_workbook
 from core.trainer.semantic_io import load_semantic_map, parse_cell_ref
@@ -338,7 +338,7 @@ def test_ppe_alias_concept_enables_fixed_asset_math():
 def test_ppe_missing_or_ambiguous_source_still_fails_closed():
     assert not fixed_asset_applicable(_tiny(with_ppe=False, with_da=True))
     d1, d2 = date(2024, 12, 31), date(2025, 12, 31)
-    from core.model.line_resolver import AmbiguousLineError
+    from modeler.line_resolver import AmbiguousLineError
 
     ambiguous = StandardizedFinancials(
         ticker="PPEAMB",

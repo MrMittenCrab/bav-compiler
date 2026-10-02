@@ -22,7 +22,7 @@ from core.data.line_identity import (
 )
 from core.ingestion.excel_import import ExcelExportAdapter
 from core.ingestion.reconciler import merge_documents, _merge_line_items
-from core.model.classification import (
+from modeler.classification import (
     classify_balance_sheet_line,
     reformulate_balance_sheet,
 )

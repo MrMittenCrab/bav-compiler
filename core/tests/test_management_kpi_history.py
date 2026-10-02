@@ -32,12 +32,12 @@ from core.ingestion.management_kpi_reconciliation import (
     SELECTION_DEFERRED,
     SELECTION_SELECTED,
 )
-from core.model.operating_kpi import (
+from modeler.operating_kpi import (
     OPERATING_KPI_RATIO_TOLERANCE,
     compute_operating_kpi_series,
     operating_kpi_applicable,
 )
-from core.model.line_resolver import MissingLineError
+from modeler.line_resolver import MissingLineError
 from core.tests.test_management_kpi_admission import (
     ANNUAL_NAMES,
     EXTRACTED,
@@ -84,7 +84,7 @@ from core.tests.test_operating_kpi_facts import (
     _prepare_augmented,
 )
 from core.tests.test_operating_kpi_management_history import _assert_export_reload_export
-from core.model.period_axis import canonical_fiscal_periods
+from modeler.period_axis import canonical_fiscal_periods
 
 OFF_AXIS_PERIOD = "2022-01-30"
 DEF_A = AFFIRMATIVE_COMPSALES_DEFINITION

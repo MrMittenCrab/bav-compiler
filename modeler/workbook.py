@@ -21,19 +21,19 @@ from core.data.historical_segments import (
 )
 from core.data.interface import LineItem, StandardizedFinancials
 from core.data.line_identity import line_identity
-from core.model.classification import BALANCE_SHEET_CATEGORIES
-from core.model.financial_math import compute_anchor
-from core.model.earnings_quality import (
+from modeler.classification import BALANCE_SHEET_CATEGORIES
+from modeler.financial_math import compute_anchor
+from modeler.earnings_quality import (
     compute_earnings_quality_series,
     earnings_quality_availability,
     resolve_sbc_source,
 )
-from core.model.earnings_quality_change import compute_earnings_quality_change_series
-from core.model.fixed_asset import (
+from modeler.earnings_quality_change import compute_earnings_quality_change_series
+from modeler.fixed_asset import (
     compute_fixed_asset_series,
     fixed_asset_applicable,
 )
-from core.model.geographic_segment import (
+from modeler.geographic_segment import (
     compute_geographic_segment_series,
     geographic_segment_applicable,
 )
@@ -41,15 +41,15 @@ from core.data.historical_operating_kpis import (
     FAMILY_COMPARABLE_SALES_GROWTH,
     FAMILY_SALES_PER_SQUARE_FOOT,
 )
-from core.model.management_kpi import (
+from modeler.management_kpi import (
     compute_management_kpi_series,
     management_kpi_applicable,
 )
-from core.model.operating_kpi import (
+from modeler.operating_kpi import (
     compute_operating_kpi_series,
     operating_kpi_applicable,
 )
-from core.model.operating_kpi_relationships import (
+from modeler.operating_kpi_relationships import (
     COMPARABLE_SALES_SCOPE_NOTE,
     SALES_PER_SQUARE_FOOT_REVENUE_SCOPE_NOTE,
     SCOPE_NOTE,
@@ -68,38 +68,38 @@ from extractor.data.historical_strategy import (
     THEME_STORE_EXPANSION,
 )
 from modeler.revenue_driver import revenue_driver_applicable
-from core.model.revenue_per_store import (
+from modeler.revenue_per_store import (
     SCOPE_NOTE as REVENUE_PER_STORE_SCOPE_NOTE,
     compute_revenue_per_store_series,
     revenue_per_store_applicable,
 )
-from core.model.goodwill_intangibles import (
+from modeler.goodwill_intangibles import (
     compute_goodwill_intangibles_series,
     goodwill_intangibles_applicable,
     goodwill_intangibles_availability,
     resolve_goodwill_intangibles_sources,
 )
-from core.model.lease_liability import (
+from modeler.lease_liability import (
     compute_lease_liability_series,
     lease_liability_applicable,
     resolve_lease_liability_source,
 )
-from core.model.deferred_tax import (
+from modeler.deferred_tax import (
     compute_deferred_tax_series,
     deferred_tax_applicable,
     resolve_deferred_tax_sources,
 )
-from core.model.acquisition_cash import (
+from modeler.acquisition_cash import (
     compute_acquisition_cash_series,
     acquisition_cash_applicable,
     resolve_acquisition_cash_source,
 )
-from core.model.share_repurchase import (
+from modeler.share_repurchase import (
     compute_share_repurchase_series,
     share_repurchase_applicable,
     resolve_share_repurchase_source,
 )
-from core.model.cash_rollforward import (
+from modeler.cash_rollforward import (
     BEGINNING_CONCEPT,
     CHANGE_CONCEPT,
     ENDING_CONCEPT,
@@ -134,7 +134,7 @@ from modeler.reported_margin import (
     reported_operating_margin_applicable,
     resolve_reported_margin_sources,
 )
-from core.model.inventory_analysis import (
+from modeler.inventory_analysis import (
     CHANGE_IN_INVENTORIES_CONCEPT,
     INVENTORIES_CONCEPT,
     compute_inventory_analysis_series,
@@ -148,48 +148,48 @@ from core.model.inventory_analysis import (
     reconstructed_inventory_change_applicable,
     resolve_inventory_analysis_sources,
 )
-from core.model.capex import (
+from modeler.capex import (
     compute_capex_series,
     capex_applicable,
     resolve_capex_source,
     resolve_operating_cash_source,
 )
-from core.model.lease_repayment import (
+from modeler.lease_repayment import (
     compute_lease_repayment_series,
     lease_repayment_applicable,
     resolve_lease_repayment_source,
 )
-from core.model.lease_rou import (
+from modeler.lease_rou import (
     compute_lease_rou_series,
     lease_rou_applicable,
     resolve_lease_rou_source,
 )
-from core.model.ownership_attribution import (
+from modeler.ownership_attribution import (
     compute_ownership_attribution_series,
     ownership_attribution_applicable,
 )
 from core.model.judgment import JudgmentCase, classification_judgment_cases
-from core.model.line_resolver import resolve_line, workbook_row_for
+from modeler.line_resolver import resolve_line, workbook_row_for
 from core.model.normalization import (
     NormalizationCase,
     compute_normalization_series,
     normalization_cases,
 )
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.normalized_per_share import compute_normalized_per_share_series
-from core.model.per_share import compute_per_share_series, per_share_available
-from core.model.per_share_attribution import compute_per_share_attribution_series
-from core.model.profitability_change import compute_profitability_change_series
-from core.model.profitability_drivers import compute_profitability_driver_series
-from core.model.ratio_values import SOURCE_UNAVAILABLE, is_source_unavailable
-from core.model.roe_attribution import compute_roe_attribution_series
-from core.model.ri_engine import run_scenario, weighted_ivps
-from core.model.source_availability import (
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.normalized_per_share import compute_normalized_per_share_series
+from modeler.per_share import compute_per_share_series, per_share_available
+from modeler.per_share_attribution import compute_per_share_attribution_series
+from modeler.profitability_change import compute_profitability_change_series
+from modeler.profitability_drivers import compute_profitability_driver_series
+from modeler.ratio_values import SOURCE_UNAVAILABLE, is_source_unavailable
+from modeler.roe_attribution import compute_roe_attribution_series
+from modeler.ri_engine import run_scenario, weighted_ivps
+from modeler.source_availability import (
     assess_interest_availability,
     availability_payload,
     filter_available_specs,
 )
-from core.model.working_capital import (
+from modeler.working_capital import (
     compute_working_capital_series,
     working_capital_applicable,
 )
@@ -321,7 +321,7 @@ from modeler.engine.build_contract import (
     complete_build_modules, prepare_complete_build, write_complete_build,
     verify_complete_build,
 )
-from core.model.historical_expected import (
+from modeler.historical_expected import (
     historical_expected_series,
     per_share_expected_series,
     profitability_change_expected_series,

@@ -7,7 +7,7 @@ from dataclasses import replace
 import pytest
 
 from core.current_build import prepare_company_input, resolve_company
-from core.model.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO
+from modeler.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO
 from modeler.research.drivers_view import (
     assemble_drivers_view,
     margin_reconstruction_complete,

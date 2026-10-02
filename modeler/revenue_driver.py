@@ -29,17 +29,17 @@ from extractor.data.historical_strategy import (
     HistoricalStrategyData,
     HistoricalStrategyDisclosure,
 )
-from core.model.geographic_segment import (
+from modeler.geographic_segment import (
     compute_geographic_segment_series,
     geographic_segment_applicable,
 )
-from core.model.line_resolver import MissingLineError
-from core.model.management_kpi import (
+from modeler.line_resolver import MissingLineError
+from modeler.management_kpi import (
     compute_management_kpi_series,
     management_kpi_applicable,
 )
-from core.model.operating_kpi import compute_operating_kpi_series, operating_kpi_applicable
-from core.model.operating_kpi_relationships import (
+from modeler.operating_kpi import compute_operating_kpi_series, operating_kpi_applicable
+from modeler.operating_kpi_relationships import (
     compute_operating_kpi_revenue_comparable_sales_relationship,
     compute_operating_kpi_revenue_sales_per_square_foot_relationship,
     compute_operating_kpi_revenue_store_relationship,
@@ -47,10 +47,10 @@ from core.model.operating_kpi_relationships import (
     operating_kpi_revenue_sales_per_square_foot_relationship_applicable,
     operating_kpi_revenue_store_relationship_applicable,
 )
-from core.model.period_axis import PeriodAxisError, canonical_fiscal_periods
-from core.model.ratio_values import SOURCE_UNAVAILABLE, is_source_unavailable
+from modeler.period_axis import PeriodAxisError, canonical_fiscal_periods
+from modeler.ratio_values import SOURCE_UNAVAILABLE, is_source_unavailable
 from modeler.reported_margin import KIND_IDENTITY, MarginRelationshipAssessment
-from core.model.revenue_per_store import (
+from modeler.revenue_per_store import (
     compute_revenue_per_store_series,
     revenue_per_store_applicable,
 )

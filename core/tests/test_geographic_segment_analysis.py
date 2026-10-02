@@ -26,7 +26,7 @@ from core.ingestion.filing_standardizer import (
     standardize_reconciled,
 )
 from core.ingestion.filing_validator import validate_extracted_filing
-from core.model.geographic_segment import (
+from modeler.geographic_segment import (
     GEOGRAPHIC_RATIO_TOLERANCE,
     REPORTED_OPERATING_MARGIN_BASIS,
     _operating_profit_amount_bridge,
@@ -34,9 +34,9 @@ from core.model.geographic_segment import (
     compute_geographic_segment_series,
     geographic_segment_applicable,
 )
-from core.model.line_resolver import MissingLineError
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO, ratio_or_na
+from modeler.line_resolver import MissingLineError
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO, ratio_or_na
 from core.tests.test_geographic_segment_facts import (
     _lululemon_validated,
     _mutate_fy2025_prior_2025,

@@ -19,14 +19,14 @@ from core.data.interface import (
 )
 from core.data.standardized_io import standardized_from_payload
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.financial_math import compute_anchor
-from core.model.operating_forecast import (
+from modeler.financial_math import compute_anchor
+from modeler.operating_forecast import (
     ForecastDriverAssumption,
     OperatingForecastAssumptions,
     compute_one_year_operating_forecast,
 )
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.working_capital import compute_working_capital_series
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.working_capital import compute_working_capital_series
 
 ROOT = Path(__file__).resolve().parents[2]
 DEMO_JSON = ROOT / "example" / "DEMO_HK_Standardized.json"

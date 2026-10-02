@@ -64,15 +64,15 @@ from core.engine.reference_model import (
 from core.ingestion.filing_reconciler import reconcile_filings
 from core.ingestion.filing_standardizer import standardize_reconciled
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.geographic_segment import (
+from modeler.geographic_segment import (
     GEOGRAPHIC_RATIO_TOLERANCE,
     compute_geographic_segment_series,
     geographic_segment_applicable,
 )
-from core.model.historical_expected import geographic_expected_value_for_component
-from core.model.line_resolver import MissingLineError
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO
+from modeler.historical_expected import geographic_expected_value_for_component
+from modeler.line_resolver import MissingLineError
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO
 from core.tests.test_capex import P1, P2, _tiny
 from core.tests.test_geographic_segment_analysis import (
     ADMIT_2022,

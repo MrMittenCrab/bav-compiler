@@ -209,7 +209,7 @@ The **bounded** balance + optional intangible-payments intensity module **is** s
 
 ### Resolution prerequisite (completed in Step 9M.5)
 
-Explicit concept resolution is registered in `core/model/line_resolver.py` for:
+Explicit concept resolution is registered in `modeler/line_resolver.py` for:
 
 1. BS `goodwill`
 2. BS `intangible_assets`

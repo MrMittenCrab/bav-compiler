@@ -18,9 +18,9 @@ from core.ingestion.filing_standardizer import (
     standardize_reconciled,
 )
 from core.ingestion.management_kpi import management_admission_payload
-from core.model.line_resolver import AmbiguousLineError, MissingLineError
-from core.model.management_kpi import compute_management_kpi_series, management_kpi_applicable
-from core.model.operating_kpi import (
+from modeler.line_resolver import AmbiguousLineError, MissingLineError
+from modeler.management_kpi import compute_management_kpi_series, management_kpi_applicable
+from modeler.operating_kpi import (
     compute_operating_kpi_series,
     operating_kpi_applicable,
 )
@@ -36,7 +36,7 @@ from core.ingestion.management_kpi_identity import (
     POP_STORES_AND_DTC,
     POP_STORES_AND_ECOMMERCE,
 )
-from core.model.operating_kpi_relationships import (
+from modeler.operating_kpi_relationships import (
     CALCULATION_KIND,
     COMPARABLE_SALES_INPUT_LABEL,
     COMPARABLE_SALES_KIND,
@@ -65,8 +65,8 @@ from core.model.operating_kpi_relationships import (
     operating_kpi_revenue_sales_per_square_foot_relationship_applicable,
     operating_kpi_revenue_store_relationship_applicable,
 )
-from core.model.period_axis import PeriodAxisError, canonical_fiscal_periods
-from core.model.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO, ratio_or_na
+from modeler.period_axis import PeriodAxisError, canonical_fiscal_periods
+from modeler.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO, ratio_or_na
 from core.tests.test_historical_segment import _base_payload
 from core.tests.test_lululemon_benchmark import REVENUE_ANCHORS
 from core.tests.test_management_kpi_admission import (
@@ -1688,7 +1688,7 @@ def test_spsf_sparse_semantic_mismatch_qualifier_order_zero_decline_and_missing(
     assert sparse_series.sales_per_square_foot[P0] == 1400
     assert sparse_series.sales_per_square_foot[P2] == 1430
 
-    from core.model.management_kpi import (
+    from modeler.management_kpi import (
         REASON_CALENDAR_REPORTING_MISMATCH,
         REASON_CALENDAR_WEEK_MISMATCH,
         REASON_DEFINITION_MISMATCH,

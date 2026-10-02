@@ -290,7 +290,7 @@ def test_ordinary_prepare_writes_resolution_and_keeps_revenue_per_store(tmp_path
         for item in fin.historical_operating_kpis.observations
     }
     assert stores == INDEPENDENT_STORE_TOTALS
-    from core.model.revenue_per_store import compute_revenue_per_store_series
+    from modeler.revenue_per_store import compute_revenue_per_store_series
 
     series = compute_revenue_per_store_series(fin)
     for period, revenue in REVENUE_ANCHORS.items():

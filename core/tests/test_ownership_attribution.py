@@ -19,9 +19,9 @@ from core.engine.component_catalog import (
     expand_ownership_attribution_specs,
 )
 from core.engine.reference_model import ReferenceModelBuilder
-from core.model.financial_math import compute_anchor
-from core.model.line_resolver import AmbiguousLineError, resolve_line
-from core.model.ownership_attribution import (
+from modeler.financial_math import compute_anchor
+from modeler.line_resolver import AmbiguousLineError, resolve_line
+from modeler.ownership_attribution import (
     OWNERSHIP_BRIDGE_TOLERANCE,
     OwnershipAttributionIntegrityError,
     compute_ownership_attribution_series,
@@ -29,8 +29,8 @@ from core.model.ownership_attribution import (
     ownership_attribution_availability,
     per_share_earnings_numerator,
 )
-from core.model.per_share import compute_per_share_series
-from core.model.period_axis import canonical_fiscal_periods
+from modeler.per_share import compute_per_share_series
+from modeler.period_axis import canonical_fiscal_periods
 from core.trainer.checker import check_workbook
 from core.trainer.semantic_io import load_semantic_map, parse_cell_ref
 from core.trainer.workbook import build_training_workbook

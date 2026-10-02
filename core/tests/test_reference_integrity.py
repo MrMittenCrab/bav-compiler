@@ -15,11 +15,11 @@ import pytest
 from core.data.interface import DocumentManifest, DocumentType, LineItem
 from core.engine.component_catalog import COMPONENT_CATALOG, concrete_component_id, expand_historical_specs
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.classification import BALANCE_SHEET_CATEGORIES
-from core.model.financial_math import compute_anchor
-from core.model.line_resolver import resolve_line
-from core.model.ri_engine import run_scenario
-from core.model.source_values import required_period_value
+from modeler.classification import BALANCE_SHEET_CATEGORIES
+from modeler.financial_math import compute_anchor
+from modeler.line_resolver import resolve_line
+from modeler.ri_engine import run_scenario
+from modeler.source_values import required_period_value
 from core.trainer.semantic_io import load_semantic_map, parse_cell_ref
 from core.trainer.workbook import build_training_workbook
 
@@ -101,7 +101,7 @@ def test_anchor_exposes_tax_and_interest_expected_values():
     int_inc = resolve_line(data.income_statement, "interest_income", required=True).item
     ni = resolve_line(data.income_statement, "net_income", required=True).item
 
-    from core.model.ratio_values import ratio_or_na
+    from modeler.ratio_values import ratio_or_na
 
     pretax_v = required_period_value(pretax, last, field="pretax_income")
     tax_v = required_period_value(tax, last, field="tax_expense")
@@ -254,7 +254,7 @@ def test_nopat_formula_adds_after_tax_net_interest(tmp_path):
     periods = data.fiscal_years() or data.period_dates()
     anchor = compute_anchor(data, periods)
     assert nopat.expected_value == anchor.nopat
-    from core.model.line_resolver import resolve_line
+    from modeler.line_resolver import resolve_line
 
     ni_item = resolve_line(data.income_statement, "net_income", required=True).item
     assert abs(
@@ -689,7 +689,7 @@ def test_build_rejects_failed_source_checksum(tmp_path):
 def test_build_rejects_reformulation_gap(tmp_path):
     from datetime import date
     from core.data.interface import FinancialPeriod, StandardizedFinancials
-    from core.model.classification import ReformulationIntegrityError
+    from modeler.classification import ReformulationIntegrityError
     import pytest
 
     p1, p2 = date(2024, 12, 31), date(2025, 12, 31)
@@ -762,9 +762,9 @@ def test_condensed_has_live_reconciliation_rows(tmp_path):
 
 
 def test_classification_table_uses_shared_decisions(tmp_path):
-    from core.model.classification import BALANCE_SHEET_CATEGORIES
+    from modeler.classification import BALANCE_SHEET_CATEGORIES
     from core.engine.reference_model import ReferenceModelBuilder
-    from core.model.financial_math import compute_anchor
+    from modeler.financial_math import compute_anchor
     from core.data.interface import FinancialPeriod, StandardizedFinancials
     from datetime import date
 
@@ -1164,8 +1164,8 @@ def _descending_three_year_fin():
 def test_descending_periods_build_chronological_model(tmp_path):
     from datetime import date
     from core.engine.reference_model import ReferenceModelBuilder
-    from core.model.financial_math import compute_anchor
-    from core.model.period_axis import canonical_fiscal_periods
+    from modeler.financial_math import compute_anchor
+    from modeler.period_axis import canonical_fiscal_periods
 
     fin = _descending_three_year_fin()
     assert [p.end_date.year for p in fin.periods] == [2025, 2024, 2023]
@@ -1224,7 +1224,7 @@ def test_duplicate_fiscal_periods_rejected():
     from datetime import date
     from core.data.interface import FinancialPeriod
     from core.engine.reference_model import ReferenceModelBuilder
-    from core.model.period_axis import PeriodAxisError
+    from modeler.period_axis import PeriodAxisError
 
     fin = _descending_three_year_fin()
     d24 = date(2024, 12, 31)
@@ -1240,7 +1240,7 @@ def test_gapped_annual_history_requires_contiguous_periods():
     from datetime import date
     from core.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
     from core.engine.reference_model import ReferenceModelBuilder
-    from core.model.period_axis import PeriodAxisError
+    from modeler.period_axis import PeriodAxisError
 
     d21, d23 = date(2021, 12, 31), date(2023, 12, 31)
 
@@ -1352,12 +1352,12 @@ def test_guided_classification_judgment_cases_and_suppressions():
 
     from core.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
     from core.engine.reference_model import ReferenceModelBuilder
-    from core.model.classification import reformulate_balance_sheet
+    from modeler.classification import reformulate_balance_sheet
     from core.model.judgment import (
         CLASSIFICATION_JUDGMENT_TEMPLATES,
         classification_judgment_cases,
     )
-    from core.model.period_axis import canonical_fiscal_periods
+    from modeler.period_axis import canonical_fiscal_periods
 
     assert len(CLASSIFICATION_JUDGMENT_TEMPLATES) == 12
     assert len(set(CLASSIFICATION_JUDGMENT_TEMPLATES)) == 12
@@ -1479,7 +1479,7 @@ def test_judgment_cases_use_canonical_periods_not_interim_only_values():
 
     from core.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
     from core.engine.reference_model import ReferenceModelBuilder
-    from core.model.period_axis import canonical_fiscal_periods
+    from modeler.period_axis import canonical_fiscal_periods
 
     annual = date(2024, 12, 31)
     interim = date(2025, 6, 30)
@@ -1536,7 +1536,7 @@ def test_judgment_cases_use_canonical_periods_not_interim_only_values():
 
 def test_demo_has_one_lease_judgment_case_and_204_formula_components(tmp_path):
     from core.engine.reference_model import ReferenceModelBuilder
-    from core.model.classification import check_reformulation_integrity
+    from modeler.classification import check_reformulation_integrity
     from core.model.judgment import CLASSIFICATION_JUDGMENT_TEMPLATES
 
     data = _ingest_demo()
@@ -1829,8 +1829,8 @@ def test_live_classification_two_case_judgment_links_without_collision(tmp_path)
 
 
 def test_historical_expected_covers_catalog_and_matches_reference_components(tmp_path):
-    from core.model.earnings_quality import compute_earnings_quality_series
-    from core.model.historical_expected import (
+    from modeler.earnings_quality import compute_earnings_quality_series
+    from modeler.historical_expected import (
         expected_value_for_component,
         historical_expected_series,
     )
@@ -1860,9 +1860,9 @@ def test_historical_expected_covers_catalog_and_matches_reference_components(tmp
 
 
 def test_alternative_classification_changes_and_invariants():
-    from core.model.classification import check_reformulation_integrity
-    from core.model.historical_expected import historical_expected_series
-    from core.model.period_axis import canonical_fiscal_periods
+    from modeler.classification import check_reformulation_integrity
+    from modeler.historical_expected import historical_expected_series
+    from modeler.period_axis import canonical_fiscal_periods
 
     data = _ingest_demo()
     periods = canonical_fiscal_periods(data)
@@ -1908,7 +1908,7 @@ def test_alternative_classification_changes_and_invariants():
 
 def test_required_core_income_period_completeness(tmp_path):
     from core.engine.reference_model import ReferenceModelBuilder
-    from core.model.source_values import MissingHistoricalValueError
+    from modeler.source_values import MissingHistoricalValueError
 
     concepts = (
         ("Revenue", "revenue"),
@@ -1969,7 +1969,7 @@ def test_required_core_income_period_completeness(tmp_path):
 
 def test_missing_net_income_fails_without_cfo_quality_module(tmp_path):
     from core.engine.reference_model import ReferenceModelBuilder
-    from core.model.source_values import MissingHistoricalValueError
+    from modeler.source_values import MissingHistoricalValueError
 
     fin = _base_fin()
     periods = [p.end_date for p in fin.periods]
@@ -1991,7 +1991,7 @@ def test_missing_net_income_fails_without_cfo_quality_module(tmp_path):
 
 def test_missing_bs_detail_fails_without_reported_totals(tmp_path):
     from core.data.interface import FinancialPeriod, StandardizedFinancials
-    from core.model.source_values import MissingHistoricalValueError
+    from modeler.source_values import MissingHistoricalValueError
 
     p1, p2 = date(2024, 12, 31), date(2025, 12, 31)
     cash = _li("Cash and cash equivalents", 100, 110)
@@ -2029,7 +2029,7 @@ def test_missing_bs_detail_fails_without_reported_totals(tmp_path):
 
 
 def test_dupont_undefined_ratio_semantics_and_propagation():
-    from core.model.ratio_values import UNDEFINED_RATIO
+    from modeler.ratio_values import UNDEFINED_RATIO
 
     # Zero prior revenue -> sales growth #N/A; zero current with nonzero prior -> -1.0
     fin = _base_fin()
@@ -2179,7 +2179,7 @@ def test_dupont_undefined_ratio_semantics_and_propagation():
 
 
 def test_dupont_na_formulas_and_check_accept_undefined(tmp_path):
-    from core.model.ratio_values import UNDEFINED_RATIO
+    from modeler.ratio_values import UNDEFINED_RATIO
     from core.tests.test_normalization import _inject_formula_and_cached_value
     from core.trainer.checker import check_workbook
     from core.trainer.semantic_io import parse_cell_ref
@@ -2278,7 +2278,7 @@ def test_dupont_na_formulas_and_check_accept_undefined(tmp_path):
 
 
 def test_effective_tax_rate_undefined_when_pretax_zero():
-    from core.model.ratio_values import UNDEFINED_RATIO
+    from modeler.ratio_values import UNDEFINED_RATIO
 
     fin = _base_fin()
     periods = [p.end_date for p in fin.periods]
@@ -2308,7 +2308,7 @@ def test_effective_tax_rate_undefined_when_pretax_zero():
 
 def test_undefined_etr_niat_nopat_short_circuit_and_propagation():
     from core.data.interface import StandardizedFinancials
-    from core.model.ratio_values import UNDEFINED_RATIO
+    from modeler.ratio_values import UNDEFINED_RATIO
 
     periods = [p.end_date for p in _synth_periods()]
 
@@ -2385,7 +2385,7 @@ def test_undefined_etr_niat_nopat_short_circuit_and_propagation():
 
 def test_condensed_etr_niat_formulas_and_check_na(tmp_path):
     from core.data.interface import FinancialPeriod, StandardizedFinancials
-    from core.model.ratio_values import UNDEFINED_RATIO
+    from modeler.ratio_values import UNDEFINED_RATIO
     from core.tests.test_normalization import _inject_formula_and_cached_value
     from core.trainer.checker import check_workbook
     from core.trainer.semantic_io import parse_cell_ref
@@ -3132,8 +3132,8 @@ def test_pretax_parity_zero_denominator_emitted_arithmetic(tmp_path):
 
 def test_pretax_parity_detects_alias_removal(tmp_path, monkeypatch):
     """Parity coverage fails closed if income_before_tax alias is removed."""
-    from core.model import line_resolver as lr
-    from core.model.line_resolver import MissingLineError
+    from modeler import line_resolver as lr
+    from modeler.line_resolver import MissingLineError
 
     fin = _pretax_parity_fin(_ALIAS_EXPECT, reorder=True)
     _build_and_validate_pretax_parity(

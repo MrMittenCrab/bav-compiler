@@ -53,8 +53,8 @@ from core.ingestion.management_kpi_identity import (
     POP_STORES_AND_DTC,
     POP_STORES_AND_ECOMMERCE,
 )
-from core.model.line_resolver import MissingLineError
-from core.model.period_axis import PeriodAxisError
+from modeler.line_resolver import MissingLineError
+from modeler.period_axis import PeriodAxisError
 from core.model.revenue_driver import (
     ADDITIONAL_SPSF,
     FAILED_COMPSALES,

@@ -25,9 +25,9 @@ from core.engine.component_catalog import (
     revenue_per_store_period_end_dependency_ids,
 )
 from core.engine.reference_model import ReferenceModelBuilder
-from core.model.historical_expected import operating_kpi_expected_value_for_component
-from core.model.line_resolver import MissingLineError
-from core.model.operating_kpi_relationships import (
+from modeler.historical_expected import operating_kpi_expected_value_for_component
+from modeler.line_resolver import MissingLineError
+from modeler.operating_kpi_relationships import (
     CALCULATION_KIND,
     REASON_MISSING_PRIOR_STORE_COUNT,
     REASON_MISSING_REVENUE,
@@ -35,9 +35,9 @@ from core.model.operating_kpi_relationships import (
     REVENUE_INPUT_LABEL,
     STORE_COUNT_INPUT_LABEL,
 )
-from core.model.period_axis import PeriodAxisError
-from core.model.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO
-from core.model.revenue_per_store import (
+from modeler.period_axis import PeriodAxisError
+from modeler.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO
+from modeler.revenue_per_store import (
     AVERAGE_STORE_DENOMINATOR_LABEL,
     PERIOD_END_DENOMINATOR_LABEL,
     REVENUE_PER_STORE_RATIO_TOLERANCE,
@@ -60,7 +60,7 @@ from core.tests.test_operating_kpi_facts import (
 )
 from core.tests.test_operating_kpi_relationships import _fin_with_relationship
 from core.data.standardized_io import standardized_from_payload, standardized_to_payload
-from core.model.period_axis import canonical_fiscal_periods
+from modeler.period_axis import canonical_fiscal_periods
 
 P0 = date(2023, 12, 31)
 P1 = date(2024, 12, 31)

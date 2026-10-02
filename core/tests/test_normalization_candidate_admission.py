@@ -28,15 +28,15 @@ from core.ingestion.normalization_candidate_admission import (
     printed_page_lookup_from_evidence,
     run_normalization_candidate_handoff,
 )
-from core.model.financial_math import AnchorMetrics, HistoricalSeries
+from modeler.financial_math import AnchorMetrics, HistoricalSeries
 from core.model.normalization import (
     SUPPORTED_NORMALIZATION_SCOPE,
     compute_normalization_series,
     normalization_cases,
     resolve_income_statement_selector,
 )
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.ratio_values import UNDEFINED_RATIO
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.ratio_values import UNDEFINED_RATIO
 
 ROOT = Path(__file__).resolve().parents[2]
 QUALIFY = Path("/tmp/bav_norm_qualify_9M2411166")

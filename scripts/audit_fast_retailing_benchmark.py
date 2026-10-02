@@ -784,7 +784,7 @@ def _source_failure(
 
 
 def _canonical_periods(fin) -> list:
-    from core.model.period_axis import canonical_fiscal_periods
+    from modeler.period_axis import canonical_fiscal_periods
 
     return canonical_fiscal_periods(fin)
 
@@ -1360,30 +1360,30 @@ def _verify_release_pair_contract(
 
 
 def _module_applicability(fin, anchor=None) -> dict[str, Any]:
-    from core.model.earnings_quality import earnings_quality_availability
-    from core.model.deferred_tax import (
+    from modeler.earnings_quality import earnings_quality_availability
+    from modeler.deferred_tax import (
         deferred_tax_applicable,
         deferred_tax_availability,
     )
-    from core.model.fixed_asset import fixed_asset_applicable
-    from core.model.goodwill_intangibles import (
+    from modeler.fixed_asset import fixed_asset_applicable
+    from modeler.goodwill_intangibles import (
         goodwill_intangibles_applicable,
         goodwill_intangibles_availability,
     )
-    from core.model.lease_liability import (
+    from modeler.lease_liability import (
         lease_liability_applicable,
         lease_liability_availability,
     )
-    from core.model.lease_rou import (
+    from modeler.lease_rou import (
         lease_rou_applicable,
         lease_rou_availability,
     )
-    from core.model.ownership_attribution import (
+    from modeler.ownership_attribution import (
         ownership_attribution_applicable,
         ownership_attribution_availability,
     )
-    from core.model.per_share import per_share_available
-    from core.model.working_capital import working_capital_applicable
+    from modeler.per_share import per_share_available
+    from modeler.working_capital import working_capital_applicable
 
     lease_avail = lease_liability_availability(fin)
     lease_rou_avail = lease_rou_availability(fin)

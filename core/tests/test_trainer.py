@@ -13,7 +13,7 @@ from core.engine.component_catalog import (
     expand_historical_specs,
 )
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.classification import BALANCE_SHEET_CATEGORIES
+from modeler.classification import BALANCE_SHEET_CATEGORIES
 from core.trainer.checker import check_workbook
 from core.trainer.semantic_io import (
     answer_key_path_for,
@@ -1379,9 +1379,9 @@ def test_alternative_treatment_exact_formula_is_green(tmp_path):
     trainer_path, answer_key_path = _build_pair(tmp_path)
     smap = load_semantic_map(answer_key_path)
     from core.data.standardized_io import standardized_from_payload
-    from core.model.financial_math import compute_anchor
-    from core.model.historical_expected import expected_value_for_component
-    from core.model.period_axis import canonical_fiscal_periods
+    from modeler.financial_math import compute_anchor
+    from modeler.historical_expected import expected_value_for_component
+    from modeler.period_axis import canonical_fiscal_periods
     from core.trainer.check_context import classification_overrides_for_check, load_check_context
 
     comp = max(
@@ -1414,9 +1414,9 @@ def test_alternative_treatment_exact_formula_is_green(tmp_path):
 
 def test_alternative_treatment_equivalent_formula_and_stale_reference(tmp_path):
     from core.data.standardized_io import standardized_from_payload
-    from core.model.financial_math import compute_anchor
-    from core.model.historical_expected import expected_value_for_component
-    from core.model.period_axis import canonical_fiscal_periods
+    from modeler.financial_math import compute_anchor
+    from modeler.historical_expected import expected_value_for_component
+    from modeler.period_axis import canonical_fiscal_periods
     from core.trainer.check_context import classification_overrides_for_check, load_check_context
 
     trainer_path, answer_key_path = _build_pair(tmp_path)
@@ -1476,9 +1476,9 @@ def test_dynamic_check_two_case_combined_state(tmp_path):
 
     from core.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
     from core.engine.reference_model import ReferenceModelBuilder
-    from core.model.financial_math import compute_anchor
-    from core.model.historical_expected import expected_value_for_component
-    from core.model.period_axis import canonical_fiscal_periods
+    from modeler.financial_math import compute_anchor
+    from modeler.historical_expected import expected_value_for_component
+    from modeler.period_axis import canonical_fiscal_periods
     from core.trainer.check_context import classification_overrides_for_check, load_check_context
     from core.trainer.workbook import TrainingWorkbookGenerator
 

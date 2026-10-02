@@ -23,8 +23,8 @@ from core.engine.component_catalog import (
     expand_normalization_specs,
 )
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.financial_math import compute_anchor
-from core.model.historical_expected import expected_value_for_component
+from modeler.financial_math import compute_anchor
+from modeler.historical_expected import expected_value_for_component
 from core.model.normalization import (
     NORMALIZATION_TREATMENTS,
     SUPPORTED_NORMALIZATION_SCOPE,
@@ -32,7 +32,7 @@ from core.model.normalization import (
     normalization_cases,
     resolve_income_statement_selector,
 )
-from core.model.period_axis import canonical_fiscal_periods
+from modeler.period_axis import canonical_fiscal_periods
 from core.trainer.checker import check_workbook
 from core.trainer.check_context import (
     CHECK_CONTEXT_SCHEMA_VERSION,
@@ -1148,7 +1148,7 @@ def test_judgment_gh_edits_do_not_fail_trusted_validation(tmp_path):
 
 def test_normalization_candidate_period_completeness_required():
     from core.model.normalization import NormalizationCase
-    from core.model.source_values import MissingHistoricalValueError
+    from modeler.source_values import MissingHistoricalValueError
     from core.data.line_identity import line_identity
 
     fin = _tiny_fin(
@@ -1242,7 +1242,7 @@ def test_normalization_candidate_period_completeness_required():
 
 def test_normalization_undefined_etr_tax_effect_and_check(tmp_path):
     from core.engine.reference_model import EARNINGS_NORMALIZATION_SHEET
-    from core.model.ratio_values import UNDEFINED_RATIO
+    from modeler.ratio_values import UNDEFINED_RATIO
 
     d1, d2 = date(2024, 12, 31), date(2025, 12, 31)
     fin = StandardizedFinancials(

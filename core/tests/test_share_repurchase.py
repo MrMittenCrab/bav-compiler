@@ -23,18 +23,18 @@ from core.engine.component_catalog import (
 )
 from core.engine.reference_model import ReferenceModelBuilder
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.historical_expected import share_repurchase_expected_series
-from core.model.line_resolver import AmbiguousLineError, MissingLineError, resolve_line
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.ratio_values import UNDEFINED_RATIO
-from core.model.share_repurchase import (
+from modeler.historical_expected import share_repurchase_expected_series
+from modeler.line_resolver import AmbiguousLineError, MissingLineError, resolve_line
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.ratio_values import UNDEFINED_RATIO
+from modeler.share_repurchase import (
     cash_after_ppe_capex_acquisitions_and_repurchases_applicable,
     compute_share_repurchase_series,
     resolve_share_repurchase_source,
     share_repurchase_applicable,
     share_repurchase_availability,
 )
-from core.model.source_values import MissingHistoricalValueError
+from modeler.source_values import MissingHistoricalValueError
 from core.tests.test_acquisition_cash import _add_acq
 from core.tests.test_capex import P1, P2, _anchor, _dupont_row_by_label, _tiny
 from core.tests.test_normalization import _inject_formula_and_cached_value
@@ -375,7 +375,7 @@ def test_period_ordering_and_unchanged_input():
     _add_acq(fin)
     stored = _add_rp(fin, values=(-30.0, -40.0))
     reverse = [P2, P1]
-    from core.model.financial_math import compute_anchor
+    from modeler.financial_math import compute_anchor
 
     series = compute_share_repurchase_series(
         fin, reverse, compute_anchor(fin, reverse)

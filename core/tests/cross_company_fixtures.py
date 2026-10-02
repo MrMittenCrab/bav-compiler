@@ -11,7 +11,7 @@ from core.data.interface import (
     LineItem,
     StandardizedFinancials,
 )
-from core.model.per_share import SUPPORTED_SHARE_SCALE_BASIS
+from modeler.per_share import SUPPORTED_SHARE_SCALE_BASIS
 
 PERIODS = tuple(date(y, 12, 31) for y in range(2021, 2026))
 

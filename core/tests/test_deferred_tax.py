@@ -22,16 +22,16 @@ from core.engine.component_catalog import (
 )
 from core.engine.reference_model import ReferenceModelBuilder
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.deferred_tax import (
+from modeler.deferred_tax import (
     compute_deferred_tax_series,
     deferred_tax_applicable,
     deferred_tax_availability,
     resolve_deferred_tax_sources,
 )
-from core.model.historical_expected import deferred_tax_expected_series
-from core.model.line_resolver import AmbiguousLineError, resolve_line
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.source_values import MissingHistoricalValueError
+from modeler.historical_expected import deferred_tax_expected_series
+from modeler.line_resolver import AmbiguousLineError, resolve_line
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.source_values import MissingHistoricalValueError
 from core.tests.test_normalization import _inject_formula_and_cached_value
 from core.trainer.checker import check_workbook
 from core.trainer.semantic_io import load_semantic_map, parse_cell_ref

@@ -22,13 +22,13 @@ from core.engine.component_catalog import (
 )
 from core.engine.reference_model import ReferenceModelBuilder
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.earnings_quality import EarningsQualitySeries
-from core.model.earnings_quality_change import compute_earnings_quality_change_series
-from core.model.historical_expected import (
+from modeler.earnings_quality import EarningsQualitySeries
+from modeler.earnings_quality_change import compute_earnings_quality_change_series
+from modeler.historical_expected import (
     earnings_quality_change_expected_series,
     expected_value_for_component,
 )
-from core.model.ratio_values import UNDEFINED_RATIO
+from modeler.ratio_values import UNDEFINED_RATIO
 from core.trainer.checker import check_workbook
 from core.trainer.semantic_io import load_semantic_map, parse_cell_ref
 from core.trainer.workbook import build_training_workbook, group_components_by_family

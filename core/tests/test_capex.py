@@ -24,7 +24,7 @@ from core.engine.component_catalog import (
 )
 from core.engine.reference_model import ReferenceModelBuilder
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.capex import (
+from modeler.capex import (
     capex_applicable,
     capex_availability,
     cash_after_ppe_capex_applicable,
@@ -32,12 +32,12 @@ from core.model.capex import (
     resolve_capex_source,
     resolve_operating_cash_source,
 )
-from core.model.financial_math import compute_anchor
-from core.model.historical_expected import capex_expected_series
-from core.model.line_resolver import AmbiguousLineError, MissingLineError, resolve_line
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.ratio_values import UNDEFINED_RATIO
-from core.model.source_values import MissingHistoricalValueError, required_period_value
+from modeler.financial_math import compute_anchor
+from modeler.historical_expected import capex_expected_series
+from modeler.line_resolver import AmbiguousLineError, MissingLineError, resolve_line
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.ratio_values import UNDEFINED_RATIO
+from modeler.source_values import MissingHistoricalValueError, required_period_value
 from core.tests.test_normalization import _inject_formula_and_cached_value
 from core.trainer.checker import check_workbook
 from core.trainer.semantic_io import load_semantic_map, parse_cell_ref

@@ -12,11 +12,11 @@ from openpyxl import load_workbook
 from core.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
 from core.data.standardized_io import standardized_from_payload, standardized_to_payload
 from core.engine.reference_model import ReferenceModelBuilder
-from core.model.financial_math import compute_anchor
-from core.model.line_resolver import AmbiguousLineError, MissingLineError, resolve_line
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO, is_source_unavailable
-from core.model.source_availability import (
+from modeler.financial_math import compute_anchor
+from modeler.line_resolver import AmbiguousLineError, MissingLineError, resolve_line
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO, is_source_unavailable
+from modeler.source_availability import (
     REASON_ABSENT_LINE,
     REASON_AVAILABLE,
     REASON_MISSING_PERIOD_VALUE,
@@ -25,7 +25,7 @@ from core.model.source_availability import (
     comparable_interest_history_available,
     historical_average_after_tax_cod,
 )
-from core.model.source_values import MissingHistoricalValueError
+from modeler.source_values import MissingHistoricalValueError
 from core.trainer.checker import check_workbook
 from core.trainer.semantic_io import load_semantic_map, parse_cell_ref
 from core.trainer.workbook import build_training_workbook
@@ -223,7 +223,7 @@ def test_partial_period_absence_gates_only_dependent_periods(tmp_path: Path):
     assert is_source_unavailable(anchor.historical.nopat[1])
     assert is_source_unavailable(anchor.hist_avg_after_tax_cod)
     with pytest.raises(MissingHistoricalValueError, match="interest_expense"):
-        from core.model.source_values import required_period_value
+        from modeler.source_values import required_period_value
 
         required_period_value(item, P2, field="interest_expense")
     builder = ReferenceModelBuilder(fin)

@@ -16,7 +16,7 @@ from core.data.interface import (
 from core.data.validators import validate_balance_sheet
 from core.ingestion.manual_hk import HKManualDocumentAdapter
 from core.ingestion.reconciler import reconcile_financials
-from core.model.classification import (
+from modeler.classification import (
     BALANCE_SHEET_CATEGORIES,
     InvalidClassificationOverrideError,
     ReformulationIntegrityError,
@@ -25,7 +25,7 @@ from core.model.classification import (
     classify_balance_sheet_line,
     reformulate_balance_sheet,
 )
-from core.model.financial_math import compute_anchor
+from modeler.financial_math import compute_anchor
 from core.model.judgment import classification_judgment_cases
 from core.trainer.workbook import build_training_workbook
 
@@ -428,7 +428,7 @@ def test_override_suppresses_judgment_code():
 
 
 def test_bs_detail_and_optional_totals_period_completeness():
-    from core.model.source_values import MissingHistoricalValueError
+    from modeler.source_values import MissingHistoricalValueError
 
     periods = [P1, P2]
     # Complete detail + absent totals still works.
@@ -702,7 +702,7 @@ def test_sparse_interior_absence_with_neighboring_reported_zero():
 
 
 def test_sparse_absence_fails_without_independent_totals():
-    from core.model.source_values import MissingHistoricalValueError
+    from modeler.source_values import MissingHistoricalValueError
 
     periods = [P1, P2]
     fin = StandardizedFinancials(
@@ -733,7 +733,7 @@ def test_sparse_absence_fails_without_independent_totals():
 
 
 def test_sparse_absence_fails_when_total_row_null():
-    from core.model.source_values import MissingHistoricalValueError
+    from modeler.source_values import MissingHistoricalValueError
 
     periods = [P1, P2]
     fin = _sparse_balanced_fin({P1: 0.0, P2: None})
@@ -748,7 +748,7 @@ def test_sparse_absence_fails_when_total_row_null():
 
 def test_sparse_absence_fails_on_contradictory_gap():
     """Explicit None that would leave a material liability gap fails closed."""
-    from core.model.source_values import MissingHistoricalValueError
+    from modeler.source_values import MissingHistoricalValueError
 
     periods = [P1, P2]
     fin = _sparse_balanced_fin({P1: 0.0, P2: None})
@@ -766,7 +766,7 @@ def test_sparse_absence_fails_on_contradictory_gap():
 
 
 def test_sparse_missing_key_still_fails_closed():
-    from core.model.source_values import MissingHistoricalValueError
+    from modeler.source_values import MissingHistoricalValueError
 
     periods = [P1, P2]
     fin = _sparse_balanced_fin({P1: 0.0, P2: 0.0})
@@ -849,7 +849,7 @@ def _sparse_equity_fin(
 
 def test_sparse_equity_omission_fails_despite_zero_identity_gaps():
     """Regression: omitting 100 of equity via None must fail even when A/L/implied are 0."""
-    from core.model.source_values import MissingHistoricalValueError
+    from modeler.source_values import MissingHistoricalValueError
 
     periods = [P1, P2]
     fin = _sparse_equity_fin({P1: 100.0, P2: None})
@@ -867,7 +867,7 @@ def test_sparse_equity_omission_fails_despite_zero_identity_gaps():
     ],
 )
 def test_sparse_equity_absence_fails_when_detail_incomplete(retained_values):
-    from core.model.source_values import MissingHistoricalValueError
+    from modeler.source_values import MissingHistoricalValueError
 
     periods = [P1, P2]
     fin = _sparse_equity_fin(retained_values)
@@ -876,7 +876,7 @@ def test_sparse_equity_absence_fails_when_detail_incomplete(retained_values):
 
 
 def test_sparse_equity_interior_absence_fails_closed():
-    from core.model.source_values import MissingHistoricalValueError
+    from modeler.source_values import MissingHistoricalValueError
 
     p0 = date(2023, 12, 31)
     periods = [p0, P1, P2]
@@ -977,7 +977,7 @@ def test_sparse_equity_complete_rows_pass_with_eligible_absence():
 
 
 def test_sparse_equity_missing_key_fails_closed():
-    from core.model.source_values import MissingHistoricalValueError
+    from modeler.source_values import MissingHistoricalValueError
 
     periods = [P1, P2]
     fin = _sparse_equity_fin({P1: 100.0, P2: 100.0})
@@ -990,7 +990,7 @@ def test_sparse_equity_missing_key_fails_closed():
 
 
 def test_sparse_equity_unavailable_total_fails_closed():
-    from core.model.source_values import MissingHistoricalValueError
+    from modeler.source_values import MissingHistoricalValueError
 
     periods = [P1, P2]
     fin = _sparse_equity_fin({P1: 100.0, P2: None}, total_equity={P1: 150.0, P2: 50.0})
@@ -1022,7 +1022,7 @@ def test_sparse_equity_detail_gap_at_rounding_envelope_passes():
 
 def test_sparse_equity_detail_gap_beyond_rounding_envelope_fails():
     """Two equity detail rows → envelope 1.5; gap 2.0 fails closed."""
-    from core.model.source_values import MissingHistoricalValueError
+    from modeler.source_values import MissingHistoricalValueError
 
     periods = [P1, P2]
     fin = _sparse_equity_fin(
@@ -1037,7 +1037,7 @@ def test_sparse_equity_detail_gap_beyond_rounding_envelope_fails():
 
 def test_sparse_liability_fails_when_equity_detail_incomplete():
     """Sparse liability activating the gate still requires equity-detail reconciliation."""
-    from core.model.source_values import MissingHistoricalValueError
+    from modeler.source_values import MissingHistoricalValueError
 
     periods = [P1, P2]
     fin = _sparse_balanced_fin({P1: 0.0, P2: None})
@@ -1123,7 +1123,7 @@ def test_sparse_equity_explicit_override_controls_detail():
 
 
 def test_classification_curly_apostrophe_equity_alias_consistent():
-    from core.model.classification import _norm
+    from modeler.classification import _norm
 
     assert _norm("Shareholders' equity") == _norm("Shareholders\u2019 equity")
     assert _norm("Owners' equity") == _norm("Owners\u2019 equity")

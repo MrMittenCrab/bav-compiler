@@ -109,10 +109,10 @@ from core.ingestion.filing_standardizer import (
 )
 from core.ingestion.management_kpi import management_admission_payload
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.historical_expected import operating_kpi_expected_value_for_component
-from core.model.line_resolver import AmbiguousLineError, MissingLineError
-from core.model.source_values import MissingHistoricalValueError
-from core.model.management_kpi import (
+from modeler.historical_expected import operating_kpi_expected_value_for_component
+from modeler.line_resolver import AmbiguousLineError, MissingLineError
+from modeler.source_values import MissingHistoricalValueError
+from modeler.management_kpi import (
     REASON_CALENDAR_REPORTING_MISMATCH,
     REASON_CALENDAR_WEEK_MISMATCH,
     REASON_DEFINITION_MISMATCH,
@@ -122,12 +122,12 @@ from core.model.management_kpi import (
     compute_management_kpi_series,
     management_kpi_applicable,
 )
-from core.model.operating_kpi import (
+from modeler.operating_kpi import (
     OPERATING_KPI_RATIO_TOLERANCE,
     compute_operating_kpi_series,
     operating_kpi_applicable,
 )
-from core.model.operating_kpi_relationships import (
+from modeler.operating_kpi_relationships import (
     COMPARABLE_SALES_SCOPE_NOTE,
     OPERATING_KPI_RELATIONSHIP_TOLERANCE,
     SALES_PER_SQUARE_FOOT_REVENUE_SCOPE_NOTE,
@@ -139,8 +139,8 @@ from core.model.operating_kpi_relationships import (
     operating_kpi_revenue_sales_per_square_foot_relationship_applicable,
     operating_kpi_revenue_store_relationship_applicable,
 )
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO
 from core.tests.test_capex import P1, P2, _tiny
 from core.tests.test_historical_segment import _base_payload
 from core.tests.test_learner_ready_presentation import (

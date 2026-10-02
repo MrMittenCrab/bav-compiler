@@ -14,8 +14,8 @@ from core.data.interface import (
     StandardizedFinancials,
 )
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.financial_math import compute_anchor
-from core.model.line_resolver import AmbiguousLineError, MissingLineError, resolve_line
+from modeler.financial_math import compute_anchor
+from modeler.line_resolver import AmbiguousLineError, MissingLineError, resolve_line
 
 ROOT = __file__
 DEMO_JSON = __import__("pathlib").Path(__file__).resolve().parents[2] / "example" / "DEMO_HK_Standardized.json"
@@ -453,7 +453,7 @@ def test_pretax_label_does_not_resolve_as_tax_expense():
 
 def test_income_before_tax_alias_removal_fails_closed(monkeypatch):
     """Parity regressions detect removal of the income_before_tax explicit alias."""
-    from core.model import line_resolver as lr
+    from modeler import line_resolver as lr
 
     items = [
         _item("Income before income tax expense", 100, 110, concept="income_before_tax"),
@@ -550,7 +550,7 @@ def test_payments_for_ppe_canonical_and_alias_concepts_are_ambiguous_together():
 
 def test_capital_expenditures_alias_removal_fails_closed(monkeypatch):
     """Capex coverage fails closed if the capital_expenditures explicit alias is removed."""
-    from core.model import line_resolver as lr
+    from modeler import line_resolver as lr
 
     items = [
         _item(
@@ -677,7 +677,7 @@ def test_rou_deferred_tax_canonical_and_alias_concepts_are_ambiguous_together(
 def test_rou_deferred_tax_alias_removal_fails_closed(
     monkeypatch, canonical, alias, alias_label, nearby_labels
 ):
-    from core.model import line_resolver as lr
+    from modeler import line_resolver as lr
 
     items = [_item(alias_label, 100, 110, concept=alias)]
     assert resolve_line(items, canonical, required=True).item is not None

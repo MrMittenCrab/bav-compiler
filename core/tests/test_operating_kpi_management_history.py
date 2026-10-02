@@ -31,8 +31,8 @@ from core.ingestion.management_kpi_identity import (
     POP_STORES_AND_DTC,
     POP_STORES_AND_ECOMMERCE,
 )
-from core.model.line_resolver import MissingLineError
-from core.model.operating_kpi import (
+from modeler.line_resolver import MissingLineError
+from modeler.operating_kpi import (
     OPERATING_KPI_RATIO_TOLERANCE,
     compute_operating_kpi_series,
     operating_kpi_applicable,
@@ -55,7 +55,7 @@ from core.tests.test_operating_kpi_facts import (
     _fin_with_operating_kpis,
     _kpi_model_observation,
 )
-from core.model.period_axis import canonical_fiscal_periods
+from modeler.period_axis import canonical_fiscal_periods
 
 AXIS = [P2023, P2024, P2025, P2026]
 DEF_COMPSALES_A = "Temporary comparable-sales definition A for contract fixtures."

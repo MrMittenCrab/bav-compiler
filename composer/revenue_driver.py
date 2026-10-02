@@ -7,7 +7,7 @@ from core.data.historical_operating_kpis import (
     FAMILY_SALES_PER_SQUARE_FOOT,
 )
 from core.data.interface import HistoricalManagementKpiDeferredDisagreement
-from core.model.management_kpi import (
+from modeler.management_kpi import (
     REASON_CALENDAR_REPORTING_MISMATCH,
     REASON_CALENDAR_WEEK_MISMATCH,
     REASON_DEFINITION_MISMATCH,
@@ -16,7 +16,7 @@ from core.model.management_kpi import (
     REASON_PERIOD_KIND_MISMATCH,
     REASON_QUALIFIER_MISMATCH,
 )
-from core.model.revenue_per_store import SCOPE_NOTE as REVENUE_PER_STORE_SCOPE_NOTE
+from modeler.revenue_per_store import SCOPE_NOTE as REVENUE_PER_STORE_SCOPE_NOTE
 from extractor.data.historical_strategy import (
     THEME_COMPARABLE_SALES,
     THEME_GEOGRAPHIC_GROWTH,

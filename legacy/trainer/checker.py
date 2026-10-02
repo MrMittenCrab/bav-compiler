@@ -9,11 +9,11 @@ from pathlib import Path
 from openpyxl import load_workbook
 
 from core.data.standardized_io import standardized_from_payload
-from core.model.earnings_quality import compute_earnings_quality_series
-from core.model.financial_math import compute_anchor
-from core.model.historical_expected import expected_value_for_component
+from modeler.earnings_quality import compute_earnings_quality_series
+from modeler.financial_math import compute_anchor
+from modeler.historical_expected import expected_value_for_component
 from core.model.normalization import NormalizationCase, compute_normalization_series
-from core.model.period_axis import canonical_fiscal_periods
+from modeler.period_axis import canonical_fiscal_periods
 from modeler.engine.component_catalog import (
     ACQUISITION_CASH_COMPONENT_CATALOG,
     CASH_ROLLFORWARD_COMPONENT_CATALOG,
@@ -42,16 +42,16 @@ from modeler.engine.component_catalog import (
     QUALITY_CHANGE_COMPONENT_CATALOG,
     QUALITY_COMPONENT_CATALOG,
 )
-from core.model.fixed_asset import compute_fixed_asset_series, fixed_asset_applicable
-from core.model.acquisition_cash import (
+from modeler.fixed_asset import compute_fixed_asset_series, fixed_asset_applicable
+from modeler.acquisition_cash import (
     compute_acquisition_cash_series,
     acquisition_cash_applicable,
 )
-from core.model.share_repurchase import (
+from modeler.share_repurchase import (
     compute_share_repurchase_series,
     share_repurchase_applicable,
 )
-from core.model.cash_rollforward import (
+from modeler.cash_rollforward import (
     compute_cash_rollforward_series,
     cash_rollforward_applicable,
 )
@@ -59,23 +59,23 @@ from modeler.reported_margin import (
     compute_reported_margin_series,
     reported_margin_applicable,
 )
-from core.model.inventory_analysis import (
+from modeler.inventory_analysis import (
     compute_inventory_analysis_series,
     inventory_analysis_applicable,
 )
-from core.model.geographic_segment import (
+from modeler.geographic_segment import (
     compute_geographic_segment_series,
     geographic_segment_applicable,
 )
-from core.model.management_kpi import (
+from modeler.management_kpi import (
     compute_management_kpi_series,
     management_kpi_applicable,
 )
-from core.model.operating_kpi import (
+from modeler.operating_kpi import (
     compute_operating_kpi_series,
     operating_kpi_applicable,
 )
-from core.model.operating_kpi_relationships import (
+from modeler.operating_kpi_relationships import (
     compute_operating_kpi_revenue_comparable_sales_relationship,
     compute_operating_kpi_revenue_sales_per_square_foot_relationship,
     compute_operating_kpi_revenue_store_relationship,
@@ -83,37 +83,37 @@ from core.model.operating_kpi_relationships import (
     operating_kpi_revenue_sales_per_square_foot_relationship_applicable,
     operating_kpi_revenue_store_relationship_applicable,
 )
-from core.model.revenue_per_store import (
+from modeler.revenue_per_store import (
     compute_revenue_per_store_series,
     revenue_per_store_applicable,
 )
-from core.model.capex import compute_capex_series, capex_applicable
-from core.model.lease_repayment import (
+from modeler.capex import compute_capex_series, capex_applicable
+from modeler.lease_repayment import (
     compute_lease_repayment_series,
     lease_repayment_applicable,
 )
-from core.model.deferred_tax import (
+from modeler.deferred_tax import (
     compute_deferred_tax_series,
     deferred_tax_applicable,
 )
-from core.model.goodwill_intangibles import (
+from modeler.goodwill_intangibles import (
     compute_goodwill_intangibles_series,
     goodwill_intangibles_applicable,
     goodwill_intangibles_availability,
 )
-from core.model.lease_liability import (
+from modeler.lease_liability import (
     compute_lease_liability_series,
     lease_liability_applicable,
 )
-from core.model.lease_rou import (
+from modeler.lease_rou import (
     compute_lease_rou_series,
     lease_rou_applicable,
 )
-from core.model.ownership_attribution import (
+from modeler.ownership_attribution import (
     compute_ownership_attribution_series,
     ownership_attribution_applicable,
 )
-from core.model.per_share import compute_per_share_series
+from modeler.per_share import compute_per_share_series
 from modeler.check_context import (
     classification_overrides_for_check,
     load_check_context,

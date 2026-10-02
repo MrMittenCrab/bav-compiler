@@ -17,14 +17,14 @@ from core.engine.component_catalog import (
     expand_normalized_per_share_specs,
 )
 from core.engine.reference_model import PER_SHARE_SHEET, ReferenceModelBuilder
-from core.model.historical_expected import (
+from modeler.historical_expected import (
     expected_value_for_component,
     normalized_per_share_expected_series,
 )
 from core.model.normalization import NormalizationSeries
-from core.model.normalized_per_share import compute_normalized_per_share_series
-from core.model.per_share import PerShareSeries
-from core.model.ratio_values import UNDEFINED_RATIO
+from modeler.normalized_per_share import compute_normalized_per_share_series
+from modeler.per_share import PerShareSeries
+from modeler.ratio_values import UNDEFINED_RATIO
 from core.trainer.checker import check_workbook
 from core.trainer.semantic_io import load_semantic_map, parse_cell_ref
 from core.trainer.workbook import build_training_workbook, group_components_by_family
@@ -372,10 +372,10 @@ def test_live_normalization_judgment_changes_normalized_eps(tmp_path):
     _set_normalization_treatment(trainer, "Recurring")
 
     from core.data.standardized_io import standardized_from_payload
-    from core.model.financial_math import compute_anchor
+    from modeler.financial_math import compute_anchor
     from core.model.normalization import compute_normalization_series, normalization_cases
-    from core.model.period_axis import canonical_fiscal_periods
-    from core.model.per_share import compute_per_share_series
+    from modeler.period_axis import canonical_fiscal_periods
+    from modeler.per_share import compute_per_share_series
     from core.trainer.check_context import (
         load_check_context,
         normalization_treatments_for_check,
@@ -460,7 +460,7 @@ def test_normalized_eps_na_check(tmp_path):
         cash_flow=[_li("Net cash from operating activities", vals(50, 60))],
     )
     from core.data.interface import HistoricalShareData
-    from core.model.per_share import SUPPORTED_SHARE_SCALE_BASIS
+    from modeler.per_share import SUPPORTED_SHARE_SCALE_BASIS
 
     fin.historical_shares = HistoricalShareData(
         scale_basis=SUPPORTED_SHARE_SCALE_BASIS,

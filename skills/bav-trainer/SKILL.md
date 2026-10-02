@@ -212,7 +212,7 @@ Still deferred: company-specific causal diagnosis, basic-vs-diluted attribution,
 ## References
 
 - `core/data/interface.py` — standardized data contract
-- `core/model/classification.py` — Stage-3 classification / reformulation
+- `modeler/classification.py` — Stage-3 classification / reformulation
 - `core/engine/component_catalog.py` — conceptual families; period expansion at build time
 - `core/engine/semantic_map.py` — runtime coordinates resolved at build time
 - `TARGET.md` — product competency progression (future steps deferred)

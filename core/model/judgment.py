@@ -7,7 +7,7 @@ from datetime import date
 
 from ..data.interface import StandardizedFinancials
 from ..data.line_identity import line_identity
-from .classification import BALANCE_SHEET_CATEGORIES, BalanceSheetReformulation
+from modeler.classification import BALANCE_SHEET_CATEGORIES, BalanceSheetReformulation
 
 CONSEQUENCE_PROMPT = (
     "Explain which reformulated balance(s) change under the alternative treatment "

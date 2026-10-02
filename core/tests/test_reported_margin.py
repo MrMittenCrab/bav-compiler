@@ -24,10 +24,10 @@ from core.engine.component_catalog import (
 )
 from core.engine.reference_model import ReferenceModelBuilder
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.historical_expected import reported_margin_expected_series
-from core.model.line_resolver import AmbiguousLineError, MissingLineError, resolve_line
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.ratio_values import UNDEFINED_RATIO
+from modeler.historical_expected import reported_margin_expected_series
+from modeler.line_resolver import AmbiguousLineError, MissingLineError, resolve_line
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.ratio_values import UNDEFINED_RATIO
 from core.model.reported_margin import (
     EXPENSE_PRESENTATION_POSITIVE,
     EXPENSE_PRESENTATION_SIGNED,
@@ -46,7 +46,7 @@ from core.model.reported_margin import (
     residual_blocks_reconstruction_claim,
     resolve_reported_margin_sources,
 )
-from core.model.source_values import MissingHistoricalValueError
+from modeler.source_values import MissingHistoricalValueError
 from core.research.drivers import assemble_drivers_view, render_drivers_markdown
 from core.tests.test_capex import P1, P2, _dupont_row_by_label, _tiny
 from core.tests.test_normalization import _inject_formula_and_cached_value

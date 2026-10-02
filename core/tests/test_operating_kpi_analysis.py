@@ -28,20 +28,20 @@ from core.ingestion.filing_standardizer import (
     reconciliation_provenance_payload,
     standardize_reconciled,
 )
-from core.model.line_resolver import MissingLineError
-from core.model.operating_kpi import (
+from modeler.line_resolver import MissingLineError
+from modeler.operating_kpi import (
     OPERATING_KPI_RATIO_TOLERANCE,
     compute_operating_kpi_series,
     operating_kpi_applicable,
 )
-from core.model.operating_kpi_relationships import (
+from modeler.operating_kpi_relationships import (
     compute_operating_kpi_revenue_comparable_sales_relationship,
     compute_operating_kpi_revenue_store_relationship,
     operating_kpi_revenue_comparable_sales_relationship_applicable,
     operating_kpi_revenue_store_relationship_applicable,
 )
-from core.model.period_axis import canonical_fiscal_periods
-from core.model.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO, ratio_or_na
+from modeler.period_axis import canonical_fiscal_periods
+from modeler.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO, ratio_or_na
 from core.tests.test_historical_segment import _base_payload
 from core.tests.test_operating_kpi_facts import (
     ADMIT_2022,

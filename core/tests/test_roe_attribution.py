@@ -26,14 +26,14 @@ from core.engine.component_catalog import (
 )
 from core.engine.reference_model import ReferenceModelBuilder
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.model.financial_math import compute_anchor
-from core.model.historical_expected import (
+from modeler.financial_math import compute_anchor
+from modeler.historical_expected import (
     expected_value_for_component,
     roe_attribution_expected_series,
 )
-from core.model.profitability_change import ProfitabilityChangeSeries
-from core.model.roe_attribution import compute_roe_attribution_series
-from core.model.ratio_values import UNDEFINED_RATIO
+from modeler.profitability_change import ProfitabilityChangeSeries
+from modeler.roe_attribution import compute_roe_attribution_series
+from modeler.ratio_values import UNDEFINED_RATIO
 from core.trainer.checker import check_workbook
 from core.trainer.semantic_io import load_semantic_map, parse_cell_ref
 from core.trainer.workbook import build_training_workbook, group_components_by_family
@@ -103,7 +103,7 @@ def test_ordinary_midpoint_roe_attribution():
     anchor = _anchor_roe(rnoa=rnoa, flev=flev, spread=spread, roe=roe)
     pc = _pc_series(rnoa_change=rnoa_change, n=3)
     with patch(
-        "core.model.roe_attribution.compute_profitability_change_series",
+        "modeler.roe_attribution.compute_profitability_change_series",
         return_value=pc,
     ):
         series = compute_roe_attribution_series(anchor)
@@ -141,7 +141,7 @@ def test_roe_attribution_edge_cases():
     )
     pc0 = _pc_series(rnoa_change=(None, None, 0.0), n=3)
     with patch(
-        "core.model.roe_attribution.compute_profitability_change_series",
+        "modeler.roe_attribution.compute_profitability_change_series",
         return_value=pc0,
     ):
         s0 = compute_roe_attribution_series(anchor0)
@@ -156,7 +156,7 @@ def test_roe_attribution_edge_cases():
         roe=(None, 0.10, 0.10),
     )
     with patch(
-        "core.model.roe_attribution.compute_profitability_change_series",
+        "modeler.roe_attribution.compute_profitability_change_series",
         return_value=pc0,
     ):
         ss0 = compute_roe_attribution_series(anchor_s0)
@@ -170,7 +170,7 @@ def test_roe_attribution_edge_cases():
     )
     pc_na = _pc_series(rnoa_change=(None, None, 0.02), n=3)
     with patch(
-        "core.model.roe_attribution.compute_profitability_change_series",
+        "modeler.roe_attribution.compute_profitability_change_series",
         return_value=pc_na,
     ):
         sna = compute_roe_attribution_series(anchor_na)
@@ -187,7 +187,7 @@ def test_roe_attribution_edge_cases():
     )
     pc_op = _pc_series(rnoa_change=(None, None, UNDEFINED_RATIO), n=3)
     with patch(
-        "core.model.roe_attribution.compute_profitability_change_series",
+        "modeler.roe_attribution.compute_profitability_change_series",
         return_value=pc_op,
     ):
         sop = compute_roe_attribution_series(anchor_op)
@@ -203,7 +203,7 @@ def test_roe_attribution_edge_cases():
     )
     pc_n = _pc_series(rnoa_change=(None, None, -0.03), n=3)
     with patch(
-        "core.model.roe_attribution.compute_profitability_change_series",
+        "modeler.roe_attribution.compute_profitability_change_series",
         return_value=pc_n,
     ):
         sn = compute_roe_attribution_series(anchor_n)
@@ -219,7 +219,7 @@ def test_roe_attribution_edge_cases():
         roe=(None, 0.136, 0.99),
     )
     with patch(
-        "core.model.roe_attribution.compute_profitability_change_series",
+        "modeler.roe_attribution.compute_profitability_change_series",
         return_value=_pc_series(rnoa_change=(None, None, 0.03), n=3),
     ):
         with pytest.raises(ValueError, match="level bridge does not reconcile"):
@@ -235,7 +235,7 @@ def test_roe_attribution_edge_cases():
         }
     )
     with patch(
-        "core.model.roe_attribution.compute_profitability_change_series",
+        "modeler.roe_attribution.compute_profitability_change_series",
         return_value=_pc_series(rnoa_change=(None, None, 0.03), n=3),
     ):
         with pytest.raises(ValueError, match="length mismatch"):

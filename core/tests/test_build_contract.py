@@ -145,8 +145,8 @@ def test_release_build_and_verification_accept_registered_extension(monkeypatch,
 def test_supplied_kpi_package_with_missing_period_preserves_unavailability(monkeypatch, tmp_path):
     from core.data.interface import HistoricalOperatingKpiData, HistoricalOperatingKpiObservation
     from core.engine.build_contract import RequiredInput
-    from core.model.operating_kpi import compute_operating_kpi_series
-    from core.model.ratio_values import SOURCE_UNAVAILABLE
+    from modeler.operating_kpi import compute_operating_kpi_series
+    from modeler.ratio_values import SOURCE_UNAVAILABLE
 
     register(monkeypatch, extension(required_inputs=(
         RequiredInput("management-KPI", lambda fin: fin.historical_operating_kpis is not None),
@@ -164,7 +164,7 @@ def test_supplied_kpi_package_with_missing_period_preserves_unavailability(monke
 
 
 def test_undisclosed_interest_retains_workbook_source_unavailable(tmp_path):
-    from core.model.ratio_values import SOURCE_UNAVAILABLE
+    from modeler.ratio_values import SOURCE_UNAVAILABLE
     builder = ReferenceModelBuilder(financials())
     answer = tmp_path / "answer.xlsx"
     smap = builder.build(answer)
