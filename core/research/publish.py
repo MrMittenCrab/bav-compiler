@@ -4,13 +4,15 @@ from __future__ import annotations
 from pathlib import Path
 
 from ..data.interface import StandardizedFinancials
-from ..model.revenue_driver import revenue_driver_applicable
 from .drivers import (
     APPENDIX_HEADING,
     OBSOLETE_SECTIONS,
+    SECONDARY_HEADING,
     WORKPAPER_FIELDS,
     drivers_filename,
     expected_sections,
+    financial_drivers_applicable,
+    is_principal_heading,
     placeholder_filenames,
     publish_drivers,
 )
@@ -34,7 +36,9 @@ def verify_research_artifacts(output: Path, company: str) -> None:
         raise ValueError(f"Drivers retained obsolete sections: {headings}")
     if any(item.startswith("###") for item in headings[: appendix_at + 1]):
         raise ValueError("Drivers main body contains nested headings")
-    if headings[1:appendix_at]:
+    for heading in headings[1:appendix_at]:
+        if heading == SECONDARY_HEADING or is_principal_heading(heading):
+            continue
         raise ValueError(f"Drivers main-body headings were {headings[1:appendix_at]}")
     main_body = text.split(APPENDIX_HEADING, 1)[0]
     for field in WORKPAPER_FIELDS:
@@ -50,8 +54,6 @@ def verify_research_artifacts(output: Path, company: str) -> None:
             continue
         name = line.split("../figures/drivers/", 1)[1].split(")", 1)[0]
         referenced.append(name)
-    if not referenced:
-        raise ValueError("Drivers has no figure references")
     for name in referenced:
         path = figures / name
         if not path.is_file() or path.read_bytes()[:8] != b"\x89PNG\r\n\x1a\n":
@@ -73,7 +75,7 @@ def publish_company_research(
     *,
     accent: str | None = None,
 ) -> None:
-    if not revenue_driver_applicable(financials):
+    if not financial_drivers_applicable(financials):
         return
     publish_drivers(financials, output, display_name=company, accent=accent)
     verify_research_artifacts(output, company)

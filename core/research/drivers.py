@@ -17,13 +17,13 @@ from ..model.inventory_analysis import (
     compute_inventory_analysis_series,
     inventory_analysis_applicable,
 )
-from ..model.line_resolver import resolve_line
+from ..model.line_resolver import MissingLineError, resolve_line
 from ..model.management_kpi import compute_management_kpi_series, management_kpi_applicable
 from ..model.operating_kpi import compute_operating_kpi_series, operating_kpi_applicable
 from ..model.operating_kpi_relationships import (
     compute_operating_kpi_revenue_store_relationship,
 )
-from ..model.period_axis import canonical_fiscal_periods
+from ..model.period_axis import PeriodAxisError, canonical_fiscal_periods
 from ..model.ratio_values import is_source_unavailable
 from ..model.reported_margin import (
     MarginRelationshipAssessment,
@@ -109,8 +109,29 @@ def drivers_heading(company: str) -> str:
     return f"# {company} — Drivers"
 
 
+SECONDARY_HEADING = "## Secondary signals"
+PRINCIPAL_HEADING = re.compile(r"^## \d+\.\s+\S")
+
+
 def expected_sections(company: str) -> tuple[str, ...]:
     return (drivers_heading(company), APPENDIX_HEADING)
+
+
+def is_principal_heading(line: str) -> bool:
+    return bool(PRINCIPAL_HEADING.match(line))
+
+
+def financial_drivers_applicable(financials: StandardizedFinancials) -> bool:
+    """Financial Drivers publish from verified income-statement history."""
+    try:
+        axis = canonical_fiscal_periods(financials)
+        if not axis:
+            return False
+        resolve_line(financials.income_statement, "revenue", required=True)
+        resolve_line(financials.income_statement, "operating_profit", required=True)
+    except (MissingLineError, PeriodAxisError, ValueError):
+        return False
+    return True
 
 
 FIGURE_NAMES = ("growth.png", "geography.png", "margin.png", "cash.png")
@@ -357,6 +378,30 @@ def _money(millions: float, digits: int = 1) -> str:
     return f"{sign}${abs(millions):,.{digits}f} million"
 
 
+def _display_scale(view: DriversView) -> float:
+    units = view.units.casefold()
+    if "thousand" in units:
+        return 1000.0
+    return 1.0
+
+
+def _display_amount(view: DriversView, native: float) -> float:
+    return native / _display_scale(view)
+
+
+def _money_view(view: DriversView, native: float | None, digits: int | None = None) -> str:
+    if native is None:
+        return "n/a"
+    value = _display_amount(view, native)
+    if digits is None:
+        digits = 1 if view.currency == "USD" else 0
+    sign = "−" if value < 0 else ""
+    amount = f"{abs(value):,.{digits}f}"
+    if view.currency == "USD":
+        return f"{sign}${amount} million"
+    return f"{sign}{view.currency} {amount} million"
+
+
 @dataclass(frozen=True)
 class ComparableSalesPoint:
     period: date
@@ -468,48 +513,87 @@ class DriversView:
         return _date_text(period)
 
 
+def _revenue_growth_from_levels(
+    revenue: tuple[float, ...],
+) -> tuple[float | None, ...]:
+    growth: list[float | None] = [None]
+    for index in range(1, len(revenue)):
+        prior = revenue[index - 1]
+        current = revenue[index]
+        growth.append(None if not prior else current / prior - 1.0)
+    return tuple(growth)
+
+
 def assemble_drivers_view(
     financials: StandardizedFinancials, display_name: str
 ) -> DriversView:
-    if not revenue_driver_applicable(financials):
-        raise ValueError("Drivers requires historical strategy and driver analysis")
-    if not operating_kpi_applicable(financials):
-        raise ValueError("Drivers requires company-operated store history")
-    if not geographic_segment_applicable(financials):
-        raise ValueError("Drivers requires geographic segment history")
-    if not reported_operating_margin_applicable(financials):
-        raise ValueError("Drivers requires reported operating margin")
+    if not financial_drivers_applicable(financials):
+        raise ValueError("Drivers requires verified revenue and operating-profit history")
     axis = canonical_fiscal_periods(financials)
     revenue_item = resolve_line(financials.income_statement, "revenue", required=True).item
     operating_item = resolve_line(
         financials.income_statement, "operating_profit", required=True
     ).item
-    stores = compute_operating_kpi_series(financials, list(axis))
-    relationship = compute_operating_kpi_revenue_store_relationship(financials, list(axis))
-    margins = compute_reported_margin_series(financials, list(axis))
-    rps = compute_revenue_per_store_series(financials, list(axis))
-    geo = compute_geographic_segment_series(financials)
-    analysis = compute_revenue_driver_analysis(financials)
-    compsales_test = next(
-        item for item in analysis.tests if item.theme == THEME_COMPARABLE_SALES
+    revenue = tuple(float(revenue_item.values[period]) for period in axis)
+    operating_profit = tuple(float(operating_item.values[period]) for period in axis)
+    stores_vals: tuple[float, ...] = ()
+    store_growth: tuple[float | None, ...] = tuple(None for _ in axis)
+    revenue_growth = _revenue_growth_from_levels(revenue)
+    revenue_per_store: tuple[float, ...] = ()
+    if operating_kpi_applicable(financials):
+        stores = compute_operating_kpi_series(financials, list(axis))
+        relationship = compute_operating_kpi_revenue_store_relationship(
+            financials, list(axis)
+        )
+        rps = compute_revenue_per_store_series(financials, list(axis))
+        stores_vals = tuple(float(stores.period_end_count[period]) for period in axis)
+        store_growth = tuple(
+            _numeric(relationship.store_count_growth[period]) for period in axis
+        )
+        revenue_growth = tuple(
+            _numeric(relationship.revenue_growth[period]) for period in axis
+        )
+        revenue_per_store = tuple(
+            float(rps.period_end_revenue_per_store[period]) for period in axis
+        )
+    margins = (
+        compute_reported_margin_series(financials, list(axis))
+        if reported_operating_margin_applicable(financials)
+        else None
+    )
+    geo = (
+        compute_geographic_segment_series(financials)
+        if geographic_segment_applicable(financials)
+        else None
+    )
+    analysis = (
+        compute_revenue_driver_analysis(financials)
+        if revenue_driver_applicable(financials)
+        else None
     )
     points: list[ComparableSalesPoint] = []
-    seen: set[date] = set()
-    for observation in compsales_test.observations:
-        percent = _numeric(observation.inputs.get("comparable_sales_percent"))
-        if percent is None or observation.period in seen:
-            continue
-        if observation.inputs.get("basis") != "reported":
-            continue
-        seen.add(observation.period)
-        points.append(
-            ComparableSalesPoint(
-                observation.period,
-                percent,
-                str(observation.inputs.get("population") or ""),
-                "reported",
-            )
+    if analysis is not None:
+        compsales_test = next(
+            (item for item in analysis.tests if item.theme == THEME_COMPARABLE_SALES),
+            None,
         )
+        seen: set[date] = set()
+        if compsales_test is not None:
+            for observation in compsales_test.observations:
+                percent = _numeric(observation.inputs.get("comparable_sales_percent"))
+                if percent is None or observation.period in seen:
+                    continue
+                if observation.inputs.get("basis") != "reported":
+                    continue
+                seen.add(observation.period)
+                points.append(
+                    ComparableSalesPoint(
+                        observation.period,
+                        percent,
+                        str(observation.inputs.get("population") or ""),
+                        "reported",
+                    )
+                )
     store_only = None
     if management_kpi_applicable(financials):
         series = compute_management_kpi_series(financials, list(axis))
@@ -527,39 +611,54 @@ def assemble_drivers_view(
                     period, value, item.population, item.basis
                 )
                 break
-    store_test = next(item for item in analysis.tests if item.theme == THEME_STORE_EXPANSION)
-    geo_test = next(item for item in analysis.tests if item.theme == THEME_GEOGRAPHIC_GROWTH)
-    if store_test.sample_size < 1 or geo_test.sample_size < 1:
-        raise ValueError("Drivers requires at least one aligned growth and geographic period")
     week_period = _fifty_three_week_period(financials, tuple(axis))
     issuer_name = (
         _issuer_fiscal_name(financials, week_period) if week_period is not None else None
     )
-    if (
-        margins.gross_margin is None
-        or margins.net_operating_expense_burden is None
-        or margins.gross_margin_change is None
-        or margins.net_operating_expense_burden_change is None
-        or margins.reconstructed_operating_margin_change is None
-    ):
-        raise ValueError("Drivers requires the validated three-component margin bridge")
-    geo_recon = analysis.geographic_reconstruction
-    footprint = analysis.footprint_identity
-    assessments = _unique_assessments(analysis.assessments + margins.assessments)
+    geo_recon = None if analysis is None else analysis.geographic_reconstruction
+    footprint = None if analysis is None else analysis.footprint_identity
+    margin_assessments = () if margins is None else margins.assessments
+    analysis_assessments = () if analysis is None else analysis.assessments
+    assessments = _unique_assessments(analysis_assessments + margin_assessments)
     findings = tuple(_finding_sentence(item) for item in assessments)
-    reported_om_change = _adjacent_numeric_changes(margins.reported_operating_margin)
-    component_om = margins.reconstructed_component_operating_margin
-    component_om_change = (
-        None if component_om is None else _adjacent_numeric_changes(component_om)
-    )
-    om_change_residual = None
-    if reported_om_change is not None and component_om_change is not None:
-        om_change_residual = tuple(
-            None
-            if reported is None or rebuilt is None
-            else reported - rebuilt
-            for reported, rebuilt in zip(reported_om_change, component_om_change)
+    empty_change = tuple(None for _ in axis)
+    if margins is None:
+        operating_margin = tuple(
+            op / rev if rev else 0.0 for op, rev in zip(operating_profit, revenue)
         )
+        gross_margin = ()
+        burden = ()
+        gm_change = empty_change
+        burden_change = empty_change
+        om_change_recon = empty_change
+        reported_om_change = _adjacent_numeric_changes(operating_margin)
+        component_om_change = None
+        om_change_residual = None
+    else:
+        operating_margin = tuple(float(value) for value in margins.reported_operating_margin)
+        gross_margin = tuple(float(value) for value in (margins.gross_margin or ()))
+        burden = tuple(float(value) for value in (margins.net_operating_expense_burden or ()))
+        gm_change = tuple(_numeric(value) for value in (margins.gross_margin_change or ()))
+        burden_change = tuple(
+            _numeric(value) for value in (margins.net_operating_expense_burden_change or ())
+        )
+        om_change_recon = tuple(
+            _numeric(value)
+            for value in (margins.reconstructed_operating_margin_change or ())
+        )
+        reported_om_change = _adjacent_numeric_changes(margins.reported_operating_margin)
+        component_om = margins.reconstructed_component_operating_margin
+        component_om_change = (
+            None if component_om is None else _adjacent_numeric_changes(component_om)
+        )
+        om_change_residual = None
+        if reported_om_change is not None and component_om_change is not None:
+            om_change_residual = tuple(
+                None
+                if reported is None or rebuilt is None
+                else reported - rebuilt
+                for reported, rebuilt in zip(reported_om_change, component_om_change)
+            )
     ni_series, cfo_series, cfo_change, cfo_sum, cfo_remainder = _cash_series(
         financials, tuple(axis)
     )
@@ -580,6 +679,7 @@ def assemble_drivers_view(
                 footprint.interaction,
             )
         )
+    geo_identities = () if geo is None else geo.identities
     view = DriversView(
         company_name=financials.company_name,
         display_name=display_name,
@@ -587,93 +687,103 @@ def assemble_drivers_view(
         units=financials.units,
         periods=tuple(axis),
         labels=tuple(_label_for(financials, period) for period in axis),
-        revenue=tuple(float(revenue_item.values[period]) for period in axis),
-        operating_profit=tuple(float(operating_item.values[period]) for period in axis),
-        operating_margin=tuple(float(value) for value in margins.reported_operating_margin),
-        gross_margin=tuple(float(value) for value in margins.gross_margin),
-        net_operating_expense_burden=tuple(
-            float(value) for value in margins.net_operating_expense_burden
-        ),
-        gross_margin_change=tuple(
-            _numeric(value) for value in margins.gross_margin_change
-        ),
-        net_operating_expense_burden_change=tuple(
-            _numeric(value) for value in margins.net_operating_expense_burden_change
-        ),
-        operating_margin_change=tuple(
-            _numeric(value) for value in margins.reconstructed_operating_margin_change
-        ),
-        stores=tuple(float(stores.period_end_count[period]) for period in axis),
-        revenue_growth=tuple(
-            _numeric(relationship.revenue_growth[period]) for period in axis
-        ),
-        store_growth=tuple(
-            _numeric(relationship.store_count_growth[period]) for period in axis
-        ),
-        revenue_per_store=tuple(
-            float(rps.period_end_revenue_per_store[period]) for period in axis
-        ),
+        revenue=revenue,
+        operating_profit=operating_profit,
+        operating_margin=operating_margin,
+        gross_margin=gross_margin,
+        net_operating_expense_burden=burden,
+        gross_margin_change=gm_change,
+        net_operating_expense_burden_change=burden_change,
+        operating_margin_change=om_change_recon,
+        stores=stores_vals,
+        revenue_growth=revenue_growth,
+        store_growth=store_growth,
+        revenue_per_store=revenue_per_store,
         comparable_sales=tuple(points),
         store_only_comparable_sales=store_only,
-        geo_identities=geo.identities,
+        geo_identities=geo_identities,
         geo_contributions=tuple(
             {
                 identity: _numeric(geo.revenue_growth_contribution[period][identity])
-                for identity in geo.identities
+                for identity in geo_identities
             }
             for period in axis
-        ),
+        )
+        if geo is not None
+        else tuple({} for _ in axis),
         consolidated_revenue_growth=tuple(
             _numeric(geo.consolidated_revenue_growth[period]) for period in axis
-        ),
+        )
+        if geo is not None
+        else empty_change,
         fifty_three_week_period=week_period,
         issuer_fiscal_name=issuer_name,
-        sga=margins.sga,
-        impairment=margins.impairment,
-        other_operating_items=margins.other_operating_items,
-        sga_ratio=tuple(_numeric(value) for value in (margins.sga_ratio or ())),
+        sga=None if margins is None else margins.sga,
+        impairment=None if margins is None else margins.impairment,
+        other_operating_items=None if margins is None else margins.other_operating_items,
+        sga_ratio=tuple(_numeric(value) for value in ((None if margins is None else margins.sga_ratio) or ())),
         impairment_ratio=tuple(
-            _numeric(value) for value in (margins.impairment_ratio or ())
+            _numeric(value)
+            for value in ((None if margins is None else margins.impairment_ratio) or ())
         ),
         other_operating_ratio=tuple(
-            _numeric(value) for value in (margins.other_operating_ratio or ())
+            _numeric(value)
+            for value in ((None if margins is None else margins.other_operating_ratio) or ())
         ),
         operating_margin_residual=tuple(
-            _numeric(value) for value in (margins.operating_margin_residual or ())
+            _numeric(value)
+            for value in ((None if margins is None else margins.operating_margin_residual) or ())
         ),
-        operating_profit_residual=margins.operating_profit_residual,
-        gross_profit_change=margins.gross_profit_change,
-        gross_profit_revenue_effect=margins.gross_profit_revenue_effect,
-        gross_profit_margin_effect=margins.gross_profit_margin_effect,
-        gross_profit_interaction=margins.gross_profit_interaction,
-        operating_profit_change=margins.operating_profit_change,
-        reconstructed_operating_profit_change=margins.reconstructed_operating_profit_change,
-        operating_profit_change_residual=margins.operating_profit_change_residual,
-        sga_change=margins.sga_change,
-        impairment_change=margins.impairment_change,
-        other_operating_change=margins.other_operating_change,
+        operating_profit_residual=None if margins is None else margins.operating_profit_residual,
+        gross_profit_change=None if margins is None else margins.gross_profit_change,
+        gross_profit_revenue_effect=None if margins is None else margins.gross_profit_revenue_effect,
+        gross_profit_margin_effect=None if margins is None else margins.gross_profit_margin_effect,
+        gross_profit_interaction=None if margins is None else margins.gross_profit_interaction,
+        operating_profit_change=None if margins is None else margins.operating_profit_change,
+        reconstructed_operating_profit_change=(
+            None if margins is None else margins.reconstructed_operating_profit_change
+        ),
+        operating_profit_change_residual=(
+            None if margins is None else margins.operating_profit_change_residual
+        ),
+        sga_change=None if margins is None else margins.sga_change,
+        impairment_change=None if margins is None else margins.impairment_change,
+        other_operating_change=None if margins is None else margins.other_operating_change,
         reported_operating_margin_change=reported_om_change,
         reconstructed_component_operating_margin_change=component_om_change,
         operating_margin_change_residual=om_change_residual,
         gross_margin_contribution=tuple(
-            _numeric(value) for value in (margins.gross_margin_contribution or ())
+            _numeric(value)
+            for value in ((None if margins is None else margins.gross_margin_contribution) or ())
         ),
         sga_ratio_contribution=tuple(
-            _numeric(value) for value in (margins.sga_ratio_contribution or ())
+            _numeric(value)
+            for value in ((None if margins is None else margins.sga_ratio_contribution) or ())
         ),
         impairment_ratio_contribution=tuple(
-            _numeric(value) for value in (margins.impairment_ratio_contribution or ())
+            _numeric(value)
+            for value in (
+                (None if margins is None else margins.impairment_ratio_contribution) or ()
+            )
         ),
         other_operating_ratio_contribution=tuple(
-            _numeric(value) for value in (margins.other_operating_ratio_contribution or ())
+            _numeric(value)
+            for value in (
+                (None if margins is None else margins.other_operating_ratio_contribution)
+                or ()
+            )
         ),
         reconstructed_contribution_sum=tuple(
-            _numeric(value) for value in (margins.reconstructed_contribution_sum or ())
+            _numeric(value)
+            for value in (
+                (None if margins is None else margins.reconstructed_contribution_sum) or ()
+            )
         ),
         contribution_residual=tuple(
-            _numeric(value) for value in (margins.contribution_residual or ())
+            _numeric(value)
+            for value in ((None if margins is None else margins.contribution_residual) or ())
         ),
-        amount_bridge_convention=margins.amount_bridge_convention,
+        amount_bridge_convention="" if margins is None else margins.amount_bridge_convention,
         geo_component_revenue=None if geo_recon is None else geo_recon.component_revenue,
         geo_reconstructed_revenue=(
             None if geo_recon is None else geo_recon.reconstructed_revenue
@@ -699,21 +809,33 @@ def assemble_drivers_view(
         geo_profit_changes=tuple(
             {
                 identity: _numeric(geo.operating_profit_amount_change[period][identity])
-                for identity in geo.identities
+                for identity in geo_identities
             }
             for period in axis
+        )
+        if geo is not None
+        else None,
+        geo_reconciling_profit_change=(
+            None
+            if geo is None
+            else _mapped_numeric(geo.reconciling_operating_profit_amount_change, tuple(axis))
         ),
-        geo_reconciling_profit_change=_mapped_numeric(
-            geo.reconciling_operating_profit_amount_change, tuple(axis)
+        geo_consolidated_profit_change=(
+            None
+            if geo is None
+            else _mapped_numeric(
+                geo.consolidated_operating_profit_amount_change, tuple(axis)
+            )
         ),
-        geo_consolidated_profit_change=_mapped_numeric(
-            geo.consolidated_operating_profit_amount_change, tuple(axis)
+        geo_profit_change_residual=(
+            None
+            if geo is None
+            else _mapped_numeric(geo.operating_profit_amount_change_residual, tuple(axis))
         ),
-        geo_profit_change_residual=_mapped_numeric(
-            geo.operating_profit_amount_change_residual, tuple(axis)
-        ),
-        geo_revenue_amount_changes=_geo_amount_changes(
-            geo.net_revenue, tuple(axis), geo.identities
+        geo_revenue_amount_changes=(
+            None
+            if geo is None
+            else _geo_amount_changes(geo.net_revenue, tuple(axis), geo.identities)
         ),
         net_income=ni_series,
         net_income_change=_adjacent_numeric_changes(ni_series),
@@ -807,10 +929,8 @@ def _finding_sentence(item) -> str:
     )
 
 
-def _opt_money(thousands: float | None, digits: int = 1) -> str:
-    if thousands is None:
-        return "n/a"
-    return _money(_millions(thousands, digits), digits=digits)
+def _opt_money(view: DriversView, thousands: float | None, digits: int | None = None) -> str:
+    return _money_view(view, thousands, digits)
 
 
 def _contrib_pp(value: float | None) -> str:
@@ -916,46 +1036,46 @@ def _amount_bridge_block(view: DriversView) -> str:
         rows.append(
             "| {label} | {rev} | {gm} | {ix} | {gp} | {sga} | {imp} | {other} | {recon} | {op} | {resid} |".format(
                 label=label,
-                rev=_opt_money(
+                rev=_opt_money(view, 
                     None
                     if view.gross_profit_revenue_effect is None
                     else view.gross_profit_revenue_effect[index]
                 ),
-                gm=_opt_money(
+                gm=_opt_money(view, 
                     None
                     if view.gross_profit_margin_effect is None
                     else view.gross_profit_margin_effect[index]
                 ),
-                ix=_opt_money(
+                ix=_opt_money(view, 
                     None
                     if view.gross_profit_interaction is None
                     else view.gross_profit_interaction[index]
                 ),
-                gp=_opt_money(view.gross_profit_change[index]),
-                sga=_opt_money(
+                gp=_opt_money(view, view.gross_profit_change[index]),
+                sga=_opt_money(view, 
                     None if view.sga_change is None else view.sga_change[index]
                 ),
-                imp=_opt_money(
+                imp=_opt_money(view, 
                     None
                     if view.impairment_change is None
                     else view.impairment_change[index]
                 ),
-                other=_opt_money(
+                other=_opt_money(view, 
                     None
                     if view.other_operating_change is None
                     else view.other_operating_change[index]
                 ),
-                recon=_opt_money(
+                recon=_opt_money(view, 
                     None
                     if view.reconstructed_operating_profit_change is None
                     else view.reconstructed_operating_profit_change[index]
                 ),
-                op=_opt_money(
+                op=_opt_money(view, 
                     None
                     if view.operating_profit_change is None
                     else view.operating_profit_change[index]
                 ),
-                resid=_opt_money(
+                resid=_opt_money(view, 
                     None
                     if view.operating_profit_change_residual is None
                     else view.operating_profit_change_residual[index]
@@ -1075,23 +1195,23 @@ def _footprint_block(view: DriversView) -> str:
         rows.append(
             "| {label} | {store} | {inten} | {ix} | {recon} | {resid} |".format(
                 label=label,
-                store=_opt_money(view.footprint_store_effect[index]),
-                inten=_opt_money(
+                store=_opt_money(view, view.footprint_store_effect[index]),
+                inten=_opt_money(view, 
                     None
                     if view.footprint_intensity_effect is None
                     else view.footprint_intensity_effect[index]
                 ),
-                ix=_opt_money(
+                ix=_opt_money(view, 
                     None
                     if view.footprint_interaction is None
                     else view.footprint_interaction[index]
                 ),
-                recon=_opt_money(
+                recon=_opt_money(view, 
                     None
                     if view.footprint_reconstructed_change is None
                     else view.footprint_reconstructed_change[index]
                 ),
-                resid=_opt_money(
+                resid=_opt_money(view, 
                     None
                     if view.footprint_residual is None
                     else view.footprint_residual[index]
@@ -1105,7 +1225,8 @@ def _footprint_block(view: DriversView) -> str:
         "store. The adjacent change uses prior intensity on the store-count "
         "change, prior store count on the intensity change, and an explicit "
         "interaction. Company-wide revenue per store includes non-store revenue "
-        "and is an intensity proxy, not store productivity.\n\n"
+        "and is an intensity proxy, not store productivity. The store-count term "
+        "is an arithmetic allocation, not measured new-store revenue.\n\n"
         + "\n".join(rows)
         + "\n"
     )
@@ -1123,20 +1244,20 @@ def _geo_reconstruction_block(view: DriversView) -> str:
         level_rows.append(
             "| {label} | {am} | {cn} | {rw} | {rec} | {rep} | {res} |".format(
                 label=label,
-                am=_opt_money(comps.get("americas")),
-                cn=_opt_money(comps.get("china_mainland")),
-                rw=_opt_money(comps.get("rest_of_world")),
-                rec=_opt_money(
+                am=_opt_money(view, comps.get("americas")),
+                cn=_opt_money(view, comps.get("china_mainland")),
+                rw=_opt_money(view, comps.get("rest_of_world")),
+                rec=_opt_money(view, 
                     None
                     if view.geo_reconstructed_revenue is None
                     else view.geo_reconstructed_revenue[index]
                 ),
-                rep=_opt_money(
+                rep=_opt_money(view, 
                     None
                     if view.geo_reported_revenue is None
                     else view.geo_reported_revenue[index]
                 ),
-                res=_opt_money(
+                res=_opt_money(view, 
                     None
                     if view.geo_residual is None
                     else view.geo_residual[index]
@@ -1158,13 +1279,13 @@ def _geo_reconstruction_block(view: DriversView) -> str:
             change_rows.append(
                 "| {label} | {am} | {cn} | {rw} | {amg} | {cng} | {rwg} | {res} |".format(
                     label=label,
-                    am=_opt_money(amounts.get("americas")),
-                    cn=_opt_money(amounts.get("china_mainland")),
-                    rw=_opt_money(amounts.get("rest_of_world")),
+                    am=_opt_money(view, amounts.get("americas")),
+                    cn=_opt_money(view, amounts.get("china_mainland")),
+                    rw=_opt_money(view, amounts.get("rest_of_world")),
                     amg=_opt_pp(contrib.get("americas")),
                     cng=_opt_pp(contrib.get("china_mainland")),
                     rwg=_opt_pp(contrib.get("rest_of_world")),
-                    res=_opt_money(
+                    res=_opt_money(view, 
                         None
                         if view.geo_contribution_residual is None
                         else view.geo_contribution_residual[index]
@@ -1250,256 +1371,209 @@ def _assessment_block(view: DriversView) -> str:
 
 def _latest_growth_index(view: DriversView) -> int:
     for index in range(len(view.periods) - 1, -1, -1):
-        if view.revenue_growth[index] is not None:
+        if index < len(view.revenue_growth) and view.revenue_growth[index] is not None:
             return index
-    return len(view.periods) - 1
+    return max(len(view.periods) - 1, 0)
 
 
-def _opening_paragraphs(view: DriversView, selection: ResearchSelection) -> list[str]:
+def _operating_profit_change(view: DriversView, latest: int) -> float | None:
+    if view.geo_consolidated_profit_change is not None:
+        if latest < len(view.geo_consolidated_profit_change):
+            return view.geo_consolidated_profit_change[latest]
+        return None
+    if view.operating_profit_change and latest < len(view.operating_profit_change):
+        value = view.operating_profit_change[latest]
+        if value is not None:
+            return value
+    if latest > 0 and latest < len(view.operating_profit):
+        return view.operating_profit[latest] - view.operating_profit[latest - 1]
+    return None
+
+
+def _headline_paragraph(view: DriversView, selection: ResearchSelection) -> str:
     latest = _latest_growth_index(view)
     label = view.labels[latest]
-    parts: list[str] = []
-    rev_g = view.revenue_growth[latest]
-    store_g = view.store_growth[latest]
-    op_change = (
-        None
-        if view.geo_consolidated_profit_change is None
-        else view.geo_consolidated_profit_change[latest]
-    )
-    cfo_change = None if view.cfo_change is None else view.cfo_change[latest]
-    ni_change = None if view.net_income_change is None else view.net_income_change[latest]
-    first = (
-        f"In {label}, {view.display_name} revenue grew {_pct(rev_g)} while "
-        f"company-operated stores grew {_pct(store_g)}."
-        if rev_g is not None and store_g is not None
-        else f"{view.display_name} historical performance is reconstructed from the available BAV series."
+    rev_g = view.revenue_growth[latest] if latest < len(view.revenue_growth) else None
+    op_change = _operating_profit_change(view, latest)
+    change = (
+        f"In {label}, {view.display_name} revenue grew {_pct(rev_g)}."
+        if rev_g is not None
+        else f"In {label}, {view.display_name} reported results are reconstructed from the available statements."
     )
     if op_change is not None:
-        first += f" Operating profit changed by {_money(_millions(op_change))}"
-        if op_change < 0:
-            first += ", so growth did not preserve the prior profit level."
+        change += f" Operating profit changed by {_money_view(view, op_change)}"
+        if op_change < 0 and rev_g is not None and rev_g > 0:
+            change += ", so growth did not preserve the prior profit level"
+        change += "."
+    explanation = ""
+    if selection.is_principal("operating_margin_bridge"):
+        om = (
+            None
+            if view.reported_operating_margin_change is None
+            else view.reported_operating_margin_change[latest]
+        )
+        if om is not None and om < 0:
+            explanation = (
+                " Margin compression is the strongest supported explanation of the "
+                "weaker profit outcome."
+            )
+        elif om is not None and om > 0:
+            explanation = (
+                " An accounting-margin expansion reconstructs the stronger profit outcome."
+            )
         else:
-            first += "."
-    parts.append(first)
-    if selection.selected("geographic_localization"):
+            explanation = (
+                " The latest operating-margin identity reconstructs the profit movement."
+            )
+    if selection.is_principal("geographic_localization"):
         conditions = geographic_claim_conditions(view, latest)
-        contrib = view.geo_contributions[latest]
-        amounts = (
-            {}
-            if view.geo_revenue_amount_changes is None
-            else view.geo_revenue_amount_changes[latest]
-        )
-        profit = (
-            {}
-            if view.geo_profit_changes is None
-            else view.geo_profit_changes[latest]
-        )
-        reconciling = conditions.reconciling
-        detail = (
-            f"({_contrib_pp(contrib.get('americas'))} Americas, "
-            f"{_contrib_pp(contrib.get('china_mainland'))} China Mainland, "
-            f"{_contrib_pp(contrib.get('rest_of_world'))} Rest of World"
-            + (
-                f"; Americas revenue {_money(_millions(amounts['americas']))}"
-                if amounts.get("americas") is not None
-                else ""
+        if conditions.revenue_offset is not None and conditions.consolidated_profit_weaker:
+            explanation += (
+                " International revenue offset did not prevent consolidated profit "
+                "deterioration."
             )
-            + ")"
+        elif conditions.revenue_offset is not None:
+            explanation += " Geographic evidence localizes where revenue changed."
+    if selection.is_principal("footprint_intensity"):
+        explanation += (
+            " Store-count growth outpaced company-wide revenue, which is the "
+            "distinct available growth comparison."
         )
-        if conditions.revenue_offset == OFFSET_GREATER:
-            lead = f"International revenue more than offset the Americas decline {detail}"
-        elif conditions.revenue_offset == OFFSET_EXACT:
-            lead = f"International revenue exactly offset the Americas decline {detail}"
-        elif conditions.revenue_offset == OFFSET_PARTIAL:
-            lead = (
-                f"International revenue only partially offset the Americas decline "
-                f"{detail}"
-            )
-        else:
-            lead = f"Geographic contributions localize where revenue and profit changed {detail}"
-        profit_bit = (
-            f"{_money(_millions(profit['americas']))}"
-            if profit.get("americas") is not None
-            else None
+    if selection.is_principal("cash_conversion"):
+        explanation += (
+            " Cash conversion is the material available explanation of the latest outcome."
         )
-        corp_bit = (
-            f"corporate/unallocated items {_money(_millions(reconciling))}"
-            if reconciling is not None
-            else None
-        )
-        if conditions.consolidated_profit_weaker and (
-            profit_bit is not None or corp_bit is not None
-        ):
-            contrast = ", but "
-            if profit_bit is not None:
-                contrast += f"Americas operating profit {profit_bit}"
-            if corp_bit is not None:
-                contrast += (" and " if profit_bit is not None else "") + corp_bit
-            contrast += " left a weaker consolidated profit outcome"
-            lead += contrast
-        elif profit_bit is not None or corp_bit is not None:
-            observed = []
-            if profit_bit is not None:
-                observed.append(f"Americas operating profit {profit_bit}")
-            if corp_bit is not None:
-                observed.append(corp_bit)
-            lead += ". " + " and ".join(observed)
-        lead += (
-            ". That localizes where dependence moved; it does not identify "
-            "the regional mechanism."
-        )
-        parts.append(lead)
-    if selection.selected("cash_conversion") and cfo_change is not None and ni_change is not None:
-        remainder = (
-            None if view.cfo_unexplained is None else view.cfo_unexplained[latest]
-        )
-        parts.append(
-            f"Cash from operations changed by {_money(_millions(cfo_change))}, "
-            f"a larger movement than net income ({_money(_millions(ni_change))}). "
-            "The most consequential uncertainty is that the available cash-flow "
-            "components do not explain the whole CFO movement"
-            + (
-                f" (signed remainder {_money(_millions(remainder, 3), 3)})"
-                if remainder is not None
-                else ""
-            )
-            + ", and the margin mechanism remains independently unresolved."
-        )
-    elif selection.selected("operating_margin_bridge"):
-        parts.append(
-            "The accounting margin bridge reconstructs the latest operating-margin "
-            "change, but the economic mechanism remains unresolved."
-        )
-    return parts
+    unresolved = (
+        " The economic mechanism remains independently unresolved."
+        if selection.is_principal("operating_margin_bridge")
+        or selection.is_principal("geographic_localization")
+        else ""
+    )
+    return change + explanation + unresolved
 
 
-def _growth_argument(view: DriversView, latest: int) -> list[str]:
-    store_g = view.store_growth[latest]
-    rev_g = view.revenue_growth[latest]
+def _growth_argument(view: DriversView, latest: int, *, with_figure: bool) -> list[str]:
+    store_g = view.store_growth[latest] if latest < len(view.store_growth) else None
+    rev_g = view.revenue_growth[latest] if latest < len(view.revenue_growth) else None
     intensity = None
-    if latest > 0:
+    if latest > 0 and latest < len(view.revenue_per_store) and view.revenue_per_store:
         prior = view.revenue_per_store[latest - 1]
         current = view.revenue_per_store[latest]
-        intensity = current / prior - 1.0
+        if prior:
+            intensity = current / prior - 1.0
     store_term = (
         None
         if view.footprint_store_effect is None
         else view.footprint_store_effect[latest]
     )
-    week = _calendar_limitation(view).strip()
-    paragraphs = [
-        (
-            f"Store expansion outpaced company-wide revenue in {view.labels[latest]}: "
-            f"company-operated stores rose {_pct(store_g)} while consolidated revenue "
-            f"rose {_pct(rev_g)}"
-            + (
-                f", so company-wide revenue per period-end store fell {_pct(abs(intensity))}"
-                if intensity is not None and intensity < 0
-                else ""
-            )
-            + ". Store count is an operating KPI. Revenue per store is a proxy that "
-            "includes non-store revenue and is not store productivity. "
-            + (
-                f"The {_money(_millions(store_term))} store-count term in the "
-                "footprint identity is an arithmetic allocation, not measured "
-                "new-store revenue."
-                if store_term is not None
-                else ""
-            )
+    first = (
+        f"Store expansion outpaced company-wide revenue in {view.labels[latest]}"
+        + (
+            f": company-operated stores rose {_pct(store_g)} while consolidated "
+            f"revenue rose {_pct(rev_g)}"
+            if store_g is not None and rev_g is not None
+            else ""
         )
-    ]
-    latest_comp = next(
-        (point for point in reversed(view.comparable_sales) if point.period == view.periods[latest]),
-        view.comparable_sales[-1] if view.comparable_sales else None,
     )
-    if latest_comp is not None:
+    if intensity is not None and intensity < 0:
+        first += f", so company-wide revenue per period-end store fell {_pct(abs(intensity))}"
+    first += (
+        ". Store count is an operating KPI. Revenue per store is a proxy that "
+        "includes non-store revenue and is not store productivity."
+    )
+    if store_term is not None:
+        first += (
+            f" The {_money_view(view, store_term)} store-count term in the "
+            "footprint identity is an arithmetic allocation, not measured "
+            "new-store revenue."
+        )
+    paragraphs = [first]
+    if with_figure:
         paragraphs.append(
-            f"The latest reported comparable-sales observation is "
-            f"{latest_comp.percent:.0f}% on a "
-            f"{POPULATION_LABELS.get(latest_comp.population, latest_comp.population)} "
-            "basis. Each period's observation is retained on its own definition "
-            "and calendar; the observations are not one deceleration series, and "
-            "revenue growth minus comparable sales is not new-store contribution."
+            "![Did store-count growth outpace consolidated revenue growth?](../figures/drivers/growth.png)"
         )
-    if week:
-        paragraphs.append(week)
-    paragraphs.append(
-        "![Did store-count growth outpace consolidated revenue growth?](../figures/drivers/growth.png)"
-    )
-    paragraphs.append(
-        "The paired growth rates show the latest divergence without connecting "
-        "comparable-sales observations. Weaker demand and slower maturation of "
-        "added capacity remain open; opening dates, mix, digital revenue and the "
-        "unequal-week comparison can produce the same pattern. Appendix Growth "
-        "evidence keeps the count/intensity/interaction bridge and rejected joins."
-    )
+        paragraphs.append(
+            "The paired growth rates show the latest divergence without connecting "
+            "comparable-sales observations. Opening dates, mix, digital revenue and "
+            "an unequal-week comparison can produce the same pattern."
+        )
+    else:
+        paragraphs.append(
+            "Opening dates, mix, digital revenue and an unequal-week comparison can "
+            "produce the same pattern without weaker store productivity."
+        )
     return paragraphs
 
 
-def _geography_argument(view: DriversView, latest: int) -> list[str]:
+def _geography_argument(view: DriversView, latest: int, *, with_figure: bool) -> list[str]:
     conditions = geographic_claim_conditions(view, latest)
-    contrib = view.geo_contributions[latest]
-    amounts = (
-        {}
-        if view.geo_revenue_amount_changes is None
-        else view.geo_revenue_amount_changes[latest]
-    )
+    offset_sentence = _revenue_offset_sentence(conditions.revenue_offset)
     profit = (
         {}
         if view.geo_profit_changes is None
         else view.geo_profit_changes[latest]
     )
-    reconciling = conditions.reconciling
-    consolidated = conditions.consolidated_profit
-    offset_sentence = _revenue_offset_sentence(conditions.revenue_offset)
-    first = (
-        f"In {view.labels[latest]}, Americas revenue "
-        f"{_opt_money(amounts.get('americas')) if amounts else 'n/a'} "
-        f"while China Mainland {_opt_money(amounts.get('china_mainland')) if amounts else 'n/a'} "
-        f"and Rest of World {_opt_money(amounts.get('rest_of_world')) if amounts else 'n/a'}. "
-        f"Their contributions to consolidated revenue growth were "
-        f"{_contrib_pp(contrib.get('americas'))}, {_contrib_pp(contrib.get('china_mainland'))} "
-        f"and {_contrib_pp(contrib.get('rest_of_world'))}."
+    if conditions.revenue_offset == OFFSET_GREATER:
+        first = (
+            "International revenue more than offset the Americas decline. "
+            + offset_sentence
+        )
+    elif conditions.revenue_offset == OFFSET_EXACT:
+        first = (
+            "International revenue exactly offset the Americas decline. "
+            + offset_sentence
+        )
+    elif conditions.revenue_offset == OFFSET_PARTIAL:
+        first = (
+            "International revenue only partially offset the Americas decline. "
+            + offset_sentence
+        )
+    else:
+        first = (
+            offset_sentence
+            or "Geographic contributions localize where revenue and profit changed."
+        )
+    if conditions.consolidated_profit_weaker:
+        bits = []
+        if profit.get("americas") is not None:
+            bits.append(f"Americas operating profit {_opt_money(view, profit.get('americas'))}")
+        if conditions.reconciling is not None and conditions.corporate_burden_increased:
+            bits.append(
+                f"corporate/unallocated items {_opt_money(view, conditions.reconciling)}"
+            )
+        if bits:
+            first += " " + " and ".join(bits) + " left a weaker consolidated profit outcome."
+        elif conditions.americas_profit_declined:
+            first += " The Americas profit decline left a weaker consolidated profit outcome."
+        else:
+            first += " Consolidated operating profit was weaker."
+        if (
+            conditions.americas_profit_declined
+            and conditions.corporate_burden_increased
+            and conditions.consolidated_profit is not None
+        ):
+            first += (
+                f" Those changes reconcile to {_opt_money(view, conditions.consolidated_profit, 3)} "
+                "and show an Americas profit decline and higher corporate/unallocated burden."
+            )
+    first += (
+        " This is reported segment evidence and arithmetic localization, "
+        "not a causal attribution or organic-growth claim."
     )
-    if offset_sentence:
-        first = f"{first} {offset_sentence}"
-    paragraphs = [
-        first,
-        (
-            "The profit localization is different. Americas operating profit "
-            f"{_opt_money(profit.get('americas')) if profit else 'n/a'}; "
-            f"China Mainland {_opt_money(profit.get('china_mainland')) if profit else 'n/a'} "
-            f"and Rest of World {_opt_money(profit.get('rest_of_world')) if profit else 'n/a'}"
-            + (
-                f"; corporate/unallocated items {_opt_money(reconciling)}"
-                if reconciling is not None
-                else ""
-            )
-            + (
-                f". Those changes reconcile to {_opt_money(consolidated, 3)} of "
-                "consolidated operating profit."
-                if consolidated is not None
-                else "."
-            )
-            + " This is reported segment evidence and arithmetic localization, "
-            "not a causal attribution or organic-growth claim."
-        ),
-        (
-            f"![{_geography_figure_alt(conditions)}]"
-            "(../figures/drivers/geography.png)"
-        ),
-        (
+    paragraphs = [first]
+    if with_figure:
+        paragraphs.append(
+            f"![{_geography_figure_alt(conditions)}](../figures/drivers/geography.png)"
+        )
+        paragraphs.append(
             "The aligned panels keep revenue and profit on separate scales and "
-            "retain the corporate reconciliation on the profit side. Lower "
-            "Americas demand and cost pressure are plausible, but currency, mix, "
-            "calendar effects and cost allocation remain alternatives. Appendix "
-            "Geographic evidence keeps complete series, margins and residuals."
-        ),
-    ]
+            "retain the corporate reconciliation on the profit side. Currency, mix, "
+            "calendar effects and cost allocation remain alternatives."
+        )
     return paragraphs
 
 
-def _margin_argument(view: DriversView, latest: int) -> list[str]:
+def _margin_argument(view: DriversView, latest: int, *, with_figure: bool) -> list[str]:
     om = (
         None
         if view.reported_operating_margin_change is None
@@ -1534,60 +1608,54 @@ def _margin_argument(view: DriversView, latest: int) -> list[str]:
         or latest >= len(view.contribution_residual)
         else view.contribution_residual[latest]
     )
-    paragraphs = [
-        (
-            f"{view.labels[latest]} operating margin moved from "
-            f"{_pct(view.operating_margin[latest - 1], 1)} to "
-            f"{_pct(view.operating_margin[latest], 1)}"
-            + (f", {_opt_change_pp(om)}" if om is not None else "")
-            + " using unrounded ratios. "
-            f"Gross margin contributed {_opt_change_pp(gm)}, SG&A/revenue "
-            f"{_opt_change_pp(sga)}, impairment {_opt_change_pp(impairment)}, "
-            f"and other operating items {_opt_change_pp(other)}"
-            + (
-                f"; the residual versus the reported change is {_opt_change_pp(residual)}"
-                if residual is not None
-                else ""
-            )
-            + ". This is an identity and signed decomposition. It does not "
-            "establish tariff, markdown, mix or absorption mechanisms."
+    lead = (
+        f"{view.labels[latest]} operating margin moved from "
+        f"{_pct(view.operating_margin[latest - 1], 1)} to "
+        f"{_pct(view.operating_margin[latest], 1)}"
+        + (f", {_opt_change_pp(om)}" if om is not None else "")
+        + " using unrounded ratios."
+    )
+    if om is not None and om < 0:
+        lead += (
+            " Gross-margin contraction and a higher SG&A ratio account for "
+            "nearly all the reported operating-margin decline."
         )
-    ]
+    elif gm is not None or sga is not None:
+        lead += " Disclosed components reconstruct that change as an identity."
+    lead += (
+        " This is an identity and signed decomposition. It does not "
+        "identify a price, mix or cost mechanism."
+    )
+    paragraphs = [lead]
     latest_period = view.periods[latest]
     attrs = [item for item in view.attributions if item.period == latest_period]
     if attrs:
         quantified = next((item for item in attrs if item.approximate_amount), None)
-        quotes = " ".join(item.text.rstrip(".") + "." for item in attrs)
         locators = "; ".join(
             f"{item.source_file}, {item.page_reference}" for item in attrs
         )
-        paragraphs.append(
-            "Management attributes the latest-year pressure in source-bound "
-            f"commentary: {quotes} ({locators}). "
-            + (
-                f"{quantified.approximate_amount.capitalize()} is retained as "
-                "management's attributed gross-profit reduction against a "
-                "stated counterfactual; it is not an independently verified "
-                "causal estimate and is not inserted into the accounting bridge."
-                if quantified is not None
-                else "The attribution is preserved with its locator and is not "
-                "inserted into the accounting bridge."
+        if quantified is not None:
+            paragraphs.append(
+                "Management attributes the latest-year pressure, including "
+                f"{quantified.approximate_amount} of gross-profit reduction "
+                f"({locators}). The amount is retained as management's "
+                "attributed counterfactual estimate; it is not an independently "
+                "verified causal estimate and is not inserted into the accounting bridge."
             )
+        else:
+            paragraphs.append(
+                "Management attributes the latest-year pressure in source-bound "
+                f"commentary ({locators}). The attribution is preserved with its "
+                "locator and is not inserted into the accounting bridge."
+            )
+    if with_figure:
+        paragraphs.append(
+            "![Which accounting components reconstruct the latest operating-margin change?](../figures/drivers/margin.png)"
         )
-    paragraphs.append(
-        "![Which accounting components reconstruct the latest operating-margin change?](../figures/drivers/margin.png)"
-    )
-    paragraphs.append(
-        "The latest-year bridge isolates the accounting movements next to that "
-        "boundary. Cost pressure and mix remain credible alternatives. Earlier "
-        "margin recovery included disappearing episodic charges and is not a "
-        "pure operating-efficiency trend. Appendix Margin evidence keeps full "
-        "ratios, amount bridges and residuals."
-    )
     return paragraphs
 
 
-def _cash_argument(view: DriversView, latest: int) -> list[str]:
+def _cash_argument(view: DriversView, latest: int, *, with_figure: bool) -> list[str]:
     cfo = None if view.cfo is None else view.cfo[latest]
     ni = None if view.net_income is None else view.net_income[latest]
     prior_cfo = None if view.cfo is None or latest < 1 else view.cfo[latest - 1]
@@ -1606,72 +1674,60 @@ def _cash_argument(view: DriversView, latest: int) -> list[str]:
     prior_conversion = (
         None if prior_cfo is None or prior_ni in (None, 0) else prior_cfo / prior_ni
     )
-    paragraphs = [
-        (
-            f"Reported CFO moved from {_opt_money(prior_cfo)} to {_opt_money(cfo)} "
-            f"while net income moved from {_opt_money(prior_ni)} to {_opt_money(ni)}"
-            + (
-                f". CFO/net income moved from {prior_conversion:.2f} to {conversion:.2f}"
-                if conversion is not None and prior_conversion is not None
-                else ""
-            )
-            + (
-                f". The cash change of {_opt_money(cfo_change)} is larger than "
-                "the earnings change."
-                if cfo_change is not None
-                else "."
-            )
-            + " These are reported amounts and derived diagnostics, not an "
-            "earnings-quality judgment or a finding of manipulation."
+    first = (
+        f"Reported CFO moved from {_opt_money(view, prior_cfo)} to {_opt_money(view, cfo)} "
+        f"while net income moved from {_opt_money(view, prior_ni)} to {_opt_money(view, ni)}"
+    )
+    if conversion is not None and prior_conversion is not None:
+        first += f". CFO/net income moved from {prior_conversion:.2f} to {conversion:.2f}"
+    if cfo_change is not None:
+        first += (
+            f". The cash change of {_opt_money(view, cfo_change)} is larger than "
+            "the earnings change"
+            if (ni_change := (None if view.net_income_change is None else view.net_income_change[latest]))
+            is not None and cfo_change < ni_change
+            else f". Cash from operations changed by {_opt_money(view, cfo_change)}"
         )
-    ]
-    if inventory is not None and prior_inv is not None:
-        inv_growth = inventory / prior_inv - 1.0
-        paragraphs.append(
-            f"Inventory increased from {_opt_money(prior_inv)} to {_opt_money(inventory)} "
-            f"({_pct(inv_growth)}) against slower company revenue growth. "
-            "Inventory accumulation can consume cash, but growth preparation, "
-            "sourcing, currency, tax and other settlement timing compete with a "
-            "weak-demand reading. The cash-flow inventory line "
-            f"({_opt_money(cf_inv)}) is not substituted for the balance-sheet change "
-            f"({_opt_money(inv_change)})."
-        )
+    first += (
+        ". These are reported amounts and derived diagnostics, not an "
+        "earnings-quality judgment or a finding of manipulation."
+    )
     if remainder is not None:
-        paragraphs.append(
-            "The available operating-section component changes do not explain "
-            f"the whole CFO movement. The signed unexplained remainder is "
-            f"{_opt_money(remainder, 3)}. That difference is retained without "
-            "assigning a cause."
+        first += (
+            " The available operating-section component changes do not explain "
+            f"the whole CFO movement; the signed unexplained remainder is "
+            f"{_opt_money(view, remainder, 3)}."
         )
-    paragraphs.append(
-        "![Did reported earnings continue to translate into operating cash flow?](../figures/drivers/cash.png)"
-    )
-    paragraphs.append(
-        "The paired CFO and net-income comparison supplies the distinct cash "
-        "perspective. It does not attribute the full decline to working capital, "
-        "seasonality or manipulation. Appendix Cash evidence keeps the component "
-        "sum, remainder, inventory movements and the distinction between "
-        "balance-sheet and cash-flow inventory."
-    )
+    paragraphs = [first]
+    if with_figure:
+        paragraphs.append(
+            "![Did reported earnings continue to translate into operating cash flow?](../figures/drivers/cash.png)"
+        )
     return paragraphs
 
 
 def _history_table(view: DriversView) -> str:
+    include_stores = bool(view.stores) and len(view.stores) == len(view.periods)
+    headers = ["Fiscal year", "Period ended", "Revenue", "Operating profit", "Operating margin"]
+    aligns = [" --- ", " --- ", " ---: ", " ---: ", " ---: "]
+    if include_stores:
+        headers.append("Company-operated stores")
+        aligns.append(" ---: ")
     rows = [
-        "| Fiscal year | Period ended | Revenue | Operating profit | Operating margin | Company-operated stores |",
-        "| --- | --- | ---: | ---: | ---: | ---: |",
+        "| " + " | ".join(headers) + " |",
+        "|" + "|".join(aligns) + "|",
     ]
     for index, period in enumerate(view.periods):
-        rows.append(
-            "| {label} | {ended} | {rev} | {op} | {om} | {stores} |".format(
-                label=view.labels[index],
-                ended=_date_text(period),
-                rev=_money(_millions(view.revenue[index])),
-                op=_money(_millions(view.operating_profit[index])),
-                om=_pct(view.operating_margin[index], 1),
-                stores=f"{view.stores[index]:.0f}",
-            )
-        )
+        cells = [
+            view.labels[index],
+            _date_text(period),
+            _money_view(view, view.revenue[index]),
+            _money_view(view, view.operating_profit[index]),
+            _pct(view.operating_margin[index], 1) if index < len(view.operating_margin) else "n/a",
+        ]
+        if include_stores:
+            cells.append(f"{view.stores[index]:.0f}")
+        rows.append("| " + " | ".join(cells) + " |")
     return (
         "Historical levels used by the selected claims. Amounts are "
         f"{view.units}, shown in millions of {view.currency}.\n\n"
@@ -1696,21 +1752,21 @@ def _geo_profit_block(view: DriversView) -> str:
         rows.append(
             "| {label} | {am} | {cn} | {rw} | {corp} | {cons} | {res} |".format(
                 label=label,
-                am=_opt_money(changes.get("americas")),
-                cn=_opt_money(changes.get("china_mainland")),
-                rw=_opt_money(changes.get("rest_of_world")),
-                corp=_opt_money(
+                am=_opt_money(view, changes.get("americas")),
+                cn=_opt_money(view, changes.get("china_mainland")),
+                rw=_opt_money(view, changes.get("rest_of_world")),
+                corp=_opt_money(view, 
                     None
                     if view.geo_reconciling_profit_change is None
                     else view.geo_reconciling_profit_change[index]
                 ),
-                cons=_opt_money(
+                cons=_opt_money(view, 
                     None
                     if view.geo_consolidated_profit_change is None
                     else view.geo_consolidated_profit_change[index],
                     3,
                 ),
-                res=_opt_money(
+                res=_opt_money(view, 
                     None
                     if view.geo_profit_change_residual is None
                     else view.geo_profit_change_residual[index]
@@ -1760,7 +1816,8 @@ def _compsales_block(view: DriversView) -> str:
     return (
         "Comparable-sales observations are retained as period-specific reported "
         "KPIs. Changing channel definitions and calendars prevent a connected "
-        "trend. Revenue growth minus comparable sales is not labeled new-store "
+        "trend; the observations cannot be joined as one deceleration series. "
+        "Revenue growth minus comparable sales is not labeled new-store "
         "contribution.\n\n"
         + "\n".join(rows)
         + "\n"
@@ -1782,25 +1839,25 @@ def _cash_block(view: DriversView) -> str:
         rows.append(
             "| {label} | {cfo} | {ni} | {chg} | {comp} | {rem} | {inv} | {ichg} | {cfinv} |".format(
                 label=label,
-                cfo=_opt_money(view.cfo[index]),
-                ni=_opt_money(view.net_income[index]),
-                chg=_opt_money(
+                cfo=_opt_money(view, view.cfo[index]),
+                ni=_opt_money(view, view.net_income[index]),
+                chg=_opt_money(view, 
                     None if view.cfo_change is None else view.cfo_change[index]
                 ),
-                comp=_opt_money(
+                comp=_opt_money(view, 
                     None
                     if view.cfo_component_sum is None
                     else view.cfo_component_sum[index]
                 ),
-                rem=_opt_money(
+                rem=_opt_money(view, 
                     None if view.cfo_unexplained is None else view.cfo_unexplained[index],
                     3,
                 ),
-                inv=_opt_money(None if view.inventory is None else view.inventory[index]),
-                ichg=_opt_money(
+                inv=_opt_money(view, None if view.inventory is None else view.inventory[index]),
+                ichg=_opt_money(view, 
                     None if view.inventory_change is None else view.inventory_change[index]
                 ),
-                cfinv=_opt_money(
+                cfinv=_opt_money(view, 
                     None
                     if view.cf_inventory_adjustment is None
                     else view.cf_inventory_adjustment[index]
@@ -1882,48 +1939,134 @@ def _selection_block(view: DriversView) -> str:
     )
 
 
+def _principal_title(view: DriversView, identifier: str, latest: int) -> str:
+    if identifier == "operating_margin_bridge":
+        om = (
+            None
+            if view.reported_operating_margin_change is None
+            or latest >= len(view.reported_operating_margin_change)
+            else view.reported_operating_margin_change[latest]
+        )
+        if om is not None and om < 0:
+            return "Operating-margin compression"
+        if om is not None and om > 0:
+            return "Operating-margin expansion"
+        return "Operating-margin change"
+    if identifier == "geographic_localization":
+        conditions = geographic_claim_conditions(view, latest)
+        if conditions.revenue_offset is not None and (
+            conditions.americas_profit_declined or conditions.consolidated_profit_weaker
+        ):
+            return "Geographic growth and profit divergence"
+        return "Geographic localization"
+    if identifier == "footprint_intensity":
+        return "Footprint and expansion economics"
+    if identifier == "cash_conversion":
+        return "Cash conversion"
+    return identifier.replace("_", " ").capitalize()
+
+
+def _principal_paragraphs(
+    view: DriversView, identifier: str, latest: int, selection: ResearchSelection
+) -> list[str]:
+    figure_ids = set(selection.figure_ids)
+    if identifier == "operating_margin_bridge":
+        return _margin_argument(view, latest, with_figure="margin" in figure_ids)
+    if identifier == "geographic_localization":
+        return _geography_argument(view, latest, with_figure="geography" in figure_ids)
+    if identifier == "footprint_intensity":
+        return _growth_argument(view, latest, with_figure="growth" in figure_ids)
+    if identifier == "cash_conversion":
+        return _cash_argument(view, latest, with_figure="cash" in figure_ids)
+    return []
+
+
+def _secondary_paragraphs(view: DriversView, identifier: str, latest: int) -> list[str]:
+    if identifier == "cash_conversion":
+        return _cash_argument(view, latest, with_figure=False)
+    if identifier == "geographic_localization":
+        return _geography_argument(view, latest, with_figure=False)
+    if identifier == "footprint_intensity":
+        return _growth_argument(view, latest, with_figure=False)
+    if identifier == "operating_margin_bridge":
+        return _margin_argument(view, latest, with_figure=False)
+    return []
+
+
+def _growth_magnitude_sentence(view: DriversView) -> str:
+    latest = _latest_growth_index(view)
+    store_g = view.store_growth[latest] if latest < len(view.store_growth) else None
+    rev_g = view.revenue_growth[latest] if latest < len(view.revenue_growth) else None
+    if store_g is None or rev_g is None:
+        return ""
+    return (
+        f"In {view.labels[latest]}, company-operated stores grew {_pct(store_g)} "
+        f"while consolidated revenue grew {_pct(rev_g)}.\n\n"
+    )
+
+
 def render_drivers_markdown(view: DriversView) -> str:
     selection = view.selection or select_driver_argument(view)
     latest = _latest_growth_index(view)
     blocks = [drivers_heading(view.display_name), ""]
-    blocks.extend(_opening_paragraphs(view, selection))
-    if selection.selected("footprint_intensity"):
+    blocks.append(_headline_paragraph(view, selection))
+    for index, identifier in enumerate(selection.principal_ids, start=1):
         blocks.append("")
-        blocks.extend(_growth_argument(view, latest))
-    if selection.selected("geographic_localization"):
+        blocks.append(f"## {index}. {_principal_title(view, identifier, latest)}")
         blocks.append("")
-        blocks.extend(_geography_argument(view, latest))
-    if selection.selected("operating_margin_bridge"):
+        blocks.extend(_principal_paragraphs(view, identifier, latest, selection))
+    if selection.secondary_ids:
         blocks.append("")
-        blocks.extend(_margin_argument(view, latest))
-    if selection.selected("cash_conversion"):
+        blocks.append(SECONDARY_HEADING)
         blocks.append("")
-        blocks.extend(_cash_argument(view, latest))
+        named = []
+        for identifier in selection.secondary_ids:
+            title = _principal_title(view, identifier, latest)
+            paragraphs = _secondary_paragraphs(view, identifier, latest)
+            if not paragraphs:
+                continue
+            named.append(f"{title}: {paragraphs[0]}")
+        blocks.extend(named)
     blocks.append("")
     blocks.append(APPENDIX_HEADING)
     blocks.append("")
     blocks.append("### Selected claims")
     blocks.append("")
     blocks.append(_selection_block(view))
-    if selection.selected("footprint_intensity") or selection.question("comparable_sales"):
+    if (
+        view.stores
+        or view.comparable_sales
+        or view.footprint_store_effect
+        or selection.question("footprint_intensity")
+        or selection.question("comparable_sales")
+    ):
         blocks.append("### Growth evidence")
         blocks.append("")
+        blocks.append(_growth_magnitude_sentence(view))
         blocks.append(_history_table(view))
         blocks.append(_footprint_block(view))
         blocks.append(_compsales_block(view))
-    if selection.selected("geographic_localization"):
+        calendar = _calendar_limitation(view).strip()
+        if calendar:
+            blocks.append(
+                "The extra-week comparison is retained as a period-specific limit."
+            )
+            blocks.append("")
+            blocks.append(calendar)
+            blocks.append("")
+    if view.geo_identities or view.geo_profit_changes:
         blocks.append("### Geographic evidence")
         blocks.append("")
         blocks.append(_geo_reconstruction_block(view))
         blocks.append(_geo_profit_block(view))
-    if selection.selected("operating_margin_bridge"):
+    if view.gross_margin or view.gross_margin_contribution or view.attributions:
         blocks.append("### Margin evidence")
         blocks.append("")
         blocks.append(_margin_component_block(view))
         blocks.append(_amount_bridge_block(view))
         blocks.append(_margin_change_block(view))
         blocks.append(_attribution_block(view))
-    if selection.selected("cash_conversion"):
+    if view.cfo is not None or view.net_income is not None:
         blocks.append("### Cash evidence")
         blocks.append("")
         blocks.append(_cash_block(view))
@@ -2023,7 +2166,10 @@ def plot_geography(view: DriversView, path: Path, style: ResearchStyle) -> None:
 
     latest = _latest_growth_index(view)
     identities = list(view.geo_identities)
-    labels = [SEGMENT_LABELS[identity] for identity in identities]
+    labels = [
+        SEGMENT_LABELS.get(identity, identity.replace("_", " ").title())
+        for identity in identities
+    ]
     revenue = []
     profit = []
     for identity in identities:
@@ -2057,8 +2203,8 @@ def plot_geography(view: DriversView, path: Path, style: ResearchStyle) -> None:
     fig.subplots_adjust(left=0.10, right=0.97, top=0.76, bottom=0.28, wspace=0.32)
     x = list(range(len(labels)))
     for ax, values, title, ylabel in (
-        (axes[0], revenue, "Revenue change", "USD millions"),
-        (axes[1], profit, "Operating-profit change", "USD millions"),
+        (axes[0], revenue, "Revenue change", f"{view.currency} millions"),
+        (axes[1], profit, "Operating-profit change", f"{view.currency} millions"),
     ):
         _style_axis(ax, style)
         heights = [0.0 if value is None else value for value in values]
@@ -2222,7 +2368,12 @@ def publish_drivers(
     (research_dir / drivers_filename(display_name)).write_text(
         render_drivers_markdown(view), encoding="utf-8"
     )
-    for name in selected_figure_names(view):
+    figures_dir.mkdir(parents=True, exist_ok=True)
+    wanted = set(selected_figure_names(view))
+    for existing in figures_dir.glob("*.png"):
+        if existing.name not in wanted:
+            existing.unlink()
+    for name in wanted:
         identifier = name.removesuffix(".png")
         _PLOT_BY_ID[identifier](view, figures_dir / name, style)
     return view

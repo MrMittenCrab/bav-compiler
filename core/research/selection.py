@@ -14,6 +14,10 @@ PUBLICATION_MAIN = "main_body"
 PUBLICATION_APPENDIX = "appendix"
 PUBLICATION_RETAINED = "retained"
 PUBLICATION_EXCLUDED = "excluded"
+ROLE_PRINCIPAL = "principal"
+ROLE_SECONDARY = "secondary"
+ROLE_APPENDIX = "appendix"
+ROLE_EXCLUDED = "excluded"
 
 CLAIM_IDENTITY = "accounting_identity"
 CLAIM_REPORTED = "reported_fact"
@@ -80,6 +84,9 @@ class ResearchSelection:
     decisions: tuple[SelectionDecision, ...]
     main_body_ids: tuple[str, ...]
     figure_ids: tuple[str, ...]
+    principal_ids: tuple[str, ...] = ()
+    secondary_ids: tuple[str, ...] = ()
+    appendix_ids: tuple[str, ...] = ()
     main_body_table_reasons: tuple[str, ...] = ()
 
     def question(self, identifier: str) -> ResearchQuestion | None:
@@ -90,6 +97,12 @@ class ResearchSelection:
 
     def selected(self, identifier: str) -> bool:
         return identifier in self.main_body_ids
+
+    def is_principal(self, identifier: str) -> bool:
+        return identifier in self.principal_ids
+
+    def is_secondary(self, identifier: str) -> bool:
+        return identifier in self.secondary_ids
 
 
 def _present(value) -> bool:
@@ -541,48 +554,49 @@ def _growth_questions(view, latest: int) -> list[ResearchQuestion]:
                 overlap=("footprint_intensity",),
             )
         )
-    questions.append(
-        ResearchQuestion(
-            identifier="sales_per_square_foot",
-            question="Whether space productivity can be measured from available SPSF disclosures",
-            entity=view.display_name,
-            population="company-operated stores",
-            periods=(),
-            outcome="sales per square foot",
-            materiality_rationale=(
-                "A productivity reading would change expansion economics, but "
-                "available SPSF observations are definition- and calendar-incompatible."
-            ),
-            temporal_character="incompatible historical observations",
-            magnitude="unavailable as a comparable series",
-            mechanisms=(),
-            alternative="Company-wide revenue per store remains an intensity proxy only.",
-            discriminating_evidence="Aligned SPSF definitions, calendars and store-only revenue.",
-            claims=(
-                ResearchClaim(
-                    identifier="spsf_blocked",
-                    wording="Sales per square foot cannot support a productivity reading.",
-                    claim_type=CLAIM_UNRESOLVED,
-                    measurement_role="rejected comparison",
-                    evidence_refs=("management_kpi.sales_per_square_foot",),
-                    transformation="blocked",
-                    qualifiers=("definition disagreement", "calendar misalignment"),
-                    dependencies=("spsf_definition", "spsf_calendar"),
-                    mechanism_support="not available",
-                    counterevidence="filings disagree on definition and later years do not line up",
-                    status="blocked",
+    if getattr(view, "stores", ()) or getattr(view, "revenue_per_store", ()):
+        questions.append(
+            ResearchQuestion(
+                identifier="sales_per_square_foot",
+                question="Whether space productivity can be measured from available SPSF disclosures",
+                entity=view.display_name,
+                population="company-operated stores",
+                periods=(),
+                outcome="sales per square foot",
+                materiality_rationale=(
+                    "A productivity reading would change expansion economics, but "
+                    "available SPSF observations are definition- and calendar-incompatible."
                 ),
-            ),
-            strongest_conclusion="No productivity series is available on a comparable basis.",
-            unresolved_requirement="Compatible SPSF observations and store-only revenue.",
-            reopening_condition="SPSF observations share definition and calendar.",
-            publication=PUBLICATION_EXCLUDED,
-            publication_reason=(
-                "The blocked comparison adds no argument value beyond the "
-                "already-selected intensity-proxy boundary."
-            ),
+                temporal_character="incompatible historical observations",
+                magnitude="unavailable as a comparable series",
+                mechanisms=(),
+                alternative="Company-wide revenue per store remains an intensity proxy only.",
+                discriminating_evidence="Aligned SPSF definitions, calendars and store-only revenue.",
+                claims=(
+                    ResearchClaim(
+                        identifier="spsf_blocked",
+                        wording="Sales per square foot cannot support a productivity reading.",
+                        claim_type=CLAIM_UNRESOLVED,
+                        measurement_role="rejected comparison",
+                        evidence_refs=("management_kpi.sales_per_square_foot",),
+                        transformation="blocked",
+                        qualifiers=("definition disagreement", "calendar misalignment"),
+                        dependencies=("spsf_definition", "spsf_calendar"),
+                        mechanism_support="not available",
+                        counterevidence="filings disagree on definition and later years do not line up",
+                        status="blocked",
+                    ),
+                ),
+                strongest_conclusion="No productivity series is available on a comparable basis.",
+                unresolved_requirement="Compatible SPSF observations and store-only revenue.",
+                reopening_condition="SPSF observations share definition and calendar.",
+                publication=PUBLICATION_EXCLUDED,
+                publication_reason=(
+                    "The blocked comparison adds no argument value beyond the "
+                    "already-selected intensity-proxy boundary."
+                ),
+            )
         )
-    )
     return questions
 
 
@@ -1012,13 +1026,38 @@ def _cash_questions(view, latest: int) -> list[ResearchQuestion]:
     ]
 
 
+def _latest_change(series, latest: int | None):
+    if series is None or latest is None or latest >= len(series):
+        return None
+    value = series[latest]
+    return value if _present(value) else None
+
+
+def _margin_is_material(view, latest: int | None) -> bool:
+    change = _latest_change(getattr(view, "reported_operating_margin_change", None), latest)
+    return change is not None and change != 0
+
+
+def _geo_has_operating_story(conditions: GeographicClaimConditions | None) -> bool:
+    if conditions is None:
+        return False
+    return bool(
+        conditions.revenue_offset is not None
+        or conditions.americas_profit_declined
+        or conditions.consolidated_profit_weaker
+    )
+
+
 def select_driver_argument(view) -> ResearchSelection:
-    """Qualify candidates, resolve overlap, and assign publication roles."""
+    """Qualify candidates and assign principal, secondary and appendix roles."""
     investigated = investigate_driver_questions(view)
     decisions: list[SelectionDecision] = []
-    selected: list[ResearchQuestion] = []
+    principals: list[ResearchQuestion] = []
+    secondaries: list[ResearchQuestion] = []
+    appendix: list[ResearchQuestion] = []
     figures: list[str] = []
     by_id = {item.identifier: item for item in investigated}
+    latest = _latest_index(view)
 
     footprint = by_id.get("footprint_intensity")
     compsales = by_id.get("comparable_sales")
@@ -1027,85 +1066,137 @@ def select_driver_argument(view) -> ResearchSelection:
     margin = by_id.get("operating_margin_bridge")
     attribution = by_id.get("management_margin_attribution")
     cash = by_id.get("cash_conversion")
+    geo_conditions = geographic_claim_conditions(view, latest) if geo and latest is not None else None
+    geo_story = _geo_has_operating_story(geo_conditions)
+    margin_material = bool(margin) and _margin_is_material(view, latest)
 
-    if footprint and footprint.publication == PUBLICATION_MAIN:
-        selected.append(footprint)
+    if margin and margin_material:
+        principals.append(margin)
+        decisions.append(
+            SelectionDecision(
+                margin.identifier,
+                ROLE_PRINCIPAL,
+                "Material operating-margin movement reconstructs the latest profit outcome.",
+            )
+        )
+        if margin.figure_purpose:
+            figures.append(margin.figure_purpose)
+    elif margin:
+        appendix.append(margin)
+        decisions.append(
+            SelectionDecision(
+                margin.identifier,
+                ROLE_APPENDIX,
+                "The margin identity is available but is not a material operating change.",
+            )
+        )
+
+    if attribution and attribution.publication == PUBLICATION_MAIN and margin:
+        appendix.append(attribution)
+        decisions.append(
+            SelectionDecision(
+                attribution.identifier,
+                "combined",
+                "Preserved with the accounting-margin finding; not an independent principal driver.",
+            )
+        )
+    elif attribution:
+        decisions.append(
+            SelectionDecision(
+                attribution.identifier,
+                attribution.publication,
+                attribution.publication_reason,
+            )
+        )
+
+    if geo and geo_story:
+        principals.append(geo)
+        decisions.append(
+            SelectionDecision(
+                geo.identifier,
+                ROLE_PRINCIPAL,
+                "Geographic revenue and profit localization explains where the operating outcome changed.",
+            )
+        )
+        if geo.figure_purpose:
+            figures.append(geo.figure_purpose)
+    elif geo:
+        secondaries.append(geo)
+        decisions.append(
+            SelectionDecision(
+                geo.identifier,
+                ROLE_SECONDARY,
+                "Geographic evidence localizes results without independently explaining the operating outcome.",
+            )
+        )
+
+    footprint_diverged = bool(footprint and footprint.publication == PUBLICATION_MAIN)
+    if footprint_diverged and not geo_story:
+        principals.append(footprint)
         decisions.append(
             SelectionDecision(
                 footprint.identifier,
-                "selected",
-                footprint.publication_reason,
+                ROLE_PRINCIPAL,
+                "Footprint versus company-wide revenue is the distinct available growth explanation.",
             )
         )
         if footprint.figure_purpose:
             figures.append(footprint.figure_purpose)
     elif footprint:
-        decisions.append(
-            SelectionDecision(footprint.identifier, "deferred", footprint.publication_reason)
-        )
-
-    if compsales and footprint and footprint.identifier in {item.identifier for item in selected}:
-        selected.append(compsales)
+        appendix.append(footprint)
         decisions.append(
             SelectionDecision(
-                compsales.identifier,
-                "combined",
-                "Combined with footprint evidence; incompatible observations are not trended or figured.",
+                footprint.identifier,
+                ROLE_APPENDIX,
+                "Expansion economics is available but is not distinctly explanatory once geographic localization is selected."
+                if geo_story
+                else footprint.publication_reason,
             )
         )
-    elif compsales:
+
+    if compsales:
+        appendix.append(compsales)
         decisions.append(
             SelectionDecision(
                 compsales.identifier,
-                "retained",
-                "Period-specific observations remain available without a growth-divergence host.",
+                ROLE_APPENDIX,
+                "Period-specific comparable-sales observations remain auditable and are not a separate principal argument.",
             )
         )
 
     if spsf:
-        decisions.append(
-            SelectionDecision(spsf.identifier, "excluded", spsf.publication_reason)
-        )
+        decisions.append(SelectionDecision(spsf.identifier, ROLE_EXCLUDED, spsf.publication_reason))
 
-    if geo and geo.publication == PUBLICATION_MAIN:
-        selected.append(geo)
-        decisions.append(SelectionDecision(geo.identifier, "selected", geo.publication_reason))
-        if geo.figure_purpose:
-            figures.append(geo.figure_purpose)
-    elif geo:
-        decisions.append(SelectionDecision(geo.identifier, "deferred", geo.publication_reason))
-
-    if margin:
-        selected.append(margin)
-        decisions.append(SelectionDecision(margin.identifier, "selected", margin.publication_reason))
-        if margin.figure_purpose:
-            figures.append(margin.figure_purpose)
-    if attribution and attribution.publication == PUBLICATION_MAIN and margin:
-        selected.append(attribution)
+    cash_visible = bool(cash and cash.publication == PUBLICATION_MAIN)
+    if cash_visible and not principals:
+        principals.append(cash)
         decisions.append(
             SelectionDecision(
-                attribution.identifier,
-                "combined",
-                attribution.publication_reason,
+                cash.identifier,
+                ROLE_PRINCIPAL,
+                "Cash conversion is the material available explanation of the latest outcome.",
             )
         )
-    elif attribution:
-        decisions.append(
-            SelectionDecision(attribution.identifier, attribution.publication, attribution.publication_reason)
-        )
-
-    if cash and cash.publication == PUBLICATION_MAIN:
-        selected.append(cash)
-        decisions.append(SelectionDecision(cash.identifier, "selected", cash.publication_reason))
         if cash.figure_purpose:
             figures.append(cash.figure_purpose)
+    elif cash_visible:
+        secondaries.append(cash)
+        decisions.append(
+            SelectionDecision(
+                cash.identifier,
+                ROLE_SECONDARY,
+                "Cash conversion is a distinct diagnostic and does not independently carry the operating story.",
+            )
+        )
     elif cash:
-        decisions.append(SelectionDecision(cash.identifier, "deferred", cash.publication_reason))
+        appendix.append(cash)
+        decisions.append(SelectionDecision(cash.identifier, ROLE_APPENDIX, cash.publication_reason))
 
+    visible = principals + secondaries
     ordered = []
     seen = set()
     for item in investigated:
-        replacement = next((sel for sel in selected if sel.identifier == item.identifier), item)
+        replacement = next((sel for sel in visible + appendix if sel.identifier == item.identifier), item)
         if replacement.identifier in seen:
             continue
         seen.add(replacement.identifier)
@@ -1113,6 +1204,9 @@ def select_driver_argument(view) -> ResearchSelection:
     return ResearchSelection(
         questions=tuple(ordered),
         decisions=tuple(decisions),
-        main_body_ids=tuple(item.identifier for item in selected),
+        main_body_ids=tuple(item.identifier for item in visible),
         figure_ids=tuple(dict.fromkeys(figures)),
+        principal_ids=tuple(item.identifier for item in principals),
+        secondary_ids=tuple(item.identifier for item in secondaries),
+        appendix_ids=tuple(item.identifier for item in appendix),
     )

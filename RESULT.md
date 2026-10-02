@@ -9013,4 +9013,143 @@ Unchanged publication bytes: DOCX `8ac1ed94…`, PDF `b6331943…`, Drivers `618
 
 Strictly positive international-offset gate, profit-direction controls, signed corporate-burden gates, completed renderer repairs and repaired 16-page PDF inspection were not replayed. Canonical Markdown, figures, DOCX, PDF and workbooks were not rebuilt or republished. Upstream inputs, all six Lululemon applications, analytical/admission controls, traceability, optional Trainer behavior and research limitations are preserved. `DRIVER.md` and `STYLE.md` byte-for-byte unchanged. Reserved research modules remain 0 bytes. Immutable snapshots, ordinary receipts (including preserved `bb38cf40…` / `38924b11…` and their captures `eccbbd56…` / `4a6004f2…`), retention records, failed/rejected attempts and historical RESULT entries are preserved. Ownership, access, recovery and unrelated-work safeguards retained. Accepted migration work was not reopened. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
 
+# RESULT.md — Step 9.1 Generalized Driver publication for Lululemon and Fast Retailing
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure; human editorial sign-off remains pending)  
+**Step:** 9.1 — Generalized Driver publication for Lululemon and Fast Retailing  
+**Work:** `362810cf9ddb42ba820dff960656a5cb`  
+**Plan:** `6a15c930a4714ccd8e6936eaed65adb9`  
+**Finding:** Generalized Driver publication for Lululemon and Fast Retailing  
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged vs this child's start).  
+TARGET SHA-256 `1efdf06ff9cd7274658a41978e665169235f169914fc6f36c9280b7e9c47ad40` (37157).  
+SESSION SHA-256 `e581184c06bdaa23c317f2374bbed2ac595c463c4d18ac49152c7ce973dbcf98` (4420).  
+IMPLEMENTATION SHA-256 `d2d2b611e43ae5bc49f71be275cdd81fd8be92656759e26eb983e3b8f351fa62` (8488).  
+No commit / push / sync / checkpoint / branch change.
+
+## Baseline
+
+`IMPLEMENT_BASE_SHA` from `.git/autocycle/resume-state`: `e526e540610d30632a82fc0e810cd3cebbb768e1`.  
+`STATE_BRANCH=checkpoint/20260913-183303`.  
+Authenticated on this continuation: `.git/HEAD` → `refs/heads/checkpoint/20260913-183303`; that ref and `.git/autocycle/implementation-baseline.json` `head` both equal `e526e540610d30632a82fc0e810cd3cebbb768e1`. Word observations carry the same `requested_head` / `reviewed_head`. No commit, push, sync, checkpoint or branch change.
+
+## Required plan change
+
+No required plan change. Session acceptance, human editorial sign-off, forecasting and earlier deferred obligations remain subsequent work.
+
+## DRIVER.md changes
+
+Smallest coherent revision of the publication authority:
+
+- Formalized **Headline conclusion → Principal drivers → Secondary signals → Appendix**.
+- Principals are material, supported, explanatory and distinct; two-to-four is a default, never a quota.
+- Lululemon applications are labeled regression fixtures, not an issuer template.
+- Acceptance is company-agnostic; company-specific numeric fixtures remain in regression tests.
+- Portability and zero-figures acceptance added.
+- `STYLE.md` unchanged (`4360b24b…`, 1645).
+
+## Selected hierarchies
+
+### Lululemon
+
+| Role | Question | Reason |
+|---|---|---|
+| Principal | `operating_margin_bridge` | FY2025 operating margin −3.75 pp reconstructs the −$295.1 million profit outcome |
+| Principal | `geographic_localization` | International revenue offset did not prevent Americas-led profit deterioration (−$295.082 million reconciled) |
+| Secondary | `cash_conversion` | Distinct CFO vs net-income diagnostic; remainder −$67.381 million retained |
+| Appendix | `footprint_intensity` | Stores +5.74% vs revenue +4.86% is available but not distinctly explanatory once geography is selected |
+| Appendix | `comparable_sales` | Period-specific KPIs; not a joined trend |
+| Combined / appendix | `management_margin_attribution` | Approximately $275 million retained as attribution, not a principal and not inserted into the bridge |
+| Excluded | `sales_per_square_foot` | Incompatible observations |
+
+Figures: `margin.png`, `geography.png` only.
+
+### Fast Retailing
+
+| Role | Question | Reason |
+|---|---|---|
+| Principal | `operating_margin_bridge` | FY2025 revenue +9.56%; operating profit +JPY 63,361 million; operating margin 16.1% → 16.6% (+0.46 pp) |
+| Secondary | `cash_conversion` | CFO JPY 651,521 → 580,618 million while net income JPY 393,605 → 459,153 million |
+| Excluded | `management_margin_attribution` | No source-bound attribution |
+
+No store, geography or tariff families. One figure: `margin.png`. Units are JPY millions from `standardized.json`.
+
+## Lululemon evidence moved to appendix or omitted
+
+Moved to appendix: footprint/intensity bridge and 5.74%/4.86% comparison; comparable-sales series and 53-week calendar; full geographic amount and contribution tables; full margin component/amount/contribution bridges; cash-component table and inventory lines; relationship records and residuals; selection decisions.
+
+Omitted from publication (not from the workbook): growth and cash figures; SPSF productivity series (blocked); continuous comparable-sales trend.
+
+## Shared-path evidence
+
+`core/research/selection.py`, `drivers.py` and `publish.py` are company-agnostic. `publish_company_research` now gates on `financial_drivers_applicable` (verified revenue and operating profit), not `revenue_driver_applicable`. Fast Retailing published without optional revenue-driver families. Renaming the display name still changes only the title; no `if company` branch.
+
+## Command / test outcomes
+
+| Check | Measured result |
+|---|---|
+| `python -m bav build Lululemon` | **0** — research + `geography.png` / `margin.png`; Forecast/Valuation/Overview 0 bytes |
+| `python -m bav check Lululemon` | **0** |
+| `python -m bav publish Lululemon` | **0** — `Lululemon_BAV.docx` / `.pdf` |
+| `python -m bav build FastRetailing` | **0** — `FastRetailing_Drivers.md` + `margin.png`; reserved modules 0 bytes |
+| `python -m bav check FastRetailing` | **0** |
+| `python -m bav publish FastRetailing` | **0** — `FastRetailing_BAV.docx` / `.pdf` |
+| `pytest` `test_research_drivers` + `test_publication` + `test_current_build` + `test_reported_margin` (project venv, this continuation) | **76 passed** in 33.07s |
+| Repeat `publish` | Succeeds; Word/PDF bytes differ by volatile metadata (existing publication contract) |
+| Artifact SHA-256 rehash (this continuation) | Identical to the bindings below |
+
+Replaced obsolete no-main-body-heading, mandatory-figure and Fast-Retailing-must-not-publish assertions with hierarchy and portability tests. Missing-research and broken-reference failure coverage retained.
+
+## Readability (appendix hidden)
+
+Lululemon main body: revenue grew 4.86% while operating profit fell $295.1 million; margin compression is the principal accounting explanation; international revenue offset did not prevent consolidated profit deterioration; mechanism unresolved. Secondary: weaker cash conversion and a −$67.381 million unexplained CFO remainder. Word uses Heading 1/2/3; PDF 13 pages, 2 images. Native Word page count is 14.
+
+Fast Retailing main body: revenue grew 9.56% and operating profit rose JPY 63,361 million; a modest operating-margin expansion reconstructs that outcome; mechanism unresolved. Secondary: cash from operations fell while net income rose. No Americas/store/tariff content in the main body. Word Heading 1/2/3; PDF 7 pages, 1 image.
+
+Technical publication acceptance is recorded here. Human editorial sign-off is not supplied and remains pending.
+
+## Native Word observations (Office Bridge)
+
+Index `.git/autocycle/office/review-index.json` SHA-256 `e9a8cc3aa564edb262078884c83b6c481290091f55683593a78815b42ed777fb`, 2 entries. Both `CAPTURED`; source SHA-256 matches the published DOCX files above; `action: NONE`.
+
+| Company | request_id | Word pages | Visible page-1 story |
+|---|---|---|---|
+| Lululemon | `e8d20091a8c3477c9e1317ea9ee5d214` | 14 | FY2025 revenue +4.86%; OP −$295.1 million; margin compression; international offset did not prevent profit deterioration; mechanism unresolved; heading `1. Operating-margin compression`; 23.7% → 19.9%, −3.75 pp; approximately $275 million retained as attribution; FY2025 operating-margin bridge figure |
+| Fast Retailing | `fd8faf5fe1834771ae18ee4f18fdf193` | 7 | FY2025 revenue +9.56%; OP +JPY 63,361 million; margin expansion reconstructs the stronger outcome; mechanism unresolved; heading `1. Operating-margin expansion`; 16.1% → 16.6%, +0.46 pp; FY2025 operating-margin bridge; `Secondary signals` visible |
+
+Rendered JSON confirms spaced body text. Figure titles and source notes are present. Fast Retailing page 1 shows the figure question once in prose and again as the image caption. Lululemon geography figure (Markdown/PDF, not on Word page 1) keeps separate revenue and profit scales and retains corporate/unallocated on the profit panel. These observations apply to the current DOCX bytes; earlier Word appearance evidence was not reused.
+
+## Artifact bindings (after final build/publish)
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `DRIVER.md` | `cbb6eff0f4166d1ec759a5bf393ba5f0dcaa81d539647c4e46f6e357ed41c70b` | 47249 |
+| `STYLE.md` | `4360b24bb849370a0fa48f21aa7cc83b8bf6b35c2ad9bac7e10de2829a107fc6` | 1645 |
+| `Lululemon_Drivers.md` | `2cb41c03215dbda6fafa64c67024ecd66949ce33c928889aeb47fdf85aa6d0be` | 21787 |
+| `Lululemon_BAV.docx` | `66d624cdae1fe98036f138ffd3bf4f956dae8b349c59ac6206034ec8a17de9ca` | 161254 |
+| `Lululemon_BAV.pdf` | `504221c84002a82016ad8e1b56030c898de60c9b9cde7a38e354a1b74a365ff2` | 182669 |
+| `Lululemon_BAV.xlsx` | `53c45541a69af1301111a1b658ccc1c7164dd59e63836facc9a4f62ec2c03b83` | 229735 |
+| `lululemon/figures/drivers/geography.png` | `9d99bf699ee442389e9f422898730524d662ad634779fc2d9d6ae9b94b08098d` | 65707 |
+| `lululemon/figures/drivers/margin.png` | `55ccb38cfc0727718e93dd4cad52b586eb10bead096ce75cd5063159cabd754e` | 52237 |
+| `FastRetailing_Drivers.md` | `c818179087221e18ac430eda53ffd9a195b70b4674b1ffa520be9a5a559d07a7` | 9936 |
+| `FastRetailing_BAV.docx` | `728e6b44ee013bb974041080816afb5883e8c03d088c5110b8ee8c706de5d0f6` | 87986 |
+| `FastRetailing_BAV.pdf` | `19915f66b74e85bb8ae2f0fffee85d74c5e26c44bd1efb198e83c2655c8d5187` | 80888 |
+| `FastRetailing_BAV.xlsx` | `446a1e2c1d0c4be25620f604045a68972da78045cc154012f5e5cd25aaae8a7c` | 137762 |
+| `fast_retailing/figures/drivers/margin.png` | `17365d8a9dce0936cf88a695f75aafda72b335ff856b9da76f08038f320ae443` | 45174 |
+| Forecast / Valuation / Overview (both companies) | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+
+## Preservation checks
+
+Upstream inputs, optional Trainer behavior, reserved zero-byte research modules, immutable snapshots, historical receipts/results and ownership/recovery safeguards were not rewritten except for the regenerated company outputs above. `STYLE.md` byte-identical. Workbook zip hashes changed on rebuild (xlsx packaging); analytical modules were not redesigned. Native Excel recalculation was not required for this research/publication step. Old publication appearance evidence was not reused as proof of the new output. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+## Unresolved research limitations
+
+- Fast Retailing optional revenue-driver, store and geographic families remain unavailable; publication uses income-statement, margin and cash evidence only.
+- Fast Retailing CFO component-change remainder (JPY 585,346 million) is the existing incomplete-reconciliation heuristic applied to that issuer's cash-flow lines; the signed remainder is retained and is not treated as a complete CFO bridge.
+- Fast Retailing appendix margin-component residuals are large because SG&A is stored as a signed expense; reported operating-margin levels used in the main body reconcile to OP/revenue independently.
+- Mechanism, attribution counterfactual, comparable-sales join, store-only productivity and the Lululemon −$67.381 million CFO remainder remain open as previously bounded.
+- Human editorial sign-off is pending and is not claimed.
+
+Office Bridge Word observations are recorded above. No further observation requested.
+
 

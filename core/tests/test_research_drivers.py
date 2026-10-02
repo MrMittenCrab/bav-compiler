@@ -120,14 +120,16 @@ def test_lululemon_drivers_from_validated_outputs(tmp_path):
     headings = [line for line in text.splitlines() if line.startswith("#")]
     assert headings[0] == expected_sections(company.name)[0]
     assert APPENDIX_HEADING in headings
-    assert headings[1] == APPENDIX_HEADING
+    assert headings[1] != APPENDIX_HEADING
+    assert any(line.startswith("## 1. ") for line in headings)
+    assert "## Secondary signals" in headings
+    assert headings[headings.index(APPENDIX_HEADING) - 1] == "## Secondary signals"
     assert not set(OBSOLETE_SECTIONS).intersection(headings)
     main = text.split(APPENDIX_HEADING, 1)[0]
     appendix = text.split(APPENDIX_HEADING, 1)[1]
     opening = " ".join(main.split()[:250])
-    assert "international" in opening.lower() or "China Mainland" in opening
     assert "profit" in opening.lower()
-    assert "cash" in opening.lower()
+    assert "margin" in opening.lower() or "compression" in opening.lower()
     lowered = text.lower()
     for term in FORBIDDEN_PROSE:
         assert term not in lowered, term
@@ -183,17 +185,18 @@ def test_lululemon_drivers_from_validated_outputs(tmp_path):
     assert view.geo_residual is not None
     assert all(value == 0.0 for value in view.geo_residual)
     assert view.selection is not None
-    assert "footprint_intensity" in view.selection.main_body_ids
-    assert "geographic_localization" in view.selection.main_body_ids
-    assert "operating_margin_bridge" in view.selection.main_body_ids
-    assert "cash_conversion" in view.selection.main_body_ids
+    assert "operating_margin_bridge" in view.selection.principal_ids
+    assert "geographic_localization" in view.selection.principal_ids
+    assert "cash_conversion" in view.selection.secondary_ids
+    assert "footprint_intensity" in view.selection.appendix_ids
+    assert "footprint_intensity" not in view.selection.principal_ids
     assert selected_figure_names(view) == (
-        "growth.png",
-        "geography.png",
         "margin.png",
-        "cash.png",
+        "geography.png",
     )
-    assert "growth.png" in main and "cash.png" in main
+    assert "margin.png" in main and "geography.png" in main
+    assert "growth.png" not in main
+    assert "cash.png" not in text
     assert appendix.count("| Fiscal year |") >= 1
     assembled = assemble_drivers_view(fin, company.name)
     assert assembled.revenue == view.revenue
@@ -222,11 +225,36 @@ def test_accent_disabled_and_enabled_remain_complete(tmp_path):
     assert plain == styled
 
 
-def test_fast_retailing_does_not_publish_drivers(tmp_path):
+def test_fast_retailing_publishes_from_own_evidence(tmp_path):
     company = resolve_company("FastRetailing")
     fin = prepare_company_input(company, tmp_path / "input")
     publish_company_research(company.name, fin, tmp_path / "out")
-    assert not (tmp_path / "out" / "research").exists()
+    verify_research_artifacts(tmp_path / "out", company.name)
+    text = (tmp_path / "out" / "research" / "FastRetailing_Drivers.md").read_text(
+        encoding="utf-8"
+    )
+    view = assemble_drivers_view(fin, company.name)
+    assert view.currency == "JPY"
+    assert "million" in view.units.casefold()
+    assert "JPY" in text
+    assert "Lululemon" not in text
+    assert "Americas" not in text.split("## Appendix", 1)[0]
+    assert "store" not in text.split("## Appendix", 1)[0].casefold()
+    assert "approximately $275 million" not in text
+    assert view.selection is not None
+    assert "operating_margin_bridge" in view.selection.principal_ids
+    assert "geographic_localization" not in view.selection.principal_ids
+    assert "footprint_intensity" not in view.selection.main_body_ids
+    assert len(view.selection.principal_ids) <= 2
+    assert text.startswith("# FastRetailing — Drivers")
+    assert "## 1. " in text
+    assert "## Appendix" in text
+    main = text.split("## Appendix", 1)[0]
+    assert "Forecast" not in main
+    placeholders = tmp_path / "out" / "research"
+    assert (placeholders / "FastRetailing_Forecast.md").stat().st_size == 0
+    assert (placeholders / "FastRetailing_Valuation.md").stat().st_size == 0
+    assert (placeholders / "FastRetailing_Overview.md").stat().st_size == 0
 
 
 def test_drivers_calendar_limitation_reconciles_53_week_year(tmp_path):
@@ -432,10 +460,13 @@ def test_output_depends_on_evidence_and_not_company_name(tmp_path):
     missing_cash = assemble_drivers_view(fin, company.name)
     assert missing_cash.selection is not None
     assert "cash_conversion" not in missing_cash.selection.main_body_ids
-    assert "footprint_intensity" in missing_cash.selection.main_body_ids
+    assert "operating_margin_bridge" in missing_cash.selection.principal_ids
+    assert "geographic_localization" in missing_cash.selection.principal_ids
+    assert "footprint_intensity" not in missing_cash.selection.principal_ids
     missing_text = render_drivers_markdown(missing_cash)
     assert "cash.png" not in missing_text
-    assert "growth.png" in missing_text
+    assert "growth.png" not in missing_text
+    assert "margin.png" in missing_text
 
 
 def test_incompatible_compsales_are_not_trended(tmp_path):
@@ -826,3 +857,104 @@ def test_revenue_offset_kind_requires_positive_international_sum(tmp_path):
     assert "geographic_localization" in only_consolidated.selection.main_body_ids
     only_text = render_drivers_markdown(only_consolidated)
     _assert_no_offset_or_growth_claim(only_text)
+
+
+def test_roles_follow_evidence_not_company_label(tmp_path):
+    company = resolve_company("Lululemon")
+    fin = prepare_company_input(company, tmp_path / "input")
+    base = assemble_drivers_view(fin, company.name)
+    assert base.selection.principal_ids == (
+        "operating_margin_bridge",
+        "geographic_localization",
+    )
+    assert base.selection.secondary_ids == ("cash_conversion",)
+    assert "footprint_intensity" in base.selection.appendix_ids
+
+    no_geo = replace(
+        base,
+        geo_identities=(),
+        geo_contributions=tuple({} for _ in base.geo_contributions),
+        geo_revenue_amount_changes=tuple({} for _ in (base.geo_revenue_amount_changes or ())),
+        geo_profit_changes=tuple({} for _ in (base.geo_profit_changes or ())),
+        geo_reconciling_profit_change=tuple(
+            None for _ in (base.geo_reconciling_profit_change or ())
+        ),
+        geo_consolidated_profit_change=tuple(
+            None for _ in (base.geo_consolidated_profit_change or ())
+        ),
+    )
+    no_geo = replace(no_geo, selection=select_driver_argument(no_geo))
+    assert "geographic_localization" not in no_geo.selection.main_body_ids
+    assert "footprint_intensity" in no_geo.selection.principal_ids
+    assert "cash_conversion" in no_geo.selection.secondary_ids
+
+    no_margin = replace(
+        base,
+        reported_operating_margin_change=tuple(
+            0.0 if value is not None else None
+            for value in (base.reported_operating_margin_change or ())
+        ),
+    )
+    no_margin = replace(no_margin, selection=select_driver_argument(no_margin))
+    assert "operating_margin_bridge" not in no_margin.selection.principal_ids
+    assert "cash_conversion" in no_margin.selection.secondary_ids
+    assert "geographic_localization" in no_margin.selection.principal_ids
+
+    only_cash = replace(
+        no_geo,
+        reported_operating_margin_change=tuple(
+            0.0 if value is not None else None
+            for value in (no_geo.reported_operating_margin_change or ())
+        ),
+        store_growth=tuple(None for _ in no_geo.store_growth),
+    )
+    only_cash = replace(only_cash, selection=select_driver_argument(only_cash))
+    assert only_cash.selection.principal_ids == ("cash_conversion",)
+    cash_text = render_drivers_markdown(only_cash)
+    assert "## 1. Cash conversion" in cash_text
+    assert "cash.png" in cash_text
+
+
+def test_zero_figures_and_positive_margin_are_publishable(tmp_path):
+    company = resolve_company("Lululemon")
+    fin = prepare_company_input(company, tmp_path / "input")
+    base = assemble_drivers_view(fin, company.name)
+    positive = replace(
+        base,
+        reported_operating_margin_change=_replace_latest(
+            base.reported_operating_margin_change, 0.01
+        ),
+        geo_consolidated_profit_change=_replace_latest(
+            base.geo_consolidated_profit_change, 100000.0
+        ),
+        geo_profit_changes=_replace_latest_geo(base.geo_profit_changes, americas=80000.0),
+        geo_reconciling_profit_change=_replace_latest(
+            base.geo_reconciling_profit_change, 20000.0
+        ),
+        geo_revenue_amount_changes=_replace_latest_geo(
+            base.geo_revenue_amount_changes, americas=81000.0
+        ),
+    )
+    positive = replace(positive, selection=select_driver_argument(positive))
+    assert "operating_margin_bridge" in positive.selection.principal_ids
+    text = render_drivers_markdown(positive)
+    assert "Operating-margin expansion" in text
+    assert "growth did not preserve the prior profit level" not in text
+
+    zero_fig = replace(positive, selection=replace(positive.selection, figure_ids=()))
+    zero_text = render_drivers_markdown(zero_fig)
+    assert "../figures/drivers/" not in zero_text
+    publish_drivers(fin, tmp_path / "out", display_name=company.name)
+    drivers = tmp_path / "out" / "research" / "Lululemon_Drivers.md"
+    drivers.write_text(zero_text, encoding="utf-8")
+    for path in (tmp_path / "out" / "figures" / "drivers").glob("*.png"):
+        path.unlink()
+    verify_research_artifacts(tmp_path / "out", company.name)
+
+
+def test_driver_md_states_company_agnostic_hierarchy():
+    text = (ROOT / "DRIVER.md").read_text(encoding="utf-8")
+    assert "Headline conclusion → Principal drivers → Secondary signals → Appendix" in text
+    assert "labeled regression fixtures" in text
+    assert "Portability" in text
+    assert "Zero figures is acceptable" in text or "zero figures" in text.casefold()
