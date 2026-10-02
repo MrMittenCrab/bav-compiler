@@ -2,19 +2,9 @@
 
 ## Product target
 
-Build a complete Business Analysis and Valuation equity-research system, presented as **BAV**. The Excel workbook is the core analytical and source-traceability product; canonical Markdown, figures and Word/PDF publications support it. Trainer is an optional secondary derivative.
+Build **BAV Compiler**, a source-grounded Business Analysis and Valuation equity-research system, in repository/local root `bav-compiler`. Preserve the public Python package and CLI name `bav` unless the migration actually requires changing it. Do not rename the Git remote or unrelated infrastructure for branding.
 
-The intended product relationship is:
-
-source-grounded company evidence → complete BAV analytical model → professional `<Company>_BAV.xlsx` with reproducible Markdown research, figures and Word/PDF publication
-
-The completed model also supports an optional derivative `<Company>_BAV_Trainer.xlsx`. Neither BAV build nor publication requires Trainer generation.
-
-The BAV workbook is the authoritative analytical model. It replaces the former Answer Key concept and must not present itself as an answer key, exercise or Trainer. Its front page is a concise product and company-analysis summary.
-
-Product-facing CLI help, documentation, workbook opening and publication wording use BAV as the primary name. Preserve optional Trainer functionality. Do not rename the repository, Git remote or unrelated infrastructure for branding.
-
-The secondary Trainer supports progression from accounting novice toward competence as a junior accounting-based equity-research analyst. Training-specific framing, blank yellow practice cells, Check instructions and exercise-oriented presentation belong in the Trainer.
+The Excel workbook remains the core analytical and source-traceability product; canonical Markdown, figures and Word/PDF publications communicate validated analysis. The BAV workbook must not present itself as an answer key, exercise or Trainer. Its front page is a concise product and company-analysis summary.
 
 The complete research system should enable an analyst to:
 
@@ -30,6 +20,92 @@ The complete research system should enable an analyst to:
 Formula correctness is necessary but not sufficient. The product must support accounting judgment, economic interpretation, auditability, forecasting discipline, valuation and research communication.
 
 Historical accounting analysis, normalization and reformulation, NOA, NOPAT, forecasting, valuation and investment interpretation remain long-term goals. A bounded Session need not complete every later stage.
+
+Trainer is preserved where useful as Legacy functionality, not an active architectural component or the project identity. Existing optional `<Company>_BAV_Trainer.xlsx` derivation must not become a prerequisite for BAV build or publication. The retained training specifications below govern preserved behavior, not Trainer expansion.
+
+## Active component architecture
+
+BAV Compiler has exactly five active components: Director, Extractor, Modeler, Interpreter and Composer. The repository visibly represents `director/`, `extractor/`, `modeler/`, `interpreter/`, `composer/` and `legacy/`.
+
+Every meaningful responsibility has exactly one disposition: Director, Extractor, Modeler, Interpreter, Composer, Legacy or Remove. Classification follows the kind of decision, not the historical file, module, class or subsystem. A mixed module must be decomposed when its responsibilities cross component boundaries.
+
+### Director
+
+Director owns system architecture, component boundaries, workflow orchestration, project-level configuration, global policies, high-level Markdown specifications, STYLE.md, interfaces, handoff contracts and lifecycle/execution coordination.
+
+Director defines policy and controls execution. Shared analytical, extraction, interpretation or rendering implementation belongs to its substantive component rather than Director.
+
+Director-owned high-level documentation lives under `director/docs/`. Move STYLE.md there and update references. Global architectural specifications, including the retained Driver specification, are Director-owned. TARGET.md, SESSION.md and IMPLEMENTATION.md remain at their protected controller-facing locations.
+
+### Extractor
+
+Extractor answers “What did the company publish?” It owns source-faithful conversion, Markdown, text, tables, reported financial facts and KPIs, management commentary, definitions and document/page/source provenance.
+
+Accounting interpretation, normalization, financial modeling, causal analysis and research prose do not belong to Extractor. Existing functionality belongs here only where its responsibility is source-faithful extraction. A minimal documented boundary is sufficient when no implementation qualifies; migration does not require building a new Extractor.
+
+### Modeler
+
+Modeler owns analytical operations with reproducible answers from the same inputs and explicit assumptions: accounting identities, classification and normalization, historical reconstruction, schedules, ratios, series, reconciliations, bridges, deterministic decompositions, statistical calculations, forecast/scenario/valuation arithmetic, workbook generation and BAV Excel construction.
+
+Modeler owns transformation, calculation, assumption and output provenance; residuals; validity, consistency and measurement-boundary checks; and tests establishing mechanical support for numerical claims. Raw source provenance originates in Extractor.
+
+Modeler may calculate consequences of Interpreter assumptions. It does not choose economic importance, plausible mechanisms, thesis emphasis or arguments.
+
+### Interpreter
+
+Interpreter owns judgments about meaning: materiality, economic importance, hypotheses, mechanisms, competing explanations, causal interpretation, uncertainty, research gaps, diagnostic evidence, justified assumptions, strongest supported conclusions and further investigation.
+
+Management-emphasized metrics remain attributed evidence. Management emphasis alone must never establish economic-driver status; analytical significance belongs to Interpreter.
+
+Interpreter may request Modeler calculations and tests and assess their implications. The future Modeler ⇄ Interpreter reasoning loop is not implemented during migration.
+
+### Composer
+
+Composer owns argument structure, publication emphasis, ordering, framing, headlines, paragraphs, transitions, rebuttal, prose generation, communication-oriented figure/table selection, captions, source notes, appendices, Markdown assembly, Word/PDF generation, publishing, layout and visual formatting.
+
+Composer consumes source evidence, Modeler outputs and Interpreter conclusions/hypotheses appropriate for communication. It may argue from valid evidence, but may not alter facts or Modeler outputs, invent evidence, manufacture causal certainty, turn unresolved judgments into established facts or create unsupported numerical conclusions.
+
+Future composition may support explicit neutral, bullish, bearish, thesis-defense, consensus-challenge or thesis-change objectives and LLM prose generation. These are deferred. Motivated reasoning must not enter Modeler or Interpreter.
+
+### Figures and handoffs
+
+Modeler produces valid numerical series and calculations. Interpreter determines economically meaningful relationships and candidate evidence relevant to hypotheses. Composer selects valid exhibits for publication and controls form, labels, annotations, captions, source notes, ordering and visual emphasis.
+
+A persuasive chart does not justify inventing an analytical relationship.
+
+The intended analytical flow is:
+
+Extractor → Evidence → Modeler ⇄ Interpreter → validated analytical state → Composer → Publication
+
+Interfaces remain thin and traceable. Do not create a large deterministic intermediate reasoning framework or ontology to encode every interpretation. Exact future report structure, stance systems and prose architecture remain deferred.
+
+### Driver decomposition
+
+The existing Driver/research layer is not an indivisible component.
+
+- Facts used in analysis, calculations, historical series, reconciliation, identities, bridges, regressions, residuals, measurement validity and mechanically determinable claim validity belong to Modeler.
+- Materiality, mechanisms, hypotheses, causal interpretation, alternatives, uncertainty, research gaps, management-framing interpretation and conclusions worth communicating belong to Interpreter.
+- Principal/secondary publication emphasis, argument structure, ordering, headlines, paragraphs, rhetoric, rebuttal, exhibit selection and rendering belong to Composer.
+
+Split mixed deterministic prose into analytical judgment and wording/presentation. Do not preserve a deterministic prose architecture merely because it already exists; preserve useful behavior and evidence qualifications without redesigning reports.
+
+### Legacy and Remove
+
+Legacy holds useful prior functionality outside the active architecture. Categories follow the actual inventory and may include Trainer, superseded workflows/interfaces, historical verification machinery, experiments or former research-generation architecture. Do not substantially refactor Legacy.
+
+Active code must not depend on Legacy as a hidden implementation layer. Any implementation required by active behavior belongs under its correct active owner.
+
+Remove material with no preservation value, including obsolete cloud infrastructure without a BAV Compiler role, dead duplicates, abandoned compatibility layers, inappropriate source-controlled generated/cache artifacts, temporary infrastructure and obsolete experiments. Do not create a `remove/` directory.
+
+## Structural migration boundary
+
+The current migration inspects the complete repository and records responsibility ownership before substantial movement. It then splits mixed modules, relocates responsibilities, updates imports, paths, metadata, tests, documentation, CLI routing and build/publish references, and removes material classified Remove.
+
+Preserve useful existing BAV behavior and source evidence. Establish minimal component documentation where implementation is absent. Record the inventory, important splits, removed components, test/build evidence and unresolved architectural ambiguities.
+
+Migration does not authorize a new Extractor, Modeler algorithm redesign, the Modeler ⇄ Interpreter loop, a hypothesis engine, Composer stance modes, new LLM prose generation, new financial-analysis modules or valuation methods, Trainer expansion, report redesign, a large reasoning ontology or broad cosmetic refactoring.
+
+The retained historical and future product specifications below preserve existing behavior and longer-term intent. They do not authorize feature development during migration. Stop after migration is completed and verified; do not automatically enter a second phase.
 
 ## Research output architecture
 
@@ -60,9 +136,9 @@ Driver figures under `build/output/<company>/figures/drivers/` are optional and 
 
 Benchmark and release are uses of canonical outputs, represented through Git tracking, tags or release packaging, not separate company data architectures. After canonical paths and dependencies are verified, remove obsolete generated artifacts and duplicate legacy, benchmark and release company trees, including obsolete Trainer and Answer Key outputs. Preserve original filings and canonical upstream data. Compatibility copies or symlinks require an active supported interface; do not maintain alternate active build architectures. Runtime must not silently fall back to obsolete benchmark, release or other legacy company paths.
 
-Root `README.md` documents the workbook / research / figures / publication architecture. Root `STYLE.md` is the single source of truth for human-facing BAV presentation and language conventions, applied to Markdown research, generated figures and rendered publications. Do not duplicate its specification in README or individual modules.
+Root `README.md` documents BAV Compiler and its component and output architecture. Director-owned `director/docs/STYLE.md` is the single source of truth for human-facing BAV presentation and language conventions, applied to Markdown research, generated figures and rendered publications. Do not duplicate its specification in README or individual modules.
 
-Root `DRIVER.md` is the company-agnostic historical Driver design authority. Its publication hierarchy is headline conclusion, principal drivers, optional secondary signals, and an auditable appendix. Selection follows analytical importance and available evidence, not a fixed section count or issuer template. Company-specific applications remain labeled regression fixtures. The main body must stand alone while the appendix preserves the detailed analytical record.
+Director-owned `director/docs/DRIVER.md` retains the company-agnostic historical Driver specification with ownership aligned to the component boundaries above. The existing publication hierarchy is headline conclusion, principal drivers, optional secondary signals, and an auditable appendix. Interpretive importance and available evidence inform conclusions; Composer owns publication ordering and emphasis. Company-specific applications remain labeled regression fixtures. The main body must stand alone while the appendix preserves the detailed analytical record.
 
 The research module sequence is Drivers, Forecast, Valuation, Overview:
 
@@ -71,17 +147,17 @@ The research module sequence is Drivers, Forecast, Valuation, Overview:
 - Valuation: standalone valuation.
 - Overview: cross-module synthesis.
 
-Module names use one word unless a one-word name would be genuinely unclear. The current historical-only Session strengthens Drivers; Forecast, Valuation and Overview files remain zero-content placeholders, without headings, explanatory text, TODOs, templates or analysis.
+These are output modules, not architectural components. Module names use one word unless a one-word name would be genuinely unclear. Preserve current Drivers behavior during migration; Forecast, Valuation and Overview files remain zero-content placeholders, without headings, explanatory text, TODOs, templates or analysis.
 
 Research and figures must be reproducible from the same validated BAV inputs as the workbook. Preserve calculations, source references, reconciliations and validation controls; do not maintain a separate uncontrolled numerical dataset. Figures use Matplotlib and one centralized style implementation derived from STYLE.md.
 
 Publication is downstream of analysis and must not duplicate analytical logic or maintain a second manually edited report. Use a standard maintainable Markdown-to-document toolchain where it meets actual rendering requirements. Word and PDF must be generated entirely from the CLI, without manual post-processing, and preserve headings, tables, equations, captions, source notes, meaningful structure and readable page layout. Resolve referenced canonical figures correctly; missing figures, broken references or conversion failures must fail clearly. Apply established styling and omit internal implementation/debug material from teammate-facing reports. Verify output readability and reproducibility.
 
-Preserve the existing validated workbook. Presentation changes may support Drivers and the BAV product hierarchy, including a concise company-analysis front page; this does not authorize a general workbook redesign or removal of audit evidence.
+Preserve the existing validated workbook. Migration does not authorize a general workbook redesign or removal of audit evidence.
 
 ## Scope boundary
 
-The initial curriculum is for **non-financial operating companies**. Banks, insurers, brokers, and other financial institutions require separate sector-specific accounting and valuation logic.
+The analytical scope is **non-financial operating companies**. Banks, insurers, brokers, and other financial institutions require separate sector-specific accounting and valuation logic.
 
 Hong Kong company input may remain manual. Automatic HKEX scraping is not required when annual reports, interim reports, results materials, Excel exports, Bloomberg exports, or Wind exports are supplied.
 
@@ -89,7 +165,7 @@ Analysis and exercises should follow materiality and the information actually su
 
 BAV supplies source-grounded equity-research analysis and historical target-assessment evidence for the current Lululemon M&A teamwork project. Identify historical growth and margin drivers, recurring versus episodic components, robust relationships and unresolved explanations. This scope does not authorize buyer-specific analysis, a deal recommendation, forecasting, valuation, price targets, scenarios or forward projections.
 
-Historical Driver publication is explicitly authorized for both Lululemon and Fast Retailing through the same company-agnostic selection and rendering path. Lululemon is the primary implementation and regression case; immediately after its acceptance, publish Fast Retailing from its own verified evidence as the portability demonstration. Preserve existing Fast Retailing analytical controls and regression coverage. Neither company must reproduce the other's driver categories, figures or section count, and unavailable mechanisms do not justify fabricated data, forced external research acquisition or broad workbook changes.
+Preserve historical Driver publication for Lululemon and Fast Retailing through the shared company-agnostic path as representative migration regression cases. Neither company must reproduce the other's driver categories, figures or section count, and unavailable mechanisms do not justify fabricated data, forced external research acquisition or broad workbook changes. The previous publication-session sequence does not replace the migration Endpoint and Priority.
 
 ## Source-data architecture
 
@@ -103,11 +179,13 @@ Preserve issuer fiscal-year labels and actual period-end dates as distinct infor
 
 For filing-based workflows, the canonical upstream handoff is **source-grounded filing JSON**. Each filing is extracted independently and preserves reported labels, statement sections, periods, currency/unit scale, values, and page-level provenance.
 
-LLM-assisted extraction is permitted upstream, but extraction must remain separate from BAV accounting judgment and analytical modeling. The extractor records what the filing says; BAV determines how accepted reported facts are classified, normalized, reconciled, and analyzed.
+LLM-assisted extraction is permitted upstream, but extraction must remain separate from accounting judgment and analytical modeling. Extractor records what the filing says; Modeler owns reproducible classification, normalization, reconciliation and analysis under explicit assumptions. Interpreter owns judgments about economic meaning.
 
-The standard filing workflow is:
+The preserved filing workflow is:
 
-source documents → one extracted JSON per filing → deterministic validation → deterministic cross-filing reconciliation → `StandardizedFinancials` → complete BAV reference model → professional BAV workbook → optional derivative Trainer
+source documents → one extracted JSON per filing → deterministic validation → deterministic cross-filing reconciliation → `StandardizedFinancials` → complete BAV reference model → professional BAV workbook
+
+Optional Legacy Trainer derivation may consume the completed model; active BAV generation must not depend on Legacy.
 
 Canonical Markdown research and reusable figures consume the same validated analytical outputs, with traceability to the workbook and source evidence.
 
@@ -118,6 +196,8 @@ Cross-filing differences, restatements, and source conflicts must be recorded ra
 PDF/LLM extraction may later be automated through an external model/API, but the BAV accounting engine must remain provider-independent and consume validated structured data rather than model responses directly.
 
 ## Curriculum progression
+
+This is retained Legacy Trainer intent, not active migration development.
 
 The learner should progress through three levels.
 
@@ -139,11 +219,11 @@ supplied judgment → guided judgment → independent accounting analysis → hi
 
 Ambiguous accounting treatments should be taught as alternatives with consequences rather than as one universally correct answer.
 
-## Historical Step 9 — current product stage
+## Historical Step 9 — retained product stage
 
-The historical-v1 model-construction foundation is release-gated and usable for learning now. Step 9 continues after that baseline toward a professional historical BAV product and its secondary training derivative.
+The historical-v1 model-construction foundation is release-gated and usable for learning now. Historical Step 9 describes retained analytical scope; it is distinct from Session 10 migration and its work numbering.
 
-Preserve existing historical capabilities:
+Preserve existing historical capabilities under their correct component owners:
 
 - multi-period source links and reformulated statements;
 - NOPAT, NOWC, NOLA, NOA, Net Debt, and reformulated Equity;
@@ -160,7 +240,7 @@ Preserve existing historical capabilities:
 - completed reference-model formulas and Notes with a matched Trainer;
 - cross-company synthetic robustness tests.
 
-Forecasting, valuation, scenario analysis, and investment conclusions remain deferred while Step 9 historical convergence continues.
+Forecasting, valuation, scenario analysis, and investment conclusions remain deferred. Migration preserves useful historical behavior without expanding these capabilities.
 
 ## Reference workbook for historical convergence
 
@@ -216,13 +296,13 @@ The product should not require every topic for every company. Optional modules s
 
 Major schedules should explain what changed economically and why it matters, as well as how a number is calculated.
 
-The historical decomposition is the primary analytical object. Strengthen the existing Drivers analysis through this sequence:
+The historical decomposition is the primary analytical object. Preserve this analytical sequence while assigning calculations to Modeler, meaning to Interpreter and expression to Composer:
 
 reported outcome → decomposition → measurable components / admitted KPIs → historical contribution analysis → reconstruction of actual results → residuals and contradictions → source and management-disclosure check → interpretation
 
 For each material outcome, answer: what happened, what moved it mathematically, and what explains those arithmetic movements? State the relationship or formula, calculate across available historical periods, compare implied changes with reported changes, and expose unexplained components. Prefer a few economically meaningful, source-supported decompositions over weak ratio catalogues.
 
-Revenue analysis retains or improves the existing driver tree using admitted geography/segment, footprint, comparable-sales, channel or other operational evidence where available. Quantify geographic contributions and test footprint versus intensity relationships without inventing missing components. Company-wide revenue per store is a historical intensity proxy, not pure store productivity when digital or other channels contribute. Preserve channel, currency, calendar and definition distinctions.
+Revenue analysis retains the existing supported driver calculations using admitted geography/segment, footprint, comparable-sales, channel or other operational evidence where available. Quantify geographic contributions and test footprint versus intensity relationships without inventing missing components. Company-wide revenue per store is a historical intensity proxy, not pure store productivity when digital or other channels contribute. Preserve channel, currency, calendar and definition distinctions.
 
 Margin analysis explicitly follows the three-question structure. State historical revenue, gross profit, gross margin, SG&A burden, other material operating items, operating profit and operating margin. Where disclosed, use:
 
@@ -230,13 +310,13 @@ Operating margin = Gross margin − SG&A / Revenue − impairment or asset-relat
 
 Bridge changes with consistent signs and denominators in percentage points or basis points. Reconcile levels and changes to reported operating margin and show any residual. Do not hide disclosed components in an aggregate operating burden or invent undisclosed subcomponents.
 
-After establishing the arithmetic, trace explanations such as mix, markdowns, freight, input costs, occupancy, geographic mix and leverage/deleverage to source evidence. Preserve management explanations as attributed statements; measure causal contributions only where disclosures support the calculation. Inspect existing extracts and admission evidence first, extending source extraction through existing controls only for necessary gaps.
+After establishing the arithmetic, trace explanations such as mix, markdowns, freight, input costs, occupancy, geographic mix and leverage/deleverage to source evidence. Preserve management explanations as attributed statements; measure causal contributions only where disclosures support the calculation. Management emphasis does not itself establish a driver. Migration preserves existing source controls without building a new extraction workflow.
 
 For each non-trivial proposed driver relationship, historical validation tests direction, magnitude, reconstruction, residual, stability across periods, contradictions and the disclosure check. Use compact bridges or tables. Validation tests the decomposition against observed history; it is not a separate predictive model. Do not add statistically elaborate models unsupported by the historical sample.
 
 Clearly distinguish accounting identity, reported historical fact, management explanation or strategy, observed historical relationship, economically plausible causal hypothesis and inference not established by evidence. An accounting identity or correlation alone does not establish a causal driver. Reconsider unsupported explanations or state that evidence is insufficient.
 
-Use this history to identify informative versus weak relationships, recurring versus episodic movements, accounting growth versus underlying operating improvement, and sourced claims versus inference. Methods generalize across companies; benchmark issuers do not justify issuer-specific analytical rules. Apply the same approach beyond revenue and margin only where a material outcome and available evidence justify it.
+Use this history to identify informative versus weak relationships, recurring versus episodic movements, accounting growth versus underlying operating improvement, and sourced claims versus inference. Methods generalize across companies; benchmark issuers do not justify issuer-specific analytical rules. Migration does not expand analysis to new outcomes or modules.
 
 Other interpretation questions include:
 
@@ -246,7 +326,7 @@ Other interpretation questions include:
 - Does a working-capital movement reflect growth, deterioration, seasonality, or accounting treatment?
 - Is an apparent improvement in ROE operating or financing-driven?
 
-The workbook need not grade free-form essays yet. Structured diagnostics and concise explanatory material are preferred until a reliable research-writing evaluation layer exists.
+The workbook need not grade free-form essays. Preserved diagnostics do not justify a new deterministic reasoning framework or research-writing evaluation layer.
 
 ## Historical learner experience
 
@@ -316,19 +396,19 @@ Do not jump from the release-gated historical-v1 baseline directly into forecast
 
 ## Autonomous progression policy
 
-Step 9 remains the current historical stage. Autonomous planning should continue material, source-supported work within the Session Endpoint and Priority. Do not advance merely because a convenient implementation milestone has been reached.
+The current Session is structural migration. Historical product-stage numbers below are retained roadmap references, not authorization to add features or a substitute for Session/work numbering.
 
-Step 9 is not open-ended. Do not create low-value historical work merely to remain in Step 9.
+Autonomous planning must advance the migration Endpoint under its Priority. Preserve useful existing capabilities and defer historical feature expansion until separately authorized.
 
 ### Current analytical focus gate
 
-The former three-area hard priority gate is superseded by the explicit BAV-first Session direction. Endpoint and Priority belong in SESSION.md.
+Endpoint and Priority belong in SESSION.md.
 
 Preserve accepted Geographic Analysis, Operating KPIs and Normalization Judgment / Earnings Normalization work. Unfinished normalization and broader accounting work remain open long-term obligations; do not represent deferral as completion.
 
-Preserve already accepted accounting, ingestion, geographic, KPI, normalization, provenance, workbook and regression work unless a demonstrated defect prevents the Session Endpoint.
+Preserve already accepted accounting, ingestion, geographic, KPI, normalization, provenance, workbook and regression work while changing ownership and organization as required by the migration.
 
-Historical Net Debt / Debt-Like Items Bridge, Complete NOPAT / RNOA and forecasting remain deferred unless a bounded historical dependency is directly necessary for the current Endpoint. Historical Lululemon M&A target assessment is permitted within the Scope boundary; buyer-specific analysis and deal recommendations remain excluded.
+Historical Net Debt / Debt-Like Items Bridge, Complete NOPAT / RNOA and forecasting remain deferred. Historical Lululemon M&A evidence remains within the Scope boundary; migration does not expand that analysis, and buyer-specific analysis and deal recommendations remain excluded.
 
 ### Step 9 exit gate
 
@@ -389,7 +469,7 @@ The analyst, and subsequently the learner, should be able to:
 - connect scenario and sensitivity results to the investment thesis;
 - produce a concise, evidence-based investment conclusion.
 
-Prefer structured analytical prompts and verifiable outputs before introducing unrestricted free-form grading.
+Interpreter owns analytical judgments and Composer owns their expression. Future reasoning and prose systems remain deferred; this roadmap does not mandate a deterministic reasoning ontology.
 
 ### Autonomous planning rule
 
@@ -409,7 +489,7 @@ Forecasting, residual-income valuation, DCF/cross-check valuation, terminal valu
 
 Historical relationships must not become forward assumptions in a historical-only Session. Later forecasting requires both the Step 9 exit gate and a Session permitting that work.
 
-The repository may retain dormant forecast/valuation scaffolding, but normal historical builds must not execute it or depend on forecast outputs.
+The repository may retain dormant forecast/valuation scaffolding with an explicit inventory disposition, but normal historical builds must not execute it or depend on forecast outputs. Retention does not authorize implementation during migration.
 
 Deferred tabs may remain hidden placeholders: `Model_Bear`, `Model_Base`, `Model_Bull`, `Scenario_Summary`.
 

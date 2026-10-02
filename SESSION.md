@@ -1,32 +1,32 @@
-# BAV — Generalized Driver Publication
+# BAV Compiler — Structural Migration
 
-Session: 9
+Session: 10
 
 ## Endpoint
 
-Deliver a materially more readable Lululemon Drivers report under a company-agnostic DRIVER.md, then immediately produce a Fast Retailing Drivers report through the same existing calculation, selection, prose, figure, appendix and Word/PDF publication path.
+Complete and verify the existing repository’s structural migration to BAV Compiler in `bav-compiler`, with Director, Extractor, Modeler, Interpreter, Composer and Legacy visibly represented, preserving useful existing behavior and public `bav` interfaces.
 
 Session acceptance requires:
 
-- DRIVER.md formalizes **Headline conclusion → Principal drivers → Secondary signals → Appendix**, with company-specific material confined to labeled examples and regression fixtures. STYLE.md remains the sole presentation/language authority and unchanged unless a demonstrated contradiction requires a minimal correction.
-- Both reports are conclusion-first, selective, flat and understandable without their appendices. Principal drivers are material, supported, explanatory and distinct; secondary diagnostics have a separate role. Section count and page count are not acceptance criteria.
-- Figures are optional and claim-driven. Detailed evidence remains auditable in the appendix; every selected quantitative claim retains its verified analytical and source basis.
-- Lululemon build/check/publish and readability acceptance precede canonical Fast Retailing publication. Fast Retailing uses its own evidence and may support fewer drivers or different categories; neither publication requires company-specific production branching.
-- Both canonical Markdown/Word/PDF reports are generated and inspected, relevant regressions pass, and unrelated outputs and protected evidence remain preserved.
-- RESULT.md records authority changes, both hierarchies and reasons, Lululemon evidence allocation, shared-path evidence, measured verification and unresolved limitations. Human editorial sign-off remains separately pending unless explicitly supplied; it is not required for technical session completion.
+- A complete responsibility inventory assigns every meaningful responsibility exactly one disposition by kind of decision; mixed modules, especially Driver/research, are decomposed across their proper owners.
+- Director owns governance, orchestration, contracts and global specifications; STYLE.md resides in its high-level documentation location with references updated.
+- Extractor has a clear source-faithful boundary, with minimal documentation sufficient where implementation is absent. Modeler owns reproducible calculations, workbook construction and mechanical validity; Interpreter owns judgments about meaning; Composer owns expression, publication and figure presentation.
+- Management emphasis remains evidence rather than automatic driver status. Numerical support, provenance, uncertainties and claim qualifications survive; motivated reasoning does not enter Modeler or Interpreter.
+- Legacy categories reflect the inventory, active implementation does not depend on Legacy, and obsolete cloud/dead material without preservation value is removed.
+- Imports, paths, metadata, tests, documentation, CLI routing and build/publish references match the new ownership. The active repository presents itself as BAV Compiler.
+- Relevant existing tests and representative BAV builds/checks/publications pass, useful optional Trainer behavior survives under appropriate ownership, and RESULT.md records splits, removals, verification and unresolved architectural ambiguities.
+- No second-phase features are implemented. Stop after verified migration.
 
 ## Priority
 
-1. Review the existing authorities, publications, verified company evidence and cited Valentine references; minimally generalize DRIVER.md and implement evidence-qualified publication roles through the existing research path.
-2. Regenerate and accept Lululemon’s concise main body, complete appendix and canonical publication.
-3. Immediately publish Fast Retailing through the same generalized path, verify portability and readability, and record integrated results.
+1. Inspect the complete repository and classify responsibilities before substantial file movement; specify mixed Driver decomposition and thin handoffs first.
+2. Execute inventory-led splits and relocation, update references and establish minimal empty boundaries. Preserve useful behavior and remove justified obsolete material.
+3. Verify architecture, dependencies, representative Lululemon/Fast Retailing behavior and relevant regressions; record evidence and resolve migration defects.
 
-Preserve accepted accounting, ingestion, geographic, KPI, normalization, provenance, workbook and optional Trainer behavior. Retain canonical lowercase paths, source references, precision, exact reconciliations, fiscal distinctions, admission/comparison independence and fail-closed controls. Preserve Lululemon fixture boundaries for incompatible comparable-sales observations, management attribution, geographic/accounting localization and the unresolved signed CFO remainder without making them universal report requirements.
+Preserve canonical source evidence, accounting signs, fiscal distinctions, precision, reconciliations, provenance, admission/comparison independence, residual qualifications, fail-closed controls and zero-byte research placeholders. Do not redesign Modeler algorithms, reports or workbook architecture; build a new Extractor, reasoning loop, hypothesis engine, Composer stance modes or LLM prose; add analysis/valuation methods; expand Trainer; or introduce a large reasoning ontology.
 
-Preserve historical acceptance evidence, immutable snapshots, ordinary receipts and failed/rejected attempts. Reuse verification only after establishing applicability to unchanged surfaces and dependencies. Changed workbook formulas/dependencies require native recalculation and independent saved-cache verification; changed workbook presentation requires native readability inspection. Native Office observations use Office Bridge with existing ownership, access and recovery safeguards; do not automate security approval.
+Use authenticated implementation baseline B and historical Git blobs, then canonical destinations, provenance continuity and current verification. Tracked relocation permits disappearance of the old path; Git supplies historical preservation. Protect irreplaceable non-Git evidence through verified canonical continuity before removal. Preserve normal ownership, recovery, protected-document and unrelated-dirty-work safeguards.
 
-Earlier normalization, broader source-workflow and normalized-per-share obligations remain deferred with their evidence and unresolved decisions. Preserve historical migration records and the deletion-before-verification breach without reopening accepted migration work or claiming later verification proves an earlier gate ran.
+Reuse prior verification only when its dependencies remain applicable. Changed workbook formulas/dependencies require native recalculation and independent saved-cache verification; changed presentation requires relevant readability inspection. Native Office work uses Office Bridge and existing access controls. Never claim later verification proves an earlier gate ran.
 
-Do not redesign forecasting, valuation, recommendations, M&A analysis or workbook architecture. Do not import ratings, consensus, price targets or mandatory forecasts into Drivers; acquire external data merely to force completeness; discard valid appendix evidence; weaken claim boundaries; or create a parallel pipeline, framework, database, graph engine, scoring system or dashboard without a demonstrated necessity within this Endpoint. Forecast, Valuation and Overview research files remain zero-byte placeholders.
-
-Instruction incorporation is not implementation acceptance. DONE requires this Endpoint and current plan acceptance, including both companies’ publication outcomes.
+Earlier publication records, deferred accounting obligations and historical evidence remain preserved without becoming a competing publication-session Endpoint. Instruction incorporation is not acceptance; DONE requires this migration Endpoint and current plan acceptance.
