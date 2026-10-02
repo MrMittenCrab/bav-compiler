@@ -9542,4 +9542,141 @@ Supporting generated artifacts also rehashed:
 
 Technical publication of both companies through the shared path is recorded. Native Excel saved-cache is VERIFIED. The previously missing Fast Retailing secondary paragraph is visible in native Word. Review adjudicates Step closure.
 
+---
+
+# RESULT.md — Step 10.1 Inventory responsibilities and define migration splits
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)  
+**Step:** 10.1 — Inventory responsibilities and define migration splits  
+**Work:** `7951a38d066a440e8bfa19cd9dc5ecc7`  
+**Plan:** `4af79157ec6d46d18711c561f7d8c664`  
+**Finding:** Inventory responsibilities and define migration splits
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged vs B).  
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).  
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).  
+IMPLEMENTATION SHA-256 `6c1300daa2ff98388617ded9d2237685c777e7827ae9c280eb618e71104dafea` (6476).  
+No commit / push / sync / checkpoint / branch change. No runtime move, delete, rebuild, publish, or native Office.
+
+## Required plan change
+
+No required plan change. This attempt produced the inventory and split design only. Session acceptance, file movement and representative rebuilds remain subsequent reviewed steps.
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`.
+
+| Check | Measured |
+|---|---|
+| B | `86ebdecb6c01a7153bbf6c90f5af16294753a3cd` |
+| Branch | `checkpoint/20260913-183303` (`.git/HEAD` and `refs/heads/…` both this name) |
+| Branch tip | `86ebdecb…` — HEAD equals B |
+| Ancestry | B is HEAD, therefore an ancestor of HEAD |
+| `implementation-baseline.json` | `head` = B, `branch` matches, freeze listed the tracked tree at B |
+| Attempt binding | `work-state` allocated `10.1` `source` = B, `work_id` = `7951a38d066a440e8bfa19cd9dc5ecc7`, `status` = `opened`; matches `IMPLEMENTATION.md` AUTOCYCLE_PLAN |
+| `latest-implementation` | Leftover `be5d9275…` / `bav_trainer` log path; ignored because `IMPLEMENT_BASE_SHA` is populated |
+
+Authentication succeeded. Fail-closed was not required.
+
+## Inventory artifact
+
+Created `director/docs/MIGRATION_INVENTORY.md` (SHA-256 `c97dad5f2d1744430de239ad856b3b6fd15bb12501d1462cef520e290a623679`, 57840 bytes). First `director/` file. No other component roots created. `STYLE.md` / `DRIVER.md` remain at repository root until a later reviewed step.
+
+Every meaningful responsibility is assigned exactly one of Director, Extractor, Modeler, Interpreter, Composer, Legacy or Remove. Mixed files have separate responsibility rows. Configuration, tests, data and documentation inherit an owner and are not extra active components.
+
+## Inventory coverage
+
+Inspected tracked content at B via `implementation-baseline.json` and current working-tree content.
+
+| Area | Disposition summary |
+|---|---|
+| `.autocycle.toml`, `.gitignore`, `.cursor/`, `requirements-trainer.txt` | Director |
+| `.claude-plugin/`, `requirements-benchmark.txt` | Legacy |
+| `bav/`, `core/__main__.py`, `current_build.py`, `project_companies.json` | Director orchestration; public `bav` preserved |
+| `core/data/filing.py` + `DocumentManifest` | Extractor contract |
+| `core/data` StandardizedFinancials / checksums / IO / fiscal / KPI-segment contracts | Modeler |
+| `core/ingestion` load/reconcile/standardize/admit | Modeler; loaders consume Extractor output |
+| `core/ingestion/manual_hk.py`, `excel_import.py`, `management_kpi_enrichment.py` | Legacy |
+| `core/ingestion/future_adapters.py` | Remove |
+| `core/model/*` historical calculations | Modeler; `operating_forecast.py` / `ri_engine.py` dormant Modeler |
+| `judgment.py` / `normalization.py` / `revenue_strategy_synthesis.py` | Split Modeler / Interpreter / Composer |
+| `core/engine/*` workbook + maps | Modeler; `BUILD_MODULES` policy Director |
+| `core/trainer/build_bav_workbook` + semantic I/O + check-context embed | Modeler (must leave Trainer) |
+| Trainer derive / blank / `check_workbook` | Legacy |
+| `core/research/drivers.py`, `selection.py` | Split § inventory 5 |
+| `style.py`, `document.py`, `publish.py` | Composer |
+| `core/tests/` + fixtures | Inherited owners |
+| `scripts/` | Extractor helper / Legacy / one Remove |
+| `automation/`, `skills/`, plugin zip | Legacy |
+| Root STYLE/DRIVER | Director destinations `director/docs/STYLE.md`, `director/docs/DRIVER.md` |
+| Protected TARGET/SESSION/IMPLEMENTATION/RESULT | Stay root |
+| `example/`, existing `legacy/` | Legacy |
+| `build/input/*/extracted|reconciled` | Extractor / Modeler; stay canonical; gitignored local copies exist |
+| `build/input/*/source/` | Extractor store; **empty now**; not tracked at B |
+| `build/output/` | Modeler workbook + Composer publication; reproducible |
+| Caches / empty leftover dirs / obsolete source_facts script | Remove |
+
+## Concrete mixed-responsibility decisions
+
+**`drivers.py`:** Modeler owns assembly through L967, CFO classification (`is_cfo_component` / `selected_cfo_concepts`), series, residuals and `margin_reconstruction_complete`. Interpreter is not implemented as standalone functions here; `assemble_drivers_view` must stop calling `select_driver_argument` (L968). Composer owns headings, prose, report order, exhibit selection and plotters.
+
+**`selection.py`:** Modeler owns numeric gates (`geographic_claim_conditions`, OFFSET_*, `_margin_is_material` as non-zero eligibility). Interpreter owns `investigate_driver_questions`, strongest conclusions, mechanisms, uncertainty and the qualification gates inside `select_driver_argument`. Composer owns ROLE_/PUBLICATION_ assignment, principal/secondary/appendix order and `figure_ids`. Delete duplicate `_margin_reconstruction_complete`.
+
+**Handoffs (existing types only):** Modeler `DriversView` (minus `selection`) → Interpreter `select_driver_argument` → Composer `ResearchSelection` fields + render. Field owners are tabulated in the inventory. No new reasoning schema.
+
+**`revenue_strategy_synthesis.py`:** locator = Extractor; applicability + admitted-test orchestration = Modeler; verdict/qualification = Interpreter; navigation/fallback opening = Composer.
+
+**Management emphasis:** `_margin_questions` sets `publication=PUBLICATION_MAIN` on `if latest_attr:` (L868). That promotion is specified for removal. `select_driver_argument` L1170–1176 already refuses an independent principal. Attributed locators, `CLAIM_ATTRIBUTION` and `_attribution_block` are retained. Compsales investigation MAIN-on-presence is likewise specified to stop; selection already appends compsales.
+
+**Trainer:** active `__main__`, `current_build` and `reference_model` import `core.trainer`. Inventory requires inversion: BAV build/map/live-formulas move to Modeler; Legacy may import Modeler, not the reverse.
+
+**Extractor:** no production statement extractor. Documentation-only `extractor/README.md` in a later step. Do not build extraction.
+
+## Proposed removals
+
+Each has an absence-of-use justification in the inventory. Never create `remove/`.
+
+- `scripts/build_fast_retailing_source_facts.py` (obsolete; unused; writes absent `source_facts.json`)
+- `core/ingestion/future_adapters.py` stubs (no production import)
+- Dead `FIGURE_NAMES` / `FIGURE_PLOTTERS` / `_calendar_limit_block`
+- Empty `benchmark/` and `release/` leftover dirs
+- Empty `build/input/lululemon/evidence/stale-benchmark-reconciled/`
+- Regenerable `build/input/fast_retailing/evidence/_extract/*.txt`
+- gitignored example sidecars; `__pycache__/`; `.pytest_cache/`; `.DS_Store`
+
+Do not delete local extracted/reconciled JSON. Do not invent source PDFs. Canonical PDF destination is `build/input/<company>/source/` before any later restore/move.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| Read `resume-state`, `implementation-baseline.json`, `work-state` 10.1, `.git/HEAD`, branch ref | B authenticated as above |
+| Inspect `core/research/drivers.py`, `selection.py` (classes L36–107, assemble L640–968, emphasis L868–935 and L1170–1176, `_margin_is_material` L1104–1106) | Mixed splits and emphasis rule confirmed from source |
+| Inspect `bav/__main__.py`, `core/__main__.py` L27–29, `current_build.py` L278–294 | Public `bav` façade; Trainer imports on active build path |
+| Inspect `revenue_strategy_synthesis.py`, `future_adapters.py`, `build_fast_retailing_source_facts.py` header, `project_companies.json` | Split / Remove / company routing confirmed |
+| `rg` `FIGURE_NAMES`, `validate_standardized`, `HKEXAdapter`, `build_fast_retailing_source_facts` | Dead or export-only as inventoried |
+| `rg` STYLE.md / DRIVER.md references | Test L86/L967/L110, README L50/54/72, `style.py` docstring, DRIVER.md cross-links |
+| Glob `build/input/*/source` and `**/*.pdf` | **0 PDFs** in the working tree; extracted/reconciled JSON present under gitignored `build/input/` |
+| `source_manifest.json` | Still names `benchmark/fast_retailing/source/*.pdf` |
+| Hash STYLE.md / DRIVER.md / README.md vs baseline freeze | Identical to B (`4360b24b…` / `cbb6eff0…` / `d7c570ba…`) |
+| Native Office / company rebuild / pytest | **Not run** — inventory-only step |
+
+## Supported verification routes (later executing steps)
+
+Recorded in the inventory §15: existing `core/tests/` suites including `test_research_drivers`, `test_publication`, `test_current_build`, `test_build_cli`, Lulu/FR benchmarks, filing/KPI/geo, Trainer optional; representative `python -m bav {build,check,publish} Lululemon|FastRetailing`. Native Office only when formulas/presentation change; historical receipts do not apply automatically.
+
+## Unresolved issues
+
+Fifteen items are listed in the inventory §16, including latest-index mismatch, non-zero “materiality”, attribution-without-margin wiring, disclosure-gated reconstructions, unused `overlap` / `main_body_table_reason`, unused `validate_standardized`, `cmd_build -o` Trainer dual path, absent source PDFs, and README “Hong Kong Edition” test coupling. They are recorded as open, not completed classification.
+
+## Preservation
+
+No runtime code moved. No content deleted. No publications regenerated. No reports redesigned. No new analytical features. STYLE.md / DRIVER.md / public `bav` / canonical `build/input` and `build/output` interfaces unchanged. Zero-byte research placeholders were not touched. Ownership, recovery, protected-document and unrelated-dirty-work safeguards preserved. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+## Remaining toward Completion
+
+The inventory and executable split design exist and assign dispositions, destinations, dependency changes and preservation checks sufficient to begin migration. Subsequent reviewed steps must execute the inventory, relocate Director specifications and STYLE.md, preserve useful `bav` behavior, verify representative builds and regressions, and finish migration without second-phase features.
+
+Inventory completion does not establish migration acceptance.
+
 
