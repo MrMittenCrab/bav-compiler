@@ -1,1 +1,1 @@
-"""Composer package root (publication modules relocate in later steps)."""
+"""Composer package root (publication styling, Word/PDF, and research publish)."""

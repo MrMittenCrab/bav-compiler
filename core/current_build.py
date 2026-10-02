@@ -73,7 +73,7 @@ def resolve_company(query: str) -> Company:
 
 def check_company_output(query: str) -> int:
     """Resolve canonical output and check it without path arguments."""
-    from .research.publish import verify_research_artifacts
+    from composer.research.publish import verify_research_artifacts
     from .trainer.checker import check_workbook
     from .trainer.semantic_io import load_semantic_map, sidecar_paths
     company = resolve_company(query)
@@ -290,7 +290,7 @@ def build_company(company: Company, assumptions=None):
         bav = build_bav_workbook(fin, staged / company.bav.name, assumptions, current_snapshot=True)
         _publish_company_sidecars(staged, company.bav.name)
         verify_staged(fin, bav, assumptions)
-        from .research.publish import publish_company_research
+        from composer.research.publish import publish_company_research
         publish_company_research(company.name, fin, staged)
         rows = status_rows(load_semantic_map(bav))
         _write_json(staged / 'supporting' / 'build_status.json', rows)

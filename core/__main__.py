@@ -343,7 +343,7 @@ def cmd_reconcile(args: argparse.Namespace) -> int:
 
 
 def cmd_publish(args: argparse.Namespace) -> int:
-    from .research.document import publish_company_documents
+    from composer.research.document import publish_company_documents
     published = publish_company_documents(args.company)
     print(f"Published {published.word.name} and {published.pdf.name}")
     print(f"Word: {published.word}")

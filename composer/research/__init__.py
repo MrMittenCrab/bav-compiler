@@ -1,1 +1,1 @@
-"""Composer research publication and Driver argument selection."""
+"""Composer research styling, publication, and Driver argument selection."""

@@ -1,1 +1,1 @@
-"""Canonical Markdown research and reusable figures from validated BAV outputs."""
+"""Compatibility package. Delegates Composer research publication without implementation."""

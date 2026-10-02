@@ -10455,3 +10455,81 @@ This handoff does not establish Session 10 acceptance.
 
 None.
 
+---
+
+# RESULT.md — Step 10.6 Relocate research styling and publication into Composer
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)  
+**Step:** 10.6 — Relocate research styling and publication into Composer  
+**Work:** `9c134fea34e840dfbe25f98869e28acc`  
+**Plan:** `00ee6f3915e94889b800c8bb6048020e`  
+**Finding:** Relocate research styling and publication into Composer
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change.
+
+## Baseline B
+
+Authenticated from populated `IMPLEMENT_BASE_SHA`. Fail-closed was not required.
+
+| Record | Value | Result |
+|---|---|---|
+| `.git/autocycle/resume-state` `IMPLEMENT_BASE_SHA` | `e00052d6e07f932c3a3c707b7b3c80a4845dede3` | Used as B |
+| `STATE_BRANCH` / `.git/HEAD` / branch tip | `checkpoint/20260913-183303` / same SHA | HEAD == B |
+| `implementation-baseline.json` `head` | same SHA | Bound |
+| `work-state` allocated `10.6` | `source` = B, `work_id` = `9c134fea34e840dfbe25f98869e28acc`, `status` = `opened` | Bound |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | `step_id` 10.6, same `work_id` | Bound |
+| `.git/autocycle/latest-implementation` | leftover `c951e573…` (Step 10.5.2) | Ignored: `IMPLEMENT_BASE_SHA` populated |
+
+Compared destinations with Git blobs at B via `git show B:path`.
+
+## Path mappings
+
+| B path | Destination | Continuity |
+|---|---|---|
+| `core/research/style.py` | `composer/research/style.py` | Unchanged move. 9522 bytes, SHA-256 `6a1d6d2312fad40e9e3ccc4c3d2543f5249f07f58d70a1296695629a4222bc65` identical to B |
+| `core/research/document.py` | `composer/research/document.py` | Import retarget only. Bodies unchanged vs B `3399e6ed…` / 52654 bytes. Current 52708 bytes, SHA-256 `2ad7d961…`. Relative `..current_build` / `.drivers` / `.publish` / `.style` became `core.current_build`, `composer.research.drivers`, `composer.research.publish`, `composer.research.style` |
+| `core/research/publish.py` | `composer/research/publish.py` | Import retarget only. Bodies unchanged vs B `71e2e269…` / 3217 bytes. Current 3299 bytes, SHA-256 `77cf8f71…`. Heading helpers from `composer.research.drivers`; `financial_drivers_applicable` from Modeler; `publish_drivers` from Director |
+| `core/research/style.py`, `document.py`, `publish.py`, `__init__.py` | retained façades | Delegation-only; implementation solely in Composer |
+
+Callers updated to canonical Composer imports: `composer/research/drivers.py`, `core/current_build.py` build/check, `core/__main__.py` `cmd_publish`. Supported `core.research` public imports remain identity-equal to Composer callables.
+
+## Interface and behavior
+
+- Callable signatures, return types, constants, company aliases, public `bav` commands, output filenames and canonical input/output paths are unchanged.
+- Lazy converter loading is preserved: importing `composer.research.document` does not load `docx` / `reportlab` until `require_publication_libraries()`.
+- Font discovery, verified spacing, figure formatting, Markdown parsing, Word/PDF layout, publication validation and failure behavior remain in the moved bodies.
+- Apply-if-applicable, heading contracts, referenced-figure validation, extra-figure rejection and zero-byte placeholders remain in `composer/research/publish.py`.
+- Company routing stays `core.current_build.resolve_company`. Lifecycle publish stays Director `publish_drivers`. Composer does not recalculate Modeler or Interpreter results.
+- Completed Driver handoffs and independent eligibility were not edited.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| B authentication (resume-state, baseline JSON, work-state 10.6, branch, HEAD==B) | B = `e00052d6…`; HEAD == B; fail-closed not required |
+| B blob vs destinations | `style.py` byte-identical; `document.py` / `publish.py` import-only semantic moves |
+| Canonical + façade import identity / lazy converters (`test_core_research_publication_facades_delegate_to_composer`, `test_publication_import_order_keeps_converter_loading_lazy`) | both passed inside the publication suite |
+| Focused research/publication (`test_publication`, `test_research_drivers`, `test_research_handoff`, `test_research_emphasis`, `test_drivers_numeric`) | **70 passed**, 5 warnings (pre-existing Swig importlib), 26.22s |
+| Listed build/CLI/contract/revenue/margin/Lululemon+FR benchmark/Trainer/learner-ready | **508 passed**, 193.15s |
+| `/opt/anaconda3/bin/python -m bav --help` | rc 0; ingest / validate-source / reconcile / build / check / publish / list |
+| `python -m bav build/check/publish` Lululemon and FastRetailing | rc 0 each. Filenames `Lululemon_BAV.docx/.pdf` and `FastRetailing_BAV.docx/.pdf` under canonical output. Placeholders remain 0-byte `e3b0c442…`. Figure refs resolve to PNGs; no extras. Word headings/styles and PDF Aptos/headings/figures match Markdown |
+| Lululemon Drivers.md vs pre-rebuild working-tree file | SHA changed `36cce28e…` (21915) → stable `3fea615d…` (21884) across two builds. Stale generated file, not B. Heading contract unchanged |
+| Fast Retailing Drivers.md | SHA-256 `5b3aca6c…` (10320) identical to pre-rebuild working-tree file |
+| `git diff --check` | rc 0 |
+| Native Office | **Not run** — workbook formulas/dependencies and presentation implementation were not changed; Word/PDF content/layout checked programmatically. SESSION native-verify condition was not met |
+
+## Preservation
+
+Canonical inputs, source evidence, accounting signs, fiscal distinctions, precision, admission/comparison independence, residual qualifications, fail-closed controls, optional Trainer behavior and zero-byte research placeholders were not redesigned. Attribution amounts, locators, counterfactual scope, `supported_as_attribution`, `not independently verified` and `outside the accounting bridge` remain. `director/docs/STYLE.md` remains the presentation authority. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+## Remaining toward Completion
+
+Engine/Trainer inversion, other component relocation, removals and final repository-wide migration verification remain subsequent work. Inventory §16 behavior defects were not repaired. Overview opening/navigation remains subsequent to this `style` / `document` / `publish` move.
+
+This relocation does not establish Session 10 acceptance.
+
+## Required plan change
+
+None.
+
+

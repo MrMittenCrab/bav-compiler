@@ -12,7 +12,7 @@ BAV Compiler has five active components. Visible packages exist; this Session is
 - **Extractor** — source-faithful filing JSON contracts and loaders. This repository does not extract statements from PDF.
 - **Modeler** — reproducible calculations, workbook construction, and mechanical validity. Revenue-driver observations, reported-margin series, and identity validity live under `modeler/`; most other implementation still lives under `core/` pending later relocation.
 - **Interpreter** — judgments about economic meaning. Revenue-driver verdicts, reported-margin claim typology, and historical-strategy selection live under `interpreter/`. Broader `drivers.py` / `selection.py` splits remain subsequent work.
-- **Composer** — publication, argument structure, and figure presentation. Revenue-driver and margin assessment wording and Overview opening live under `composer/`; other rendering still lives under `core/research/` pending later relocation.
+- **Composer** — publication, argument structure, and figure presentation. Research styling, Word/PDF generation, publication verification, Driver wording, and Overview opening live under `composer/`.
 
 **Legacy** holds useful prior functionality outside the active architecture, including optional Trainer derivation. Active BAV build and publication must not depend on Legacy as a hidden implementation layer.
 

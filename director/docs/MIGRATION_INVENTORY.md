@@ -421,6 +421,17 @@ period-axis inspection when the completed judgment is absent.
 | `core/research/publish.py` `verify_research_artifacts`, `publish_company_research` | `composer/research/publish.py` | Composer | Heading/figure/placeholder contract; apply-if-applicable | `check_company_output`; company build |
 | `core/research/__init__.py` | Composer façade until split | Composer | Documents Markdown/figures output | package import |
 
+**Step 10.6 actual ownership.** Implementation lives only in Composer.
+`composer/research/style.py` is the `director/docs/STYLE.md` figure
+implementation. `composer/research/document.py` renders Word/PDF from
+canonical Markdown and figures without recalculation; company routing
+remains `core.current_build.resolve_company`. `composer/research/publish.py`
+owns apply-if-applicable publication and heading/figure/placeholder
+verification; it consumes Modeler `financial_drivers_applicable` and
+Director `publish_drivers`. Retained `core/research/style.py`,
+`document.py`, `publish.py` and `core/research/__init__.py` are
+delegation-only façades.
+
 ---
 
 ## 6. Field ownership and smallest existing-data handoffs
@@ -1223,7 +1234,7 @@ Subsequent reviewed steps execute this order. This step does not execute it.
 3. Split `revenue_driver.py`, `revenue_strategy_synthesis.py` and `reported_margin.py` per §7.0–7.1 and §7.4 (observations / identity validity / verdicts / wording). Then split `drivers.py` / `selection.py` per §5. Apply the management-emphasis removal in §9. Deduplicate reconstruction helpers. Assessment concatenation stays first-name-wins; façades may not choose judgments.
 4. Move remaining Modeler calculation modules, data payload, ingestion reconcile/standardize, engine workbook, `build_bav_workbook`, semantic I/O, check-context embed.
 5. Move Interpreter judgment functions and classification/normalization rationales / strategy inference.
-6. Move Composer `style.py`, `document.py`, `publish.py`, Drivers prose/plots, Overview opening/navigation.
+6. Move Composer `style.py`, `document.py`, `publish.py`, Drivers prose/plots, Overview opening/navigation. **Step 10.6:** `style.py`, `document.py` and `publish.py` now live under `composer/research/`. Drivers prose/plots already live there from 10.5. Overview opening/navigation remains subsequent.
 7. Move Director CLI / `current_build` / `project_companies.json` / build-contract policy. Keep `python -m bav` and company name interfaces. Director `build_company` sequences Modeler → Interpreter → Composer before workbook write.
 8. Relocate Legacy (Trainer remainder, skills, automation, retired scripts, HK demo, historical docs/verifiers).
 9. Delete Remove items in place. Update imports, CLI routes, package docstrings, tests, README, `docs/FAST_RETAILING_BENCHMARK.md` stale paths, `source_manifest.json` if PDFs are restored.

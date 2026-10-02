@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 import re
 
-from core.research.style import ResearchStyle, apply_research_style, finish_figure, new_figure
+from composer.research.style import ResearchStyle, apply_research_style, finish_figure, new_figure
 from modeler.research.drivers_view import (
     DriversView,
     completed_intensity_growth,

@@ -15,7 +15,7 @@ import zipfile
 import pytest
 
 from core.__main__ import main
-from core.research.document import (
+from composer.research.document import (
     BODY_PT,
     CELL_INSET_MM,
     LANDSCAPE,
@@ -37,7 +37,7 @@ from core.research.document import (
     require_publication_libraries,
 )
 from core.research.drivers import placeholder_filenames
-from core.research.style import LATIN_FACE, resolve_required_fonts
+from composer.research.style import LATIN_FACE, resolve_required_fonts
 
 ROOT = Path(__file__).resolve().parents[2]
 CANONICAL = ROOT / "build" / "output" / "lululemon"
@@ -593,7 +593,7 @@ def test_publish_help_is_bav_first():
 
 def test_fast_retailing_publishes_canonical_research_when_built(tmp_path, monkeypatch):
     from core.current_build import prepare_company_input, resolve_company
-    from core.research.publish import publish_company_research, verify_research_artifacts
+    from composer.research.publish import publish_company_research, verify_research_artifacts
 
     company = _company(tmp_path, monkeypatch, name="FastRetailing")
     fin = prepare_company_input(resolve_company("FastRetailing"), tmp_path / "input")
@@ -739,7 +739,7 @@ def test_invalid_anchor_on_local_markdown_fails(tmp_path, monkeypatch, capsys):
 
 
 def test_missing_font_fails(tmp_path, monkeypatch, capsys):
-    from core.research import document
+    from composer.research import document
     company = _company(tmp_path, monkeypatch)
     _copy_research(company.output)
     monkeypatch.setattr(
@@ -753,7 +753,7 @@ def test_missing_font_fails(tmp_path, monkeypatch, capsys):
 
 
 def test_missing_pandoc_fails(tmp_path, monkeypatch, capsys):
-    from core.research import document
+    from composer.research import document
     company = _company(tmp_path, monkeypatch)
     _copy_research(company.output)
     monkeypatch.setattr(document.shutil, "which", lambda name: None)
@@ -763,7 +763,7 @@ def test_missing_pandoc_fails(tmp_path, monkeypatch, capsys):
 
 
 def test_converter_failure_preserves_prior_publication(tmp_path, monkeypatch, capsys):
-    from core.research import document
+    from composer.research import document
     company = _company(tmp_path, monkeypatch)
     _copy_research(company.output)
     assert main(["publish", "Lululemon"]) == 0
@@ -1705,3 +1705,67 @@ def test_publish_writes_only_under_canonical_output(tmp_path, monkeypatch):
     assert published.word.name == "Lululemon_BAV.docx"
     assert published.pdf.name == "Lululemon_BAV.pdf"
     assert company.output == tmp_path / "lululemon"
+
+
+def test_core_research_publication_facades_delegate_to_composer():
+    from composer.research.document import (
+        publication_filenames as canonical_filenames,
+        publish_company_documents as canonical_publish,
+    )
+    from composer.research.publish import (
+        publish_company_research as canonical_research,
+        verify_research_artifacts as canonical_verify,
+    )
+    from composer.research.style import (
+        apply_research_style as canonical_style,
+        resolve_required_fonts as canonical_fonts,
+    )
+    from core.research.document import (
+        publication_filenames as facade_filenames,
+        publish_company_documents as facade_publish,
+    )
+    from core.research.publish import (
+        publish_company_research as facade_research,
+        verify_research_artifacts as facade_verify,
+    )
+    from core.research.style import (
+        apply_research_style as facade_style,
+        resolve_required_fonts as facade_fonts,
+    )
+
+    assert facade_publish is canonical_publish
+    assert facade_filenames is canonical_filenames
+    assert facade_research is canonical_research
+    assert facade_verify is canonical_verify
+    assert facade_style is canonical_style
+    assert facade_fonts is canonical_fonts
+
+
+def test_publication_import_order_keeps_converter_loading_lazy():
+    script = r"""
+import sys
+import composer.research.document as canonical
+import composer.research.publish as publish
+import composer.research.style as style
+import core.research.document as facade_document
+import core.research.publish as facade_publish
+import core.research.style as facade_style
+assert facade_document.publish_company_documents is canonical.publish_company_documents
+assert facade_publish.verify_research_artifacts is publish.verify_research_artifacts
+assert facade_style.apply_research_style is style.apply_research_style
+assert canonical._LIBS_LOADED is False
+assert "docx" not in sys.modules
+assert "reportlab" not in sys.modules
+canonical.require_publication_libraries()
+assert canonical._LIBS_LOADED is True
+assert "docx" in sys.modules
+assert "reportlab" in sys.modules
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        check=False,
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
+    )
+    assert result.returncode == 0, result.stderr or result.stdout

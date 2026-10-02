@@ -40,8 +40,8 @@ from core.research.selection import (
     geographic_strongest_conclusion,
     select_driver_argument,
 )
-from core.research.publish import publish_company_research, verify_research_artifacts
-from core.research.style import (
+from composer.research.publish import publish_company_research, verify_research_artifacts
+from composer.research.style import (
     CJK_FACE,
     FIGURE_DPI,
     FIGURE_SIZE,
