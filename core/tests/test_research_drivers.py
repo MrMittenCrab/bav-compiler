@@ -506,6 +506,16 @@ def _replace_latest(series, value):
     return tuple(values)
 
 
+def _carry_reconstruction(view):
+    return replace(
+        view,
+        reconstruction_complete=tuple(
+            margin_reconstruction_complete(view, index)
+            for index in range(len(view.periods))
+        ),
+    )
+
+
 def _replace_latest_geo(rows, **updates):
     values = [dict(row) for row in rows]
     values[-1].update(updates)
@@ -1030,13 +1040,15 @@ def test_reconstruction_gates_incomplete_contradictory_and_zero_figures(tmp_path
     assert "account for the reported operating-margin change as an identity" in complete_main
     assert "Which accounting components reconstruct the latest operating-margin change?" in complete_main
 
-    incomplete = replace(
-        base,
-        contribution_residual=_replace_latest(base.contribution_residual, 0.02),
-        operating_margin_residual=_replace_latest(base.operating_margin_residual, 0.02),
-        operating_margin_change_residual=_replace_latest(
-            base.operating_margin_change_residual, 0.02
-        ),
+    incomplete = _carry_reconstruction(
+        replace(
+            base,
+            contribution_residual=_replace_latest(base.contribution_residual, 0.02),
+            operating_margin_residual=_replace_latest(base.operating_margin_residual, 0.02),
+            operating_margin_change_residual=_replace_latest(
+                base.operating_margin_change_residual, 0.02
+            ),
+        )
     )
     incomplete = replace(incomplete, selection=select_driver_argument(incomplete))
     assert not margin_reconstruction_complete(incomplete, latest)
@@ -1050,14 +1062,16 @@ def test_reconstruction_gates_incomplete_contradictory_and_zero_figures(tmp_path
     assert "partial" in margin_q.strongest_conclusion
     assert "reconstruct" not in margin_q.figure_question
 
-    contradictory = replace(
-        base,
-        reported_operating_margin_change=_replace_latest(
-            base.reported_operating_margin_change, 0.01
-        ),
-        gross_margin_contribution=_replace_latest(base.gross_margin_contribution, -0.02),
-        sga_ratio_contribution=_replace_latest(base.sga_ratio_contribution, 0.005),
-        contribution_residual=_replace_latest(base.contribution_residual, 0.025),
+    contradictory = _carry_reconstruction(
+        replace(
+            base,
+            reported_operating_margin_change=_replace_latest(
+                base.reported_operating_margin_change, 0.01
+            ),
+            gross_margin_contribution=_replace_latest(base.gross_margin_contribution, -0.02),
+            sga_ratio_contribution=_replace_latest(base.sga_ratio_contribution, 0.005),
+            contribution_residual=_replace_latest(base.contribution_residual, 0.025),
+        )
     )
     contradictory = replace(contradictory, selection=select_driver_argument(contradictory))
     contra_text = render_drivers_markdown(contradictory)
@@ -1067,7 +1081,9 @@ def test_reconstruction_gates_incomplete_contradictory_and_zero_figures(tmp_path
     assert "Gross-margin contraction and a higher SG&A ratio account for" not in contra_main
     assert "residual remains" in contra_main
 
-    missing = replace(base, sga_ratio=tuple(None for _ in base.sga_ratio))
+    missing = _carry_reconstruction(
+        replace(base, sga_ratio=tuple(None for _ in base.sga_ratio))
+    )
     missing = replace(missing, selection=select_driver_argument(missing))
     assert not margin_reconstruction_complete(missing, latest)
     missing_text = render_drivers_markdown(missing)

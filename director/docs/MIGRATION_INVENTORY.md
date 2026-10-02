@@ -297,11 +297,12 @@ Keep existing types. Do not invent a reasoning schema. After the split,
 `drivers.py` L968). Interpreter runs as a separate call. Composer receives
 `replace(view, selection=…)`.
 
-**Step 10.5 / 10.5.1 actual ownership.** The split is implemented. Shared records
-live in `modeler/research/records.py` so Modeler imports do not pull Interpreter
-or Composer. Numerical assembly is `modeler/research/drivers_view.py` (no
-selection). CFO classification is `modeler/research/cfo.py`. Geographic
-conditions are `modeler/research/geo_conditions.py`. Mechanical eligibility is
+**Step 10.5 / 10.5.1 / 10.5.2 actual ownership.** The split is implemented. Shared
+records live in `modeler/research/records.py` so Modeler imports do not pull
+Interpreter or Composer. Numerical assembly is
+`modeler/research/drivers_view.py` (no selection). CFO classification is
+`modeler/research/cfo.py`. Geographic conditions are
+`modeler/research/geo_conditions.py`. Mechanical eligibility is
 `modeler/research/eligibility.py`. Interpreter judgments and economic gates are
 `interpreter/selection.py`. Publication constants are
 `composer/research/selection_roles.py`; role/order selection, claim wording,
@@ -313,12 +314,21 @@ view, invokes Interpreter, invokes Composer selection, then
 `replace(view, selection=…)`. Retained `core/research/drivers.py` and
 `core/research/selection.py` are façades that delegate. Dead symbols
 `FIGURE_NAMES`, `FIGURE_PLOTTERS` and `_calendar_limit_block` were removed.
-Duplicate `_margin_reconstruction_complete` was deleted in favor of
-`margin_reconstruction_complete`. Calendar applicability remains
-`interpreter/selection.py::calendar_limitation_applies` and is carried as
-`ResearchSelection.calendar_limited`. Composer formats the period, issuer label
-and limitation text from that supplied judgment and does not re-decide
-applicability. Missing completed selection fails closed.
+Duplicate `_margin_reconstruction_complete` was deleted. Calendar applicability
+remains `interpreter/selection.py::calendar_limitation_applies` and is carried
+as `ResearchSelection.calendar_limited`. Composer formats the period, issuer
+label and limitation text from that supplied judgment and does not re-decide
+applicability. Revenue-per-store growth is completed during Modeler assembly as
+`revenue_per_store_growth` using the existing adjacent-period, missing-value
+and zero-denominator rules. Composer `_intensity_change` and `_growth_argument`
+consume that series and do not recompute from levels. Margin reconstruction
+validity is completed during Modeler assembly as `reconstruction_complete`
+using `margin_reconstruction_complete` / `publication_reconstruction_allowed`.
+Interpreter draws complete/partial conclusions from the supplied result.
+Composer selection, claim wording, Markdown and figure source notes consume
+the same supplied result and do not call `margin_reconstruction_complete`.
+Missing completed selection, intensity growth or reconstruction results fail
+closed.
 
 ### 5.1 `core/research/drivers.py`
 
@@ -334,7 +344,7 @@ applicability. Missing completed selection fails closed.
 | `assemble_drivers_view` L640–967 (**not** L968) | same | `publish_drivers`, tests | Assembly from existing compute path | `test_research_drivers`, `test_reported_margin` |
 | `financial_drivers_applicable` L167–177 | same | assemble, `publish_company_research` | Applicability = verified revenue + operating-profit history | early return on publish |
 | `_unique_assessments` L1023–1033 | same | assemble | First-name-wins concatenation; **not** a semantic producer | appendix order |
-| `_latest_growth_index`, `_operating_profit_change`, `_series_at`, `margin_reconstruction_complete` L1493–1532 | same | headline, plots, tests | Mechanical reconstruction gate via `publication_reconstruction_allowed` | reconstruction tests ~L1025–1073 |
+| `_latest_growth_index`, `_operating_profit_change`, `_series_at`, `margin_reconstruction_complete` L1493–1532 | same | assembly stores `reconstruction_complete`; tests | Mechanical reconstruction gate via `publication_reconstruction_allowed`; downstream consumes the stored series | reconstruction tests ~L1025–1073; `test_drivers_numeric` |
 
 **B. Interpreter — not implemented as standalone functions in this file**
 
@@ -371,7 +381,7 @@ period-axis inspection when the completed judgment is absent.
 |---|---|---|---|
 | `_present`, `_negative_change`, `_complete_sum`, `OFFSET_*`, `_revenue_offset_kind`, geo amount helpers, `GeographicClaimConditions`, `geographic_claim_conditions` L110–247 | `modeler/research/geo_conditions.py` | Observed numeric gates; missing ≠ zero | OFFSET / missing-region tests |
 | `_latest_index`, `_label`, `_period_labels` L296–307 | same | Last-period index | see unresolved `_latest_growth_index` |
-| `_margin_reconstruction_complete` L706–723 | **delete**; call `drivers.margin_reconstruction_complete` | Duplicate | reconstruction tests |
+| `_margin_reconstruction_complete` L706–723 | **delete**; consume assembled `reconstruction_complete` | Duplicate computer removed; Composer does not recalculate | reconstruction / handoff tests |
 | `_latest_change`; `_margin_is_material` L1097–1106 | `modeler/research/eligibility.py` | `change is not None and change != 0` is mechanical eligibility, not economic materiality | zero-margin demotion |
 
 **B. Interpreter — materiality, mechanisms, strongest conclusions, uncertainty**
@@ -417,11 +427,11 @@ period-axis inspection when the completed judgment is absent.
 
 No new types. Handoffs remain `DriversView` → `ResearchSelection` → Markdown/figures.
 
-**Handoff 1 (Modeler → Interpreter):** `DriversView` numeric fields + `attributions` + `comparable_sales` + identity `kind`/`established` + reported-fact amounts/zeros + observed-movement direction tests. Interpreter does not reread Composer wording.
+**Handoff 1 (Modeler → Interpreter):** `DriversView` numeric fields + `attributions` + `comparable_sales` + identity `kind`/`established` + reported-fact amounts/zeros + observed-movement direction tests + completed `revenue_per_store_growth` and `reconstruction_complete`. Interpreter does not reread Composer wording and does not recompute intensity growth or reconstruction validity.
 
 **Handoff 2 (Interpreter → Composer):** `ResearchSelection` on the same view, plus assessment judgment fields (`kind`/`established` for descriptive, causal, reported-fact and unestablished branches; recurrence; contradiction class; unsupported-mix) and `calendar_limited`. Composer already reads `principal_ids`, `secondary_ids`, `figure_ids`, `questions[].strongest_conclusion`, `unresolved_requirement`. Composer formats `questions[].magnitude` from Interpreter-chosen comparisons and Modeler numbers.
 
-**Handoff 3 (Modeler → Composer):** same series for appendix tables and plot arrays. Composer must not recompute identities or change `kind`/`established`.
+**Handoff 3 (Modeler → Composer):** same series for appendix tables and plot arrays, including completed intensity growth and reconstruction validity. Composer must not recompute identities, intensity growth, reconstruction completeness or change `kind`/`established`.
 
 ### `DriversView`
 
@@ -430,7 +440,8 @@ No new types. Handoffs remain `DriversView` → `ResearchSelection` → Markdown
 | `company_name`, `currency`, `units`, `periods`, `labels` | Modeler |
 | `display_name`, `period_ended` | Composer |
 | All revenue/profit/margin/geo/cash/inventory/footprint series and residuals L548–621 | Modeler |
-| `stores`, `revenue_growth`, `store_growth`, `revenue_per_store`, `comparable_sales`, `store_only_comparable_sales` | Modeler |
+| `stores`, `revenue_growth`, `store_growth`, `revenue_per_store`, `revenue_per_store_growth`, `comparable_sales`, `store_only_comparable_sales` | Modeler |
+| `reconstruction_complete` | Modeler mechanical validity by period; Interpreter concludes; Composer publishes without recalculation |
 | `fifty_three_week_period`, `issuer_fiscal_name` | Modeler |
 | `amount_bridge_convention` | Composer rendered sentence; Modeler owns the formula only (`AMOUNT_BRIDGE_FORMULA`) |
 | `assessments` | container only; see §7.0 / §7.4 field-and-branch maps. Assembly is not a producer |

@@ -8,10 +8,11 @@ import re
 from core.research.style import ResearchStyle, apply_research_style, finish_figure, new_figure
 from modeler.research.drivers_view import (
     DriversView,
+    completed_intensity_growth,
+    completed_reconstruction,
     date_text,
     fiscal_year_token,
     latest_growth_index,
-    margin_reconstruction_complete,
     operating_profit_change,
 )
 from modeler.research.geo_conditions import (
@@ -286,7 +287,7 @@ def _margin_component_block(view: DriversView) -> str:
             f"{other} | {_pct(view.operating_margin[index], 1)} | {residual} |"
         )
     latest = latest_growth_index(view)
-    if margin_reconstruction_complete(view, latest):
+    if completed_reconstruction(view, latest):
         lead = (
             "Operating margin is reconstructed as gross margin less SG&A/revenue, "
             "impairment or asset-related charges/revenue, and other reported "
@@ -664,7 +665,7 @@ def _assessment_block(view: DriversView) -> str:
 
 
 def _margin_source_note(view: DriversView, latest: int) -> str:
-    if margin_reconstruction_complete(view, latest):
+    if completed_reconstruction(view, latest):
         detail = "Signed identity only. Management estimates are not mixed into this bridge."
     else:
         detail = (
@@ -699,7 +700,7 @@ def _headline_paragraph(view: DriversView, selection: ResearchSelection) -> str:
             if view.reported_operating_margin_change is None
             else view.reported_operating_margin_change[latest]
         )
-        complete = margin_reconstruction_complete(view, latest)
+        complete = completed_reconstruction(view, latest)
         if om is not None and om < 0:
             explanation = (
                 " Margin compression is the strongest supported explanation of the "
@@ -758,12 +759,7 @@ def _headline_paragraph(view: DriversView, selection: ResearchSelection) -> str:
 def _growth_argument(view: DriversView, latest: int, *, with_figure: bool) -> list[str]:
     store_g = view.store_growth[latest] if latest < len(view.store_growth) else None
     rev_g = view.revenue_growth[latest] if latest < len(view.revenue_growth) else None
-    intensity = None
-    if latest > 0 and latest < len(view.revenue_per_store) and view.revenue_per_store:
-        prior = view.revenue_per_store[latest - 1]
-        current = view.revenue_per_store[latest]
-        if prior:
-            intensity = current / prior - 1.0
+    intensity = completed_intensity_growth(view, latest)
     store_term = (
         None
         if view.footprint_store_effect is None
@@ -899,7 +895,7 @@ def _margin_argument(
         or latest >= len(view.sga_ratio_contribution)
         else view.sga_ratio_contribution[latest]
     )
-    complete = margin_reconstruction_complete(view, latest)
+    complete = completed_reconstruction(view, latest)
     lead = (
         f"{view.labels[latest]} operating margin moved from "
         f"{_pct(view.operating_margin[latest - 1], 1)} to "

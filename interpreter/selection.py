@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from modeler.research.drivers_view import margin_reconstruction_complete
+from modeler.research.drivers_view import completed_reconstruction
 from modeler.research.eligibility import margin_is_eligible
 from modeler.research.geo_conditions import (
     OFFSET_GREATER,
@@ -501,7 +501,7 @@ def _margin_questions(view, latest: int) -> list[ResearchQuestion]:
         if view.gross_margin_contribution is None
         else view.gross_margin_contribution[latest]
     )
-    complete = margin_reconstruction_complete(view, latest)
+    complete = completed_reconstruction(view, latest)
     attributions = tuple(view.attributions)
     latest_period = view.periods[latest]
     latest_attr = tuple(item for item in attributions if item.period == latest_period)

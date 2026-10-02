@@ -14,7 +14,10 @@ from composer.research.selection_roles import (
     ROLE_SECONDARY,
 )
 from interpreter.selection import DriverInterpretation
-from modeler.research.drivers_view import margin_reconstruction_complete
+from modeler.research.drivers_view import (
+    completed_intensity_growth,
+    completed_reconstruction,
+)
 from modeler.research.geo_conditions import geographic_claim_conditions, present
 from modeler.research.records import ResearchClaim, ResearchQuestion, ResearchSelection, SelectionDecision
 
@@ -125,12 +128,7 @@ def _latest_index(view) -> int | None:
 
 
 def _intensity_change(view, latest: int):
-    if latest > 0 and latest < len(view.revenue_per_store):
-        prior = view.revenue_per_store[latest - 1]
-        current = view.revenue_per_store[latest]
-        if present(prior) and present(current) and prior:
-            return current / prior - 1.0
-    return None
+    return completed_intensity_growth(view, latest)
 
 
 def format_question_magnitude(view, question: ResearchQuestion, latest: int | None) -> str:
@@ -260,7 +258,7 @@ def word_driver_questions(
             )
             claims = tuple(_word_claim(item) for item in claims)
         elif question.identifier == "operating_margin_bridge":
-            complete = latest is not None and margin_reconstruction_complete(view, latest)
+            complete = latest is not None and completed_reconstruction(view, latest)
             if interpretation.margin_material:
                 publication = PUBLICATION_MAIN
                 reason = "The latest-year accounting bridge is a selected claim."
@@ -342,7 +340,7 @@ def select_driver_argument(
 
     if margin and interpretation.margin_material:
         principals.append(margin)
-        complete = latest is not None and margin_reconstruction_complete(view, latest)
+        complete = latest is not None and completed_reconstruction(view, latest)
         decisions.append(
             SelectionDecision(
                 margin.identifier,

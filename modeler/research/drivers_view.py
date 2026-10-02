@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 import re
 
@@ -277,6 +277,7 @@ class DriversView:
     geo_contributions: tuple[dict[str, float | None], ...]
     consolidated_revenue_growth: tuple[float | None, ...]
     fifty_three_week_period: date | None = None
+    revenue_per_store_growth: tuple[float | None, ...] | None = None
     issuer_fiscal_name: str | None = None
     sga: tuple[float | None, ...] | None = None
     impairment: tuple[float | None, ...] | None = None
@@ -305,6 +306,7 @@ class DriversView:
     other_operating_ratio_contribution: tuple[float | None, ...] | None = None
     reconstructed_contribution_sum: tuple[float | None, ...] | None = None
     contribution_residual: tuple[float | None, ...] | None = None
+    reconstruction_complete: tuple[bool | None, ...] | None = None
     amount_bridge_convention: str = ""
     geo_component_revenue: tuple[dict[str, float | None], ...] | None = None
     geo_reconstructed_revenue: tuple[float | None, ...] | None = None
@@ -349,6 +351,23 @@ def revenue_growth_from_levels(
         prior = revenue[index - 1]
         current = revenue[index]
         growth.append(None if not prior else current / prior - 1.0)
+    return tuple(growth)
+
+
+def revenue_per_store_growth_from_levels(
+    levels: tuple[float | str | None, ...],
+) -> tuple[float | None, ...]:
+    """Adjacent intensity growth. Missing or zero prior values stay missing."""
+    if not levels:
+        return ()
+    growth: list[float | None] = [None]
+    for index in range(1, len(levels)):
+        prior = numeric(levels[index - 1])
+        current = numeric(levels[index])
+        if prior is None or current is None or not prior:
+            growth.append(None)
+        else:
+            growth.append(current / prior - 1.0)
     return tuple(growth)
 
 
@@ -407,6 +426,24 @@ def margin_reconstruction_complete(view: DriversView, latest: int) -> bool:
     return publication_reconstruction_allowed(*available, kind="ratio")
 
 
+def completed_intensity_growth(view: DriversView, latest: int) -> float | None:
+    growth = view.revenue_per_store_growth
+    if growth is None:
+        raise ValueError("completed intensity growth")
+    if latest < 0 or latest >= len(growth):
+        return None
+    return growth[latest]
+
+
+def completed_reconstruction(view: DriversView, latest: int) -> bool:
+    results = view.reconstruction_complete
+    if results is None:
+        raise ValueError("completed reconstruction")
+    if latest < 0 or latest >= len(results) or results[latest] is None:
+        raise ValueError("completed reconstruction")
+    return bool(results[latest])
+
+
 def _compsales_observations(analysis) -> tuple:
     if analysis is None:
         return ()
@@ -456,6 +493,11 @@ def assemble_drivers_view(
         revenue_per_store = tuple(
             float(rps.period_end_revenue_per_store[period]) for period in axis
         )
+    revenue_per_store_growth = (
+        revenue_per_store_growth_from_levels(revenue_per_store)
+        if revenue_per_store
+        else tuple(None for _ in axis)
+    )
     if margins is None and reported_operating_margin_applicable(financials):
         margins = compute_reported_margin_numeric(financials, list(axis))
     if analysis is None and revenue_driver_applicable(financials):
@@ -564,7 +606,7 @@ def assemble_drivers_view(
             )
         )
     geo_identities = () if geo is None else geo.identities
-    return DriversView(
+    view = DriversView(
         company_name=financials.company_name,
         display_name=display_name,
         currency=financials.currency,
@@ -601,6 +643,7 @@ def assemble_drivers_view(
         if geo is not None
         else empty_change,
         fifty_three_week_period=week_period,
+        revenue_per_store_growth=revenue_per_store_growth,
         issuer_fiscal_name=issuer_name,
         sga=None if margins is None else margins.sga,
         impairment=None if margins is None else margins.impairment,
@@ -735,4 +778,11 @@ def assemble_drivers_view(
             else tuple(numeric(value) for value in inv_series.change_in_inventories)
         ),
         attributions=attributions_from_financials(financials),
+    )
+    return replace(
+        view,
+        reconstruction_complete=tuple(
+            margin_reconstruction_complete(view, index)
+            for index in range(len(view.periods))
+        ),
     )

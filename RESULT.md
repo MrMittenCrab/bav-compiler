@@ -10377,3 +10377,81 @@ This handoff does not establish Session 10 acceptance.
 
 None.
 
+---
+
+# RESULT.md — Step 10.5.2 Complete Driver numerical and reconstruction handoffs
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)  
+**Step:** 10.5.2 — Complete Driver numerical and reconstruction handoffs  
+**Work:** `116fc09cee884ccea734dfb368f42fa2`  
+**Plan:** `eaba01335d2a4548a98ee8ddd56a1a11`  
+**Finding:** Split Driver research responsibilities and correct emphasis eligibility
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change.
+
+## Baseline B
+
+Authenticated from populated `IMPLEMENT_BASE_SHA`. Fail-closed was not required.
+
+| Record | Value | Result |
+|---|---|---|
+| `.git/autocycle/resume-state` `IMPLEMENT_BASE_SHA` | `c951e57352337ed6d67540497439f060f9b43c35` | Used as B |
+| `STATE_BRANCH` / `.git/HEAD` / branch tip | `checkpoint/20260913-183303` / same SHA | HEAD == B |
+| `implementation-baseline.json` `head` | same SHA | Bound |
+| Ancestry | HEAD equals B | Bound |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | `step_id` 10.5.2, `work_id` `116fc09cee884ccea734dfb368f42fa2` | Bound |
+| `.git/autocycle/latest-implementation` | leftover `2ce9cab3…` (Step 10.5.1) | Ignored: `IMPLEMENT_BASE_SHA` populated |
+
+Compared current files to Git blobs at B via `git show B:path`. Completed 10.5.1 calendar, unrendered-field and direction-helper destinations were preserved; this step completed intensity-growth and reconstruction-validity handoffs.
+
+## Ownership repairs
+
+| Repair | Owner / handoff |
+|---|---|
+| `DriversView.revenue_per_store_growth` | Modeler adjacent intensity growth; missing/zero prior stays missing |
+| `DriversView.reconstruction_complete` | Modeler mechanical validity by period via existing residual/tolerance rules |
+| Composer `_intensity_change` / `_growth_argument` | Consume supplied growth; no level arithmetic |
+| Interpreter margin conclusions | Consume supplied `reconstruction_complete`; no `margin_reconstruction_complete` call |
+| Composer selection, claim wording, Markdown, figure source notes | Consume supplied reconstruction; no recalculation |
+| Missing completed intensity or reconstruction | Fail closed (`ValueError`) without fallback |
+
+Director `director/research.py` remains assessments → assemble → interpret → select → `replace(view, selection=…)`. Modeler does not import Interpreter/Composer. Interpreter does not import Composer. `core/research` façades remain delegation-only. Calendar `calendar_limited`, unrendered Interpreter magnitude/publication fields and `component_direction_phrase` were not redesigned.
+
+Inventory §§5–6 document the completed numerical and reconstruction handoffs.
+
+## Behavioral comparisons versus B
+
+- Assembled Lululemon intensity growth matches the prior level-implied latest value and `.4%` magnitude formatting; Fast Retailing remains period-aligned missing intensity (no store series).
+- Supplied intensity opposite in sign and material in magnitude from raw levels is used for question magnitude and rendered growth prose; sign wording (`fell` only when supplied growth is negative) and the intensity-proxy qualification are unchanged.
+- Assembled Lululemon reconstruction remains complete; Fast Retailing remains partial. Residual wording, identity vs residual-remains prose, appendix structure and figure deduplication are unchanged in the existing regressions.
+- Supplied `reconstruction_complete=False` on complete residuals yields partial Interpreter conclusions, Composer selection/claim wording, main-body residual prose and `Partial signed decomposition` figure notes. Supplied `True` on large residuals yields the complete identity path.
+- Absent completed intensity or reconstruction raises; monkeypatched `margin_reconstruction_complete` / `revenue_per_store_growth_from_levels` cannot be used downstream.
+- Calendar overrides, independent eligibility, management-emphasis demotion, complete/partial reconstruction, component-direction and unrendered-field coverage remain.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| B authentication (resume-state, baseline JSON, branch ref, HEAD==B) | B = `c951e573…`; HEAD == B; fail-closed not required |
+| Focused research (`test_drivers_numeric`, `test_research_handoff`, `test_research_emphasis`, `test_research_drivers`) | **33 passed** in 1.73s |
+| Listed pytest suite (those four plus revenue_driver, reported_margin, current_build, build_contract, build_cli, publication, Lululemon/FR benchmarks, trainer, learner-ready) | **576 passed**, 5 warnings (pre-existing Swig importlib), 222.74s |
+| `/opt/anaconda3/bin/python -m bav --help` | rc 0; ingest / validate-source / reconcile / build / check / publish / list |
+| `git diff --check` | rc 0 |
+| Native Office / company rebuild / publication | **Not run** — no workbook formula/dependency or Word/PDF presentation change; SESSION native-verify condition was not met |
+
+Handoff tests supply intensity and reconstruction results that differ from raw levels/residuals in both directions, then fail downstream recomputation. Absent completed results raise. Existing Lululemon / Fast Retailing / missing-zero / partial-reconstruction / geographic-offset / calendar / cash fixtures continue to pass against B behavior.
+
+## Preservation
+
+Canonical inputs, source evidence, accounting signs, fiscal distinctions, precision, admission/comparison independence, residual qualifications, fail-closed controls, optional Trainer behavior and zero-byte research placeholders were not modified. Attribution amounts, locators, counterfactual scope, `supported_as_attribution`, `not independently verified` and `outside the accounting bridge` remain. No second-phase features. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+## Remaining toward Completion
+
+Broader component relocation, Trainer inversion, removals and final representative build/check/publication verification remain subsequent work. Inventory §16 behavior defects were not repaired.
+
+This handoff does not establish Session 10 acceptance.
+
+## Required plan change
+
+None.
+
