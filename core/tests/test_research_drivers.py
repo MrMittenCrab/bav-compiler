@@ -22,8 +22,11 @@ from core.research.drivers import (
     _label_for,
     assemble_drivers_view,
     expected_sections,
+    is_cfo_component,
+    margin_reconstruction_complete,
     publish_drivers,
     render_drivers_markdown,
+    selected_cfo_concepts,
     selected_figure_names,
 )
 from core.research.selection import (
@@ -255,6 +258,14 @@ def test_fast_retailing_publishes_from_own_evidence(tmp_path):
     assert (placeholders / "FastRetailing_Forecast.md").stat().st_size == 0
     assert (placeholders / "FastRetailing_Valuation.md").stat().st_size == 0
     assert (placeholders / "FastRetailing_Overview.md").stat().st_size == 0
+    latest_i = len(view.periods) - 1
+    assert view.cfo_component_sum[latest_i] == pytest.approx(-65650.0)
+    assert view.cfo_unexplained[latest_i] == pytest.approx(-5253.0)
+    assert not margin_reconstruction_complete(view, latest_i)
+    assert "partial explanation" in main
+    assert "residual remains" in main
+    assert "Gross-margin contraction and a higher SG&A ratio account for" not in main
+    assert "partly explain" in main or "partial" in main
 
 
 def test_drivers_calendar_limitation_reconciles_53_week_year(tmp_path):
@@ -958,3 +969,117 @@ def test_driver_md_states_company_agnostic_hierarchy():
     assert "labeled regression fixtures" in text
     assert "Portability" in text
     assert "Zero figures is acceptable" in text or "zero figures" in text.casefold()
+
+
+def test_cfo_selection_fast_retailing_reviewed_set_and_exclusions(tmp_path):
+    from core.data.standardized_io import standardized_from_payload
+
+    fr = standardized_from_payload(
+        json.loads(
+            (
+                ROOT / "build" / "input" / "fast_retailing" / "reconciled" / "standardized.json"
+            ).read_text(encoding="utf-8")
+        )
+    )
+    selected = set(selected_cfo_concepts(fr))
+    assert "net_change_in_cash" not in selected
+    assert "change_in_cash" not in selected
+    assert "cash_beginning" not in selected
+    assert "cash_ending" not in selected
+    assert "cash_generated_from_operations" not in selected
+    assert "operating_cash_flow" not in selected
+    assert "investing_cash_flow" not in selected
+    assert "financing_cash_flow" not in selected
+    assert "payments_for_ppe" not in selected
+    assert "dividends_paid_to_owners" not in selected
+    assert "change_in_inventories" in selected
+    assert "change_in_trade_and_other_receivables" in selected
+    assert "change_in_trade_and_other_payables" in selected
+    assert "change_in_other_assets" in selected
+    assert "change_in_other_liabilities" in selected
+    assert "depreciation_amortization" in selected
+    assert is_cfo_component("change_in_short_term_debt") is False
+    assert is_cfo_component("net_change_in_cash") is False
+    assert is_cfo_component("change_in_inventories") is True
+    company = resolve_company("FastRetailing")
+    view = assemble_drivers_view(fr, company.name)
+    latest = len(view.periods) - 1
+    assert view.cfo[latest] - view.cfo[latest - 1] == pytest.approx(-70903.0)
+    assert view.cfo_component_sum[latest] == pytest.approx(-65650.0)
+    assert view.cfo_unexplained[latest] == pytest.approx(-5253.0)
+    prior_selected = -656249.0
+    excluded_cash_change = -590599.0
+    assert prior_selected - excluded_cash_change == pytest.approx(-65650.0)
+    assert (-70903.0) - (-65650.0) == pytest.approx(-5253.0)
+
+    lulu = resolve_company("Lululemon")
+    lulu_fin = prepare_company_input(lulu, tmp_path / "input")
+    lulu_view = assemble_drivers_view(lulu_fin, lulu.name)
+    assert lulu_view.cfo_unexplained[-1] == pytest.approx(-67381.0)
+    assert "change_in_cash" not in selected_cfo_concepts(lulu_fin)
+
+
+def test_reconstruction_gates_incomplete_contradictory_and_zero_figures(tmp_path):
+    company = resolve_company("Lululemon")
+    fin = prepare_company_input(company, tmp_path / "input")
+    base = assemble_drivers_view(fin, company.name)
+    latest = len(base.periods) - 1
+    assert margin_reconstruction_complete(base, latest)
+    complete_text = render_drivers_markdown(base)
+    complete_main = complete_text.split("## Appendix", 1)[0]
+    assert "account for the reported operating-margin change as an identity" in complete_main
+    assert "Which accounting components reconstruct the latest operating-margin change?" in complete_main
+
+    incomplete = replace(
+        base,
+        contribution_residual=_replace_latest(base.contribution_residual, 0.02),
+        operating_margin_residual=_replace_latest(base.operating_margin_residual, 0.02),
+        operating_margin_change_residual=_replace_latest(
+            base.operating_margin_change_residual, 0.02
+        ),
+    )
+    incomplete = replace(incomplete, selection=select_driver_argument(incomplete))
+    assert not margin_reconstruction_complete(incomplete, latest)
+    incomplete_text = render_drivers_markdown(incomplete)
+    incomplete_main = incomplete_text.split("## Appendix", 1)[0]
+    assert "residual remains" in incomplete_main
+    assert "partly explain" in incomplete_main
+    assert "account for the reported operating-margin change as an identity" not in incomplete_main
+    margin_q = incomplete.selection.question("operating_margin_bridge")
+    assert margin_q is not None
+    assert "partial" in margin_q.strongest_conclusion
+    assert "reconstruct" not in margin_q.figure_question
+
+    contradictory = replace(
+        base,
+        reported_operating_margin_change=_replace_latest(
+            base.reported_operating_margin_change, 0.01
+        ),
+        gross_margin_contribution=_replace_latest(base.gross_margin_contribution, -0.02),
+        sga_ratio_contribution=_replace_latest(base.sga_ratio_contribution, 0.005),
+        contribution_residual=_replace_latest(base.contribution_residual, 0.025),
+    )
+    contradictory = replace(contradictory, selection=select_driver_argument(contradictory))
+    contra_text = render_drivers_markdown(contradictory)
+    contra_main = contra_text.split("## Appendix", 1)[0]
+    assert "gross-margin contraction" in contra_main.casefold()
+    assert "lower sg&a ratio" in contra_main.casefold()
+    assert "Gross-margin contraction and a higher SG&A ratio account for" not in contra_main
+    assert "residual remains" in contra_main
+
+    missing = replace(base, sga_ratio=tuple(None for _ in base.sga_ratio))
+    missing = replace(missing, selection=select_driver_argument(missing))
+    assert not margin_reconstruction_complete(missing, latest)
+    missing_text = render_drivers_markdown(missing)
+    assert "residual remains" in missing_text or "partial" in missing_text
+
+    zero_fig = replace(incomplete.selection, figure_ids=())
+    zero_view = replace(incomplete, selection=zero_fig)
+    zero_text = render_drivers_markdown(zero_view)
+    assert "../figures/drivers/" not in zero_text
+    publish_drivers(fin, tmp_path / "out", display_name=company.name)
+    drivers = tmp_path / "out" / "research" / "Lululemon_Drivers.md"
+    drivers.write_text(zero_text, encoding="utf-8")
+    for path in (tmp_path / "out" / "figures" / "drivers").glob("*.png"):
+        path.unlink()
+    verify_research_artifacts(tmp_path / "out", company.name)

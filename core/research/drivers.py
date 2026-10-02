@@ -28,6 +28,7 @@ from ..model.ratio_values import is_source_unavailable
 from ..model.reported_margin import (
     MarginRelationshipAssessment,
     compute_reported_margin_series,
+    publication_reconstruction_allowed,
     reported_operating_margin_applicable,
 )
 from ..model.revenue_driver import (
@@ -66,27 +67,43 @@ WORKPAPER_FIELDS = (
     "Contradictions",
     "Result",
 )
+_CFO_CONCEPT_ALIASES = {
+    "net_change_in_cash": "change_in_cash",
+    "operating_cash_flow": "net_cash_from_operating_activities",
+    "investing_cash_flow": "net_cash_from_investing_activities",
+    "financing_cash_flow": "net_cash_from_financing_activities",
+    "effect_of_exchange_rate_on_cash": "effect_of_fx_on_cash",
+    "depreciation_amortization": "depreciation_and_amortization",
+}
 _CFO_EXCLUDED_CONCEPTS = frozenset(
     {
         "net_cash_from_operating_activities",
         "net_cash_from_investing_activities",
         "net_cash_from_financing_activities",
+        "operating_cash_flow",
+        "investing_cash_flow",
+        "financing_cash_flow",
+        "cash_generated_from_operations",
         "cash_beginning",
         "cash_ending",
         "change_in_cash",
+        "net_change_in_cash",
         "effect_of_fx_on_cash",
+        "effect_of_exchange_rate_on_cash",
         "capital_expenditures",
         "acquisition_net_of_cash_acquired",
         "other_investing_activities",
         "other_financing_activities",
+        "others_net_investing",
+        "others_net_financing",
         "proceeds_from_stock_based_compensation",
         "repurchase_of_common_stock",
         "shares_withheld_for_stock_based_compensation",
         "settlement_of_net_investment_hedges",
+        "pretax_income",
     }
 )
-_CFO_COMPONENT_HINTS = (
-    "change_in_",
+_CFO_OPERATING_ADJUSTMENT_HINTS = (
     "cash_flow_net_income",
     "deferred_income",
     "depreciation",
@@ -94,6 +111,32 @@ _CFO_COMPONENT_HINTS = (
     "studio_obsolescence",
     "derecognition",
     "settlement_of_derivatives",
+)
+_CFO_NONOPERATING_HINTS = (
+    "investing",
+    "financing",
+    "capital_expenditures",
+    "payments_for_",
+    "proceeds_from_",
+    "dividends_paid",
+    "bank_deposits",
+    "repayment_of_",
+    "repayments_of_",
+    "repurchase_",
+)
+_CFO_OPERATING_CHANGE_SUBJECTS = (
+    "inventor",
+    "receivable",
+    "payable",
+    "accrued",
+    "prepaid",
+    "income_tax",
+    "other_liabilit",
+    "other_asset",
+    "other_non_current",
+    "lease_assets_and_liabilities",
+    "unredeemed_gift_card",
+    "accounts_payable",
 )
 
 
@@ -218,10 +261,80 @@ def _mapped_numeric(mapping: dict, axis: tuple[date, ...]) -> tuple[float | None
     return tuple(_numeric(mapping.get(period)) for period in axis)
 
 
-def _is_cfo_component(concept: str) -> bool:
-    if concept in _CFO_EXCLUDED_CONCEPTS:
+def _normalize_cfo_concept(concept: str) -> str:
+    return _CFO_CONCEPT_ALIASES.get(concept, concept)
+
+
+def _is_cash_total_or_balance(concept: str) -> bool:
+    canon = _normalize_cfo_concept(concept)
+    if concept in _CFO_EXCLUDED_CONCEPTS or canon in _CFO_EXCLUDED_CONCEPTS:
+        return canon in {
+            "change_in_cash",
+            "cash_beginning",
+            "cash_ending",
+        } or concept in {"change_in_cash", "net_change_in_cash", "cash_beginning", "cash_ending"}
+    return canon in {"change_in_cash", "cash_beginning", "cash_ending"} or "change_in_cash" in concept
+
+
+def _is_investing_or_financing(concept: str) -> bool:
+    canon = _normalize_cfo_concept(concept)
+    return any(
+        hint in concept or hint in canon for hint in _CFO_NONOPERATING_HINTS
+    )
+
+
+def _is_overlapping_cfo_aggregate(concept: str) -> bool:
+    canon = _normalize_cfo_concept(concept)
+    return canon in {
+        "net_cash_from_operating_activities",
+        "cash_generated_from_operations",
+        "pretax_income",
+    } or concept in {
+        "cash_generated_from_operations",
+        "operating_cash_flow",
+        "pretax_income",
+    }
+
+
+def _is_operating_working_capital_change(concept: str) -> bool:
+    if "change_in_" not in concept and "change_in_" not in _normalize_cfo_concept(concept):
         return False
-    return any(hint in concept for hint in _CFO_COMPONENT_HINTS)
+    if _is_cash_total_or_balance(concept):
+        return False
+    return any(token in concept for token in _CFO_OPERATING_CHANGE_SUBJECTS)
+
+
+def is_cfo_component(concept: str) -> bool:
+    """Classify a cash-flow line as a supported operating CFO component.
+
+    Operating identity and statement context control inclusion. A
+    ``change_in_`` substring alone does not establish operating classification.
+    Total cash changes, cash balances, investing/financing flows and
+    overlapping aggregates are excluded.
+    """
+    return _is_cfo_component(concept)
+
+
+def selected_cfo_concepts(financials: StandardizedFinancials) -> tuple[str, ...]:
+    return tuple(
+        item.concept
+        for item in financials.cash_flow
+        if _is_cfo_component(item.concept)
+    )
+
+
+def _is_cfo_component(concept: str) -> bool:
+    if concept in _CFO_EXCLUDED_CONCEPTS or _normalize_cfo_concept(concept) in _CFO_EXCLUDED_CONCEPTS:
+        return False
+    if _is_cash_total_or_balance(concept):
+        return False
+    if _is_investing_or_financing(concept):
+        return False
+    if _is_overlapping_cfo_aggregate(concept):
+        return False
+    if any(hint in concept for hint in _CFO_OPERATING_ADJUSTMENT_HINTS):
+        return True
+    return _is_operating_working_capital_change(concept)
 
 
 def _cash_series(
@@ -995,14 +1108,22 @@ def _margin_component_block(view: DriversView) -> str:
             f"| {label} | {_pct(view.gross_margin[index], 1)} | {sga} | {imp} | "
             f"{other} | {_pct(view.operating_margin[index], 1)} | {residual} |"
         )
-    return (
-        "Operating margin is reconstructed as gross margin less SG&A/revenue, "
-        "impairment or asset-related charges/revenue, and other reported "
-        "operating items/revenue. Missing lines stay blank; they are not filled "
-        "with zero.\n\n"
-        + "\n".join(rows)
-        + "\n"
-    )
+    latest = _latest_growth_index(view)
+    if margin_reconstruction_complete(view, latest):
+        lead = (
+            "Operating margin is reconstructed as gross margin less SG&A/revenue, "
+            "impairment or asset-related charges/revenue, and other reported "
+            "operating items/revenue. Missing lines stay blank; they are not filled "
+            "with zero."
+        )
+    else:
+        lead = (
+            "Operating margin is reconstructed from disclosed components when they "
+            "are available. A residual remains when components are missing or do "
+            "not complete the identity. Missing lines stay blank; they are not "
+            "filled with zero."
+        )
+    return lead + "\n\n" + "\n".join(rows) + "\n"
 
 
 def _opt_pp(value: float | None, digits: int = 2) -> str:
@@ -1390,6 +1511,56 @@ def _operating_profit_change(view: DriversView, latest: int) -> float | None:
     return None
 
 
+def _series_at(values, latest: int):
+    if values is None or latest >= len(values):
+        return None
+    return values[latest]
+
+
+def margin_reconstruction_complete(view: DriversView, latest: int) -> bool:
+    """Gate exact reconstruction claims on available components and residuals."""
+    if _series_at(view.sga_ratio, latest) is None:
+        return False
+    residuals = (
+        _series_at(view.contribution_residual, latest),
+        _series_at(view.operating_margin_residual, latest),
+        _series_at(view.operating_margin_change_residual, latest),
+    )
+    available = tuple(item for item in residuals if item is not None)
+    if not available:
+        return False
+    return publication_reconstruction_allowed(*available, kind="ratio")
+
+
+def _component_direction_phrase(gm: float | None, sga: float | None) -> str:
+    parts: list[str] = []
+    if gm is not None:
+        if gm < 0:
+            parts.append("gross-margin contraction")
+        elif gm > 0:
+            parts.append("gross-margin expansion")
+    if sga is not None:
+        if sga < 0:
+            parts.append("a higher SG&A ratio")
+        elif sga > 0:
+            parts.append("a lower SG&A ratio")
+    return " and ".join(parts)
+
+
+def _margin_source_note(view: DriversView, latest: int) -> str:
+    if margin_reconstruction_complete(view, latest):
+        detail = "Signed identity only. Management estimates are not mixed into this bridge."
+    else:
+        detail = (
+            "Partial signed decomposition; a residual remains. "
+            "Management estimates are not mixed into this bridge."
+        )
+    return (
+        f"Source: {view.display_name} BAV income statement.\n"
+        + detail
+    )
+
+
 def _headline_paragraph(view: DriversView, selection: ResearchSelection) -> str:
     latest = _latest_growth_index(view)
     label = view.labels[latest]
@@ -1412,18 +1583,34 @@ def _headline_paragraph(view: DriversView, selection: ResearchSelection) -> str:
             if view.reported_operating_margin_change is None
             else view.reported_operating_margin_change[latest]
         )
+        complete = margin_reconstruction_complete(view, latest)
         if om is not None and om < 0:
             explanation = (
                 " Margin compression is the strongest supported explanation of the "
                 "weaker profit outcome."
+                if complete
+                else (
+                    " Margin compression is the material reported outcome; "
+                    "disclosed components explain it only in part and a residual remains."
+                )
             )
         elif om is not None and om > 0:
             explanation = (
                 " An accounting-margin expansion reconstructs the stronger profit outcome."
+                if complete
+                else (
+                    " Operating margin expanded; disclosed components provide a "
+                    "partial explanation and a residual remains."
+                )
             )
         else:
             explanation = (
                 " The latest operating-margin identity reconstructs the profit movement."
+                if complete
+                else (
+                    " The latest operating-margin movement is only partly explained "
+                    "by disclosed components."
+                )
             )
     if selection.is_principal("geographic_localization"):
         conditions = geographic_claim_conditions(view, latest)
@@ -1608,6 +1795,7 @@ def _margin_argument(view: DriversView, latest: int, *, with_figure: bool) -> li
         or latest >= len(view.contribution_residual)
         else view.contribution_residual[latest]
     )
+    complete = margin_reconstruction_complete(view, latest)
     lead = (
         f"{view.labels[latest]} operating margin moved from "
         f"{_pct(view.operating_margin[latest - 1], 1)} to "
@@ -1615,13 +1803,23 @@ def _margin_argument(view: DriversView, latest: int, *, with_figure: bool) -> li
         + (f", {_opt_change_pp(om)}" if om is not None else "")
         + " using unrounded ratios."
     )
-    if om is not None and om < 0:
+    direction = _component_direction_phrase(gm, sga)
+    if complete and direction:
         lead += (
-            " Gross-margin contraction and a higher SG&A ratio account for "
-            "nearly all the reported operating-margin decline."
+            f" {direction[0].upper()}{direction[1:]} account for "
+            "the reported operating-margin change as an identity."
         )
-    elif gm is not None or sga is not None:
-        lead += " Disclosed components reconstruct that change as an identity."
+    elif direction:
+        lead += (
+            f" {direction[0].upper()}{direction[1:]} are the disclosed "
+            "component contributions; they do not fully reconstruct the "
+            "reported change and a residual remains."
+        )
+    elif gm is not None or sga is not None or residual is not None:
+        lead += (
+            " Disclosed components provide only a partial explanation; "
+            "a residual remains."
+        )
     lead += (
         " This is an identity and signed decomposition. It does not "
         "identify a price, mix or cost mechanism."
@@ -1649,9 +1847,15 @@ def _margin_argument(view: DriversView, latest: int, *, with_figure: bool) -> li
                 "locator and is not inserted into the accounting bridge."
             )
     if with_figure:
-        paragraphs.append(
-            "![Which accounting components reconstruct the latest operating-margin change?](../figures/drivers/margin.png)"
+        alt = (
+            "Which accounting components reconstruct the latest operating-margin change?"
+            if complete
+            else (
+                "Which disclosed accounting components partly explain "
+                "the latest operating-margin change?"
+            )
         )
+        paragraphs.append(f"![{alt}](../figures/drivers/margin.png)")
     return paragraphs
 
 
@@ -1868,11 +2072,13 @@ def _cash_block(view: DriversView) -> str:
         return ""
     return (
         "CFO and net income are reported amounts. The component-change sum is "
-        "the adjacent change in operating-section cash-flow lines excluding the "
-        "CFO total. The signed remainder is reported CFO change minus that sum. "
+        "the adjacent change in supported operating-section cash-flow lines. "
+        "Total cash change, cash balances, investing and financing flows, and "
+        "overlapping aggregates are excluded. The signed remainder is reported "
+        "CFO change minus that sum and is not a complete CFO bridge. "
         "Balance-sheet inventory change is not a cash-flow-statement "
         "reconciliation. An incomplete explanation does not block the reported "
-        "CFO decline.\n\n"
+        "CFO movement.\n\n"
         + "\n".join(rows)
         + "\n"
     )
@@ -2280,8 +2486,7 @@ def plot_margin(view: DriversView, path: Path, style: ResearchStyle) -> None:
         ax,
         style,
         f"{view.labels[latest]} operating-margin bridge",
-        f"Source: {view.display_name} BAV income statement.\n"
-        "Signed identity only. Management estimates are not mixed into this bridge.",
+        _margin_source_note(view, latest),
         path,
     )
 

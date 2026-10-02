@@ -63,6 +63,12 @@ AMOUNT_BRIDGE_CONVENTION = (
     "charges, and other reported operating-item changes. Missing disclosure "
     "is omitted from the reconstruction, not treated as zero."
 )
+RATIO_RECONSTRUCTION_TOLERANCE = 1e-8
+AMOUNT_RECONSTRUCTION_TOLERANCE = 1e-4
+PUBLICATION_RATIO_TOLERANCE = 5e-5
+PUBLICATION_AMOUNT_TOLERANCE = 1.0
+EXPENSE_PRESENTATION_POSITIVE = 1
+EXPENSE_PRESENTATION_SIGNED = -1
 
 
 @dataclass(frozen=True)
@@ -275,6 +281,86 @@ def reported_margin_applicable(financials: StandardizedFinancials) -> bool:
     )
 
 
+def expense_presentation_factor(
+    values: tuple[float | None, ...] | None,
+) -> int:
+    """Infer +1 positive-presented or −1 signed-P&L expense convention.
+
+    The majority of nonzero observations sets the statement convention.
+    A minority opposite sign is a reversal or operating gain and is kept.
+    Reported source values are not mutated.
+    """
+    if not values:
+        return EXPENSE_PRESENTATION_POSITIVE
+    signed = [value for value in values if value is not None and value != 0]
+    if not signed:
+        return EXPENSE_PRESENTATION_POSITIVE
+    negative = sum(1 for value in signed if value < 0)
+    if negative > len(signed) - negative:
+        return EXPENSE_PRESENTATION_SIGNED
+    return EXPENSE_PRESENTATION_POSITIVE
+
+
+def analytical_expense(value: float | None, factor: int) -> float | None:
+    """Convert one reported amount to an analytical cost that reduces profit."""
+    if value is None:
+        return None
+    return float(value) * factor
+
+
+def expense_presentation_factor_for_sources(
+    sources: ReportedMarginSources,
+    periods: list[date],
+) -> int:
+    """Detect the income-statement expense convention from disclosed expenses."""
+    for item in (sources.sga, sources.impairment, sources.amortization):
+        if item is None:
+            continue
+        reported = tuple(optional_period_value(item, period) for period in periods)
+        if any(value is not None and value != 0 for value in reported):
+            return expense_presentation_factor(reported)
+    return EXPENSE_PRESENTATION_POSITIVE
+
+
+def residual_blocks_reconstruction_claim(
+    residual: float | str | None,
+    *,
+    kind: str = "ratio",
+    publication: bool = False,
+) -> bool:
+    """True when the residual is unknown or material for an exact claim."""
+    if residual is None or isinstance(residual, str):
+        return True
+    if kind == "amount":
+        limit = (
+            PUBLICATION_AMOUNT_TOLERANCE
+            if publication
+            else AMOUNT_RECONSTRUCTION_TOLERANCE
+        )
+    else:
+        limit = (
+            PUBLICATION_RATIO_TOLERANCE
+            if publication
+            else RATIO_RECONSTRUCTION_TOLERANCE
+        )
+    return abs(float(residual)) > limit
+
+
+def publication_reconstruction_allowed(
+    *residuals: float | str | None,
+    kind: str = "ratio",
+) -> bool:
+    """Allow an exact reconstruction claim only when every residual is known and small."""
+    if not residuals:
+        return False
+    return not any(
+        residual_blocks_reconstruction_claim(
+            residual, kind=kind, publication=True
+        )
+        for residual in residuals
+    )
+
+
 def _difference_or_na(
     current: float | str, prior: float | str
 ) -> float | str:
@@ -402,9 +488,12 @@ def compute_reported_margin_series(
     reported_om_change: tuple[float | str | None, ...] | None = None
     contribution_resid: tuple[float | str | None, ...] | None = None
 
+    expense_factor = expense_presentation_factor_for_sources(sources, periods)
+
     if sources.sga is not None:
         sga_amounts = tuple(
-            optional_period_value(sources.sga, period) for period in periods
+            analytical_expense(optional_period_value(sources.sga, period), expense_factor)
+            for period in periods
         )
         sga_ratio = tuple(
             None if amount is None else ratio_or_na(amount, revenue[j])
@@ -412,7 +501,10 @@ def compute_reported_margin_series(
         )
     if sources.impairment is not None:
         impairment_amounts = tuple(
-            optional_period_value(sources.impairment, period) for period in periods
+            analytical_expense(
+                optional_period_value(sources.impairment, period), expense_factor
+            )
+            for period in periods
         )
         impairment_ratio = tuple(
             None if amount is None else ratio_or_na(amount, revenue[j])
@@ -427,7 +519,12 @@ def compute_reported_margin_series(
     ):
         if item is not None:
             other_parts.append(
-                tuple(optional_period_value(item, period) for period in periods)
+                tuple(
+                    analytical_expense(
+                        optional_period_value(item, period), expense_factor
+                    )
+                    for period in periods
+                )
             )
     if other_parts:
         other_amounts = tuple(
@@ -790,8 +887,12 @@ def _assess_margin_relationships(
                 stability="the identity holds in every period with disclosed SG&A",
                 contradictions="none in the reconstructed history",
                 disclosure_support="income-statement components only; missing lines stay omitted",
-                established=max_resid is not None and max_resid < 1e-8,
-                limitation="" if max_resid is not None and max_resid < 1e-8 else "reconstruction residual remains",
+                established=max_resid is not None
+                and not residual_blocks_reconstruction_claim(max_resid, kind="ratio"),
+                limitation=""
+                if max_resid is not None
+                and not residual_blocks_reconstruction_claim(max_resid, kind="ratio")
+                else "reconstruction residual remains",
             )
         )
     if contribution_sum is not None and contribution_resid is not None:
@@ -816,8 +917,12 @@ def _assess_margin_relationships(
                 stability="the identity is tested for every adjacent pair with disclosed components",
                 contradictions="none required when the residual is a rounding or omitted-line remainder",
                 disclosure_support="income-statement components only; missing adjacent comparisons stay unavailable",
-                established=max_resid is not None and max_resid < 1e-8,
-                limitation="" if max_resid is not None and max_resid < 1e-8 else "contribution residual remains",
+                established=max_resid is not None
+                and not residual_blocks_reconstruction_claim(max_resid, kind="ratio"),
+                limitation=""
+                if max_resid is not None
+                and not residual_blocks_reconstruction_claim(max_resid, kind="ratio")
+                else "contribution residual remains",
             )
         )
     if gp_change_residual is not None:
@@ -838,7 +943,8 @@ def _assess_margin_relationships(
                 stability="the interaction identity holds for every adjacent pair with defined margins",
                 contradictions="none",
                 disclosure_support="reported revenue and gross profit",
-                established=max_gp is not None and max_gp < 1e-4,
+                established=max_gp is not None
+                and not residual_blocks_reconstruction_claim(max_gp, kind="amount"),
             )
         )
     if impairment_disclosed and impairment_amounts is not None:
@@ -955,7 +1061,15 @@ def _assess_margin_relationships(
                         and gm_move < 0
                         and sga_move < 0
                         and om_move < 0
-                        else "none required"
+                        else (
+                            "component contribution directions differ from the "
+                            "reported operating-margin direction"
+                            if (
+                                (gm_move is not None and gm_move * om_move < 0)
+                                or (sga_move is not None and sga_move * om_move < 0)
+                            )
+                            else "none required"
+                        )
                     ),
                     disclosure_support=(
                         "income-statement identity only; Item 7 attributions are "

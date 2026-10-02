@@ -9,6 +9,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date
 
+from ..model.reported_margin import publication_reconstruction_allowed
+
 
 PUBLICATION_MAIN = "main_body"
 PUBLICATION_APPENDIX = "appendix"
@@ -701,6 +703,41 @@ def _geography_questions(view, latest: int) -> list[ResearchQuestion]:
     ]
 
 
+def _margin_reconstruction_complete(view, latest: int) -> bool:
+    sga_ratio = getattr(view, "sga_ratio", None)
+    if sga_ratio is None or latest >= len(sga_ratio) or sga_ratio[latest] is None:
+        return False
+    residuals = []
+    for name in (
+        "contribution_residual",
+        "operating_margin_residual",
+        "operating_margin_change_residual",
+    ):
+        series = getattr(view, name, None)
+        if series is None or latest >= len(series):
+            continue
+        if series[latest] is not None:
+            residuals.append(series[latest])
+    if not residuals:
+        return False
+    return publication_reconstruction_allowed(*residuals, kind="ratio")
+
+
+def _component_direction_phrase(gm, sga) -> str:
+    parts: list[str] = []
+    if _present(gm):
+        if gm < 0:
+            parts.append("gross-margin contraction")
+        elif gm > 0:
+            parts.append("gross-margin expansion")
+    if _present(sga):
+        if sga < 0:
+            parts.append("a higher SG&A ratio")
+        elif sga > 0:
+            parts.append("a lower SG&A ratio")
+    return " and ".join(parts)
+
+
 def _margin_questions(view, latest: int) -> list[ResearchQuestion]:
     om = (
         None
@@ -720,6 +757,8 @@ def _margin_questions(view, latest: int) -> list[ResearchQuestion]:
     )
     if not _present(om) and not _present(gm):
         return []
+    complete = _margin_reconstruction_complete(view, latest)
+    direction = _component_direction_phrase(gm, sga)
     attributions = tuple(view.attributions)
     latest_period = view.periods[latest]
     latest_attr = tuple(item for item in attributions if item.period == latest_period)
@@ -762,25 +801,47 @@ def _margin_questions(view, latest: int) -> list[ResearchQuestion]:
                 ResearchClaim(
                     identifier="margin_identity",
                     wording=(
-                        "Gross-margin and SG&A-ratio movements account for the "
-                        "reported operating-margin change as an identity."
+                        (
+                            f"{direction[0].upper()}{direction[1:]} account for the "
+                            "reported operating-margin change as an identity."
+                        )
+                        if complete and direction
+                        else (
+                            "Disclosed component contributions provide a partial "
+                            "explanation of the reported operating-margin change; "
+                            "a residual remains."
+                        )
                     ),
                     claim_type=CLAIM_IDENTITY,
                     measurement_role="accounting identity",
                     evidence_refs=("reported_margin.contribution",),
                     transformation="signed unrounded ratio contributions",
-                    qualifiers=("identity is not a mechanism",),
+                    qualifiers=(
+                        "identity is not a mechanism",
+                        *(
+                            ()
+                            if complete
+                            else ("exact reconstruction is not established",)
+                        ),
+                    ),
                     dependencies=("gross_margin", "sga", "impairment", "other_operating_items"),
                     mechanism_support="none",
                     counterevidence="",
-                    status="supported",
+                    status="supported" if complete else "partial",
                 ),
             ),
             strongest_conclusion=(
-                "Gross-margin contraction and a higher SG&A ratio account for "
-                "nearly all the reported operating-margin decline."
-                if _present(om) and om < 0
-                else "The latest operating-margin change is reconstructed from disclosed components."
+                (
+                    f"{direction[0].upper()}{direction[1:]} account for "
+                    "nearly all the reported operating-margin change."
+                    if complete and direction
+                    else "The latest operating-margin change is reconstructed from disclosed components."
+                )
+                if complete
+                else (
+                    "Disclosed components provide a partial explanation of the "
+                    "latest operating-margin change; a residual remains."
+                )
             ),
             unresolved_requirement=(
                 "Evidence linking specific economic quantities to the relevant "
@@ -794,7 +855,14 @@ def _margin_questions(view, latest: int) -> list[ResearchQuestion]:
             publication_reason="The latest-year accounting bridge is a selected claim.",
             overlap=("management_margin_attribution",),
             figure_purpose="margin",
-            figure_question="Which accounting components reconstruct the latest operating-margin change?",
+            figure_question=(
+                "Which accounting components reconstruct the latest operating-margin change?"
+                if complete
+                else (
+                    "Which disclosed accounting components partly explain "
+                    "the latest operating-margin change?"
+                )
+            ),
         )
     ]
     if latest_attr:
@@ -1072,11 +1140,19 @@ def select_driver_argument(view) -> ResearchSelection:
 
     if margin and margin_material:
         principals.append(margin)
+        complete = latest is not None and _margin_reconstruction_complete(view, latest)
         decisions.append(
             SelectionDecision(
                 margin.identifier,
                 ROLE_PRINCIPAL,
-                "Material operating-margin movement reconstructs the latest profit outcome.",
+                (
+                    "Material operating-margin movement reconstructs the latest profit outcome."
+                    if complete
+                    else (
+                        "Material operating-margin movement is selected; disclosed "
+                        "components provide a partial explanation and a residual remains."
+                    )
+                ),
             )
         )
         if margin.figure_purpose:

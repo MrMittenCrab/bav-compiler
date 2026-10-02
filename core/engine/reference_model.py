@@ -124,6 +124,7 @@ from ..model.reported_margin import (
     REVENUE_CONCEPT,
     SGA_CONCEPT,
     compute_reported_margin_series,
+    expense_presentation_factor_for_sources,
     gross_margin_applicable,
     gross_margin_change_applicable,
     net_operating_expense_burden_applicable,
@@ -5043,6 +5044,16 @@ class ReferenceModelBuilder:
             gain_src = self._resolved_source_row(
                 self.fin.income_statement, GAIN_ON_DISPOSAL_CONCEPT, required=False
             )
+            margin_sources = resolve_reported_margin_sources(self.fin)
+            expense_factor = expense_presentation_factor_for_sources(
+                margin_sources, list(self.periods)
+            )
+
+            def _analytical_expr(expr: str) -> str:
+                if expense_factor == 1:
+                    return expr
+                return f"({expense_factor})*({expr})"
+
             if sga_src is not None:
                 sga_row = cursor + 1
                 cursor = sga_row
@@ -5365,6 +5376,15 @@ class ReferenceModelBuilder:
                         "change minus the reconstructed contribution sum. Missing "
                         "adjacent comparisons stay blank; they are not treated as "
                         "zero."
+                        + (
+                            " Analytical expense amounts follow the source "
+                            "presentation convention; signed-P&L expenses are "
+                            "converted to costs without taking absolute values, "
+                            "so reversals and operating gains remain visible. "
+                            "Reported source values are unchanged."
+                            if expense_factor != 1
+                            else ""
+                        )
                     ),
                 )
                 wrap = Alignment(wrap_text=True, vertical="center")
@@ -5415,7 +5435,7 @@ class ReferenceModelBuilder:
                             column=out_col_idx,
                             value=(
                                 f'=IF(OR({out_col}{revenue_row}=0,{out_col}{sga_row}=""),'
-                                f"NA(),{out_col}{sga_row}/{out_col}{revenue_row})"
+                                f"NA(),{_analytical_expr(f'{out_col}{sga_row}')}/{out_col}{revenue_row})"
                             ),
                         )
                         c.number_format = PCT_FMT
@@ -5433,7 +5453,7 @@ class ReferenceModelBuilder:
                             column=out_col_idx,
                             value=(
                                 f'=IF(OR({out_col}{revenue_row}=0,{out_col}{imp_row}=""),'
-                                f"NA(),{out_col}{imp_row}/{out_col}{revenue_row})"
+                                f"NA(),{_analytical_expr(f'{out_col}{imp_row}')}/{out_col}{revenue_row})"
                             ),
                         )
                         c.number_format = PCT_FMT
@@ -5457,7 +5477,7 @@ class ReferenceModelBuilder:
                                 column=out_col_idx,
                                 value=(
                                     f'=IF(OR({out_col}{revenue_row}=0,{out_col}{other_row}=""),'
-                                    f"NA(),{out_col}{other_row}/{out_col}{revenue_row})"
+                                    f"NA(),{_analytical_expr(f'{out_col}{other_row}')}/{out_col}{revenue_row})"
                                 ),
                             )
                             c.number_format = PCT_FMT
@@ -5543,7 +5563,7 @@ class ReferenceModelBuilder:
                         column=out_col_idx,
                         value=(
                             f'=IF(OR({out_col}{sga_row}="",{prev_col}{sga_row}=""),'
-                            f'"",{out_col}{sga_row}-{prev_col}{sga_row})'
+                            f'"",{_analytical_expr(f"{out_col}{sga_row}-{prev_col}{sga_row}")})'
                         ),
                     )
                     c.number_format = NUM_FMT
@@ -5553,7 +5573,7 @@ class ReferenceModelBuilder:
                         column=out_col_idx,
                         value=(
                             f'=IF(OR({out_col}{imp_row}="",{prev_col}{imp_row}=""),'
-                            f'"",{out_col}{imp_row}-{prev_col}{imp_row})'
+                            f'"",{_analytical_expr(f"{out_col}{imp_row}-{prev_col}{imp_row}")})'
                         ),
                     )
                     c.number_format = NUM_FMT
@@ -5563,7 +5583,7 @@ class ReferenceModelBuilder:
                         column=out_col_idx,
                         value=(
                             f'=IF(OR({out_col}{other_row}="",{prev_col}{other_row}=""),'
-                            f'"",{out_col}{other_row}-{prev_col}{other_row})'
+                            f'"",{_analytical_expr(f"{out_col}{other_row}-{prev_col}{other_row}")})'
                         ),
                     )
                     c.number_format = NUM_FMT

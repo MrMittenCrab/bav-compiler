@@ -9152,4 +9152,252 @@ Upstream inputs, optional Trainer behavior, reserved zero-byte research modules,
 
 Office Bridge Word observations are recorded above. No further observation requested.
 
+---
+
+# RESULT.md — Step 9.1.1 Repair accounting signs and complete shared publication acceptance
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure; human editorial sign-off remains pending)  
+**Step:** 9.1.1 — Repair accounting signs and complete shared publication acceptance  
+**Work:** `362810cf9ddb42ba820dff960656a5cb`  
+**Plan:** `352a058048554890a3d77058812de0ec`  
+**Finding:** Generalized Driver publication for Lululemon and Fast Retailing  
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged vs this child's start).  
+TARGET SHA-256 `1efdf06ff9cd7274658a41978e665169235f169914fc6f36c9280b7e9c47ad40` (37157).  
+SESSION SHA-256 `e581184c06bdaa23c317f2374bbed2ac595c463c4d18ac49152c7ce973dbcf98` (4420).  
+IMPLEMENTATION SHA-256 `cfd73270eadf62df37894bbf76f784b73fbf913e1b6582ef65b8dcf04185c872` (6859).  
+No commit / push / sync / checkpoint / branch change.
+
+## Baseline
+
+`IMPLEMENT_BASE_SHA` from `.git/autocycle/resume-state`: `0e4a249d8c93d2a8f12cce20f240bccedf7c16cf`.  
+`STATE_BRANCH=checkpoint/20260913-183303`.  
+`.git/HEAD` → `refs/heads/checkpoint/20260913-183303`; that ref and `.git/autocycle/implementation-baseline.json` `head` both equal `0e4a249d8c93d2a8f12cce20f240bccedf7c16cf`.  
+`.git/logs/HEAD` last event: merge `84a409b91ef4db7413621a8541948f6266bfd436` → `0e4a249d8c93d2a8f12cce20f240bccedf7c16cf`. HEAD equals B; ancestry holds. No commit, push, sync, checkpoint or branch change.
+
+## Required plan change
+
+No required plan change. Human editorial sign-off, forecasting and earlier deferred obligations remain subsequent work.
+
+## Correction of prior Step 9.1 acceptance assertions
+
+The Step 9.1 record is left in place. These measured facts replace its defective conclusions:
+
+| Prior Step 9.1 assertion | This-step measurement |
+|---|---|
+| Fast Retailing appendix residuals are large because SG&A is stored as a signed expense | Source SG&A remains signed (−1,277,701 million in FY2025). Analytical SG&A is +1,277,701. Level residual is now the omitted other-income / other-expense / associates remainder (FY2025 +13,108 million; +0.39 pp), not a double-counted expense. |
+| Fast Retailing CFO remainder JPY 585,346 million | Reviewed set after excluding `net_change_in_cash`: component-change sum −65,650 million; remainder −5,253 million. The 585,346 figure was the incomplete heuristic that included the −590,599 million total-cash change (−656,249 − (−590,599) = −65,650; −70,903 − (−65,650) = −5,253). |
+| Fast Retailing “accounting-margin expansion reconstructs the stronger profit outcome” | Reconstruction is partial. Gross-margin contribution −0.12 pp; SG&A contribution +0.69 pp; reported OM +0.46 pp; contribution residual −0.12 pp. Claims are qualified. |
+
+Lululemon −$67.381 million CFO remainder, attribution / comparable-sales / productivity / geographic boundaries are unchanged.
+
+## Source-sign treatment
+
+`core/model/reported_margin.py` derives a statement convention from the majority nonzero sign of disclosed expenses (`+1` positive-presented, `−1` signed-P&L). Analytical costs are `reported × factor`. Individual opposite-sign observations are kept as reversals or operating gains; `abs()` is not applied. Source LineItem values and provenance are unchanged.
+
+| Company | Source SG&A FY2025 | Analytical SG&A | Factor | OP residual (latest) |
+|---|---:|---:|---:|---:|
+| Lululemon | 4,066,556 | 4,066,556 | +1 | 0 |
+| Fast Retailing | −1,277,701 | 1,277,701 | −1 | 13,108 |
+
+Workbook: Lululemon SG&A formulas remain `reported/revenue` and `current−prior` (0 formulas contain `(-1)`). Fast Retailing applies `(-1)` to the nine SG&A ratio and change formulas; the contribution Note records the convention. Reported SG&A rows still link to source cells.
+
+## Selected / excluded CFO components
+
+Classifier uses operating identities and statement context. A `change_in_` substring alone does not include a line. Excluded: total cash change / balances, investing and financing flows, overlapping aggregates (`operating_cash_flow`, `cash_generated_from_operations`, `pretax_income`).
+
+**Fast Retailing selected:** `change_in_inventories`, `change_in_other_assets`, `change_in_trade_and_other_receivables`, `change_in_other_liabilities`, `change_in_trade_and_other_payables`, `depreciation_amortization`.
+
+**Fast Retailing excluded (reviewed):** `net_change_in_cash` (−590,599 million latest change), `cash_beginning`, `cash_ending`, `operating_cash_flow`, `cash_generated_from_operations`, `investing_cash_flow`, `financing_cash_flow`, `payments_for_ppe`, `dividends_paid_to_owners`.
+
+**Lululemon selected set** unchanged vs the prior operating-section heuristic; remainder remains −67,381.
+
+These remain a reviewed component-change set, not a complete CFO bridge. No further FR operating lines were added.
+
+## Before / after bridges and residuals
+
+Independent source arithmetic (units as stored):
+
+**Lululemon FY2025 (USD thousands)**  
+Revenue 11,102,600 / 10,588,126 → +4.86%. OP 2,210,615 − 2,505,697 = −295,082. OM 23.665% → 19.911% (−3.75 pp). GM contribution −2.624 pp; SG&A −1.093 pp; contribution residual ~0. Reconstruction complete. CFO 1,602,533 − 2,272,703 = −670,170; remainder −67,381.
+
+**Fast Retailing FY2025 (JPY millions)**  
+Revenue 3,400,539 / 3,103,836 → +9.56%. OP 564,265 − 500,904 = +63,361. OM 16.138% → 16.593% (+0.46 pp). Analytical SG&A 1,187,713 → 1,277,701. GM contribution −0.12 pp; SG&A +0.69 pp; reconstructed sum +0.57 pp; contribution residual −0.12 pp. Level OM residual +0.39 pp (13,108 / revenue). CFO 580,618 − 651,521 = −70,903; selected component changes −6,315 −1,603 +4,676 +12,104 −27,668 −46,844 = −65,650; remainder −5,253.
+
+## Claim-gate behavior
+
+`publication_reconstruction_allowed` uses 0.5 bp (ratio) / 1.0 (amount). Unknown or material residuals block exact reconstruction wording in selection reasons, headline, principal prose, appendix lead, figure alt and figure source note. Gross-margin and SG&A direction statements use contribution signs, not the aggregate OM sign.
+
+Lululemon: exact identity claims retained (residuals ~0).  
+Fast Retailing: “partial explanation and a residual remains”; figure note “Partial signed decomposition; a residual remains.”  
+Regressions cover incomplete residuals, contradictory component vs aggregate direction, missing SG&A, and zero-figure / absent-optional-family behavior.
+
+## Hierarchies and evidence allocation
+
+### Lululemon
+
+| Role | Question | Reason |
+|---|---|---|
+| Principal | `operating_margin_bridge` | FY2025 OM −3.75 pp reconstructs the −$295.1 million profit outcome |
+| Principal | `geographic_localization` | International revenue offset did not prevent Americas-led profit deterioration (−$295.082 million) |
+| Secondary | `cash_conversion` | Distinct CFO vs NI diagnostic; remainder −$67.381 million retained |
+| Appendix | `footprint_intensity`, `comparable_sales` | Available, not distinctly explanatory / not a joined trend |
+| Combined / appendix | `management_margin_attribution` | ≈$275 million retained as attribution |
+| Excluded | `sales_per_square_foot` | Incompatible observations |
+
+Figures: `margin.png`, `geography.png` only (byte-identical to Step 9.1).
+
+### Fast Retailing
+
+| Role | Question | Reason |
+|---|---|---|
+| Principal | `operating_margin_bridge` | Material OM +0.46 pp; disclosed components are a partial explanation |
+| Secondary | `cash_conversion` | CFO 651,521 → 580,618 while NI 393,605 → 459,153; remainder −5,253 |
+| Excluded | `management_margin_attribution` | No source-bound attribution |
+
+No store / geography / tariff families. One figure: `margin.png`. Shared path; no issuer-specific production branch.
+
+## Command / test outcomes
+
+| Check | Measured result |
+|---|---|
+| `python -m bav build/check/publish Lululemon` | **0** — research + `geography.png` / `margin.png`; Forecast/Valuation/Overview 0 bytes |
+| `python -m bav build/check/publish FastRetailing` | **0** — `FastRetailing_Drivers.md` + `margin.png`; reserved modules 0 bytes |
+| `test_reported_margin` + `test_research_drivers` | **33 passed** |
+| `test_publication` + `test_current_build` + `test_build_cli` + `test_build_contract` | **105 passed** |
+| `test_lululemon_benchmark` + `test_fast_retailing_benchmark` | **329 passed**, 1 deselected |
+| Repeat `publish` both companies | `_content_equal` **True**; Word/PDF SHA differ only by volatile PDF `creationDate` / `modDate` / `id` |
+| Lululemon workbook formulas vs signed-factor path | **0** formulas contain `(-1)`; SG&A ratio `C124/C115`; change `C124-B124` |
+| Fast Retailing workbook formulas | **9** SG&A ratio/change formulas apply `(-1)*`; reported row still source-linked |
+
+Trainer generation was not required. Lululemon analytical formulas/dependencies match the factor=+1 path used at B; native Excel carry-forward remains applicable for Lululemon. Fast Retailing formula change is isolated to signed-expense analysis; `check FastRetailing` passed. No current-bound independent FR cached-value reference set exists; this step did not create one.
+
+## Artifact bindings (after final publish)
+
+| Path | SHA-256 | Bytes |
+|---|---|---:|
+| `DRIVER.md` | `cbb6eff0f4166d1ec759a5bf393ba5f0dcaa81d539647c4e46f6e357ed41c70b` | 47249 |
+| `STYLE.md` | `4360b24bb849370a0fa48f21aa7cc83b8bf6b35c2ad9bac7e10de2829a107fc6` | 1645 |
+| `Lululemon_Drivers.md` | `36cce28e6f5d2984a9347b53f153a706dfcfbdfde40969e0f4dec36460d0826b` | 21915 |
+| `Lululemon_BAV.docx` | `00fe4e8aa4836467a53caa0535b4b06d610b11a10147205f2d75d35e61747392` | 161317 |
+| `Lululemon_BAV.pdf` | `c9627a85aab50eed4a99b5f83e0a3479c4c58839ce3f23748a94d56474e3c518` | 182752 |
+| `Lululemon_BAV.xlsx` | `2876815eaab6e368690ab10a75b1541b931f8d0a295e02eb62ff2cbd633f3360` | 229735 |
+| `lululemon/figures/drivers/geography.png` | `9d99bf699ee442389e9f422898730524d662ad634779fc2d9d6ae9b94b08098d` | 65707 |
+| `lululemon/figures/drivers/margin.png` | `55ccb38cfc0727718e93dd4cad52b586eb10bead096ce75cd5063159cabd754e` | 52237 |
+| `FastRetailing_Drivers.md` | `5b3aca6c933fe2686ceddd9efd622003af933664fd3cfb2284649e44f020cc6d` | 10320 |
+| `FastRetailing_BAV.docx` | `4af68ec70c3f4a11ddbcde8b249637100c7a94cf4689d0b80dd629bb01d39c44` | 92459 |
+| `FastRetailing_BAV.pdf` | `c345f0d3de92d91d82f76810666b6a23a0dd4f1033691871f409b6bb82cc0845` | 86230 |
+| `FastRetailing_BAV.xlsx` | `d0c2ee00c2cbdf84f677d6a0720e37024dc58cd1af8486a66b8a5371d5adf716` | 137901 |
+| `fast_retailing/figures/drivers/margin.png` | `126bf479caea091bb334ffe112d766beb24f0ed3d935d96982f204df0f441a52` | 49663 |
+| Forecast / Valuation / Overview (both) | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+
+## Readability coverage (fresh this attempt)
+
+Main bodies without appendices, all generated figures, and complete PDFs were inspected from current bytes. Native Word complete-page observation is requested via Office Bridge below; python-docx confirms Heading 1/2/3 hierarchy and figure captions. First-page captures alone are not treated as complete Word readability.
+
+**Lululemon PDF** 13 pages, 2 images. Pages 1–2 are the main body (headline through signed CFO remainder; both figures). Appendix starts page 3. Quantitative claims match independent source arithmetic. Figure bytes unchanged vs Step 9.1.
+
+**Fast Retailing PDF** 6 pages, 1 image. Page 1 is the main body (partial reconstruction, component directions, figure). Appendix starts page 2. FY2025 table shows component-change sum −JPY 65,650 million and remainder −JPY 5,253 million.
+
+**Figures:** Lululemon margin shows GM and SG&A both reducing OM to the −3.75 pp dashed line; note “Signed identity only.” FR margin shows GM slightly negative and SG&A positive vs a +0.46 pp dashed line; note “Partial signed decomposition; a residual remains.” Geography keeps separate scales and corporate/unallocated on the profit panel only.
+
+## Continuation — authenticated Word page 1 (Office Bridge)
+
+This continuation inspected the bound captures returned to the same work identity. Older Step 9.1 rasters (`66d624cd…` / `728e6b44…`) were not reused.
+
+| Capture | Source SHA-256 | Visible page | Pages | Screenshot SHA-256 |
+|---|---|---:|---:|---|
+| `182ff89d333946908528a1270f90817d` | `00fe4e8aa4836467a53caa0535b4b06d610b11a10147205f2d75d35e61747392` | 1 | 14 | `0e68d41255d807cb1c5375f2e4e29a8f30175a1c4f2aad7d5b05afeabda53ae7` |
+| `3fbac1642bf14233a422501299b6d9e3` | `4af68ec70c3f4a11ddbcde8b249637100c7a94cf4689d0b80dd629bb01d39c44` | 1 | 7 | `e67aaa5fee180a3219e2167acb794795ef9c25de9bb83b55385a44df7b2c7085` |
+
+**Lululemon Word page 1:** Headline, principal 1, and the margin figure are visible. Rendered canvas: revenue 4.86%; OP −$295.1 million; OM 23.7% → 19.9%, −3.75 pp; identity reconstruction; ≈$275 million attribution retained as management estimate; figure title “FY2025 operating-margin bridge”; GM and SG&A both reduce OM toward the dashed reported-change line. Status bar Page 1 of 14. First-page capture does not show principal 2, secondary CFO remainder, or the appendix.
+
+**Fast Retailing Word page 1:** Headline and principal 1 with the margin figure. Rendered canvas: revenue 9.56%; OP JPY 63,361 million; OM 16.1% → 16.6%, +0.46 pp; “partial explanation and a residual remains”; GM contraction and lower SG&A as disclosed contributions; figure note “Partial signed decomposition; a residual remains.” Status/result: page 1 of 7. First-page capture does not show the appendix bridges or the −JPY 5,253 remainder table.
+
+Re-verification on this continuation (artifacts byte-identical to the bindings above):
+
+| Check | Measured result |
+|---|---|
+| `test_reported_margin` + `test_research_drivers` | **33 passed** |
+| `test_publication` + `test_current_build` + `test_build_cli` + `test_build_contract` | **105 passed** |
+| `test_lululemon_benchmark` + `test_fast_retailing_benchmark` | **330 passed** |
+| Artifact SHA-256 vs recorded bindings | **match** for both DOCX/PDF/MD/figures, DRIVER.md, STYLE.md |
+
+Remaining Word pages are requested through Office Bridge with the same ordinary artifact bindings and page locators (Lululemon 2–14; Fast Retailing 2–7). Overlapping consecutive pages are required; page 1 alone is not complete Word readability.
+
+## Continuation — authenticated Word pages after page 1 (Office Bridge)
+
+Index `.git/autocycle/office/review-index.json` SHA-256 `2ae6deb257203aa28ba1e4ebf94b37a0addfc32926976e3a6e1e69959d02c874`, 26 entries. Current-binding captures below use DOCX SHA `00fe4e8a…` (Lululemon) and `4af68ec7…` (Fast Retailing). Older Step 9.1 rasters (`66d624cd…` / `728e6b44…`) were not reused. First-page captures alone are not treated as complete Word readability.
+
+### Lululemon Word pages 2–14 (all CAPTURED)
+
+| Page | request_id | Visible content |
+|---:|---|---|
+| 2 | `fbf9cee663dc4e2cb543f0f940ee11f0` | Principal 2 geography figure (separate scales; corporate/unallocated on profit only). Secondary: CFO $2,272.7 → $1,602.5 million; NI $1,814.6 → $1,579.2 million; remainder **−$67.381 million**. |
+| 3 | `f6bf24d8851e472aac5de2ee0549c094` | Appendix Selected claims. Principals: margin reconstructs latest profit; geography localizes the outcome. Attribution combined; footprint/comparable-sales appendix; SPSF excluded. |
+| 4 | `bd3edfefb948493f894460c79d696f00` | SPSF excluded; cash secondary; Growth evidence: stores +5.74% vs revenue +4.86%; FY2025 revenue $11,102.6 million, OP $2,210.6 million, OM 19.9%. |
+| 5 | `a1b80f168c2d4fcd9718d0a5e7bc6363` | Footprint/intensity identity (FY2025 residual ~$0); comparable-sales period-specific, not a joined trend; 53-week FY2025 / 2 Feb 2025. |
+| 6 | `609315a1de5d45389abb89309d350379` | Geographic reconstruction residuals $0.0; FY2025 Americas −$81.1 million / −0.77 pp; China +$393.5 million / +3.72 pp; RoW +$202.1 million / +1.91 pp. |
+| 7 | `b906e38d5d68434bbb1ef67fe7d46670` | Geographic OP changes reconcile to **−$295.082 million**, residual $0.0. Margin levels GM 56.6%, SG&A 36.6%, OM 19.9%, residual 0.00%. |
+| 8 | `92c151684f7c4adbb871c37c577f1937` | Amount bridge FY2025 reconstructed/reported OP change −$295.1 million, residual $0.0. |
+| 9 | `ec991a78a7e64249b3ff08033df591af` | Contribution FY2025 GM −2.62 pp, SG&A −1.09 pp, reported **−3.75 pp**, residual −0.00 pp. Attribution ≈$275 million (10-K pp. 28–29 / 32–33). |
+| 10 | `632ca1b25f27471eb9a54401357e6242` | Cash table FY2025 CFO change −$670.2 million; remainder **−$67.381 million**. |
+| 11 | `00d7149a87fa4d85a4ec76450ba5c93a` | Relationship records; footprint identity residual 0; SPSF unestablished. |
+| 12 | `a954e5e6ec48408da91938e72f65d289` | Component OM identity/contribution residuals 0.000000%; geographic mix mixed, not causal. |
+| 13 | `798230b7d0c3460a8ad4435f442c53db` | Latest OM movement established; GM and SG&A both reduced OM. |
+| 14 | `d9ceb65e52804712bf4664f9025892e6` | Residual notes: OM identity 0; contribution 1.31839e-16; OP amount 0; geographic 0. |
+
+Lululemon native Word 14 pages is complete under ordinary page locators. Main body (pages 1–2) stands without the appendix. Signed CFO remainder unchanged.
+
+### Fast Retailing Word pages 2–7
+
+| Page | request_id | Status | Visible content |
+|---:|---|---|---|
+| 2 | `dea0ccb1aba44bb49f17c5595c4afd23` | CAPTURED | Appendix Selected claims. Margin principal: partial explanation, residual remains. Attribution excluded. Cash secondary; remainder unexplained. |
+| 3 | `1559ad7d4d494c71b104a3fcf892d867` | CAPTURED | Margin evidence. FY2025 GM 53.8%, SG&A/revenue 37.6%. Amount-bridge residuals retained (not forced to zero). |
+| 4 | `29f58d0c74e549d686c0304c3e92bbdd` | CAPTURED | FY2025 reconstructed OP +JPY 65,799 million vs reported +63,361; residual −2,438. Contributions GM **−0.12 pp**, SG&A **+0.69 pp**, sum +0.57, reported +0.46, residual **−0.12 pp**. Cash-evidence intro starts at the page foot (total-cash exclusion stated). |
+| 5 | `d466993d67a64b7dabed7bb5ef013a4a` | **BLOCKED** (superseded) | First attempt: `native_capture` viewport unavailable. |
+| 5 | `9a06d72353d24c90a65a7468ff373288` | **CAPTURED** | Cash table FY2025: component-change sum **−JPY 65,650 million**; remainder **−JPY 5,253.000 million**. Total-cash exclusion stated. |
+| 6 | `1460449068be4a08aee518c4d0981c38` | CAPTURED | Relationship records. Contribution residual 0.533468%; component directions differ from reported OM direction. |
+| 7 | `b7e15a3214454b5e8405e15fa2a2fa92` | CAPTURED | Residual notes: OM identity residual 0.00500864 visible; contribution residual 0.00533468 visible; OP amount residual 16448 visible. |
+
+Page-1 canvas ends on the figure caption; the Secondary cash paragraph is below that crop. Page 2 opens at Appendix. Native Word XML contains the Secondary paragraph (CFO 651,521 → 580,618; remainder −JPY 5,253.000 million). Appendix cash-table values are on page 5 (retry below).
+
+## Preservation
+
+`DRIVER.md` / `STYLE.md` byte-identical to Step 9.1. Shared publication path unchanged. Upstream inputs, optional Trainer behavior, reserved zero-byte research modules, immutable snapshots, historical receipts and ownership/recovery safeguards were not rewritten except regenerated company outputs. Lululemon attribution, comparable-sales, productivity and geographic boundaries preserved. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+## Continuation — Fast Retailing Word page 5 (Office Bridge retry)
+
+This continuation inspected bound capture `9a06d72353d24c90a65a7468ff373288` returned to the same work identity. Source SHA-256 `4af68ec7…` matches the published DOCX. `action: NONE`. First attempt `d466993d…` remains BLOCKED and was not reused.
+
+| Capture | Page | Status | Screenshot SHA-256 |
+|---|---:|---|---|
+| `9a06d72353d24c90a65a7468ff373288` | 5 | **CAPTURED** | `081c1b77e3f3b7e1d905528775d57eca75dd5a087607579644cea8ea2bb375cc` |
+
+Visible canvas: Cash evidence heading; total-cash / balances / investing / financing / overlapping-aggregate exclusion; signed remainder is not a complete CFO bridge. FY2025 row: CFO JPY 580,618 million; NI JPY 459,153 million; CFO change **−JPY 70,903 million**; component-change sum **−JPY 65,650 million**; signed remainder **−JPY 5,253.000 million**. Status bar Page 5 of 7. Relationship-records table starts at the page foot (OM identity residual 0.500864%, unestablished).
+
+python-docx on the same DOCX bytes: Secondary paragraph present between principal 1 and Appendix; appendix cells 223–224 are −JPY 65,650 million and −JPY 5,253.000 million.
+
+Fresh verification this continuation (artifacts still byte-identical to the bindings above):
+
+| Check | Measured result |
+|---|---|
+| `test_reported_margin` + `test_research_drivers` | **33 passed** in 2.83s |
+| `test_publication` + `test_current_build` + `test_build_cli` + `test_build_contract` | **105 passed** in 38.82s |
+| `test_lululemon_benchmark` + `test_fast_retailing_benchmark` | **330 passed** in 147.60s |
+| Artifact SHA-256 vs recorded bindings | **match** for both DOCX/PDF/MD/figures, DRIVER.md, STYLE.md |
+| review-index | SHA-256 `2ae6deb2…`, 26 entries |
+
+Native Word is complete under ordinary page locators: Lululemon 1–14 and Fast Retailing 1–7, all CAPTURED on the current bindings. Overlapping consecutive pages were used; page 1 alone is not treated as complete readability.
+
+## Remaining toward Completion
+
+- Human editorial sign-off is not supplied and remains pending.
+- Fast Retailing reconstruction remains partial because other income/expense and associates are not in the supported component set; residuals stay visible.
+- Fast Retailing CFO remainder −5,253 is a reviewed-set remainder, not a complete CFO bridge.
+- Lululemon −$67.381 million CFO remainder, mechanism, attribution counterfactual, comparable-sales join and store-only productivity remain open as previously bounded.
+
+Technical publication of both companies through the shared path is recorded. Complete native Word coverage is captured. Review adjudicates Step closure.
+
 

@@ -29,15 +29,21 @@ from core.model.line_resolver import AmbiguousLineError, MissingLineError, resol
 from core.model.period_axis import canonical_fiscal_periods
 from core.model.ratio_values import UNDEFINED_RATIO
 from core.model.reported_margin import (
+    EXPENSE_PRESENTATION_POSITIVE,
+    EXPENSE_PRESENTATION_SIGNED,
     GROSS_PROFIT_CONCEPT,
     OPERATING_PROFIT_CONCEPT,
     REVENUE_CONCEPT,
+    analytical_expense,
     compute_reported_margin_series,
+    expense_presentation_factor,
     gross_margin_applicable,
     net_operating_expense_burden_applicable,
+    publication_reconstruction_allowed,
     reported_margin_applicable,
     reported_margin_availability,
     reported_operating_margin_applicable,
+    residual_blocks_reconstruction_claim,
     resolve_reported_margin_sources,
 )
 from core.model.source_values import MissingHistoricalValueError
@@ -795,3 +801,107 @@ def test_rendered_component_contribution_schedule(tmp_path):
     assert "component operating-margin contributions" in appendix
     assert "component operating-margin identity" not in main
     assert "## Kind" not in main and "### Residual" not in main
+
+
+def test_positive_presented_and_negative_signed_expenses():
+    assert expense_presentation_factor((300.0, 330.0)) == EXPENSE_PRESENTATION_POSITIVE
+    assert expense_presentation_factor((-300.0, -330.0)) == EXPENSE_PRESENTATION_SIGNED
+    assert analytical_expense(-1277701.0, EXPENSE_PRESENTATION_SIGNED) == 1277701.0
+    assert analytical_expense(4066556.0, EXPENSE_PRESENTATION_POSITIVE) == 4066556.0
+    assert analytical_expense(-10180.0, EXPENSE_PRESENTATION_POSITIVE) == -10180.0
+
+    positive = _tiny(with_cfo=False, with_payments=False)
+    _add_margins(positive, gross=(560.0, 600.0), operating=(250.0, 250.0))
+    _add_component_lines(positive, sga=(300.0, 350.0), impairment=(0.0, 0.0), other=(10.0, 0.0))
+    pos_series = compute_reported_margin_series(positive, [P1, P2])
+    assert pos_series.sga == (300.0, 350.0)
+    assert pos_series.reconstructed_operating_profit == (250.0, 250.0)
+    assert pos_series.operating_profit_residual == (0.0, 0.0)
+    assert pos_series.sga_ratio_contribution[1] < 0
+
+    signed = _tiny(with_cfo=False, with_payments=False)
+    _add_margins(signed, gross=(560.0, 600.0), operating=(250.0, 250.0))
+    _add_component_lines(signed, sga=(-300.0, -350.0), impairment=(0.0, 0.0), other=(-10.0, 0.0))
+    signed_series = compute_reported_margin_series(signed, [P1, P2])
+    assert signed_series.sga == (300.0, 350.0)
+    assert signed_series.reconstructed_operating_profit == (250.0, 250.0)
+    assert signed_series.operating_profit_residual == (0.0, 0.0)
+    assert signed_series.sga_ratio_contribution[1] == pytest.approx(
+        pos_series.sga_ratio_contribution[1]
+    )
+
+
+def test_supported_reversal_and_gain_are_not_absorbed():
+    fin = _tiny(with_cfo=False, with_payments=False)
+    _add_margins(fin, gross=(560.0, 600.0), operating=(260.0, 360.0))
+    _add_component_lines(fin, sga=(300.0, -10.0), impairment=(0.0, 0.0), other=(0.0, 250.0))
+    series = compute_reported_margin_series(fin, [P1, P2])
+    assert series.sga == (300.0, -10.0)
+    assert series.other_operating_items == (0.0, 250.0)
+    assert series.reconstructed_operating_profit[1] == pytest.approx(360.0)
+    assert series.operating_profit_residual[1] == pytest.approx(0.0)
+    assert series.sga[1] < 0
+    assert abs(series.sga[1]) != 300.0
+
+
+def test_missing_components_and_nonzero_residuals_are_exposed():
+    missing = _tiny(with_cfo=False, with_payments=False)
+    _add_margins(missing, gross=(560.0, 600.0), operating=(250.0, 200.0))
+    missing_series = compute_reported_margin_series(missing, [P1, P2])
+    assert missing_series.sga is None
+    assert missing_series.reconstructed_operating_profit is None
+    assert missing_series.contribution_residual[1] is not None
+
+    residual = _tiny(with_cfo=False, with_payments=False)
+    _add_margins(residual, gross=(560.0, 600.0), operating=(250.0, 180.0))
+    _add_component_lines(residual, sga=(300.0, 300.0), impairment=(0.0, 0.0), other=(10.0, 10.0))
+    resid_series = compute_reported_margin_series(residual, [P1, P2])
+    assert resid_series.operating_profit_residual[1] is not None
+    assert abs(resid_series.operating_profit_residual[1]) > 1.0
+    assert residual_blocks_reconstruction_claim(
+        resid_series.contribution_residual[1], kind="ratio", publication=True
+    )
+    assert not publication_reconstruction_allowed(
+        resid_series.contribution_residual[1], kind="ratio"
+    )
+
+
+def test_component_direction_can_oppose_aggregate_margin():
+    fin = _tiny(with_cfo=False, with_payments=False)
+    _add_margins(fin, revenue=(1000.0, 1100.0), gross=(560.0, 605.0), operating=(250.0, 286.0))
+    _add_component_lines(fin, sga=(300.0, 309.0), impairment=(0.0, 0.0), other=(10.0, 10.0))
+    series = compute_reported_margin_series(fin, [P1, P2])
+    reported = series.reported_operating_margin_change[1]
+    gm = series.gross_margin_contribution[1]
+    sga = series.sga_ratio_contribution[1]
+    assert reported > 0
+    assert gm < 0
+    assert sga > 0
+    movement = next(
+        item
+        for item in series.assessments
+        if item.name == "latest adjacent operating-margin movement"
+    )
+    assert "differ from the reported operating-margin direction" in movement.contradictions
+
+
+def test_fast_retailing_signed_sga_uses_analytical_expenses_and_keeps_residual():
+    fr = standardized_from_payload(json.loads(FR_JSON.read_text(encoding="utf-8")))
+    sources = resolve_reported_margin_sources(fr)
+    assert sources.sga is not None
+    assert all(value < 0 for value in sources.sga.values.values() if value)
+    periods = canonical_fiscal_periods(fr)
+    series = compute_reported_margin_series(fr, periods)
+    latest = -1
+    assert sources.sga.values[periods[latest]] == -1277701.0
+    assert series.sga[latest] == 1277701.0
+    assert series.reconstructed_operating_profit[latest] == pytest.approx(
+        1828858.0 - 1277701.0
+    )
+    assert series.operating_profit_residual[latest] == pytest.approx(13108.0)
+    assert series.gross_margin_contribution[latest] < 0
+    assert series.sga_ratio_contribution[latest] > 0
+    assert series.reported_operating_margin_change[latest] > 0
+    assert residual_blocks_reconstruction_claim(
+        series.contribution_residual[latest], kind="ratio", publication=True
+    )
