@@ -10203,3 +10203,96 @@ This handoff repair does not establish Session 10 acceptance.
 
 None.
 
+---
+
+# RESULT.md — Step 10.5 Split Driver research responsibilities and correct emphasis eligibility
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)  
+**Step:** 10.5 — Split Driver research responsibilities and correct emphasis eligibility  
+**Work:** `116fc09cee884ccea734dfb368f42fa2`  
+**Plan:** `d39ef10d44b34d40b7b2d9a35dc3cb63`  
+**Finding:** Split Driver research responsibilities and correct emphasis eligibility
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change.
+
+## Baseline B
+
+Authenticated from populated `IMPLEMENT_BASE_SHA`. Fail-closed was not required.
+
+| Record | Value | Result |
+|---|---|---|
+| `.git/autocycle/resume-state` `IMPLEMENT_BASE_SHA` | `5da41b6b7db38c691b2fe862fbef10ad243a415b` | Used as B |
+| `STATE_BRANCH` / `.git/HEAD` / branch tip | `checkpoint/20260913-183303` / same SHA | HEAD == B |
+| `implementation-baseline.json` `head` | same SHA | Bound |
+| Ancestry | HEAD equals B | Bound |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | `step_id` 10.5, `work_id` `116fc09cee884ccea734dfb368f42fa2` | Bound |
+| `.git/autocycle/latest-implementation` | leftover `1b83e197…` (Step 10.4.1) | Ignored: `IMPLEMENT_BASE_SHA` populated |
+
+B file identities from `implementation-baseline.json` (mode `420`, SHA-256):
+
+| Path at B | SHA-256 |
+|---|---|
+| `core/research/drivers.py` | `63d79d80721589298129e77ce060297645430be2e730c896a292fcbfea9b559e` |
+| `core/research/selection.py` | `6b0646410ede5749a8b43d4c1ebf49713d82600b8d0004a11a62293ab7d31f16` |
+
+Old paths remain as thin façades; destinations are new ownership files, not byte-identical relocations.
+
+## Ownership changes
+
+| Responsibility | Destination |
+|---|---|
+| Shared records (`ResearchClaim`, `ResearchQuestion`, `ResearchSelection`, `SelectionDecision`) | `modeler/research/records.py` |
+| CFO classification | `modeler/research/cfo.py` |
+| Numerical assembly, attributions, reconstruction gate | `modeler/research/drivers_view.py` |
+| Geographic numeric conditions | `modeler/research/geo_conditions.py` |
+| Mechanical nonzero-margin eligibility | `modeler/research/eligibility.py` |
+| Question judgments, claim types, mechanisms, economic gates | `interpreter/selection.py` |
+| Publication role constants | `composer/research/selection_roles.py` |
+| Role/order selection and claim wording | `composer/research/selection.py` |
+| Markdown, figures, publication helpers | `composer/research/drivers.py` |
+| Thin sequence: assessments → assemble → interpret → select → `replace(view, selection=…)` | `director/research.py` |
+| Retained `core/research/drivers.py` / `selection.py` | façades only |
+
+Modeler assembly returns numbers without selection, interpretation, Composer or Director. Completed assessments are supplied by Director (first-name-wins: revenue-driver then margin). Composer rendering and figure selection require completed selection. `FIGURE_NAMES`, `FIGURE_PLOTTERS` and `_calendar_limit_block` were removed (no callers). Duplicate `_margin_reconstruction_complete` was deleted. Overview wording import in `director/driver_assessment.py` is a lazy patchable wrapper so engine import does not cycle.
+
+Inventory §§5 and 9 were updated to this ownership and the emphasis rule.
+
+## Intentional behavioral differences
+
+- Investigation no longer sets `PUBLICATION_MAIN` because a management attribution or comparable-sales observation exists.
+- Attribution remains `supported_as_attribution` with locators, amounts, `not independently verified`, `counterfactual scope` and `outside the accounting bridge`.
+- The attribution appendix table is retained regardless of principal selection.
+- Attributed margin prose is emitted only beside an independently selected margin finding.
+- Comparable-sales observations stay auditable in the appendix and do not become principals or figures.
+- Valid geographic, store and margin evidence still select without management disclosure.
+
+Lululemon and Fast Retailing principal/secondary/appendix IDs, figure sets, reconstruction gates, calendar wording, CFO remainders and zero-byte placeholders are unchanged in the existing regressions.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| B authentication (resume-state, baseline JSON, branch ref, HEAD==B) | B = `5da41b6b…`; HEAD == B; fail-closed not required |
+| Focused handoff + emphasis | **8 passed** in 0.46s |
+| `test_research_drivers` | **16 passed** in 1.66s |
+| Listed pytest suite (handoff, emphasis, research drivers, revenue_driver, reported_margin, current_build, build_contract, build_cli, publication, Lululemon/FR benchmarks, trainer, learner-ready) | **567 passed**, 5 warnings (pre-existing Swig importlib), 225.13s |
+| `/opt/anaconda3/bin/python -m bav --help` | rc 0; ingest / validate-source / reconcile / build / check / publish / list |
+| `git diff --check` | rc 0 |
+| Native Office / company rebuild / publication | **Not run** — no workbook formula/dependency or Word/PDF presentation change; SESSION native-verify condition was not met |
+
+Handoff tests: Modeler assembly leaves `selection is None` and empty findings; Interpreter questions have no publication/figure fields; Director attaches Composer selection after interpretation; Composer renders a supplied selection without recomputing it. Emphasis tests: qualitative and quantified attribution survive missing/zero/nonzero margin; emphasis cannot promote eligibility; accompanying prose requires independently selected margin evidence; comparable-sales presence without independent support stays appendix-only; geographic/margin evidence remains after attributions are stripped.
+
+## Preservation
+
+Canonical inputs, source evidence, accounting signs, fiscal distinctions, precision, admission/comparison independence, residual qualifications, fail-closed controls, optional Trainer behavior and zero-byte research placeholders were not modified. No second-phase features. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+## Remaining toward Completion
+
+Remaining component relocation (style/document/publish, engine/Trainer inversion, ingestion), broader removals and final representative build/check/publication verification remain subsequent work. Inventory §16 behavior defects were not repaired.
+
+This split does not establish Session 10 acceptance.
+
+## Required plan change
+
+None.
+

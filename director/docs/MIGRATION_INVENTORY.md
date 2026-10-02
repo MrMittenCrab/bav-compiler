@@ -297,6 +297,24 @@ Keep existing types. Do not invent a reasoning schema. After the split,
 `drivers.py` L968). Interpreter runs as a separate call. Composer receives
 `replace(view, selection=…)`.
 
+**Step 10.5 actual ownership.** The split is implemented. Shared records live in
+`modeler/research/records.py` so Modeler imports do not pull Interpreter or
+Composer. Numerical assembly is `modeler/research/drivers_view.py` (no
+selection). CFO classification is `modeler/research/cfo.py`. Geographic
+conditions are `modeler/research/geo_conditions.py`. Mechanical eligibility is
+`modeler/research/eligibility.py`. Interpreter judgments and economic gates are
+`interpreter/selection.py`. Publication constants are
+`composer/research/selection_roles.py`; role/order selection and claim wording
+are `composer/research/selection.py`. Driver Markdown, figures and publication
+helpers are `composer/research/drivers.py`. Director
+`director/research.py` obtains completed assessments, assembles the numeric
+view, invokes Interpreter, invokes Composer selection, then
+`replace(view, selection=…)`. Retained `core/research/drivers.py` and
+`core/research/selection.py` are façades that delegate. Dead symbols
+`FIGURE_NAMES`, `FIGURE_PLOTTERS` and `_calendar_limit_block` were removed.
+Duplicate `_margin_reconstruction_complete` was deleted in favor of
+`margin_reconstruction_complete`.
+
 ### 5.1 `core/research/drivers.py`
 
 **A. Modeler — numerical assembly, CFO classification, series, reconstruction, mechanical validity**
@@ -965,7 +983,14 @@ A persuasive chart does not invent an analytical relationship.
 5. Composer `_margin_argument` may insert attributed prose beside a margin finding.
 6. Composer `_attribution_block` publishes the locator table when `view.attributions` is nonempty.
 
-**Rule that treats emphasis as more than attributed evidence (remove this promotion; keep evidence)**
+**Step 10.5:** investigation no longer sets `PUBLICATION_MAIN` for attribution
+or comparable-sales presence. Attribution remains `supported_as_attribution`
+with locators and qualifiers; the appendix table is retained regardless of
+principal selection. Attributed margin prose appears only beside an
+independently selected margin finding. Comparable-sales observations stay
+auditable in the appendix.
+
+**Rule that treated emphasis as more than attributed evidence (removed in 10.5; evidence kept)**
 
 ```868:935:core/research/selection.py
     if latest_attr:

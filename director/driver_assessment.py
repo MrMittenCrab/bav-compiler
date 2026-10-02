@@ -6,7 +6,6 @@ from dataclasses import replace
 from datetime import date
 
 from core.data.interface import StandardizedFinancials
-from composer.overview import compute_historical_strategy_synthesis as word_historical_strategy
 from composer.reported_margin import (
     AMOUNT_BRIDGE_CONVENTION,
     word_disclosed_charges,
@@ -120,6 +119,12 @@ def complete_revenue_driver_analysis(
         footprint_identity=word_footprint_identity(numeric.footprint_identity),
         theme_observations=numeric.theme_observations,
     )
+
+
+def word_historical_strategy(*args, **kwargs):
+    from composer.overview import compute_historical_strategy_synthesis
+
+    return compute_historical_strategy_synthesis(*args, **kwargs)
 
 
 def complete_historical_strategy_synthesis(

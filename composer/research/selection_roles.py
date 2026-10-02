@@ -1,0 +1,10 @@
+"""Publication role constants for Driver selection."""
+
+PUBLICATION_MAIN = "main_body"
+PUBLICATION_APPENDIX = "appendix"
+PUBLICATION_RETAINED = "retained"
+PUBLICATION_EXCLUDED = "excluded"
+ROLE_PRINCIPAL = "principal"
+ROLE_SECONDARY = "secondary"
+ROLE_APPENDIX = "appendix"
+ROLE_EXCLUDED = "excluded"
