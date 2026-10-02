@@ -24,8 +24,8 @@ from extractor.data.historical_strategy import (
     disclosure_locator,
     load_strategy_disclosures,
 )
-from core.data.standardized_io import standardized_from_payload, standardized_to_payload
-from core.data.interface import (
+from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
+from modeler.data.interface import (
     HistoricalManagementKpiDeferredDisagreement,
     HistoricalManagementKpiDeferredMember,
 )
@@ -46,7 +46,7 @@ from core.engine.component_catalog import (
     revenue_driver_component_id,
 )
 from core.engine.reference_model import ReferenceModelBuilder
-from core.ingestion.management_kpi_identity import (
+from modeler.ingestion.management_kpi_identity import (
     FAMILY_COMPARABLE_SALES_GROWTH,
     FAMILY_SALES_PER_SQUARE_FOOT,
     POP_COMPANY_OPERATED_STORES,

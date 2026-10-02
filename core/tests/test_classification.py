@@ -6,16 +6,18 @@ from datetime import date
 
 import pytest
 
-from core.data.interface import (
+from extractor.data.interface import (
     DocumentManifest,
     DocumentType,
+)
+from modeler.data.interface import (
     FinancialPeriod,
     LineItem,
     StandardizedFinancials,
 )
-from core.data.validators import validate_balance_sheet
+from modeler.data.validators import validate_balance_sheet
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.ingestion.reconciler import reconcile_financials
+from modeler.ingestion.reconciler import reconcile_financials
 from modeler.classification import (
     BALANCE_SHEET_CATEGORIES,
     InvalidClassificationOverrideError,

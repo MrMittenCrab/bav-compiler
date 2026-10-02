@@ -30,14 +30,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-from core.data.historical_operating_kpis import (
+from modeler.data.historical_operating_kpis import (
     FAMILY_SALES_PER_SQUARE_FOOT,
     MANAGEMENT_IDENTITY_FIELDS,
     encode_metric_identity,
     management_identity_fields,
     validate_historical_operating_kpis,
 )
-from core.data.interface import HistoricalManagementKpiObservation, StandardizedFinancials
+from modeler.data.interface import HistoricalManagementKpiObservation, StandardizedFinancials
 from .line_resolver import MissingLineError
 from .period_axis import canonical_fiscal_periods
 from .ratio_values import SOURCE_UNAVAILABLE, ratio_or_na

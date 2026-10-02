@@ -893,7 +893,7 @@ def _verify_source_value(
 
 
 def _verify_statement_sheet(ws, items, periods, *, workbook: str, sheet: str) -> None:
-    from core.data.line_identity import line_identity
+    from modeler.data.line_identity import line_identity
 
     _verify_period_headers(
         ws,
@@ -1551,13 +1551,13 @@ def run_audit(
             stages.append(StageResult(name, "skipped", message="prior stage failed"))
         return {"stages": stages, "context": context}
 
-    from core.data.standardized_io import standardized_from_payload
+    from modeler.data.standardized_io import standardized_from_payload
 
     fin = standardized_from_payload(payload)
 
     # Stage 2
     try:
-        from core.data.line_identity import validate_financials_identities
+        from modeler.data.line_identity import validate_financials_identities
 
         validate_financials_identities(fin)
         stages.append(StageResult("2_identity_validation", "pass"))
@@ -1579,7 +1579,7 @@ def run_audit(
 
     # Stage 3
     try:
-        from core.ingestion.reconciler import reconcile_financials
+        from modeler.ingestion.reconciler import reconcile_financials
 
         report = reconcile_financials(fin)
         if not all(report.checksums.values()):

@@ -9,7 +9,7 @@ from datetime import date
 
 import pytest
 
-from core.data.historical_segments import (
+from modeler.data.historical_segments import (
     FAMILY_CORPORATE,
     FAMILY_ITEMIZED,
     GEOGRAPHIC_SEGMENT_NAMESPACE,
@@ -18,14 +18,14 @@ from core.data.historical_segments import (
     OP_SUBTRACT,
     SEGMENT_BRIDGE_TOLERANCE,
 )
-from core.data.interface import (
+from modeler.data.interface import (
     FinancialPeriod,
     HistoricalSegmentData,
     HistoricalSegmentPeriod,
     LineItem,
     StandardizedFinancials,
 )
-from core.data.standardized_io import standardized_from_payload, standardized_to_payload
+from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
 
 P1 = date(2024, 12, 31)
 P2 = date(2025, 12, 31)

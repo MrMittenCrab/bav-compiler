@@ -29,7 +29,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-from core.data.interface import LineItem, StandardizedFinancials
+from modeler.data.interface import LineItem, StandardizedFinancials
 from .acquisition_cash import (
     acquisition_cash_availability,
     cash_after_ppe_capex_and_acquisitions_applicable,

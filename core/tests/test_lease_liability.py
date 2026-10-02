@@ -9,14 +9,16 @@ from pathlib import Path
 import pytest
 from openpyxl import load_workbook
 
-from core.data.interface import (
+from extractor.data.interface import (
     DocumentManifest,
     DocumentType,
+)
+from modeler.data.interface import (
     FinancialPeriod,
     LineItem,
     StandardizedFinancials,
 )
-from core.data.line_identity import line_identity, validate_statement_identities
+from modeler.data.line_identity import line_identity, validate_statement_identities
 from core.engine.component_catalog import (
     LEASE_LIABILITY_COMPONENT_CATALOG,
     expand_lease_liability_specs,
@@ -669,7 +671,7 @@ def test_split_lease_judgment_without_diagnostics(tmp_path):
 
 
 def test_lease_treatment_aggregate_and_split_resolution():
-    from core.data.line_identity import line_identity
+    from modeler.data.line_identity import line_identity
     from modeler.lease_liability import (
         InconsistentLeaseTreatmentError,
         lease_liability_treatment,
@@ -719,8 +721,8 @@ def test_lease_treatment_aggregate_and_split_resolution():
 
 
 def test_lease_interest_treatment_conditions_net_interest_and_nopat():
-    from core.data.interface import HistoricalLeaseData
-    from core.data.line_identity import line_identity
+    from modeler.data.interface import HistoricalLeaseData
+    from modeler.data.line_identity import line_identity
     from modeler.lease_liability import resolve_lease_liability_source
 
     fin = _tiny(lease=(100.0, 120.0), revenue=(1000.0, 1100.0))
@@ -759,7 +761,7 @@ def test_lease_interest_treatment_conditions_net_interest_and_nopat():
 
 
 def test_lease_interest_missing_data_preserves_reported_net_interest():
-    from core.data.line_identity import line_identity
+    from modeler.data.line_identity import line_identity
     from modeler.lease_liability import resolve_lease_liability_source
 
     fin = _tiny()
@@ -779,7 +781,7 @@ def test_lease_interest_missing_data_preserves_reported_net_interest():
 
 
 def test_lease_interest_incomplete_explicit_series_fails_closed():
-    from core.data.interface import HistoricalLeaseData
+    from modeler.data.interface import HistoricalLeaseData
 
     fin = _tiny()
     d1 = date(2024, 12, 31)
@@ -790,7 +792,7 @@ def test_lease_interest_incomplete_explicit_series_fails_closed():
 
 
 def test_net_interest_formula_treatment_conditioned_for_split(tmp_path):
-    from core.data.interface import HistoricalLeaseData
+    from modeler.data.interface import HistoricalLeaseData
 
     fin = _tiny(standardized_split=True)
     d1, d2 = date(2024, 12, 31), date(2025, 12, 31)
@@ -820,8 +822,8 @@ def test_net_interest_formula_treatment_conditioned_for_split(tmp_path):
 
 
 def test_lease_interest_live_check_treatment_switch(tmp_path):
-    from core.data.interface import HistoricalLeaseData
-    from core.data.line_identity import line_identity
+    from modeler.data.interface import HistoricalLeaseData
+    from modeler.data.line_identity import line_identity
     from modeler.lease_liability import resolve_lease_liability_source
 
     fin = _tiny(standardized_split=True)
@@ -890,8 +892,8 @@ def test_lease_interest_live_check_treatment_switch(tmp_path):
 
 
 def test_mixed_lease_treatment_fails_closed_on_anchor():
-    from core.data.interface import HistoricalLeaseData
-    from core.data.line_identity import line_identity
+    from modeler.data.interface import HistoricalLeaseData
+    from modeler.data.line_identity import line_identity
     from modeler.lease_liability import (
         InconsistentLeaseTreatmentError,
         resolve_lease_liability_source,

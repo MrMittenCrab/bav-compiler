@@ -10,14 +10,16 @@ from pathlib import Path
 import pytest
 from openpyxl import load_workbook
 
-from core.data.interface import (
+from extractor.data.interface import (
     DocumentManifest,
     DocumentType,
+)
+from modeler.data.interface import (
     FinancialPeriod,
     LineItem,
     StandardizedFinancials,
 )
-from core.data.standardized_io import standardized_from_payload
+from modeler.data.standardized_io import standardized_from_payload
 from core.engine.component_catalog import (
     LEASE_REPAYMENT_COMPONENT_CATALOG,
     expand_lease_repayment_specs,

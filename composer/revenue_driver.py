@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from core.data.historical_operating_kpis import (
+from modeler.data.historical_operating_kpis import (
     FAMILY_COMPARABLE_SALES_GROWTH,
     FAMILY_SALES_PER_SQUARE_FOOT,
 )
-from core.data.interface import HistoricalManagementKpiDeferredDisagreement
+from modeler.data.interface import HistoricalManagementKpiDeferredDisagreement
 from modeler.management_kpi import (
     REASON_CALENDAR_REPORTING_MISMATCH,
     REASON_CALENDAR_WEEK_MISMATCH,

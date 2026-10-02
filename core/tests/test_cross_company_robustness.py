@@ -8,9 +8,9 @@ from pathlib import Path
 import pytest
 from openpyxl import load_workbook
 
-from core.data.interface import DocumentManifest, DocumentType
-from core.data.line_identity import line_identity, validate_financials_identities
-from core.data.standardized_io import standardized_to_payload
+from extractor.data.interface import DocumentManifest, DocumentType
+from modeler.data.line_identity import line_identity, validate_financials_identities
+from modeler.data.standardized_io import standardized_to_payload
 from core.engine.reference_model import (
     DEFERRED_PLACEHOLDER,
     DEFERRED_TAB_NAMES,
@@ -20,7 +20,7 @@ from core.engine.reference_model import (
     ReferenceModelBuilder,
 )
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.ingestion.reconciler import reconcile_financials
+from modeler.ingestion.reconciler import reconcile_financials
 from modeler.financial_math import compute_anchor
 from modeler.historical_expected import expected_value_for_component
 from core.model.normalization import compute_normalization_series, normalization_cases

@@ -6,8 +6,8 @@ from dataclasses import dataclass, replace
 from datetime import date
 import re
 
-from core.data.historical_operating_kpis import FAMILY_COMPARABLE_SALES_GROWTH
-from core.data.interface import StandardizedFinancials
+from modeler.data.historical_operating_kpis import FAMILY_COMPARABLE_SALES_GROWTH
+from modeler.data.interface import StandardizedFinancials
 from modeler.geographic_segment import (
     compute_geographic_segment_series,
     geographic_segment_applicable,

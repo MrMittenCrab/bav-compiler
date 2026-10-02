@@ -31,7 +31,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-from core.data.interface import LineItem, StandardizedFinancials
+from modeler.data.interface import LineItem, StandardizedFinancials
 from modeler.line_resolver import AmbiguousLineError, MissingLineError, resolve_line
 from modeler.ratio_values import UNDEFINED_RATIO, is_source_unavailable, ratio_or_na
 from modeler.source_values import optional_period_value, required_period_value

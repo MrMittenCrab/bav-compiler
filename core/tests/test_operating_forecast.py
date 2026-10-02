@@ -10,14 +10,16 @@ from pathlib import Path
 
 import pytest
 
-from core.data.interface import (
+from extractor.data.interface import (
     DocumentManifest,
     DocumentType,
+)
+from modeler.data.interface import (
     FinancialPeriod,
     LineItem,
     StandardizedFinancials,
 )
-from core.data.standardized_io import standardized_from_payload
+from modeler.data.standardized_io import standardized_from_payload
 from core.ingestion.manual_hk import HKManualDocumentAdapter
 from modeler.financial_math import compute_anchor
 from modeler.operating_forecast import (

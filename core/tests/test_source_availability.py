@@ -9,8 +9,8 @@ from pathlib import Path
 import pytest
 from openpyxl import load_workbook
 
-from core.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
-from core.data.standardized_io import standardized_from_payload, standardized_to_payload
+from modeler.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
+from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
 from core.engine.reference_model import ReferenceModelBuilder
 from modeler.financial_math import compute_anchor
 from modeler.line_resolver import AmbiguousLineError, MissingLineError, resolve_line

@@ -26,7 +26,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-from core.data.interface import LineItem, StandardizedFinancials
+from modeler.data.interface import LineItem, StandardizedFinancials
 from .capex import (
     cash_after_ppe_capex_applicable,
     compute_capex_series,

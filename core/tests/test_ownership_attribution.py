@@ -7,13 +7,13 @@ from datetime import date
 import pytest
 from openpyxl import load_workbook
 
-from core.data.interface import (
+from modeler.data.interface import (
     FinancialPeriod,
     HistoricalShareData,
     LineItem,
     StandardizedFinancials,
 )
-from core.data.line_identity import line_identity
+from modeler.data.line_identity import line_identity
 from core.engine.component_catalog import (
     OWNERSHIP_ATTRIBUTION_COMPONENT_CATALOG,
     expand_ownership_attribution_specs,

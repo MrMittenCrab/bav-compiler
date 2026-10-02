@@ -59,7 +59,7 @@ import math
 from dataclasses import dataclass
 from datetime import date
 
-from core.data.historical_operating_kpis import (
+from modeler.data.historical_operating_kpis import (
     FAMILY_COMPARABLE_SALES_GROWTH,
     FAMILY_SALES_PER_SQUARE_FOOT,
     MANAGEMENT_IDENTITY_FIELDS,
@@ -69,8 +69,8 @@ from core.data.historical_operating_kpis import (
     management_identity_fields,
     validate_historical_operating_kpis,
 )
-from core.ingestion.management_kpi_identity import POP_COMPANY_OPERATED_STORES
-from core.data.interface import (
+from modeler.ingestion.management_kpi_identity import POP_COMPANY_OPERATED_STORES
+from modeler.data.interface import (
     HistoricalManagementKpiObservation,
     LineItem,
     StandardizedFinancials,

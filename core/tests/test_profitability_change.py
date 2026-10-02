@@ -10,9 +10,11 @@ from unittest.mock import patch
 import pytest
 from openpyxl import load_workbook
 
-from core.data.interface import (
+from extractor.data.interface import (
     DocumentManifest,
     DocumentType,
+)
+from modeler.data.interface import (
     FinancialPeriod,
     LineItem,
     StandardizedFinancials,

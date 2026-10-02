@@ -13,11 +13,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-from core.data.historical_operating_kpis import (
+from modeler.data.historical_operating_kpis import (
     FAMILY_COMPARABLE_SALES_GROWTH,
     FAMILY_SALES_PER_SQUARE_FOOT,
 )
-from core.data.interface import (
+from modeler.data.interface import (
     HistoricalManagementKpiDeferredDisagreement,
     StandardizedFinancials,
 )

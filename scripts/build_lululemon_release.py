@@ -38,7 +38,7 @@ def _sha256(path: Path) -> str:
 
 
 def validate_extracted_filings() -> None:
-    from core.ingestion.filing_cli import load_and_validate_extracted_dir
+    from director.ingestion.filing_cli import load_and_validate_extracted_dir
 
     validated = load_and_validate_extracted_dir(EXTRACTED, source_root=SOURCE)
     if len(validated) != 4:
@@ -52,10 +52,10 @@ def validate_extracted_filings() -> None:
 
 
 def reconcile_canonical() -> None:
-    from core.data.standardized_io import standardized_to_payload
-    from core.ingestion.filing_cli import load_and_validate_extracted_dir
-    from core.ingestion.filing_reconciler import reconcile_filings
-    from core.ingestion.filing_standardizer import (
+    from modeler.data.standardized_io import standardized_to_payload
+    from director.ingestion.filing_cli import load_and_validate_extracted_dir
+    from modeler.ingestion.filing_reconciler import reconcile_filings
+    from modeler.ingestion.filing_standardizer import (
         reconciliation_conflicts_payload,
         reconciliation_provenance_payload,
         standardize_reconciled,
@@ -90,7 +90,7 @@ def copy_reconciled_supporting(dest: Path) -> Path:
 
 
 def build_workbooks(standardized_json: Path, out_dir: Path) -> tuple[Path, Path]:
-    from core.data.standardized_io import standardized_from_payload
+    from modeler.data.standardized_io import standardized_from_payload
     from legacy.trainer.derive import build_training_workbook
 
     payload = json.loads(standardized_json.read_text(encoding="utf-8"))
@@ -101,7 +101,7 @@ def build_workbooks(standardized_json: Path, out_dir: Path) -> tuple[Path, Path]
 
 
 def write_availability(standardized_json: Path, dest: Path) -> None:
-    from core.data.standardized_io import standardized_from_payload
+    from modeler.data.standardized_io import standardized_from_payload
     from modeler.period_axis import canonical_fiscal_periods
     from modeler.source_availability import (
         assess_interest_availability,
@@ -168,7 +168,7 @@ Forecasting and valuation remain dormant in this historical release.
 
 
 def verify_staged(trainer: Path, answer: Path, standardized_json: Path) -> None:
-    from core.data.standardized_io import standardized_from_payload
+    from modeler.data.standardized_io import standardized_from_payload
     from modeler.workbook import ReferenceModelBuilder
     from modeler.engine.build_contract import verify_complete_build
     from legacy.trainer.checker import check_workbook

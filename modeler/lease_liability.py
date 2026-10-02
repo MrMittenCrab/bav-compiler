@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import TYPE_CHECKING
 
-from core.data.interface import LineItem, StandardizedFinancials
+from modeler.data.interface import LineItem, StandardizedFinancials
 from .classification import BalanceSheetReformulation
 from .line_resolver import AmbiguousLineError, MissingLineError, resolve_line
 from .ratio_values import ratio_or_na

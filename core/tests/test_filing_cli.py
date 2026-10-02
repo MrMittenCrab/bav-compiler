@@ -245,7 +245,7 @@ def test_reconcile_rejects_unsupported_admit_period_before_write(tmp_path: Path)
 
 
 def test_reconcile_serializes_management_identity_assessments(tmp_path: Path):
-    from core.ingestion.management_kpi_identity import (
+    from modeler.ingestion.management_kpi_identity import (
         PEER_COMPARISON_REASONS,
         REASON_NO_DISTINCT_PEER,
         REQUIRED_COMPARISON_REASONS,
@@ -390,11 +390,11 @@ def test_reconcile_serializes_management_identity_assessments(tmp_path: Path):
 
 @pytest.mark.parametrize("family", ("comparable_sales_growth", "sales_per_square_foot"))
 def test_cli_serializes_incoming_ambiguous_candidate_deferral(tmp_path: Path, family: str):
-    from core.ingestion.management_kpi_identity import (
+    from modeler.ingestion.management_kpi_identity import (
         FAMILY_COMPARABLE_SALES_GROWTH,
         FAMILY_SALES_PER_SQUARE_FOOT,
     )
-    from core.ingestion.management_kpi_reconciliation import (
+    from modeler.ingestion.management_kpi_reconciliation import (
         REASON_AMBIGUOUS_TARGET,
         RELATIONSHIP_UNRESOLVED,
     )

@@ -8,9 +8,9 @@ from pathlib import Path
 from openpyxl import load_workbook
 
 from extractor.data.interface import DocumentManifest, DocumentType
-from ..data.interface import FinancialPeriod, LineItem, StandardizedFinancials
-from ..data.schema import normalize_label
-from .base import BaseIngestionAdapter
+from modeler.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
+from director.data.schema import normalize_label
+from modeler.ingestion.base import BaseIngestionAdapter
 
 TAB_MAP = {
     "income statement": "income_statement",

@@ -26,7 +26,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-from core.data.interface import StandardizedFinancials
+from modeler.data.interface import StandardizedFinancials
 from .line_resolver import MissingLineError, resolve_line
 from .operating_kpi import compute_operating_kpi_series, operating_kpi_applicable
 from .operating_kpi_relationships import (

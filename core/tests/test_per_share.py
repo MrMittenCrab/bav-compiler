@@ -9,15 +9,17 @@ from pathlib import Path
 import pytest
 from openpyxl import load_workbook
 
-from core.data.interface import (
+from extractor.data.interface import (
     DocumentManifest,
     DocumentType,
+)
+from modeler.data.interface import (
     FinancialPeriod,
     HistoricalShareData,
     LineItem,
     StandardizedFinancials,
 )
-from core.data.standardized_io import (
+from modeler.data.standardized_io import (
     standardized_from_payload,
     standardized_to_payload,
 )
@@ -27,7 +29,7 @@ from core.engine.component_catalog import (
 )
 from core.engine.reference_model import PER_SHARE_SHEET, ReferenceModelBuilder
 from core.ingestion.manual_hk import HKManualDocumentAdapter
-from core.ingestion.reconciler import merge_documents
+from modeler.ingestion.reconciler import merge_documents
 from modeler.financial_math import compute_anchor
 from modeler.historical_expected import (
     expected_value_for_component,

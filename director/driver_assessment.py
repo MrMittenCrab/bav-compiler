@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import replace
 from datetime import date
 
-from core.data.interface import StandardizedFinancials
+from modeler.data.interface import StandardizedFinancials
 from composer.reported_margin import (
     AMOUNT_BRIDGE_CONVENTION,
     word_disclosed_charges,

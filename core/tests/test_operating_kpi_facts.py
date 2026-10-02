@@ -14,28 +14,28 @@ from pathlib import Path
 import pytest
 
 from extractor.data.filing import PresentationRole, SourceRef, SupplementalFact
-from core.data.historical_operating_kpis import (
+from modeler.data.historical_operating_kpis import (
     METRIC_STORE_COUNT,
     POPULATION_COMPANY_OPERATED,
     STORE_COUNT_FACT_TYPE,
 )
-from core.data.interface import (
+from modeler.data.interface import (
     FinancialPeriod,
     HistoricalManagementKpiObservation,
     HistoricalOperatingKpiData,
     HistoricalOperatingKpiObservation,
     StandardizedFinancials,
 )
-from core.data.standardized_io import standardized_from_payload, standardized_to_payload
+from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
 from extractor.data.filing_json import extracted_filing_to_payload, load_extracted_filing
-from core.ingestion.filing_reconciler import SupplementalObservation, reconcile_filings
-from core.ingestion.filing_standardizer import (
+from modeler.ingestion.filing_reconciler import SupplementalObservation, reconcile_filings
+from modeler.ingestion.filing_standardizer import (
     reconciliation_conflicts_payload,
     reconciliation_provenance_payload,
     standardize_reconciled,
 )
-from core.ingestion.filing_validator import validate_extracted_filing
-from core.ingestion.operating_kpi import select_operating_kpi_facts
+from director.ingestion.filing_validator import validate_extracted_filing
+from modeler.ingestion.operating_kpi import select_operating_kpi_facts
 from core.tests.test_filing_reconciler import _filing, _validated
 
 ROOT = Path(__file__).resolve().parents[2]

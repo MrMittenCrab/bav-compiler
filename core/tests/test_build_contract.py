@@ -8,7 +8,7 @@ import pytest
 from openpyxl import load_workbook
 
 from core.__main__ import main
-from core.data.standardized_io import standardized_from_payload
+from modeler.data.standardized_io import standardized_from_payload
 from core.engine.reference_model import ReferenceModelBuilder
 from core.trainer.semantic_io import load_semantic_map
 from core.trainer.workbook import build_training_workbook
@@ -143,7 +143,7 @@ def test_release_build_and_verification_accept_registered_extension(monkeypatch,
 
 
 def test_supplied_kpi_package_with_missing_period_preserves_unavailability(monkeypatch, tmp_path):
-    from core.data.interface import HistoricalOperatingKpiData, HistoricalOperatingKpiObservation
+    from modeler.data.interface import HistoricalOperatingKpiData, HistoricalOperatingKpiObservation
     from core.engine.build_contract import RequiredInput
     from modeler.operating_kpi import compute_operating_kpi_series
     from modeler.ratio_values import SOURCE_UNAVAILABLE

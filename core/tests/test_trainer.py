@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from openpyxl import load_workbook
 
-from core.data.interface import DocumentManifest, DocumentType
+from extractor.data.interface import DocumentManifest, DocumentType
 from core.engine.component_catalog import (
     COMPONENT_CATALOG,
     DEFERRED_COMPONENT_SPECS,
@@ -1378,7 +1378,7 @@ def test_dynamic_check_fresh_reference_parity(tmp_path):
 def test_alternative_treatment_exact_formula_is_green(tmp_path):
     trainer_path, answer_key_path = _build_pair(tmp_path)
     smap = load_semantic_map(answer_key_path)
-    from core.data.standardized_io import standardized_from_payload
+    from modeler.data.standardized_io import standardized_from_payload
     from modeler.financial_math import compute_anchor
     from modeler.historical_expected import expected_value_for_component
     from modeler.period_axis import canonical_fiscal_periods
@@ -1413,7 +1413,7 @@ def test_alternative_treatment_exact_formula_is_green(tmp_path):
 
 
 def test_alternative_treatment_equivalent_formula_and_stale_reference(tmp_path):
-    from core.data.standardized_io import standardized_from_payload
+    from modeler.data.standardized_io import standardized_from_payload
     from modeler.financial_math import compute_anchor
     from modeler.historical_expected import expected_value_for_component
     from modeler.period_axis import canonical_fiscal_periods
@@ -1474,7 +1474,7 @@ def test_alternative_treatment_equivalent_formula_and_stale_reference(tmp_path):
 def test_dynamic_check_two_case_combined_state(tmp_path):
     from datetime import date
 
-    from core.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
+    from modeler.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
     from core.engine.reference_model import ReferenceModelBuilder
     from modeler.financial_math import compute_anchor
     from modeler.historical_expected import expected_value_for_component
@@ -1721,7 +1721,7 @@ def test_classification_modified_rejected_before_grading(tmp_path):
 def test_judgment_structure_two_case_distinct_links(tmp_path):
     from datetime import date
 
-    from core.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
+    from modeler.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
     from core.engine.reference_model import ReferenceModelBuilder
     from core.trainer.check_context import (
         live_classification_formula,

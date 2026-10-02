@@ -9,20 +9,20 @@ from pathlib import Path
 
 import pytest
 
-from core.data.historical_operating_kpis import (
+from modeler.data.historical_operating_kpis import (
     UNIT_PERCENT,
     UNIT_USD_PER_SQUARE_FOOT,
     encode_metric_identity,
     management_identity_fields,
 )
-from core.data.standardized_io import standardized_from_payload, standardized_to_payload
-from core.ingestion.filing_standardizer import (
+from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
+from modeler.ingestion.filing_standardizer import (
     reconciliation_conflicts_payload,
     reconciliation_provenance_payload,
     standardize_reconciled,
 )
-from core.ingestion.management_kpi import management_admission_payload
-from core.ingestion.management_kpi_identity import (
+from modeler.ingestion.management_kpi import management_admission_payload
+from modeler.ingestion.management_kpi_identity import (
     FAMILY_COMPARABLE_SALES_GROWTH,
     FAMILY_SALES_PER_SQUARE_FOOT,
     POP_STORES_AND_ECOMMERCE,

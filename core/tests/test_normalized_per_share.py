@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 from openpyxl import load_workbook
 
-from core.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
+from modeler.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
 from core.engine.component_catalog import (
     NORMALIZED_PER_SHARE_COMPONENT_CATALOG,
     PER_SHARE_ATTRIBUTION_COMPONENT_CATALOG,
@@ -371,7 +371,7 @@ def test_live_normalization_judgment_changes_normalized_eps(tmp_path):
 
     _set_normalization_treatment(trainer, "Recurring")
 
-    from core.data.standardized_io import standardized_from_payload
+    from modeler.data.standardized_io import standardized_from_payload
     from modeler.financial_math import compute_anchor
     from core.model.normalization import compute_normalization_series, normalization_cases
     from modeler.period_axis import canonical_fiscal_periods
@@ -459,7 +459,7 @@ def test_normalized_eps_na_check(tmp_path):
         ],
         cash_flow=[_li("Net cash from operating activities", vals(50, 60))],
     )
-    from core.data.interface import HistoricalShareData
+    from modeler.data.interface import HistoricalShareData
     from modeler.per_share import SUPPORTED_SHARE_SCALE_BASIS
 
     fin.historical_shares = HistoricalShareData(

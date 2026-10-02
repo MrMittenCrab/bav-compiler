@@ -40,7 +40,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-from core.data.interface import LineItem, StandardizedFinancials
+from modeler.data.interface import LineItem, StandardizedFinancials
 from .line_resolver import AmbiguousLineError, MissingLineError, resolve_line
 from .ratio_values import UNDEFINED_RATIO, ratio_or_na
 from .source_values import required_period_value

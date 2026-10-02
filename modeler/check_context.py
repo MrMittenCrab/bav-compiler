@@ -11,8 +11,8 @@ from typing import Any
 from openpyxl import Workbook, load_workbook
 from openpyxl.utils import get_column_letter
 
-from core.data.interface import StandardizedFinancials
-from core.data.standardized_io import standardized_to_payload
+from modeler.data.interface import StandardizedFinancials
+from modeler.data.standardized_io import standardized_to_payload
 from core.model.judgment import JudgmentCase
 from core.model.normalization import NormalizationCase
 

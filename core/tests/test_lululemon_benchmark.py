@@ -14,12 +14,12 @@ from pathlib import Path
 import pytest
 from openpyxl import load_workbook
 
-from core.data.standardized_io import (
+from modeler.data.standardized_io import (
     standardized_from_payload,
     standardized_to_payload,
 )
 from extractor.data.filing_json import load_extracted_filing
-from core.ingestion.filing_validator import validate_extracted_filing
+from director.ingestion.filing_validator import validate_extracted_filing
 from modeler.classification import (
     UnclassifiedBalanceSheetLineError,
     classify_balance_sheet_line,
@@ -243,7 +243,7 @@ def _statement_provenance(payload: dict) -> dict:
 def _comparable_standardized(payload: dict) -> dict:
     """Canonical-comparable standardized payload: ignore optional handoffs."""
     from datetime import date
-    from core.data.issuer_fiscal import (
+    from modeler.data.issuer_fiscal import (
         issuer_fiscal_label,
         issuer_fiscal_years_from_extracted,
     )

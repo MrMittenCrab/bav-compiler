@@ -72,7 +72,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-from core.data.historical_segments import (
+from modeler.data.historical_segments import (
     IFOP_CONSOLIDATED,
     IFOP_SEGMENTS,
     OP_ADD,
@@ -83,7 +83,7 @@ from core.data.historical_segments import (
     SUPPORTED_OPERATIONS,
     validate_historical_segment,
 )
-from core.data.interface import HistoricalSegmentPeriod, StandardizedFinancials
+from modeler.data.interface import HistoricalSegmentPeriod, StandardizedFinancials
 from .line_resolver import MissingLineError
 from .period_axis import canonical_fiscal_periods
 from .ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO, is_source_unavailable, ratio_or_na

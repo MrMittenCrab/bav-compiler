@@ -13,7 +13,7 @@ import pytest
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 
-from core.data.historical_segments import (
+from modeler.data.historical_segments import (
     FAMILY_CORPORATE,
     FAMILY_ITEMIZED,
     GEOGRAPHIC_SEGMENT_NAMESPACE,
@@ -22,8 +22,9 @@ from core.data.historical_segments import (
     OP_SUBTRACT,
     SEGMENTS,
 )
-from core.data.interface import DocumentManifest, DocumentType, FinancialPeriod, HistoricalSegmentData, LineItem
-from core.data.standardized_io import standardized_from_payload, standardized_to_payload
+from extractor.data.interface import DocumentManifest, DocumentType
+from modeler.data.interface import FinancialPeriod, HistoricalSegmentData, LineItem
+from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
 from core.engine.component_catalog import (
     GEOGRAPHIC_SEGMENT_COMPONENT_CATALOG,
     GEOGRAPHIC_SEGMENT_IDENTITIES,
@@ -61,8 +62,8 @@ from core.engine.reference_model import (
     NORMALIZATION_JUDGMENT_SHEET,
     ReferenceModelBuilder,
 )
-from core.ingestion.filing_reconciler import reconcile_filings
-from core.ingestion.filing_standardizer import standardize_reconciled
+from modeler.ingestion.filing_reconciler import reconcile_filings
+from modeler.ingestion.filing_standardizer import standardize_reconciled
 from core.ingestion.manual_hk import HKManualDocumentAdapter
 from modeler.geographic_segment import (
     GEOGRAPHIC_RATIO_TOLERANCE,
@@ -3641,7 +3642,7 @@ def test_lululemon_five_period_temporary_pair_matches_selected_facts(tmp_path):
 
 def test_prior_presentation_mutation_survives_workbook_series():
     from extractor.data.filing_json import load_extracted_filing
-    from core.ingestion.filing_validator import validate_extracted_filing
+    from director.ingestion.filing_validator import validate_extracted_filing
     from core.tests.test_geographic_segment_analysis import EXTRACTED, SOURCE
     from core.tests.test_geographic_segment_analysis import FY2025_AMERICAS
 

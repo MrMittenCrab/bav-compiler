@@ -8,20 +8,22 @@ from pathlib import Path
 import pytest
 from openpyxl import Workbook
 
-from core.data.interface import (
+from extractor.data.interface import (
     DocumentManifest,
     DocumentType,
+)
+from modeler.data.interface import (
     FinancialPeriod,
     LineItem,
     StandardizedFinancials,
 )
-from core.data.line_identity import (
+from modeler.data.line_identity import (
     AmbiguousStatementIdentityError,
     line_identity,
     validate_statement_identities,
 )
 from core.ingestion.excel_import import ExcelExportAdapter
-from core.ingestion.reconciler import merge_documents, _merge_line_items
+from modeler.ingestion.reconciler import merge_documents, _merge_line_items
 from modeler.classification import (
     classify_balance_sheet_line,
     reformulate_balance_sheet,

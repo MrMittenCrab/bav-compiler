@@ -9,7 +9,7 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from core.data.interface import ReconciliationReport, StandardizedFinancials
+    from modeler.data.interface import ReconciliationReport, StandardizedFinancials
 
 
 class DocumentType(str, Enum):

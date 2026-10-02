@@ -1,14 +1,3 @@
-"""Base ingestion adapter with shared reconciliation hooks."""
+"""Compatibility façade. Implementation lives in modeler.ingestion.base."""
 
-from __future__ import annotations
-
-from extractor.data.interface import DataSourceAdapter, DocumentManifest
-from ..data.interface import ReconciliationReport, StandardizedFinancials
-from .reconciler import reconcile_financials
-
-
-class BaseIngestionAdapter(DataSourceAdapter):
-    """Shared reconcile implementation for manual adapters."""
-
-    def reconcile(self, data: StandardizedFinancials) -> ReconciliationReport:
-        return reconcile_financials(data)
+from modeler.ingestion.base import *

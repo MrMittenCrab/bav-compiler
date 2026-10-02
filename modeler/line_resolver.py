@@ -9,8 +9,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from core.data.interface import LineItem
-from core.data.schema import normalize_label
+from modeler.data.interface import LineItem
+from director.data.schema import normalize_label
 
 
 class LineResolutionError(ValueError):

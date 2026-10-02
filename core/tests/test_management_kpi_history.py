@@ -11,23 +11,23 @@ from pathlib import Path
 
 import pytest
 
-from core.data.historical_operating_kpis import UNIT_PERCENT, UNIT_USD_PER_SQUARE_FOOT
-from core.data.standardized_io import standardized_from_payload, standardized_to_payload
-from core.ingestion.filing_cli import load_and_validate_extracted_dir
-from core.ingestion.filing_reconciler import reconcile_filings
-from core.ingestion.filing_standardizer import standardize_reconciled
-from core.ingestion.management_kpi import management_admission_payload
-from core.ingestion.management_kpi_history import (
+from modeler.data.historical_operating_kpis import UNIT_PERCENT, UNIT_USD_PER_SQUARE_FOOT
+from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
+from director.ingestion.filing_cli import load_and_validate_extracted_dir
+from modeler.ingestion.filing_reconciler import reconcile_filings
+from modeler.ingestion.filing_standardizer import standardize_reconciled
+from modeler.ingestion.management_kpi import management_admission_payload
+from modeler.ingestion.management_kpi_history import (
     deferred_management_kpi_disagreements,
     selected_management_kpi_histories,
 )
-from core.ingestion.management_kpi_identity import (
+from modeler.ingestion.management_kpi_identity import (
     FAMILY_COMPARABLE_SALES_GROWTH,
     FAMILY_SALES_PER_SQUARE_FOOT,
     REASON_CALENDAR_REPORTING,
     REASON_CALENDAR_WEEK,
 )
-from core.ingestion.management_kpi_reconciliation import (
+from modeler.ingestion.management_kpi_reconciliation import (
     REASON_ORDINARY_DISAGREEMENT,
     SELECTION_DEFERRED,
     SELECTION_SELECTED,

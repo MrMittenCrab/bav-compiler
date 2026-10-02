@@ -10,13 +10,15 @@ from pathlib import Path
 import pytest
 from openpyxl import load_workbook
 
-from core.data.interface import (
+from extractor.data.interface import (
     DocumentManifest,
     DocumentType,
+)
+from modeler.data.interface import (
     LineItem,
     StandardizedFinancials,
 )
-from core.data.standardized_io import standardized_from_payload, standardized_to_payload
+from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
 from core.engine.component_catalog import (
     INVENTORY_ANALYSIS_COMPONENT_CATALOG,
     expand_inventory_analysis_specs,

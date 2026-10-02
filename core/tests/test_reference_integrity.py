@@ -12,7 +12,8 @@ from pathlib import Path
 from openpyxl import load_workbook
 import pytest
 
-from core.data.interface import DocumentManifest, DocumentType, LineItem
+from extractor.data.interface import DocumentManifest, DocumentType
+from modeler.data.interface import LineItem
 from core.engine.component_catalog import COMPONENT_CATALOG, concrete_component_id, expand_historical_specs
 from core.ingestion.manual_hk import HKManualDocumentAdapter
 from modeler.classification import BALANCE_SHEET_CATEGORIES
@@ -518,7 +519,7 @@ def test_pair_behavior_still_holds(tmp_path):
 
 def _synth_periods():
     from datetime import date
-    from core.data.interface import FinancialPeriod
+    from modeler.data.interface import FinancialPeriod
 
     return [
         FinancialPeriod(end_date=date(2024, 12, 31), label="FY2024"),
@@ -528,7 +529,7 @@ def _synth_periods():
 
 def _li(label, v1, v2, concept=""):
     from datetime import date
-    from core.data.interface import LineItem
+    from modeler.data.interface import LineItem
 
     return LineItem(
         label=label,
@@ -538,7 +539,7 @@ def _li(label, v1, v2, concept=""):
 
 
 def _base_fin(**overrides):
-    from core.data.interface import StandardizedFinancials
+    from modeler.data.interface import StandardizedFinancials
 
     periods = _synth_periods()
     is_items = [
@@ -688,7 +689,7 @@ def test_build_rejects_failed_source_checksum(tmp_path):
 
 def test_build_rejects_reformulation_gap(tmp_path):
     from datetime import date
-    from core.data.interface import FinancialPeriod, StandardizedFinancials
+    from modeler.data.interface import FinancialPeriod, StandardizedFinancials
     from modeler.classification import ReformulationIntegrityError
     import pytest
 
@@ -765,7 +766,7 @@ def test_classification_table_uses_shared_decisions(tmp_path):
     from modeler.classification import BALANCE_SHEET_CATEGORIES
     from core.engine.reference_model import ReferenceModelBuilder
     from modeler.financial_math import compute_anchor
-    from core.data.interface import FinancialPeriod, StandardizedFinancials
+    from modeler.data.interface import FinancialPeriod, StandardizedFinancials
     from datetime import date
 
     data = _ingest_demo()
@@ -1117,7 +1118,7 @@ def test_multi_period_formula_dependencies_use_current_and_previous(tmp_path):
 
 def _descending_three_year_fin():
     from datetime import date
-    from core.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
+    from modeler.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
 
     d25, d24, d23 = date(2025, 12, 31), date(2024, 12, 31), date(2023, 12, 31)
 
@@ -1222,7 +1223,7 @@ def test_descending_periods_build_chronological_model(tmp_path):
 
 def test_duplicate_fiscal_periods_rejected():
     from datetime import date
-    from core.data.interface import FinancialPeriod
+    from modeler.data.interface import FinancialPeriod
     from core.engine.reference_model import ReferenceModelBuilder
     from modeler.period_axis import PeriodAxisError
 
@@ -1238,7 +1239,7 @@ def test_duplicate_fiscal_periods_rejected():
 
 def test_gapped_annual_history_requires_contiguous_periods():
     from datetime import date
-    from core.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
+    from modeler.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
     from core.engine.reference_model import ReferenceModelBuilder
     from modeler.period_axis import PeriodAxisError
 
@@ -1282,7 +1283,8 @@ def test_gapped_annual_history_requires_contiguous_periods():
 def test_excel_descending_headers_build_chronological_model(tmp_path):
     from datetime import date
     from openpyxl import Workbook
-    from core.data.interface import DocumentManifest, DocumentType, LineItem
+    from extractor.data.interface import DocumentManifest, DocumentType
+    from modeler.data.interface import LineItem
     from core.ingestion.excel_import import ExcelExportAdapter
 
     path = tmp_path / "REV_Descending.xlsx"
@@ -1350,7 +1352,7 @@ def test_excel_descending_headers_build_chronological_model(tmp_path):
 def test_guided_classification_judgment_cases_and_suppressions():
     from datetime import date
 
-    from core.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
+    from modeler.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
     from core.engine.reference_model import ReferenceModelBuilder
     from modeler.classification import reformulate_balance_sheet
     from core.model.judgment import (
@@ -1477,7 +1479,7 @@ def test_guided_classification_judgment_cases_and_suppressions():
 def test_judgment_cases_use_canonical_periods_not_interim_only_values():
     from datetime import date
 
-    from core.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
+    from modeler.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
     from core.engine.reference_model import ReferenceModelBuilder
     from modeler.period_axis import canonical_fiscal_periods
 
@@ -1555,8 +1557,8 @@ def test_demo_has_one_lease_judgment_case_and_204_formula_components(tmp_path):
 
 
 def test_demo_standardized_payload_round_trip_preserves_identity_and_values():
-    from core.data.line_identity import line_identity
-    from core.data.standardized_io import standardized_from_payload, standardized_to_payload
+    from modeler.data.line_identity import line_identity
+    from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
 
     data = _ingest_demo()
     payload = standardized_to_payload(data)
@@ -1761,7 +1763,7 @@ def test_live_classification_judgment_link_for_demo_lease(tmp_path):
 def test_live_classification_two_case_judgment_links_without_collision(tmp_path):
     from datetime import date
 
-    from core.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
+    from modeler.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
     from core.engine.reference_model import JUDGMENT_SHEET, ReferenceModelBuilder
     from core.trainer.workbook import TrainingWorkbookGenerator
 
@@ -1990,7 +1992,7 @@ def test_missing_net_income_fails_without_cfo_quality_module(tmp_path):
 
 
 def test_missing_bs_detail_fails_without_reported_totals(tmp_path):
-    from core.data.interface import FinancialPeriod, StandardizedFinancials
+    from modeler.data.interface import FinancialPeriod, StandardizedFinancials
     from modeler.source_values import MissingHistoricalValueError
 
     p1, p2 = date(2024, 12, 31), date(2025, 12, 31)
@@ -2069,7 +2071,7 @@ def test_dupont_undefined_ratio_semantics_and_propagation():
     assert anchor4.dupont["NOPAT Margin"][0] == pytest.approx(0.0)
 
     # Zero average Net Debt -> CoD #N/A; Spread/decomposed propagate; Actual ROE may remain numeric
-    from core.data.interface import FinancialPeriod, StandardizedFinancials
+    from modeler.data.interface import FinancialPeriod, StandardizedFinancials
 
     p1, p2 = periods
     fin_nd = StandardizedFinancials(
@@ -2210,7 +2212,7 @@ def test_dupont_na_formulas_and_check_accept_undefined(tmp_path):
     assert any("explicitly supplied" in h for h in ni_hint.hints)
 
     # Undefined After-tax CoD fixture: exact / equivalent #N/A green; fabricated 0 red
-    from core.data.interface import FinancialPeriod, StandardizedFinancials
+    from modeler.data.interface import FinancialPeriod, StandardizedFinancials
 
     p1, p2 = date(2024, 12, 31), date(2025, 12, 31)
     fin = StandardizedFinancials(
@@ -2307,7 +2309,7 @@ def test_effective_tax_rate_undefined_when_pretax_zero():
 
 
 def test_undefined_etr_niat_nopat_short_circuit_and_propagation():
-    from core.data.interface import StandardizedFinancials
+    from modeler.data.interface import StandardizedFinancials
     from modeler.ratio_values import UNDEFINED_RATIO
 
     periods = [p.end_date for p in _synth_periods()]
@@ -2384,7 +2386,7 @@ def test_undefined_etr_niat_nopat_short_circuit_and_propagation():
 
 
 def test_condensed_etr_niat_formulas_and_check_na(tmp_path):
-    from core.data.interface import FinancialPeriod, StandardizedFinancials
+    from modeler.data.interface import FinancialPeriod, StandardizedFinancials
     from modeler.ratio_values import UNDEFINED_RATIO
     from core.tests.test_normalization import _inject_formula_and_cached_value
     from core.trainer.checker import check_workbook
@@ -2493,7 +2495,7 @@ def test_condensed_etr_niat_formulas_and_check_na(tmp_path):
 
 
 def test_generic_financial_judgment_cases_reach_reference_builder():
-    from core.data.interface import StandardizedFinancials
+    from modeler.data.interface import StandardizedFinancials
     from core.engine.reference_model import ReferenceModelBuilder
 
     periods = _synth_periods()
@@ -2573,7 +2575,7 @@ def test_generic_financial_judgment_cases_reach_reference_builder():
 
 
 def test_other_balance_judgment_cases_reach_reference_builder():
-    from core.data.interface import StandardizedFinancials
+    from modeler.data.interface import StandardizedFinancials
     from core.engine.reference_model import ReferenceModelBuilder
 
     periods = _synth_periods()
@@ -3060,7 +3062,7 @@ def _validate_pretax_etr_parity(answer_path: Path, expect: _PretaxEtrExpect, anc
 def _maybe_export_reload(fin, *, reload: bool):
     if not reload:
         return fin
-    from core.data.standardized_io import standardized_from_payload, standardized_to_payload
+    from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
 
     return standardized_from_payload(standardized_to_payload(fin))
 

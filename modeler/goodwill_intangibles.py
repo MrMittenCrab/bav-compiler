@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-from core.data.interface import LineItem, StandardizedFinancials
+from modeler.data.interface import LineItem, StandardizedFinancials
 from .financial_math import AnchorMetrics
 from .line_resolver import AmbiguousLineError, MissingLineError, resolve_line
 from .ratio_values import ratio_or_na

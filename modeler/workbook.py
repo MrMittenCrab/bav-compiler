@@ -13,14 +13,14 @@ from openpyxl.utils import get_column_letter
 from openpyxl.utils.cell import column_index_from_string, coordinate_from_string
 from openpyxl.worksheet.datavalidation import DataValidation
 
-from core.data.historical_segments import (
+from modeler.data.historical_segments import (
     IFOP_SEGMENT_TOTAL,
     OP_ADD,
     OP_SUBTRACT,
     REVENUE_SEGMENT_TOTAL,
 )
-from core.data.interface import LineItem, StandardizedFinancials
-from core.data.line_identity import line_identity
+from modeler.data.interface import LineItem, StandardizedFinancials
+from modeler.data.line_identity import line_identity
 from modeler.classification import BALANCE_SHEET_CATEGORIES
 from modeler.financial_math import compute_anchor
 from modeler.earnings_quality import (
@@ -37,7 +37,7 @@ from modeler.geographic_segment import (
     compute_geographic_segment_series,
     geographic_segment_applicable,
 )
-from core.data.historical_operating_kpis import (
+from modeler.data.historical_operating_kpis import (
     FAMILY_COMPARABLE_SALES_GROWTH,
     FAMILY_SALES_PER_SQUARE_FOOT,
 )

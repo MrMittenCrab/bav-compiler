@@ -13,13 +13,15 @@ import pytest
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 
-from core.data.interface import (
+from extractor.data.interface import (
     DocumentManifest,
     DocumentType,
+)
+from modeler.data.interface import (
     FinancialPeriod,
     HistoricalOperatingKpiData,
 )
-from core.data.standardized_io import standardized_from_payload, standardized_to_payload
+from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
 from core.engine.component_catalog import (
     COMPARABLE_SALES_CHANGE_FAMILY_ID,
     COMPARABLE_SALES_COMPONENT_CATALOG,
@@ -101,13 +103,13 @@ from core.engine.reference_model import (
     STORE_COUNT_SHEET,
     ReferenceModelBuilder,
 )
-from core.ingestion.filing_reconciler import reconcile_filings
-from core.ingestion.filing_standardizer import (
+from modeler.ingestion.filing_reconciler import reconcile_filings
+from modeler.ingestion.filing_standardizer import (
     reconciliation_conflicts_payload,
     reconciliation_provenance_payload,
     standardize_reconciled,
 )
-from core.ingestion.management_kpi import management_admission_payload
+from modeler.ingestion.management_kpi import management_admission_payload
 from core.ingestion.manual_hk import HKManualDocumentAdapter
 from modeler.historical_expected import operating_kpi_expected_value_for_component
 from modeler.line_resolver import AmbiguousLineError, MissingLineError
@@ -184,7 +186,7 @@ from core.tests.test_operating_kpi_facts import (
     _prepare_augmented,
     _validated_augmented,
 )
-from core.ingestion.management_kpi_identity import (
+from modeler.ingestion.management_kpi_identity import (
     FAMILY_COMPARABLE_SALES_GROWTH,
     FAMILY_SALES_PER_SQUARE_FOOT,
     POP_STORES_AND_DTC,

@@ -11,9 +11,9 @@ from pathlib import Path
 
 import pytest
 
-from core.data.historical_segments import SEGMENT_BRIDGE_TOLERANCE
-from core.data.line_identity import line_identity
-from core.data.standardized_io import standardized_from_payload, standardized_to_payload
+from modeler.data.historical_segments import SEGMENT_BRIDGE_TOLERANCE
+from modeler.data.line_identity import line_identity
+from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
 from core.ingestion.normalization_candidate_admission import (
     ANALYTICAL_CONCEPT,
     ANALYTICAL_LABEL,

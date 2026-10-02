@@ -11,7 +11,7 @@ import pytest
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 
-from core.data.interface import DocumentManifest, DocumentType
+from extractor.data.interface import DocumentManifest, DocumentType
 from core.engine.reference_model import JUDGMENT_SHEET, NORMALIZATION_JUDGMENT_SHEET
 from core.ingestion.manual_hk import HKManualDocumentAdapter
 from core.tests.test_per_share import DEMO_ASSUMPTIONS, DEMO_JSON

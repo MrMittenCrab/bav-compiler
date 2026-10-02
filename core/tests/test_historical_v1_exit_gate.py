@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 from openpyxl import load_workbook
 
-from core.data.interface import DocumentManifest, DocumentType
+from extractor.data.interface import DocumentManifest, DocumentType
 from core.engine.component_catalog import (
     ACQUISITION_CASH_COMPONENT_CATALOG,
     CAPEX_COMPONENT_CATALOG,

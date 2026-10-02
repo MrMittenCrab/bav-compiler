@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from core.data.interface import StandardizedFinancials
+from modeler.data.interface import StandardizedFinancials
 
 _CFO_CONCEPT_ALIASES = {
     "net_change_in_cash": "change_in_cash",

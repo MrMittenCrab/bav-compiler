@@ -310,7 +310,7 @@ def parse_printed_source(payload: object, *, context: str) -> PrintedSourceRef:
 
 
 def metric_supports_occurrence_evidence(metric_id: object) -> bool:
-    from core.ingestion.management_kpi_identity import SUPPORTED_METRIC_MAPPINGS
+    from modeler.ingestion.management_kpi_identity import SUPPORTED_METRIC_MAPPINGS
 
     return isinstance(metric_id, str) and metric_id in SUPPORTED_METRIC_MAPPINGS
 

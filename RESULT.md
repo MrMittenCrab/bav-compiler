@@ -10920,3 +10920,129 @@ This relocation does not establish Session 10 acceptance.
 None.
 
 
+# RESULT.md — Step 10.9 Relocate data contracts and ingestion responsibilities
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)  
+**Step:** 10.9 — Relocate data contracts and ingestion responsibilities  
+**Work:** `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`  
+**Plan:** `0168b23846f641e185ae9fa4b4ef625f`  
+**Finding:** Relocate data contracts and ingestion responsibilities
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change.
+
+## Baseline B
+
+Authenticated from populated `IMPLEMENT_BASE_SHA`. Fail-closed was not required.
+
+| Record | Value | Result |
+|---|---|---|
+| `.git/autocycle/resume-state` `IMPLEMENT_BASE_SHA` | `eb65dc63845b940162c48e39ae9af7598d2a3078` | Used as B |
+| `STATE_BRANCH` / `.git/HEAD` / branch tip | `checkpoint/20260913-183303` / same SHA | HEAD == B; ancestor trivial |
+| `implementation-baseline.json` `head` | same SHA | Bound |
+| `work-state` allocated `10.9` | `source` = B, `work_id` = `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`, `status` = `opened` | Bound |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | `step_id` 10.9, same `work_id` | Bound |
+| Predecessor review SHA-256 | `ac8fde580a8ce4845fb4f2f9d1f440221a9a8b15122edc0fe92ec24dd4419ee0` | Bound |
+| `.git/autocycle/latest-implementation` | leftover Step 10.8 HEAD `e82c1516…` | Ignored: `IMPLEMENT_BASE_SHA` populated |
+
+Preserved work from the prior interrupted attempt was inspected and finished. One remaining Director lazy import (`from .management_kpi` in `director/ingestion/filing_cli.py`) was retargeted to `modeler.ingestion.management_kpi`.
+
+## Relocation / split mappings
+
+Exact byte identity with B blob (7):
+
+| Destination | Bytes | SHA-256 |
+|---|---|---|
+| `modeler/data/standardized_io.py` | 32248 | `8188266891fb3aa6…` |
+| `modeler/data/issuer_fiscal.py` | 5943 | `6f014936456276c2…` |
+| `modeler/data/historical_segments.py` | 11985 | `4053ad4ea9ba4282…` |
+| `modeler/ingestion/management_kpi_reconciliation.py` | 47774 | `a5667bd1bed86f6b…` |
+| `modeler/ingestion/geographic_segment.py` | 15146 | `470662c2573e380c…` |
+| `modeler/ingestion/share_basis.py` | 15031 | `d7d970b0ff58c9b7…` |
+| `director/ingestion/note_handoff.py` | 2891 | `4cdfc7d37ceff391…` |
+
+Import-adjusted moves (differences from B are import paths only, plus the planned documentary-type removal from `interface.py`):
+
+| Destination | B bytes | Current bytes | Diff from B |
+|---|---|---|---|
+| `modeler/data/interface.py` | 5264 | 5177 | Dropped Extractor `DataSourceAdapter` / `DocumentManifest` / `DocumentType` imports; those stay in `extractor/data/interface.py` and remain compatibility-exported from `core.data.interface` |
+| `modeler/data/validators.py` | 2825 | 2825 | `..model.line_resolver` → `modeler.line_resolver` |
+| `modeler/data/line_identity.py` | 3517 | 3530 | `.schema` → `director.data.schema` |
+| `modeler/data/historical_operating_kpis.py` | 17830 | 17836 | `..ingestion.management_kpi_identity` → `modeler.ingestion.management_kpi_identity` |
+| `director/data/schema.py` | 1368 | 1380 | `.interface` → `modeler.data.interface` |
+| `modeler/ingestion/base.py` | 526 | 532 | `..data.interface` → `modeler.data.interface` |
+| `modeler/ingestion/reconciler.py` | 5022 | 5040 | `..data.*` → `modeler.data.*` |
+| `modeler/ingestion/filing_reconciler.py` | 16303 | 16317 | `.filing_validator` types → `extractor.data.filing_validator` |
+| `modeler/ingestion/filing_standardizer.py` | 26048 | 26072 | `..data.*` → `modeler.data.*` |
+| `modeler/ingestion/management_kpi.py` | 46609 | 46679 | `.management_kpi_enrichment` → `core.ingestion.management_kpi_enrichment` (transitional) |
+| `modeler/ingestion/management_kpi_identity.py` | 32994 | 33022 | same transitional enrichment import |
+| `modeler/ingestion/management_kpi_history.py` | 10019 | 10031 | `..data.*` → `modeler.data.*` |
+| `modeler/ingestion/operating_kpi.py` | 5244 | 5250 | `..data.historical_operating_kpis` → `modeler.data.historical_operating_kpis` |
+| `director/ingestion/filing_cli.py` | 3127 | 3222 | validator/management imports retargeted; leftover lazy admit import now `modeler.ingestion.management_kpi` |
+
+`filing_validator.py` split (not a byte-identical move):
+
+| Symbol | Destination |
+|---|---|
+| `bind_source_file`, `source_row_identity`, documentary helpers, documentary `validate_extracted_filing` | stay `extractor/data/filing_validator.py` |
+| `operating_kpi_admission_issues`, `_operating_kpi_admission_for_fact` | `modeler/ingestion/filing_validator.py` |
+| combined `validate_extracted_filing` | `director/ingestion/filing_validator.py` |
+
+Combined issue order matches B: source bind → statement identities → per-fact page + KPI admission → `current_period_missing`. Duplicate KPI identity, source hashes and `FilingValidationReport` types are unchanged.
+
+Thin `core.data` / `core.ingestion` façades remain (`import *` plus explicit private imports `_merge_line_items` and `_select_ordinary_group`). Package `__all__` contracts are unchanged. Canonical modules do not import their own façades. `management_kpi_enrichment.py` and `normalization_candidate_admission.py` stay at `core/ingestion/`.
+
+Extractor TYPE_CHECKING now imports Modeler `StandardizedFinancials` / `ReconciliationReport`. Extractor’s lazy `SUPPORTED_METRIC_MAPPINGS` reference now uses `modeler.ingestion.management_kpi_identity` without redesign.
+
+`director/docs/MIGRATION_INVENTORY.md` §§4.3 and 7.2–7.3 record actual destinations and remaining transitional enrichment/normalization-candidate dependencies. Production `load_extracted_filing` caller is `director/ingestion/filing_cli.py`.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| B authentication (resume-state, baseline JSON, work-state 10.9, branch, HEAD==B) | B = `eb65dc63845b940162c48e39ae9af7598d2a3078`; HEAD == B; fail-closed not required |
+| B blob vs destinations | 7 exact; 14 import-only / planned interface split; `filing_validator` split preserves B issue order |
+| `test_data_ingestion_ownership` | **7 passed** in 1.61s. Canonical files under `modeler/data`, `modeler/ingestion`, `director/data`, `director/ingestion`; façade identity including Extractor documentary re-exports and private imports; both import orders in fresh subprocesses; destinations do not import own façades or Legacy |
+| Affected + required regressions `/opt/anaconda3/bin/python -m pytest -q` | **3430 passed**, **1 failed**, **20 errors**, 5 warnings (pre-existing Swig importlib), 382.33s |
+| Known failure `test_ordinary_prepare_writes_resolution_and_keeps_revenue_per_store` | Pre-existing enrichment-sidecar defect. `prepare_company_input` does not write `management_kpi_page_resolution.json`. Not repaired (inventory §16 / later data-path work) |
+| `test_normalization_candidate_admission` retained-evidence errors (20) | Setup fails because `/tmp/bav_norm_qualify_9M2411166` and `/tmp/bav_norm_admit_9M2411167` are absent. Module remains at `core.ingestion.normalization_candidate_admission`. Compatibility tests that do not need that /tmp evidence: **2 passed** (`test_segment_bridge_tolerance_unchanged`, `test_protected_artifacts_and_eight_extracts_unchanged`) |
+| Validator issue-order / source-binding | Covered by passing `test_filing_json` / `test_filing_cli` / KPI fact tests (`source_hash_mismatch`, `invalid_operating_kpi` / missing label, duplicate identity, `computed_source_sha256`) |
+| Dormant/default-off | `test_operating_forecast.py` passed. Forecast placeholders remain 0-byte |
+| Fixture / live payload comparison | Ordinary `standardized.json` round-trip preserves concepts/ticker. Fast Retailing live extracted→validate/reconcile/standardize **matches** committed `standardized.json` / `provenance.json` / `conflicts.json` (5 filings, all ok). Lululemon statement values **match** committed standardized; live extracted provenance omits note_handoff store-KPI facts (`selected_operating_kpi_facts` / extra `note_facts`) that exist only on the committed reconciled input. Inputs were not rewritten |
+| `python -m bav` build/check/publish Lululemon and FastRetailing | rc 0 each. No `*_BAV_Trainer.xlsx`. Forecast/Valuation/Overview remain 0-byte `e3b0c442…` |
+| Sidecars vs pre-rebuild this attempt | component_map / assumptions / rowmap / build_status / Drivers.md SHA-256 identical for both companies |
+| Workbook zip vs pre-rebuild | Lulu 229737 `c656d5fe…` → `9ea6bd09…` (same size). FR 137902 → 137905 `425bb388…`. Zip packaging only; maps/formulas unchanged |
+| Legacy independence | `modeler/build_bav.py` has no Legacy import. `core/current_build.py` lazy-imports `legacy.trainer.checker` only on check, not build. `modeler/workbook.py` mentions Legacy only in a comment for a dormant path |
+| `git diff --check` | rc 0 |
+| Native Office | **Not run** — semantic maps, rowmaps and Drivers/presentation unchanged. SESSION native-verify condition was not newly met |
+
+## Artifact hashes after this attempt’s build/check/publish
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `build/output/lululemon/Lululemon_BAV.xlsx` | `9ea6bd0947126e40757568f31bdf34078ad02d9aa060d5bf9a0806d47b01016b` | 229737 |
+| `build/output/lululemon/research/Lululemon_Drivers.md` | `3fea615d44b083c6dfa7aef77d11285d3d7ec8cd86ac7aa35f55984e6f6b3ed8` | 21884 |
+| `build/output/lululemon/research/Lululemon_Forecast.md` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `build/output/lululemon/research/Lululemon_Valuation.md` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `build/output/lululemon/research/Lululemon_Overview.md` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `build/output/lululemon/supporting/component_map.json` | `ff8266d44e5e6d981ff2d2c6c00ed171abe3a32f991cf8ae59fadb91e796107c` | 1202071 |
+| `build/output/fast_retailing/FastRetailing_BAV.xlsx` | `425bb388abf91302fc417bf1f77dbb9a259850c520f83785980b1f05fa0fb6c5` | 137905 |
+| `build/output/fast_retailing/research/FastRetailing_Drivers.md` | `5b3aca6c933fe2686ceddd9efd622003af933664fd3cfb2284649e44f020cc6d` | 10320 |
+| `build/output/fast_retailing/research/FastRetailing_Forecast.md` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `build/output/fast_retailing/research/FastRetailing_Valuation.md` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `build/output/fast_retailing/research/FastRetailing_Overview.md` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `build/output/fast_retailing/supporting/component_map.json` | `22ec286b66b77939ab92d9ea2372d5975684f16833bdadf39723e6a048746e4a` | 644555 |
+
+## Preservation
+
+Signatures, return types, company aliases, public `bav` commands, lazy loading, fail-closed behavior, optional JSON dual-output Trainer derivation and restored compatibility exports were not redesigned. Canonical source evidence, accounting signs, fiscal distinctions, precision, provenance, admission/comparison independence, residual qualifications, fail-closed controls, first-name-wins assessments, CFO classification, completed Driver handoffs and optional Trainer behavior remain. Attribution amounts, locators, counterfactual scope, `supported_as_attribution`, `not independently verified` and `outside the accounting bridge` remain. Extracted/reconciled inputs were not rewritten. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+## Remaining toward Completion
+
+Classification/normalization interpretation splits, normalization-candidate separation, enrichment/Legacy decomposition, remaining Director CLI/company orchestration relocation, unrelated removals, test ownership migration and final repository-wide verification remain subsequent work. Inventory §16 behavior defects were not repaired, including the stale enrichment expectation that `prepare_company_input` still writes `management_kpi_page_resolution.json`. No Trainer expansion, report redesign or second-phase features.
+
+This relocation does not establish Session 10 acceptance.
+
+## Required plan change
+
+None.
+

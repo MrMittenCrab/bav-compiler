@@ -10,10 +10,10 @@ import tempfile
 from datetime import date
 from pathlib import Path
 
-from core.data.standardized_io import standardized_from_payload
+from modeler.data.standardized_io import standardized_from_payload
 from extractor.data.filing_json import load_extracted_filing
-from core.ingestion.filing_validator import validate_extracted_filing
-from core.ingestion.reconciler import reconcile_financials
+from director.ingestion.filing_validator import validate_extracted_filing
+from modeler.ingestion.reconciler import reconcile_financials
 from core.engine.reference_model import ReferenceModelBuilder
 from modeler.classification import (
     UnclassifiedBalanceSheetLineError,
@@ -263,8 +263,8 @@ def test_migration_reproduces_fy2025_anchors_and_conflict_parity():
 
     # Committed provenance may predate filing_year on source_files; live
     # reconciliation must retain all five bound filings with hashes + year.
-    from core.ingestion.filing_reconciler import reconcile_filings
-    from core.ingestion.filing_standardizer import reconciliation_provenance_payload
+    from modeler.ingestion.filing_reconciler import reconcile_filings
+    from modeler.ingestion.filing_standardizer import reconciliation_provenance_payload
 
     validated = []
     for path in sorted(EXTRACTED.glob("FY*.json")):
@@ -1055,7 +1055,7 @@ def test_fast_retailing_lease_repayment_module_activates():
 
 
 def test_fast_retailing_historical_lease_interest_axis_and_treatment():
-    from core.data.line_identity import line_identity
+    from modeler.data.line_identity import line_identity
     from modeler.lease_liability import (
         InconsistentLeaseTreatmentError,
         compute_lease_liability_series,
@@ -1249,10 +1249,10 @@ def test_fast_retailing_ownership_attribution_g5():
 
 def test_fast_retailing_share_basis_and_per_share_g6():
     from extractor.data.filing_json import load_extracted_filing
-    from core.ingestion.filing_reconciler import reconcile_filings
-    from core.ingestion.filing_standardizer import standardize_reconciled
-    from core.ingestion.filing_validator import validate_extracted_filing
-    from core.ingestion.share_basis import resolve_historical_share_basis
+    from modeler.ingestion.filing_reconciler import reconcile_filings
+    from modeler.ingestion.filing_standardizer import standardize_reconciled
+    from director.ingestion.filing_validator import validate_extracted_filing
+    from modeler.ingestion.share_basis import resolve_historical_share_basis
     from modeler.line_resolver import resolve_line
     from modeler.source_values import required_period_value
     from core.trainer.workbook import build_training_workbook
@@ -1426,13 +1426,13 @@ def test_fast_retailing_share_basis_and_per_share_g6():
 def test_fast_retailing_g7_retained_conflict_policy():
     """G7: deterministic selection with both disagreeing observations retained."""
     from extractor.data.filing_json import load_extracted_filing
-    from core.ingestion.filing_reconciler import reconcile_filings
-    from core.ingestion.filing_standardizer import (
+    from modeler.ingestion.filing_reconciler import reconcile_filings
+    from modeler.ingestion.filing_standardizer import (
         reconciliation_conflicts_payload,
         standardize_reconciled,
     )
-    from core.ingestion.filing_validator import validate_extracted_filing
-    from core.ingestion.share_basis import resolve_historical_share_basis
+    from director.ingestion.filing_validator import validate_extracted_filing
+    from modeler.ingestion.share_basis import resolve_historical_share_basis
     from modeler.line_resolver import resolve_line
     from modeler.source_values import required_period_value
 

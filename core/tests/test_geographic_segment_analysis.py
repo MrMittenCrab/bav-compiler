@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from core.data.historical_segments import (
+from modeler.data.historical_segments import (
     FAMILY_CORPORATE,
     FAMILY_ITEMIZED,
     IFOP_CORPORATE,
@@ -18,14 +18,14 @@ from core.data.historical_segments import (
     SEGMENTS,
     SEGMENT_BRIDGE_TOLERANCE,
 )
-from core.data.standardized_io import standardized_from_payload, standardized_to_payload
+from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
 from extractor.data.filing_json import load_extracted_filing
-from core.ingestion.filing_reconciler import reconcile_filings
-from core.ingestion.filing_standardizer import (
+from modeler.ingestion.filing_reconciler import reconcile_filings
+from modeler.ingestion.filing_standardizer import (
     reconciliation_provenance_payload,
     standardize_reconciled,
 )
-from core.ingestion.filing_validator import validate_extracted_filing
+from director.ingestion.filing_validator import validate_extracted_filing
 from modeler.geographic_segment import (
     GEOGRAPHIC_RATIO_TOLERANCE,
     REPORTED_OPERATING_MARGIN_BASIS,

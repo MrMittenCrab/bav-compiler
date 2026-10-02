@@ -13,7 +13,7 @@ from composer.research.drivers import (
     is_principal_heading,
     placeholder_filenames,
 )
-from core.data.interface import StandardizedFinancials
+from modeler.data.interface import StandardizedFinancials
 from director.research import publish_drivers
 from modeler.research.drivers_view import financial_drivers_applicable
 

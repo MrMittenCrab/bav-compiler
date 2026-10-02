@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from core.data.interface import StandardizedFinancials
+from modeler.data.interface import StandardizedFinancials
 from composer.reported_margin import AMOUNT_BRIDGE_CONVENTION
 from director.driver_assessment import complete_reported_margin_series
 from modeler.reported_margin import (

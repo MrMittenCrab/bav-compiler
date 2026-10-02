@@ -14,11 +14,11 @@ from pathlib import Path
 import sys
 import tempfile
 
-from .data.issuer_fiscal import (
+from modeler.data.issuer_fiscal import (
     apply_issuer_fiscal_labels,
     issuer_fiscal_years_from_extracted,
 )
-from .data.standardized_io import standardized_from_payload
+from modeler.data.standardized_io import standardized_from_payload
 
 ROOT = Path(__file__).resolve().parents[1]
 INPUT_ROOT = ROOT / 'build' / 'input'

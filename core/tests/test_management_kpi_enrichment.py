@@ -10,9 +10,9 @@ from pathlib import Path
 import pytest
 
 from core.current_build import prepare_company_input, resolve_company
-from core.ingestion.filing_cli import load_and_validate_extracted_dir
-from core.ingestion.filing_reconciler import reconcile_filings
-from core.ingestion.filing_standardizer import reconciliation_management_admission_payload
+from director.ingestion.filing_cli import load_and_validate_extracted_dir
+from modeler.ingestion.filing_reconciler import reconcile_filings
+from modeler.ingestion.filing_standardizer import reconciliation_management_admission_payload
 from core.ingestion.management_kpi_enrichment import (
     FISCAL_CALENDAR_BASIS,
     SourceInspection,
@@ -25,12 +25,12 @@ from core.ingestion.management_kpi_enrichment import (
     printed_pages_from_reference,
     resolve_physical_pages,
 )
-from core.ingestion.management_kpi_identity import (
+from modeler.ingestion.management_kpi_identity import (
     FAMILY_COMPARABLE_SALES_GROWTH,
     FAMILY_SALES_PER_SQUARE_FOOT,
     REASON_MISSING_COMPARISON,
 )
-from core.ingestion.management_kpi_reconciliation import SELECTION_DEFERRED, SELECTION_SELECTED
+from modeler.ingestion.management_kpi_reconciliation import SELECTION_DEFERRED, SELECTION_SELECTED
 from core.tests.test_management_kpi_admission import (
     ANNUAL_NAMES,
     EXTRACTED,

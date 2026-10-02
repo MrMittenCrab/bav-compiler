@@ -9,8 +9,8 @@ from openpyxl.comments import Comment
 from openpyxl.styles import Border, Font, PatternFill
 
 from composer.workbook_opening import _add_bav_opening
-from core.data.line_identity import validate_financials_identities
-from core.ingestion.reconciler import reconcile_financials
+from modeler.data.line_identity import validate_financials_identities
+from modeler.ingestion.reconciler import reconcile_financials
 from modeler.engine.component_catalog import is_operating_kpi_source_identity
 from modeler.engine.semantic_map import SemanticMap
 from modeler.semantic_io import load_semantic_map, parse_cell_ref, resolve_pair_paths
@@ -113,7 +113,7 @@ def _decorate_answer_key_normalization_judgment_cells(wb) -> None:
 def _financials_for_opening(bav_path: Path, financials=None):
     if financials is not None:
         return financials
-    from core.data.standardized_io import standardized_from_payload
+    from modeler.data.standardized_io import standardized_from_payload
     from modeler.check_context import load_check_context
 
     return standardized_from_payload(load_check_context(bav_path).source_payload)

@@ -20,7 +20,7 @@ from composer.research.drivers import (
     selected_figure_names,
     write_placeholders,
 )
-from core.data.interface import StandardizedFinancials
+from modeler.data.interface import StandardizedFinancials
 from director.research import (
     complete_drivers_view,
     publish_drivers as publish_drivers_via_director,

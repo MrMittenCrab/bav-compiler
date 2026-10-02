@@ -4,13 +4,13 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 
-from core.data.interface import FinancialPeriod, StandardizedFinancials
-from core.data.issuer_fiscal import (
+from modeler.data.interface import FinancialPeriod, StandardizedFinancials
+from modeler.data.issuer_fiscal import (
     apply_issuer_fiscal_labels,
     issuer_fiscal_label,
     issuer_fiscal_years_from_extracted,
 )
-from core.data.standardized_io import standardized_from_payload, standardized_to_payload
+from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
 
 ROOT = Path(__file__).resolve().parents[2]
 LULU_EXTRACTED = ROOT / "build" / "input" / "lululemon" / "extracted"

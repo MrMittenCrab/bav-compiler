@@ -20,7 +20,7 @@ from .component_catalog import (
 
 if TYPE_CHECKING:
     from openpyxl import Workbook
-    from core.data.interface import StandardizedFinancials
+    from modeler.data.interface import StandardizedFinancials
     from modeler.workbook import ReferenceModelBuilder
     from .semantic_map import SemanticMap
 

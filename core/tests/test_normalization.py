@@ -9,9 +9,11 @@ from pathlib import Path
 import pytest
 from openpyxl import load_workbook
 
-from core.data.interface import (
+from extractor.data.interface import (
     DocumentManifest,
     DocumentType,
+)
+from modeler.data.interface import (
     FinancialPeriod,
     LineItem,
     StandardizedFinancials,
@@ -693,7 +695,7 @@ def test_combined_classification_and_normalization_state(tmp_path):
 
 
 def test_legacy_schema_v1_check_context_still_loads(tmp_path):
-    from core.data.standardized_io import standardized_to_payload
+    from modeler.data.standardized_io import standardized_to_payload
     from core.trainer.check_context import (
         CHECK_CONTEXT_LEGACY_SCHEMA_VERSION,
         CHECK_CONTEXT_MAGIC,
@@ -842,7 +844,7 @@ def test_duplicate_normalization_candidates_rejected():
 
 
 def test_label_selector_preserves_identity_with_shared_concept():
-    from core.data.line_identity import line_identity
+    from modeler.data.line_identity import line_identity
     from core.model.normalization import resolve_income_statement_identity
 
     fin = _tiny_fin(
@@ -1149,7 +1151,7 @@ def test_judgment_gh_edits_do_not_fail_trusted_validation(tmp_path):
 def test_normalization_candidate_period_completeness_required():
     from core.model.normalization import NormalizationCase
     from modeler.source_values import MissingHistoricalValueError
-    from core.data.line_identity import line_identity
+    from modeler.data.line_identity import line_identity
 
     fin = _tiny_fin(
         _li("Revenue", 100, 110, concept="revenue"),

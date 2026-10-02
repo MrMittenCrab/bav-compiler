@@ -11,11 +11,11 @@ import pytest
 from openpyxl import load_workbook
 
 from core.__main__ import main
-from core.data.interface import (
+from modeler.data.interface import (
     HistoricalLeaseData, HistoricalOperatingKpiData,
     HistoricalOperatingKpiObservation, HistoricalShareData,
 )
-from core.data.standardized_io import standardized_to_payload
+from modeler.data.standardized_io import standardized_to_payload
 from core.tests.test_capex import P1, P2
 from core.tests.test_geographic_segment_workbook import _geo_tiny
 from core.tests.test_historical_segment import _snapshot
@@ -228,7 +228,7 @@ def test_metadata_jurisdiction_string_fallback_builds(tmp_path, payload):
     assert main(["build", str(source), "-o", str(output)]) == 0
     assert output.exists()
     assert (tmp_path / "build/output/Acme_BAV.xlsx").exists()
-    from core.data.standardized_io import standardized_from_payload
+    from modeler.data.standardized_io import standardized_from_payload
     restored = standardized_from_payload(
         json.loads(source.read_text(encoding="utf-8")), strict=True
     )

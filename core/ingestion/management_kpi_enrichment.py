@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
 from extractor.data.extracted_kind import KIND_MANAGEMENT_KPI, classify_extracted_payload
-from .management_kpi_identity import (
+from modeler.ingestion.management_kpi_identity import (
     FAMILY_SALES_PER_SQUARE_FOOT,
     SUPPORTED_METRIC_MAPPINGS,
 )
@@ -1927,7 +1927,7 @@ def _pair_failure_mapping(reason: str) -> tuple[str, str, str] | None:
     mapped = _FAILURE_REMAINING.get(reason)
     if mapped is not None:
         return mapped
-    from .management_kpi_identity import COMPARISON_CONFLICT_REASONS
+    from modeler.ingestion.management_kpi_identity import COMPARISON_CONFLICT_REASONS
 
     if reason in COMPARISON_CONFLICT_REASONS:
         return (
@@ -1944,7 +1944,7 @@ def build_group_decisions(
     observations: Iterable[Any],
 ) -> tuple[dict[str, Any], ...]:
     """Reproducible per-group documentary decisions for admission review."""
-    from .management_kpi_identity import (
+    from modeler.ingestion.management_kpi_identity import (
         FAMILY_SALES_PER_SQUARE_FOOT,
         HISTORICAL_COMPARISON_ELIGIBLE,
         LEVEL_ADMITTED,

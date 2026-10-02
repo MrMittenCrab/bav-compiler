@@ -982,7 +982,7 @@ def test_driver_md_states_company_agnostic_hierarchy():
 
 
 def test_cfo_selection_fast_retailing_reviewed_set_and_exclusions(tmp_path):
-    from core.data.standardized_io import standardized_from_payload
+    from modeler.data.standardized_io import standardized_from_payload
 
     fr = standardized_from_payload(
         json.loads(

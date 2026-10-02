@@ -15,8 +15,8 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Any, Mapping, Sequence
 
-from ..data.interface import LineItem, StandardizedFinancials
-from ..data.line_identity import line_identity
+from modeler.data.interface import LineItem, StandardizedFinancials
+from modeler.data.line_identity import line_identity
 from ..model.normalization import (
     NORMALIZATION_TREATMENTS,
     SUPPORTED_NORMALIZATION_SCOPE,

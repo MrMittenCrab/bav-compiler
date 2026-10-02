@@ -8,7 +8,7 @@ from pathlib import Path
 
 from openpyxl import load_workbook
 
-from core.data.standardized_io import standardized_from_payload
+from modeler.data.standardized_io import standardized_from_payload
 from modeler.earnings_quality import compute_earnings_quality_series
 from modeler.financial_math import compute_anchor
 from modeler.historical_expected import expected_value_for_component

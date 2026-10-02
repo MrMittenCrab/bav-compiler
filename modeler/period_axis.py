@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from core.data.interface import StandardizedFinancials
+from modeler.data.interface import StandardizedFinancials
 
 
 class PeriodAxisError(ValueError):

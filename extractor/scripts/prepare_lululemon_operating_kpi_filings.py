@@ -25,7 +25,7 @@ DEFAULT_FACTS = (
 import sys
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from core.ingestion.note_handoff import (
+from director.ingestion.note_handoff import (
     KPI_PREFIX, load_store_facts, augment_extracted_filings,
 )
 

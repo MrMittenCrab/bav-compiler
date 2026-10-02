@@ -18,13 +18,14 @@ from extractor.data.filing import (
     SourceRef,
     SupplementalFact,
 )
-from core.ingestion.filing_reconciler import reconcile_filings
-from core.ingestion.filing_standardizer import (
+from modeler.ingestion.filing_reconciler import reconcile_filings
+from modeler.ingestion.filing_standardizer import (
     reconciliation_conflicts_payload,
     reconciliation_provenance_payload,
     standardize_reconciled,
 )
-from core.ingestion.filing_validator import FilingValidationReport, validate_extracted_filing
+from extractor.data.filing_validator import FilingValidationReport
+from director.ingestion.filing_validator import validate_extracted_filing
 
 
 def _write_source(tmp_path: Path, name: str, payload: bytes) -> str:
@@ -605,7 +606,7 @@ def _bs_row(
 
 def test_standardize_retains_sparse_balance_sheet_facts(tmp_path: Path):
     """Sparse BS rows stay on the model axis; IS incompletes remain omitted."""
-    from core.data.standardized_io import (
+    from modeler.data.standardized_io import (
         standardized_from_payload,
         standardized_to_payload,
     )
@@ -877,7 +878,7 @@ def test_standardize_retains_sparse_balance_sheet_facts(tmp_path: Path):
 
 def test_standardize_folds_sparse_income_statement_components(tmp_path: Path):
     """Disclosed IS components stay sparse; label changes fold; other IS gaps omit."""
-    from core.data.standardized_io import (
+    from modeler.data.standardized_io import (
         standardized_from_payload,
         standardized_to_payload,
     )
@@ -1696,8 +1697,8 @@ def test_note_fact_disagreement_is_recorded_not_promoted(tmp_path: Path):
 
 
 def test_historical_lease_payload_round_trip_and_null():
-    from core.data.interface import HistoricalLeaseData
-    from core.data.standardized_io import (
+    from modeler.data.interface import HistoricalLeaseData
+    from modeler.data.standardized_io import (
         standardized_from_payload,
         standardized_to_payload,
     )
@@ -2191,7 +2192,7 @@ def test_admission_preserves_precedence_and_omits_incomplete_cf_row(tmp_path: Pa
 
 
 def test_admission_round_trip_identity_survives(tmp_path: Path):
-    from core.data.standardized_io import (
+    from modeler.data.standardized_io import (
         standardized_from_payload,
         standardized_to_payload,
     )
@@ -2210,7 +2211,7 @@ def test_admission_round_trip_identity_survives(tmp_path: Path):
 
 
 def test_operating_kpi_missing_label_cannot_reconcile(tmp_path: Path):
-    from core.data.historical_operating_kpis import STORE_COUNT_FACT_TYPE
+    from modeler.data.historical_operating_kpis import STORE_COUNT_FACT_TYPE
 
     period = date(2025, 12, 31)
     missing_label = SupplementalFact(
@@ -2243,7 +2244,7 @@ def test_operating_kpi_missing_label_cannot_reconcile(tmp_path: Path):
 
 
 def test_operating_kpi_shared_validation_after_valid_report(tmp_path: Path):
-    from core.data.historical_operating_kpis import STORE_COUNT_FACT_TYPE
+    from modeler.data.historical_operating_kpis import STORE_COUNT_FACT_TYPE
     from dataclasses import replace
 
     period = date(2025, 12, 31)
@@ -2288,7 +2289,7 @@ def test_operating_kpi_shared_validation_after_valid_report(tmp_path: Path):
     [123, 1.5, 0, True, False, {"x": 1}, {}, [1], []],
 )
 def test_operating_kpi_non_string_label_cannot_reconcile(tmp_path: Path, label):
-    from core.data.historical_operating_kpis import STORE_COUNT_FACT_TYPE
+    from modeler.data.historical_operating_kpis import STORE_COUNT_FACT_TYPE
 
     period = date(2025, 12, 31)
     bad_label = SupplementalFact(
@@ -2324,7 +2325,7 @@ def test_operating_kpi_non_string_label_cannot_reconcile(tmp_path: Path, label):
 def test_operating_kpi_shared_validation_rejects_non_string_superseded(
     tmp_path: Path, label
 ):
-    from core.data.historical_operating_kpis import STORE_COUNT_FACT_TYPE
+    from modeler.data.historical_operating_kpis import STORE_COUNT_FACT_TYPE
     from dataclasses import replace
 
     period = date(2025, 12, 31)

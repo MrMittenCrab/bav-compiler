@@ -10,9 +10,9 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Iterable
 
-from core.data.interface import LineItem, StandardizedFinancials
-from core.data.line_identity import LineIdentity, line_identity
-from core.data.schema import normalize_label
+from modeler.data.interface import LineItem, StandardizedFinancials
+from modeler.data.line_identity import LineIdentity, line_identity
+from director.data.schema import normalize_label
 from .line_resolver import resolve_line
 from .source_values import MissingHistoricalValueError, required_period_value
 

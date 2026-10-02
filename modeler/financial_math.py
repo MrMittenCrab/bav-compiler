@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-from core.data.interface import StandardizedFinancials
+from modeler.data.interface import StandardizedFinancials
 from .classification import (
     BalanceSheetReformulation,
     check_reformulation_integrity,

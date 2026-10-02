@@ -13,10 +13,10 @@ from typing import Iterable
 
 import pytest
 
-from core.ingestion.filing_cli import load_and_validate_extracted_dir
-from core.ingestion.filing_reconciler import reconcile_filings
-from core.ingestion.filing_standardizer import reconciliation_management_admission_payload
-from core.ingestion.management_kpi_identity import (
+from director.ingestion.filing_cli import load_and_validate_extracted_dir
+from modeler.ingestion.filing_reconciler import reconcile_filings
+from modeler.ingestion.filing_standardizer import reconciliation_management_admission_payload
+from modeler.ingestion.management_kpi_identity import (
     COMPARABILITY_COMPARABLE,
     COMPARABILITY_NOT_COMPARABLE,
     COMPARABILITY_UNRESOLVED,
@@ -35,7 +35,7 @@ from core.ingestion.management_kpi_identity import (
     evidenced_conflicts,
     peer_gap_reason,
 )
-from core.ingestion.management_kpi_reconciliation import (
+from modeler.ingestion.management_kpi_reconciliation import (
     KIND_OUTSIDE_SCOPE,
     KIND_PAIR,
     KIND_SINGLETON,

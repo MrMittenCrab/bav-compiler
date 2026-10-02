@@ -15,7 +15,7 @@ from typing import Mapping, Sequence, TypeVar
 
 TSpec = TypeVar("TSpec")
 
-from core.data.interface import LineItem, StandardizedFinancials
+from modeler.data.interface import LineItem, StandardizedFinancials
 from .line_resolver import resolve_line
 from .ratio_values import SOURCE_UNAVAILABLE, is_source_unavailable
 

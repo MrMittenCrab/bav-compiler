@@ -9,16 +9,16 @@ from pathlib import Path
 
 import pytest
 
-from core.data.standardized_io import standardized_to_payload
-from core.ingestion.filing_cli import load_and_validate_extracted_dir
-from core.ingestion.filing_reconciler import reconcile_filings
-from core.ingestion.filing_standardizer import (
+from modeler.data.standardized_io import standardized_to_payload
+from director.ingestion.filing_cli import load_and_validate_extracted_dir
+from modeler.ingestion.filing_reconciler import reconcile_filings
+from modeler.ingestion.filing_standardizer import (
     reconciliation_conflicts_payload,
     reconciliation_management_admission_payload,
     reconciliation_provenance_payload,
     standardize_reconciled,
 )
-from core.ingestion.management_kpi_identity import (
+from modeler.ingestion.management_kpi_identity import (
     COMPARABILITY_COMPARABLE,
     COMPARABILITY_NOT_COMPARABLE,
     COMPARABILITY_OUTSIDE_SCOPE,

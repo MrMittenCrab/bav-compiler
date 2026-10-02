@@ -11,20 +11,20 @@ from datetime import date
 
 import pytest
 
-from core.data.historical_operating_kpis import (
+from modeler.data.historical_operating_kpis import (
     MANAGEMENT_TEXT_FIELDS,
     UNIT_PERCENT,
     UNIT_USD_PER_SQUARE_FOOT,
     validate_historical_operating_kpi_data,
     validate_historical_operating_kpis,
 )
-from core.data.interface import HistoricalManagementKpiObservation
-from core.data.standardized_io import standardized_from_payload, standardized_to_payload
-from core.ingestion.filing_cli import load_and_validate_extracted_dir
-from core.ingestion.filing_reconciler import reconcile_filings
-from core.ingestion.filing_standardizer import standardize_reconciled
-from core.ingestion.management_kpi import management_admission_payload
-from core.ingestion.management_kpi_identity import (
+from modeler.data.interface import HistoricalManagementKpiObservation
+from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
+from director.ingestion.filing_cli import load_and_validate_extracted_dir
+from modeler.ingestion.filing_reconciler import reconcile_filings
+from modeler.ingestion.filing_standardizer import standardize_reconciled
+from modeler.ingestion.management_kpi import management_admission_payload
+from modeler.ingestion.management_kpi_identity import (
     FAMILY_COMPARABLE_SALES_GROWTH,
     FAMILY_SALES_PER_SQUARE_FOOT,
     POP_COMPANY_OPERATED_STORES,

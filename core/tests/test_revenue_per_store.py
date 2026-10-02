@@ -59,7 +59,7 @@ from core.tests.test_operating_kpi_facts import (
     _validated_augmented,
 )
 from core.tests.test_operating_kpi_relationships import _fin_with_relationship
-from core.data.standardized_io import standardized_from_payload, standardized_to_payload
+from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
 from modeler.period_axis import canonical_fiscal_periods
 
 P0 = date(2023, 12, 31)

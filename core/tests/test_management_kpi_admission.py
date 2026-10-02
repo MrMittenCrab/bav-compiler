@@ -11,11 +11,11 @@ from pathlib import Path
 
 import pytest
 
-from core.data.standardized_io import standardized_from_payload, standardized_to_payload
-from core.ingestion.filing_cli import load_and_validate_extracted_dir
+from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
+from director.ingestion.filing_cli import load_and_validate_extracted_dir
 from extractor.data.filing_json import load_extracted_filing, load_extracted_json_object
-from core.ingestion.filing_reconciler import reconcile_filings
-from core.ingestion.filing_standardizer import (
+from modeler.ingestion.filing_reconciler import reconcile_filings
+from modeler.ingestion.filing_standardizer import (
     reconciliation_conflicts_payload,
     reconciliation_management_admission_payload,
     reconciliation_provenance_payload,
@@ -1505,12 +1505,12 @@ def test_missing_and_ambiguous_revision_targets_do_not_select(tmp_path: Path):
 def test_ordinary_admission_incoming_ambiguous_candidate_defers(
     tmp_path: Path, family: str, target: str
 ):
-    from core.ingestion.management_kpi_identity import (
+    from modeler.ingestion.management_kpi_identity import (
         FAMILY_COMPARABLE_SALES_GROWTH,
         FAMILY_SALES_PER_SQUARE_FOOT,
         STATUS_UNSUPPORTED_VARIANT,
     )
-    from core.ingestion.management_kpi_reconciliation import (
+    from modeler.ingestion.management_kpi_reconciliation import (
         REASON_AMBIGUOUS_TARGET,
         RELATIONSHIP_UNRESOLVED,
     )

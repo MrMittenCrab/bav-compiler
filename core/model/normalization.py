@@ -5,9 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-from ..data.interface import LineItem, StandardizedFinancials
-from ..data.line_identity import line_identity
-from ..data.schema import normalize_label
+from modeler.data.interface import LineItem, StandardizedFinancials
+from modeler.data.line_identity import line_identity
+from director.data.schema import normalize_label
 from modeler.financial_math import AnchorMetrics
 from modeler.ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO, is_source_unavailable
 from modeler.source_values import required_period_series, required_period_value

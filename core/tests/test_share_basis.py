@@ -7,13 +7,13 @@ from datetime import date
 import pytest
 
 from extractor.data.filing import PresentationRole, SourceRef, SupplementalFact
-from core.ingestion.filing_reconciler import (
+from modeler.ingestion.filing_reconciler import (
     FilingObservation,
     ReconciledCompanyData,
     ReconciledValue,
     SupplementalObservation,
 )
-from core.ingestion.share_basis import (
+from modeler.ingestion.share_basis import (
     resolve_historical_share_basis,
     unit_scale_divisor,
 )

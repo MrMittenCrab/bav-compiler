@@ -5,8 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-from ..data.interface import StandardizedFinancials
-from ..data.line_identity import line_identity
+from modeler.data.interface import StandardizedFinancials
+from modeler.data.line_identity import line_identity
 from modeler.classification import BALANCE_SHEET_CATEGORIES, BalanceSheetReformulation
 
 CONSEQUENCE_PROMPT = (

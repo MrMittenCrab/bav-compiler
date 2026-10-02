@@ -145,6 +145,17 @@ Preserve public package name `bav` and company interfaces
 | `core/data/historical_strategy.py` types, `load_strategy_disclosures`, `deserialize_historical_strategy`, `serialize_historical_strategy`, `validate_historical_strategy`, locators | `extractor/data/historical_strategy.py` | `prepare_company_input`, `standardized_io` | Extractor | Source-bound text+locator I/O and round-trip identity; not economic interpretation | `test_revenue_driver.py` |
 | fixture `core/tests/fixtures/strategy/lululemon_management_disclosures.json` | stay fixture path until company-input promotion | `project_companies.json` | Extractor-shaped attributed evidence | Same | `test_revenue_driver.py` |
 
+**Step 10.9 actual ownership.** Model-facing contracts now execute from
+`modeler/data/<basename>.py` (`interface.py`, `validators.py`,
+`standardized_io.py`, `line_identity.py`, `issuer_fiscal.py`,
+`historical_operating_kpis.py`, `historical_segments.py`). `StatementKind`,
+`validate_standardized` and `normalize_label` execute from
+`director/data/schema.py`. Documentary types and historical-strategy contracts
+remain in `extractor/data/`. Retained `core.data` modules are delegation-only
+compatibility façades. `core.data.interface` still re-exports Extractor
+`DocumentManifest` / `DataSourceAdapter` / `DocumentType` with canonical object
+identity. Extractor type-only references now import Modeler types.
+
 ### 4.4 Homogeneous Modeler modules
 
 These files perform reproducible calculations from the same inputs and explicit
@@ -157,8 +168,12 @@ those modules are delegation-only compatibility façades. `judgment.py` and
 `normalization.py` remain at `core/model/` pending their inventory-defined
 Interpreter splits. Completed `revenue_driver.py`, `reported_margin.py` and
 `revenue_strategy_synthesis.py` splits are unchanged. Transitional
-dependencies remain on `core.model.judgment` / `core.model.normalization` and
-existing `core.data` / `core.ingestion` owners.
+dependencies remain on `core.model.judgment` / `core.model.normalization`.
+**Step 10.9:** data contracts and assigned ingestion modules now live under
+`modeler/data/`, `modeler/ingestion/`, `director/data/` and `director/ingestion/` with thin
+`core.data` / `core.ingestion` façades. Transitional dependencies remain on
+`core.ingestion.management_kpi_enrichment` and
+`core.ingestion.normalization_candidate_admission`.
 
 | Current files | Disposition | Callers | Verification |
 |---|---|---|---|
@@ -755,6 +770,17 @@ catalog sheet-name constants; it does not invoke Interpreter. Director
 | `normalization_candidate_admission.py` human treatment judgments | Interpreter `interpreter/normalization.py` | Human treatments are not facts | same tests |
 | `share_basis.py` | Modeler | Restatement-factor resolution | `test_share_basis.py` |
 
+**Step 10.9 actual ownership.** Assigned admission/reconciliation modules now
+execute from `modeler/ingestion/<basename>.py`. Documentary binding remains in
+`extractor/data/filing_validator.py`. `operating_kpi_admission_issues` and
+`_operating_kpi_admission_for_fact` live in
+`modeler/ingestion/filing_validator.py`. Combined `validate_extracted_filing`
+orchestration lives in `director/ingestion/filing_validator.py` and preserves
+the original issue order (source bind → statement identities → per-fact page +
+KPI admission → current-period missing).
+`management_kpi_enrichment.py` and `normalization_candidate_admission.py` stay
+at `core/ingestion/` as deferred mixed modules.
+
 ### 7.3 Ingestion I/O — `load_extracted_filing` owner
 
 **Disposition: Extractor.** Exact destination
@@ -784,7 +810,8 @@ Git blob at B and at `86ebdec…`: SHA-256
 | Symbol | Owner | Why |
 |---|---|---|
 | `classify_extracted_payload` | Extractor `extractor/data/extracted_kind.py` | Schema kind; used after raw load |
-| `validate_extracted_filing` / `bind_source_file` | Extractor `extractor/data/filing_validator.py` | Provenance bind |
+| `bind_source_file` | Extractor `extractor/data/filing_validator.py` | Provenance bind |
+| `validate_extracted_filing` | Director `director/ingestion/filing_validator.py` | Documentary bind plus Modeler KPI admission |
 | `validate_operating_kpi_fact` | Modeler | Admission identity |
 | `issuer_fiscal_years_from_extracted` | Modeler `modeler/data/issuer_fiscal.py` | Own `json.loads` for FY mapping; does not call `load_extracted_filing` |
 | `prepare_company_input` | Director → Modeler `standardized_from_payload` | Company build reads `reconciled/standardized.json`, not this loader |
@@ -792,7 +819,7 @@ Git blob at B and at `86ebdec…`: SHA-256
 | `cmd_validate_source` / `cmd_reconcile` | Director | CLI routes |
 
 **Production callers of `load_extracted_filing`:** only
-`core/ingestion/filing_cli.py` L66 (Director validate/reconcile path).
+`director/ingestion/filing_cli.py` L66 (Director validate/reconcile path).
 
 **Test callers:** `test_filing_json.py`, `test_management_kpi_admission.py`,
 `test_operating_kpi_facts.py`, `test_geographic_segment_facts.py`,
@@ -820,6 +847,17 @@ Remaining ingestion rows:
 | `future_adapters.py` `HKEXAdapter`, `SECAdapter`, `SGXAdapter` | delete in place | Remove | `NotImplementedError`; TARGET forbids HKEX scrape; no production import | `rg` definition + `README-HK-TRAINER.md` mention only |
 | `base.py` / `reconciler.py` | `modeler/ingestion/` | Modeler | Shared checksum reconcile | build refuse-on-fail |
 | `management_kpi_enrichment.py` `inspect_source_pdf`, `enrich_management_working_copies` | `legacy/ingestion/management_kpi_enrichment.py` | Legacy | Working-copy PDF page bind; not Extractor product; company build does not call enrich | `test_management_kpi_enrichment.py` |
+
+**Step 10.9 actual destinations.** `filing_cli.py` and `note_handoff.py` now
+execute from `director/ingestion/`. Assigned reconcile/standardize/admit modules
+execute from `modeler/ingestion/`. `excel_import.py`, `manual_hk.py`,
+`future_adapters.py`, `management_kpi_enrichment.py` and
+`normalization_candidate_admission.py` remain at `core/ingestion/` (Legacy /
+Remove / deferred mixed). Thin `core.ingestion` façades retain package
+`__all__` and explicit private imports (`reconciler._merge_line_items`,
+`management_kpi_reconciliation._select_ordinary_group`). Active admission still
+depends on `core.ingestion.management_kpi_enrichment`; enrichment is not moved
+into Legacy in this step.
 
 Raw source provenance belongs to Extractor. Analytical transformations and
 calculation provenance belong to Modeler.
@@ -1252,7 +1290,7 @@ Subsequent reviewed steps execute this order. This step does not execute it.
 1. Create visible roots `director/`, `extractor/`, `modeler/`, `interpreter/`, `composer/`; keep `legacy/`. Add `extractor/README.md`. Move Extractor contract + `filing_json` loaders + `classify_extracted_payload` + management-KPI parse + provenance bind per §7.3 / §12.
 2. Move `STYLE.md` and `DRIVER.md` to `director/docs/` and apply §11 reference updates, including README identity if that step touches README. Protected planning docs stay.
 3. Split `revenue_driver.py`, `revenue_strategy_synthesis.py` and `reported_margin.py` per §7.0–7.1 and §7.4 (observations / identity validity / verdicts / wording). Then split `drivers.py` / `selection.py` per §5. Apply the management-emphasis removal in §9. Deduplicate reconstruction helpers. Assessment concatenation stays first-name-wins; façades may not choose judgments.
-4. Move remaining Modeler calculation modules, data payload, ingestion reconcile/standardize, engine workbook, `build_bav_workbook`, semantic I/O, check-context embed. **Step 10.8:** homogeneous calculation modules now live under `modeler/` with thin `core.model` façades; `judgment.py` and `normalization.py` stay pending Interpreter splits. Engine/Trainer inversion is already done in 10.7. Data/ingestion relocation remains later.
+4. Move remaining Modeler calculation modules, data payload, ingestion reconcile/standardize, engine workbook, `build_bav_workbook`, semantic I/O, check-context embed. **Step 10.8:** homogeneous calculation modules now live under `modeler/` with thin `core.model` façades; `judgment.py` and `normalization.py` stay pending Interpreter splits. Engine/Trainer inversion is already done in 10.7. **Step 10.9:** assigned data contracts and ingestion admit/reconcile/CLI helpers now live under `modeler/data/`, `modeler/ingestion/`, `director/data/schema.py` and `director/ingestion/`; enrichment and normalization-candidate admission remain transitional at `core/ingestion/`.
 5. Move Interpreter judgment functions and classification/normalization rationales / strategy inference.
 6. Move Composer `style.py`, `document.py`, `publish.py`, Drivers prose/plots, Overview opening/navigation. **Step 10.6:** `style.py`, `document.py` and `publish.py` now live under `composer/research/`. Drivers prose/plots already live there from 10.5. **Step 10.7:** Overview opening/navigation lives in `composer/workbook_opening.py`.
 7. Move Director CLI / `current_build` / `project_companies.json` / build-contract policy. Keep `python -m bav` and company name interfaces. Director `build_company` sequences Modeler → Interpreter → Composer before workbook write.

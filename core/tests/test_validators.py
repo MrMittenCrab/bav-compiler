@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from datetime import date
 
-from core.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
-from core.data.validators import validate_cash_flow
+from modeler.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
+from modeler.data.validators import validate_cash_flow
 
 P1 = date(2024, 12, 31)
 P2 = date(2025, 12, 31)

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from core.data.interface import LineItem
+from modeler.data.interface import LineItem
 
 
 class MissingHistoricalValueError(ValueError):
