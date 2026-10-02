@@ -98,21 +98,6 @@ def geo_has_operating_story(conditions: GeographicClaimConditions | None) -> boo
     )
 
 
-def _component_direction(gm, sga) -> str:
-    parts: list[str] = []
-    if present(gm):
-        if gm < 0:
-            parts.append("gross-margin contraction")
-        elif gm > 0:
-            parts.append("gross-margin expansion")
-    if present(sga):
-        if sga < 0:
-            parts.append("a higher SG&A ratio")
-        elif sga > 0:
-            parts.append("a lower SG&A ratio")
-    return " and ".join(parts)
-
-
 def _footprint_diverged(view, latest: int) -> bool:
     rev_g = view.revenue_growth[latest] if latest < len(view.revenue_growth) else None
     store_g = view.store_growth[latest] if latest < len(view.store_growth) else None
@@ -176,12 +161,6 @@ def _growth_questions(view, latest: int) -> list[ResearchQuestion]:
     questions: list[ResearchQuestion] = []
     rev_g = view.revenue_growth[latest] if latest < len(view.revenue_growth) else None
     store_g = view.store_growth[latest] if latest < len(view.store_growth) else None
-    intensity = None
-    if latest > 0 and latest < len(view.revenue_per_store):
-        prior = view.revenue_per_store[latest - 1]
-        current = view.revenue_per_store[latest]
-        if present(prior) and present(current) and prior:
-            intensity = current / prior - 1.0
     store_term = (
         None
         if view.footprint_store_effect is None
@@ -211,14 +190,7 @@ def _growth_questions(view, latest: int) -> list[ResearchQuestion]:
                     if diverged
                     else "latest-year comparison; persistence is indeterminate"
                 ),
-                magnitude=(
-                    f"store-count growth {store_g:.4%} versus revenue growth {rev_g:.4%}"
-                    + (
-                        f"; company-wide revenue per store {intensity:.4%}"
-                        if intensity is not None
-                        else ""
-                    )
-                ),
+                magnitude="",
                 mechanisms=(
                     "weaker demand",
                     "slower maturation of added capacity",
@@ -323,7 +295,7 @@ def _growth_questions(view, latest: int) -> list[ResearchQuestion]:
                     "to consolidated growth."
                 ),
                 temporal_character="period-specific reported KPI; not a continuous series",
-                magnitude=f"{latest_comp.percent:.0f}% on the latest stated population and basis",
+                magnitude="",
                 mechanisms=("price", "units", "channel mix", "measured-population change"),
                 alternative=(
                     "Price, units, mix and population changes can produce the same "
@@ -400,7 +372,7 @@ def _growth_questions(view, latest: int) -> list[ResearchQuestion]:
                     "available SPSF observations are definition- and calendar-incompatible."
                 ),
                 temporal_character="incompatible historical observations",
-                magnitude="unavailable as a comparable series",
+                magnitude="",
                 mechanisms=(),
                 alternative="Company-wide revenue per store remains an intensity proxy only.",
                 discriminating_evidence="Aligned SPSF definitions, calendars and store-only revenue.",
@@ -453,11 +425,7 @@ def _geography_questions(view, latest: int) -> list[ResearchQuestion]:
             outcome="consolidated revenue and operating profit",
             materiality_rationale=geographic_materiality_rationale(conditions),
             temporal_character="latest adjacent year; persistence is not established",
-            magnitude=(
-                f"consolidated operating-profit change {conditions.consolidated_profit}"
-                if present(conditions.consolidated_profit)
-                else "geographic revenue contributions available"
-            ),
+            magnitude="",
             mechanisms=(
                 "lower Americas demand",
                 "cost pressure",
@@ -533,14 +501,7 @@ def _margin_questions(view, latest: int) -> list[ResearchQuestion]:
         if view.gross_margin_contribution is None
         else view.gross_margin_contribution[latest]
     )
-    sga = (
-        None
-        if view.sga_ratio_contribution is None
-        or latest >= len(view.sga_ratio_contribution)
-        else view.sga_ratio_contribution[latest]
-    )
     complete = margin_reconstruction_complete(view, latest)
-    direction = _component_direction(gm, sga)
     attributions = tuple(view.attributions)
     latest_period = view.periods[latest]
     latest_attr = tuple(item for item in attributions if item.period == latest_period)
@@ -562,11 +523,7 @@ def _margin_questions(view, latest: int) -> list[ResearchQuestion]:
                     "latest-year accounting identity; earlier recovery includes "
                     "disappearing episodic charges"
                 ),
-                magnitude=(
-                    f"operating-margin change {om:.4%}"
-                    if present(om)
-                    else "component contributions available"
-                ),
+                magnitude="",
                 mechanisms=(
                     "lower pricing realization",
                     "higher merchandise or distribution costs",
@@ -604,12 +561,7 @@ def _margin_questions(view, latest: int) -> list[ResearchQuestion]:
                     ),
                 ),
                 strongest_conclusion=(
-                    (
-                        f"{direction[0].upper()}{direction[1:]} account for "
-                        "nearly all the reported operating-margin change."
-                        if complete and direction
-                        else "The latest operating-margin change is reconstructed from disclosed components."
-                    )
+                    "The latest operating-margin change is reconstructed from disclosed components."
                     if complete
                     else (
                         "Disclosed components provide a partial explanation of the "
@@ -646,11 +598,7 @@ def _margin_questions(view, latest: int) -> list[ResearchQuestion]:
                     else "Management attributes the latest-year margin movement; the mechanism is unresolved."
                 ),
                 temporal_character="episodic attributed commentary for the latest year",
-                magnitude=(
-                    f"approximately {quantified[0].approximate_amount}"
-                    if quantified
-                    else "qualitative attribution only"
-                ),
+                magnitude="",
                 mechanisms=tuple(item.theme for item in latest_attr),
                 alternative=(
                     "Demand-related markdowns, product mix, offsetting measures "
@@ -712,7 +660,7 @@ def _margin_questions(view, latest: int) -> list[ResearchQuestion]:
                 outcome="gross profit and operating margin",
                 materiality_rationale="An unresolved mechanism can remain consequential without a point estimate.",
                 temporal_character="unavailable for the latest year",
-                magnitude="unavailable",
+                magnitude="",
                 mechanisms=(),
                 alternative="The accounting identity stands without a mechanism.",
                 discriminating_evidence="A source-bound attribution with period, scope and locator.",
@@ -770,11 +718,7 @@ def _cash_questions(view, latest: int) -> list[ResearchQuestion]:
                 else "CFO and net income are both observed and remain eligible."
             ),
             temporal_character="latest adjacent year; not a manipulation finding",
-            magnitude=(
-                f"CFO change {cfo_change}; net-income change {ni_change}"
-                if present(cfo_change) and present(ni_change)
-                else f"CFO {cfo}; net income {ni}"
-            ),
+            magnitude="",
             mechanisms=(
                 "inventory accumulation",
                 "growth preparation",

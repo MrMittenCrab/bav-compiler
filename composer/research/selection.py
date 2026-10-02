@@ -84,7 +84,7 @@ def _word_margin_identity(claim: ResearchClaim, *, complete: bool, direction: st
     return replace(claim, wording=wording)
 
 
-def _component_direction_phrase(gm, sga) -> str:
+def component_direction_phrase(gm, sga) -> str:
     parts: list[str] = []
     if present(gm):
         if gm < 0:
@@ -100,10 +100,7 @@ def _component_direction_phrase(gm, sga) -> str:
 
 
 def _margin_direction(view) -> str:
-    latest = None
-    for index in range(len(view.periods) - 1, -1, -1):
-        latest = index
-        break
+    latest = _latest_index(view)
     if latest is None:
         return ""
     gm = (
@@ -118,18 +115,104 @@ def _margin_direction(view) -> str:
         or latest >= len(view.sga_ratio_contribution)
         else view.sga_ratio_contribution[latest]
     )
-    return _component_direction_phrase(gm, sga)
+    return component_direction_phrase(gm, sga)
+
+
+def _latest_index(view) -> int | None:
+    if not view.periods:
+        return None
+    return len(view.periods) - 1
+
+
+def _intensity_change(view, latest: int):
+    if latest > 0 and latest < len(view.revenue_per_store):
+        prior = view.revenue_per_store[latest - 1]
+        current = view.revenue_per_store[latest]
+        if present(prior) and present(current) and prior:
+            return current / prior - 1.0
+    return None
+
+
+def format_question_magnitude(view, question: ResearchQuestion, latest: int | None) -> str:
+    """Format Interpreter-chosen comparisons without changing values or precision."""
+    if latest is None:
+        return ""
+    if question.identifier == "footprint_intensity":
+        rev_g = view.revenue_growth[latest] if latest < len(view.revenue_growth) else None
+        store_g = view.store_growth[latest] if latest < len(view.store_growth) else None
+        if not present(rev_g) or not present(store_g):
+            return ""
+        intensity = _intensity_change(view, latest)
+        return (
+            f"store-count growth {store_g:.4%} versus revenue growth {rev_g:.4%}"
+            + (
+                f"; company-wide revenue per store {intensity:.4%}"
+                if intensity is not None
+                else ""
+            )
+        )
+    if question.identifier == "comparable_sales":
+        compsales = tuple(view.comparable_sales)
+        if not compsales:
+            return ""
+        latest_comp = next(
+            (point for point in reversed(compsales) if point.period == view.periods[latest]),
+            compsales[-1],
+        )
+        return f"{latest_comp.percent:.0f}% on the latest stated population and basis"
+    if question.identifier == "sales_per_square_foot":
+        return "unavailable as a comparable series"
+    if question.identifier == "geographic_localization":
+        conditions = geographic_claim_conditions(view, latest)
+        if present(conditions.consolidated_profit):
+            return f"consolidated operating-profit change {conditions.consolidated_profit}"
+        return "geographic revenue contributions available"
+    if question.identifier == "operating_margin_bridge":
+        om = (
+            None
+            if view.reported_operating_margin_change is None
+            else view.reported_operating_margin_change[latest]
+        )
+        if present(om):
+            return f"operating-margin change {om:.4%}"
+        return "component contributions available"
+    if question.identifier == "management_margin_attribution":
+        if not question.claims:
+            return "unavailable"
+        latest_period = view.periods[latest]
+        quantified = tuple(
+            item
+            for item in view.attributions
+            if item.period == latest_period and item.approximate_amount is not None
+        )
+        if quantified:
+            return f"approximately {quantified[0].approximate_amount}"
+        return "qualitative attribution only"
+    if question.identifier == "cash_conversion":
+        cfo = None if view.cfo is None or latest >= len(view.cfo) else view.cfo[latest]
+        ni = None if view.net_income is None or latest >= len(view.net_income) else view.net_income[latest]
+        cfo_change = (
+            None
+            if view.cfo_change is None or latest >= len(view.cfo_change)
+            else view.cfo_change[latest]
+        )
+        ni_change = (
+            None
+            if view.net_income_change is None or latest >= len(view.net_income_change)
+            else view.net_income_change[latest]
+        )
+        if present(cfo_change) and present(ni_change):
+            return f"CFO change {cfo_change}; net-income change {ni_change}"
+        return f"CFO {cfo}; net income {ni}"
+    return ""
 
 
 def word_driver_questions(
     view,
     interpretation: DriverInterpretation,
 ) -> tuple[ResearchQuestion, ...]:
-    """Fill Composer-owned wording, publication, and exhibit fields."""
-    latest = None
-    for index in range(len(view.periods) - 1, -1, -1):
-        latest = index
-        break
+    """Fill Composer-owned wording, publication, exhibit, and magnitude fields."""
+    latest = _latest_index(view)
     worded: list[ResearchQuestion] = []
     for question in interpretation.questions:
         claims = question.claims
@@ -224,6 +307,7 @@ def word_driver_questions(
             replace(
                 question,
                 claims=claims,
+                magnitude=format_question_magnitude(view, question, latest),
                 publication=publication,
                 publication_reason=reason,
                 figure_purpose=figure_purpose,
@@ -254,10 +338,7 @@ def select_driver_argument(
     margin = by_id.get("operating_margin_bridge")
     attribution = by_id.get("management_margin_attribution")
     cash = by_id.get("cash_conversion")
-    latest = None
-    for index in range(len(view.periods) - 1, -1, -1):
-        latest = index
-        break
+    latest = _latest_index(view)
 
     if margin and interpretation.margin_material:
         principals.append(margin)
@@ -406,4 +487,5 @@ def select_driver_argument(
         principal_ids=tuple(item.identifier for item in principals),
         secondary_ids=tuple(item.identifier for item in secondaries),
         appendix_ids=tuple(item.identifier for item in appendix),
+        calendar_limited=interpretation.calendar_limited,
     )

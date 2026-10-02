@@ -297,15 +297,16 @@ Keep existing types. Do not invent a reasoning schema. After the split,
 `drivers.py` L968). Interpreter runs as a separate call. Composer receives
 `replace(view, selection=…)`.
 
-**Step 10.5 actual ownership.** The split is implemented. Shared records live in
-`modeler/research/records.py` so Modeler imports do not pull Interpreter or
-Composer. Numerical assembly is `modeler/research/drivers_view.py` (no
+**Step 10.5 / 10.5.1 actual ownership.** The split is implemented. Shared records
+live in `modeler/research/records.py` so Modeler imports do not pull Interpreter
+or Composer. Numerical assembly is `modeler/research/drivers_view.py` (no
 selection). CFO classification is `modeler/research/cfo.py`. Geographic
 conditions are `modeler/research/geo_conditions.py`. Mechanical eligibility is
 `modeler/research/eligibility.py`. Interpreter judgments and economic gates are
 `interpreter/selection.py`. Publication constants are
-`composer/research/selection_roles.py`; role/order selection and claim wording
-are `composer/research/selection.py`. Driver Markdown, figures and publication
+`composer/research/selection_roles.py`; role/order selection, claim wording,
+shared component-direction phrasing and magnitude display formatting are
+`composer/research/selection.py`. Driver Markdown, figures and publication
 helpers are `composer/research/drivers.py`. Director
 `director/research.py` obtains completed assessments, assembles the numeric
 view, invokes Interpreter, invokes Composer selection, then
@@ -313,7 +314,11 @@ view, invokes Interpreter, invokes Composer selection, then
 `core/research/selection.py` are façades that delegate. Dead symbols
 `FIGURE_NAMES`, `FIGURE_PLOTTERS` and `_calendar_limit_block` were removed.
 Duplicate `_margin_reconstruction_complete` was deleted in favor of
-`margin_reconstruction_complete`.
+`margin_reconstruction_complete`. Calendar applicability remains
+`interpreter/selection.py::calendar_limitation_applies` and is carried as
+`ResearchSelection.calendar_limited`. Composer formats the period, issuer label
+and limitation text from that supplied judgment and does not re-decide
+applicability. Missing completed selection fails closed.
 
 ### 5.1 `core/research/drivers.py`
 
@@ -333,10 +338,10 @@ Duplicate `_margin_reconstruction_complete` was deleted in favor of
 
 **B. Interpreter — not implemented as standalone functions in this file**
 
-Judgment lives in `selection.py`. Drivers.py only consumes `view.selection`.
-`_calendar_limitation` L445–458 is Interpreter judgment text over Modeler
-calendar facts; wording is Composer. After split: Interpreter owns the
-judgment; Composer owns the sentence.
+Judgment lives in `interpreter/selection.py`. Composer rendering consumes
+`view.selection`, including `calendar_limited`. Interpreter owns calendar
+applicability; Composer owns the limitation sentence and does not fall back to
+period-axis inspection when the completed judgment is absent.
 
 **C. Composer — wording, principal/secondary emphasis, report order, exhibit selection, plotting**
 
@@ -388,7 +393,7 @@ judgment; Composer owns the sentence.
 | `PUBLICATION_*`, `ROLE_*` L15–22 | `composer/research/selection_roles.py` | Publication roles | heading / role tests |
 | `wording`, `publication`, `publication_reason`, `figure_purpose`, `figure_question` | Composer fields on existing types | Presentation | figure_ids tests |
 | `geographic_figure_question` L287–293 | Composer | Exhibit question | imported in tests |
-| `_component_direction_phrase` L726–738 | Composer; merge with drivers duplicate | Wording | margin prose |
+| `_component_direction_phrase` L726–738 | `composer/research/selection.py::component_direction_phrase` | Shared selection and Driver-prose wording; Interpreter no longer derives reconstruction from this phrase | margin prose |
 | `select_driver_argument` **role/order/figure phase** L1141–1288 | Composer | Map Interpreter gates → principal/secondary/appendix + `figure_ids` | `expected_sections`; `selected_figure_names` |
 | `SelectionDecision` | Composer (action) quoting Interpreter reason | Decision table | `_selection_block` |
 
@@ -414,7 +419,7 @@ No new types. Handoffs remain `DriversView` → `ResearchSelection` → Markdown
 
 **Handoff 1 (Modeler → Interpreter):** `DriversView` numeric fields + `attributions` + `comparable_sales` + identity `kind`/`established` + reported-fact amounts/zeros + observed-movement direction tests. Interpreter does not reread Composer wording.
 
-**Handoff 2 (Interpreter → Composer):** `ResearchSelection` on the same view, plus assessment judgment fields (`kind`/`established` for descriptive, causal, reported-fact and unestablished branches; recurrence; contradiction class; unsupported-mix). Composer already reads `principal_ids`, `secondary_ids`, `figure_ids`, `questions[].strongest_conclusion`, `unresolved_requirement`.
+**Handoff 2 (Interpreter → Composer):** `ResearchSelection` on the same view, plus assessment judgment fields (`kind`/`established` for descriptive, causal, reported-fact and unestablished branches; recurrence; contradiction class; unsupported-mix) and `calendar_limited`. Composer already reads `principal_ids`, `secondary_ids`, `figure_ids`, `questions[].strongest_conclusion`, `unresolved_requirement`. Composer formats `questions[].magnitude` from Interpreter-chosen comparisons and Modeler numbers.
 
 **Handoff 3 (Modeler → Composer):** same series for appendix tables and plot arrays. Composer must not recompute identities or change `kind`/`established`.
 
@@ -452,7 +457,7 @@ No new types. Handoffs remain `DriversView` → `ResearchSelection` → Markdown
 | `identifier`, `question` | Interpreter |
 | `entity`, `population`, `periods`, `outcome` | Modeler (measurement scope) |
 | `materiality_rationale`, `temporal_character`, `mechanisms`, `alternative`, `discriminating_evidence` | Interpreter |
-| `magnitude` | Modeler numbers inside an Interpreter-chosen comparison |
+| `magnitude` | Interpreter chooses the comparison and leaves the field unrendered; Composer formats Modeler numbers without changing meaning or precision |
 | `claims` | mixed per `ResearchClaim` |
 | `strongest_conclusion`, `unresolved_requirement`, `reopening_condition` | Interpreter |
 | `publication`, `publication_reason`, `figure_purpose`, `figure_question`, `main_body_table_reason` | Composer (`main_body_table_reason` is never set) |
@@ -465,6 +470,7 @@ No new types. Handoffs remain `DriversView` → `ResearchSelection` → Markdown
 | `questions` | mixed record; field owners above |
 | `decisions` | Composer action + Interpreter reason text |
 | `main_body_ids`, `principal_ids`, `secondary_ids`, `appendix_ids`, `figure_ids` | Composer, informed by Interpreter gates |
+| `calendar_limited` | Interpreter judgment carried through Composer selection; Composer formats only |
 | `main_body_table_reasons` | Composer; **never populated** |
 
 ---

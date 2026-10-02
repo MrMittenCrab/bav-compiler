@@ -20,6 +20,7 @@ from modeler.research.geo_conditions import (
     OFFSET_PARTIAL,
     geographic_claim_conditions,
 )
+from composer.research.selection import component_direction_phrase
 from modeler.research.records import ResearchSelection
 
 RESERVED_MODULES = ("Forecast", "Valuation", "Overview")
@@ -180,16 +181,27 @@ def finding_sentence(item) -> str:
 
 
 def calendar_limitation(view: DriversView) -> str:
-    period = view.fifty_three_week_period
-    if period is None or period not in view.periods:
+    selection = _completed_selection(view)
+    if not selection.calendar_limited:
         return ""
-    label = view.labels[view.periods.index(period)]
+    period = view.fifty_three_week_period
+    if period is not None and period in view.periods:
+        label = view.labels[view.periods.index(period)]
+    else:
+        label = view.issuer_fiscal_name or "The period"
+    ended = date_text(period) if period is not None else ""
     naming = ""
     issuer = view.issuer_fiscal_name
-    if issuer and fiscal_year_token(issuer) != fiscal_year_token(label):
+    if issuer and label and fiscal_year_token(issuer) != fiscal_year_token(label):
         naming = f"; the issuer names it {issuer}"
+    if ended:
+        return (
+            f"{label}, the year ended {ended}, is a 53-week year{naming}. "
+            "Some later comparable-sales presentations exclude or realign that extra "
+            "week and cannot be joined to the earlier observations."
+        )
     return (
-        f"{label}, the year ended {date_text(period)}, is a 53-week year{naming}. "
+        f"{label} is a 53-week year{naming}. "
         "Some later comparable-sales presentations exclude or realign that extra "
         "week and cannot be joined to the earlier observations."
     )
@@ -237,21 +249,6 @@ def _geography_figure_alt(conditions) -> str:
     if conditions.revenue_offset is not None and conditions.americas_profit_declined:
         return "Did international revenue growth offset Americas profit deterioration?"
     return "How did geographic revenue and operating-profit changes compare?"
-
-
-def component_direction_phrase(gm: float | None, sga: float | None) -> str:
-    parts: list[str] = []
-    if gm is not None:
-        if gm < 0:
-            parts.append("gross-margin contraction")
-        elif gm > 0:
-            parts.append("gross-margin expansion")
-    if sga is not None:
-        if sga < 0:
-            parts.append("a higher SG&A ratio")
-        elif sga > 0:
-            parts.append("a lower SG&A ratio")
-    return " and ".join(parts)
 
 
 def _margin_component_block(view: DriversView) -> str:

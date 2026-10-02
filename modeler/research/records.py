@@ -63,6 +63,7 @@ class ResearchSelection:
     secondary_ids: tuple[str, ...] = ()
     appendix_ids: tuple[str, ...] = ()
     main_body_table_reasons: tuple[str, ...] = ()
+    calendar_limited: bool = False
 
     def question(self, identifier: str) -> ResearchQuestion | None:
         for item in self.questions:

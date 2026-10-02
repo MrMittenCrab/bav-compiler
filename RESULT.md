@@ -10296,3 +10296,84 @@ This split does not establish Session 10 acceptance.
 
 None.
 
+---
+
+# RESULT.md — Step 10.5.1 Complete Driver field ownership and calendar handoffs
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)  
+**Step:** 10.5.1 — Complete Driver field ownership and calendar handoffs  
+**Work:** `116fc09cee884ccea734dfb368f42fa2`  
+**Plan:** `baa9b94692344af782aedac81d097abd`  
+**Finding:** Split Driver research responsibilities and correct emphasis eligibility
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change.
+
+Preserved interrupted working-tree edits to the six files below and finished remaining verification.
+
+## Baseline B
+
+Authenticated from populated `IMPLEMENT_BASE_SHA`. Fail-closed was not required.
+
+| Record | Value | Result |
+|---|---|---|
+| `.git/autocycle/resume-state` `IMPLEMENT_BASE_SHA` | `2ce9cab3b83bfb55c89cce40148fa66b8f178e75` | Used as B |
+| `STATE_BRANCH` / `.git/HEAD` / branch tip | `checkpoint/20260913-183303` / same SHA | HEAD == B |
+| `implementation-baseline.json` `head` | same SHA | Bound |
+| Ancestry | HEAD equals B | Bound |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | `step_id` 10.5.1, `work_id` `116fc09cee884ccea734dfb368f42fa2` | Bound |
+| `.git/autocycle/latest-implementation` | leftover `5da41b6b…` (Step 10.5) | Ignored: `IMPLEMENT_BASE_SHA` populated |
+
+Compared current files to Git blobs at B via `git show B:path`. Completed 10.5 destinations were preserved; this step repaired remaining field-ownership and calendar-handoff violations.
+
+## Ownership repairs
+
+| Repair | Owner / handoff |
+|---|---|
+| `ResearchSelection.calendar_limited` | Interpreter judgment carried through Composer `select_driver_argument` |
+| `calendar_limitation_applies` stays in `interpreter/selection.py` | Applicability only |
+| `composer/research/drivers.py::calendar_limitation` | Formats period, issuer label and limitation text from supplied `selection.calendar_limited`; missing completed selection raises; no period-axis fallback |
+| Percentage / magnitude display | Interpreter leaves `magnitude=""`; Composer `format_question_magnitude` formats Modeler numbers at existing precision |
+| `component_direction_phrase` | Single Composer helper used by selection claim wording and Driver margin prose |
+| Interpreter `_component_direction` | Removed; reconstruction/partial conclusions no longer derived from presentation strings |
+| Inventory §§5–6 | Documents actual field ownership and the calendar / magnitude handoffs |
+
+Director `director/research.py` remains assessments → assemble → interpret → select → `replace(view, selection=…)`. Modeler does not import Interpreter/Composer. Interpreter does not import Composer. `core/research` façades remain delegation-only. Existing one-argument `core.research.selection.select_driver_argument` still runs the Director sequence; Composer `select_driver_argument` fails closed without completed judgments.
+
+## Behavioral comparisons versus B
+
+- Normal Lululemon calendar sentence unchanged: `FY2024, the year ended 2 February 2025, is a 53-week year` plus extra-week exclusion wording; issuer `fiscal 2024` is not appended when tokens match.
+- Supplied `calendar_limited=False` suppresses the sentence even when a 53-week period is on-axis; supplied `True` formats even when the period is absent or out-of-axis (issuer label / `The period` / out-of-axis date).
+- Absent completed selection raises `ValueError` (`completed selection`); it does not re-inspect the period axis.
+- Issuer-label difference (`fiscal 2023` vs displayed `FY2024`) appends `the issuer names it fiscal 2023`.
+- Interpreter complete-reconstruction `strongest_conclusion` is now `reconstructed from disclosed components` rather than direction prose. Composer main-body identity wording is unchanged: `Gross-margin contraction and a higher SG&A ratio account for the reported operating-margin change as an identity`.
+- Partial reconstruction keeps `residual remains` and causal qualification `does not identify a price, mix or cost mechanism`. Positive / negative / zero / missing GM and SG&A contributions share the one direction helper.
+- Composer magnitude strings preserve B values and precision (store/revenue `.4%`, compsales `.0f%`, `approximately $275 million`).
+- Lululemon / Fast Retailing principals, secondaries, appendix order, figure deduplication, CFO remainders, reconstruction gates, attribution demotion, geographic/store/margin independence, first-name-wins, source locators and zero-byte placeholders remain as in the existing regressions.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| B authentication (resume-state, baseline JSON, branch ref, HEAD==B, `git show B:path`) | B = `2ce9cab3…`; HEAD == B; fail-closed not required |
+| Focused research (`test_research_handoff`, `test_research_emphasis`, `test_research_drivers`) | **28 passed** in 1.77s |
+| Listed pytest suite (those three plus revenue_driver, reported_margin, current_build, build_contract, build_cli, publication, Lululemon/FR benchmarks, trainer, learner-ready) | **571 passed**, 5 warnings (pre-existing Swig importlib), 221.64s |
+| `/opt/anaconda3/bin/python -m bav --help` | rc 0; ingest / validate-source / reconcile / build / check / publish / list |
+| `git diff --check` | rc 0 |
+| Native Office / company rebuild / publication | **Not run** — no workbook formula/dependency or Word/PDF presentation change; SESSION native-verify condition was not met |
+
+Handoff tests use deliberately differing supplied judgments versus underlying observations (deny calendar/margin/geo on a valid 53-week Lululemon view; force calendar/margin on a zero-margin / no-53-week view). Selection and rendering follow the supplied flags. Calendar cases cover absent, out-of-axis and valid 53-week periods plus issuer-label differences. Direction tests cover complete, partial, opposing and missing/zero contributions. Interpreter questions leave `magnitude`, `publication`, `publication_reason`, `figure_purpose`, `figure_question` and claim `wording` unrendered.
+
+## Preservation
+
+Canonical inputs, source evidence, accounting signs, fiscal distinctions, precision, admission/comparison independence, residual qualifications, fail-closed controls, optional Trainer behavior and zero-byte research placeholders were not modified. Attribution amounts, locators, counterfactual scope, `supported_as_attribution`, `not independently verified` and `outside the accounting bridge` remain. No second-phase features. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+## Remaining toward Completion
+
+Broader component relocation, Trainer inversion, removals and final representative build/check/publication verification remain subsequent work. Inventory §16 behavior defects were not repaired.
+
+This handoff does not establish Session 10 acceptance.
+
+## Required plan change
+
+None.
+
