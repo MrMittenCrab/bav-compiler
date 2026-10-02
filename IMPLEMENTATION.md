@@ -1,40 +1,39 @@
-# Step 10.2 — Relocate Extractor contracts and loading
-AUTOCYCLE_PLAN: {"finding_key": "Relocate Extractor contracts and loading", "kind": "work", "objective": "Relocate Extractor contracts and loading", "plan_id": "798b84b06ef64e51880c54d79da8d14a", "predecessor_review_sha256": "64e97042b43bdc8c655380f7d5c54e3aba038d1b129d83facadbd09a11f48dd4", "step_id": "10.2", "work_id": "5afa7df9522b4e74b6d033a577043e15"}
+# Step 10.3 — Relocate Director specifications and update operational references
+AUTOCYCLE_PLAN: {"finding_key": "Relocate Director specifications and update operational references", "kind": "work", "objective": "Relocate Director specifications and update operational references", "plan_id": "f8a7b9cf43b244d28a758423944d7a14", "predecessor_review_sha256": "608038b183f0e3a35fa2f914924fefc1276f0bf30b6c68adc80003fec206253c", "step_id": "10.3", "work_id": "1fa333611fee4d899f0896036f117f2a"}
 
 ## Completion
 
-Existing Extractor responsibilities reside at the inventory’s canonical destinations, consumers use those destinations, and relevant regressions demonstrate preserved loading, provenance, admission and public `bav` behavior.
+Director specifications occupy their inventory destinations, operational references resolve to those destinations, and the README presents BAV Compiler while preserving specification content and existing public behavior.
 
 ## Bounded work
 
-Execute the Extractor relocation in `director/docs/MIGRATION_INVENTORY.md` §§4.3, 7.2–7.3 and 12–14.
+Execute the documentation relocation in `director/docs/MIGRATION_INVENTORY.md` §§4.9 and 11.
 
-- Authenticate implementation baseline B from populated `IMPLEMENT_BASE_SHA`, otherwise the normal baseline records and branch, ancestry and attempt/checkpoint bindings; fail closed if unavailable. Compare migrated responsibilities against historical Git blobs at B.
-- Establish the inventory’s visible component roots with minimal package scaffolding. Add `extractor/README.md` explaining the existing JSON-contract boundary and absence of production PDF extraction.
-- Move `core/data/filing.py` and `core/ingestion/filing_json.py` to `extractor/data/filing.py` and `extractor/data/filing_json.py`, retaining contract types, symbol names, parsing and serialization behavior.
-- Split `core/ingestion/management_kpi.py`: move schema classification and its helpers/constants to `extractor/data/extracted_kind.py`; move source-faithful document types, parsing/loading and their supporting helpers to `extractor/data/management_kpi_json.py`. Keep analytical admission, binding decisions and reconciliation with their existing Modeler-owned implementation pending its relocation.
-- Move parse-time operating-KPI fact-type and label-shape helpers to `extractor/data/operating_kpi_contract.py`. Keep analytical identity validation and admission outside Extractor.
-- Relocate provenance binding, source-row identity, validation contracts and documentary validation to `extractor/data/filing_validator.py`. Separate existing operating-KPI admission checks from documentary validation; preserve their execution, diagnostic ordering and aggregate report behavior through the calling orchestration.
-- Move historical-strategy contracts, I/O, validation and locators to `extractor/data/historical_strategy.py`. Preserve attributed management statements as evidence without changing analytical driver selection.
-- Split documentary `DocumentManifest`, its supporting document types and `DataSourceAdapter` into `extractor/data/interface.py`, preserving adapter signatures without pulling model payload implementation into Extractor or introducing runtime import cycles.
-- Relocate `scripts/prepare_lululemon_operating_kpi_filings.py` to `extractor/scripts/prepare_lululemon_operating_kpi_filings.py`; adjust repository-root resolution and consumers while preserving destination-only writes and canonical source protection.
-- Update affected production imports, package exports, tests, script references and relevant documentation. Use one canonical implementation per responsibility; retain only thin forwarding exports where an existing supported interface requires them.
-- Preserve `filing_cli` classify → load → validate/admit sequencing. Company builds continue reading `reconciled/standardized.json`; do not route them through `load_extracted_filing`.
+- Authenticate implementation baseline B from populated `IMPLEMENT_BASE_SHA`, otherwise the normal baseline records, branch, ancestry and attempt/checkpoint bindings; fail closed if unavailable. Use historical Git blobs at B for content comparisons.
+- Move `STYLE.md` to `director/docs/STYLE.md`, preserving its bytes and single-authority role for presentation and language.
+- Move `DRIVER.md` to `director/docs/DRIVER.md`, preserving its requirements, evidence qualifications and source attributions while updating STYLE references.
+- Move `docs/build-contract.md` to `director/docs/build-contract.md`, preserving the documented build policy and references to implementation that has not yet moved.
+- Move `docs/FAST_RETAILING_BENCHMARK.md` to `director/docs/FAST_RETAILING_BENCHMARK.md`. Update obsolete operational source paths to `build/input/fast_retailing/source/`; distinguish historical baseline descriptions from current source availability without claiming unavailable PDFs are present.
+- Update affected operational links, documentation paths, test file reads and `core/research/style.py` documentation. Resolve Markdown links relative to their containing documents. Preserve historical inventory mappings and RESULT records.
+- Update the root README title and product description to BAV Compiler. Describe the five active components and Legacy according to current migration state; retain useful commands, supported companies and optional Trainer guidance. Replace the obsolete immediate Step 9 roadmap with the current structural-migration priority and retain deferred product capabilities.
+- Correct the README’s company-build description to reflect consumption of `reconciled/standardized.json`, keeping explicit validate-source/reconcile workflows distinct.
+- Update README identity and specification-path assertions together, retaining their substantive checks. Keep tests at their existing locations for this step.
 
 ## Verification
 
-- Run affected filing JSON, filing CLI, filing reconciliation, management-KPI admission/identity/reconciliation/history, operating-KPI fact and geographic-segment regressions, plus historical-strategy/revenue-driver, current-build and public CLI tests.
-- Run `test_lululemon_benchmark.py` and `test_fast_retailing_benchmark.py` against relocated imports. Add focused coverage only where existing tests miss a changed handoff.
-- Check round-trip payloads, schema rejection, missing versus zero values, fiscal distinctions, reported labels, source hashes/pages, portable paths, diagnostics and admission outcomes against baseline behavior.
-- Verify fresh-process canonical imports and public `python -m bav --help`; inspect dependencies for cycles and accidental Extractor ownership of analytical decisions.
-- Check relocation continuity against B, search for stale operational references and run `git diff --check`. Distinguish unchanged moves from intentional import and responsibility-split edits.
-- Append measured commands, results, path mappings, preservation findings and remaining migration scope to `RESULT.md`. Record unavailable verification explicitly.
-- Apply SESSION native-verification requirements if workbook formulas/dependencies or presentation change; use Office Bridge for native work.
+- Compare each relocated specification with its Git blob at B. Record exact preservation for unchanged moves and inspect intentional reference or operational-description edits for unchanged substantive policy.
+- Search active consumers for stale document locations and resolve changed links. Historical paths in inventory mappings and prior RESULT entries remain historical evidence.
+- Run affected specification and README checks in `core/tests/test_research_drivers.py` and `core/tests/test_learner_ready_presentation.py`, plus `core/tests/test_build_contract.py` and `core/tests/test_fast_retailing_benchmark.py`.
+- Verify `python -m bav --help` and run `git diff --check`.
+- Append measured verification, relocation mappings, intentional content changes and remaining migration scope to `RESULT.md`. Record unavailable verification explicitly.
+- Apply SESSION native-verification requirements if workbook formulas/dependencies or presentation change; native work uses Office Bridge.
 
 ## Limits and remaining scope
 
-Preserve canonical source evidence, accounting signs, precision, provenance, fail-closed controls, optional Trainer behavior, zero-byte placeholders and ownership/recovery/protected-document safeguards. Do not modify canonical company inputs or regenerate publications merely to relocate code.
+Preserve canonical company inputs, source evidence, accounting signs, precision, provenance, fail-closed controls, optional Trainer behavior and zero-byte research placeholders. Preserve ownership, recovery, protected-document and unrelated-dirty-work safeguards.
 
-Director specification and STYLE.md relocation, mixed Driver/assessment splits, remaining component moves, Trainer inversion, justified removals and final representative build/check/publication verification remain subsequent migration work.
+Do not alter style rules, analytical behavior or generated publications. Do not restore source PDFs, rewrite source manifests or relocate runtime implementations for this documentation step.
 
-No new PDF extractor, reasoning system, analytical methods, Trainer expansion or second-phase features. Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md or rewrite historical RESULT records.
+Mixed Driver/assessment splits, remaining component relocation, Trainer inversion, justified removals and final representative build/check/publication verification remain subsequent migration work. No second-phase features.
+
+Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md or rewrite historical RESULT records.
