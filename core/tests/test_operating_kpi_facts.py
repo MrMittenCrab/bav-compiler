@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from core.data.filing import PresentationRole, SourceRef, SupplementalFact
+from extractor.data.filing import PresentationRole, SourceRef, SupplementalFact
 from core.data.historical_operating_kpis import (
     METRIC_STORE_COUNT,
     POPULATION_COMPANY_OPERATED,
@@ -27,7 +27,7 @@ from core.data.interface import (
     StandardizedFinancials,
 )
 from core.data.standardized_io import standardized_from_payload, standardized_to_payload
-from core.ingestion.filing_json import extracted_filing_to_payload, load_extracted_filing
+from extractor.data.filing_json import extracted_filing_to_payload, load_extracted_filing
 from core.ingestion.filing_reconciler import SupplementalObservation, reconcile_filings
 from core.ingestion.filing_standardizer import (
     reconciliation_conflicts_payload,
@@ -50,7 +50,7 @@ FIXTURE = (
     / "operating_kpis"
     / "lululemon_company_operated_stores.json"
 )
-PREPARE = ROOT / "scripts" / "prepare_lululemon_operating_kpi_filings.py"
+PREPARE = ROOT / "extractor" / "scripts" / "prepare_lululemon_operating_kpi_filings.py"
 
 P2022 = date(2022, 1, 30)
 P2023 = date(2023, 1, 29)

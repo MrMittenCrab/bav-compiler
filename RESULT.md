@@ -9864,3 +9864,76 @@ Assessment ownership and producer handoffs that previously contradicted §4.4 / 
 
 Inventory correction does not establish migration acceptance.
 
+---
+
+# RESULT.md — Step 10.2 Relocate Extractor contracts and loading
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)  
+**Step:** 10.2 — Relocate Extractor contracts and loading  
+**Work:** `5afa7df9522b4e74b6d033a577043e15`  
+**Plan:** `798b84b06ef64e51880c54d79da8d14a`  
+**Finding:** Relocate Extractor contracts and loading
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change.
+
+## Baseline B
+
+Authenticated from populated `IMPLEMENT_BASE_SHA`. Fail-closed was not required.
+
+| Record | Value | Result |
+|---|---|---|
+| `.git/autocycle/resume-state` `IMPLEMENT_BASE_SHA` | `2502a7d9991acde1c46b8a40c541b4d83bfc3f76` | Used as B |
+| `STATE_BRANCH` / `git HEAD` | `checkpoint/20260913-183303` / same SHA | HEAD == B |
+| `implementation-baseline.json` `head` | same SHA | Bound |
+| `work-state` allocated `10.2` | `source` = B, `work_id` = `5afa7df9522b4e74b6d033a577043e15`, `status` = `opened` | Bound |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | `step_id` 10.2, same `work_id` | Bound |
+| `.git/autocycle/latest-implementation` | leftover `2f292e9…` | Ignored: `IMPLEMENT_BASE_SHA` populated |
+
+## Path mappings
+
+| B path | Destination | Continuity |
+|---|---|---|
+| `core/data/filing.py` | `extractor/data/filing.py` | Unchanged move. 1907 bytes, SHA-256 `6f0e4fa3…` identical to B |
+| `core/ingestion/filing_json.py` | `extractor/data/filing_json.py` | Import retarget only (`..data.filing` → `.filing`; parse helpers from `operating_kpi_contract`). Parse/serialize bodies unchanged vs B `46bc9271…` / 12851 bytes |
+| `core/ingestion/management_kpi.py` classify / schema-complete helpers | `extractor/data/extracted_kind.py` | Responsibility split |
+| same file document types + `load`/`parse_management_kpi_document` + documentary parse helpers | `extractor/data/management_kpi_json.py` | Responsibility split |
+| same file `bind_management_documents` / `admit_*` / observation construction / reconciliation handoff | stay `core/ingestion/management_kpi.py` | Modeler pending relocation |
+| `is_operating_kpi_fact_type` / `reject_non_string_reported_label` / `require_reported_label` | `extractor/data/operating_kpi_contract.py` | Parse-time type/label shape |
+| `validate_operating_kpi_fact` / identity validation | stay `core/data/historical_operating_kpis.py` | Imports Extractor type-set |
+| `core/ingestion/filing_validator.py` bind / identity / documentary validation | `extractor/data/filing_validator.py` | Documentary only |
+| operating-KPI admission issues + combined report | `core/ingestion/filing_validator.py` orchestration | Same fact-loop order: page → KPI admit → `current_period_missing` |
+| `core/data/historical_strategy.py` | `extractor/data/historical_strategy.py` | Unchanged I/O/validation plus relocated `disclosure_locator` |
+| `core/data/interface.py` `DocumentType` / `DocumentManifest` / `DataSourceAdapter` | `extractor/data/interface.py` | Adapter signatures kept; `StandardizedFinancials` is TYPE_CHECKING-only. Model payload stays `core/data/interface.py` with thin re-exports |
+| `scripts/prepare_lululemon_operating_kpi_filings.py` | `extractor/scripts/prepare_lululemon_operating_kpi_filings.py` | `parents[1]` → `parents[2]`; dest-only write guard unchanged |
+
+Visible roots added: `director/__init__.py`, `extractor/` (+ `README.md`), `modeler/`, `interpreter/`, `composer/`. `legacy/` unchanged.
+
+`extractor/README.md` states the JSON-contract boundary and that this repository does not extract statements from PDF.
+
+`filing_cli` remains classify → load → validate/admit. `prepare_company_input` still reads `reconciled/standardized.json` via `standardized_from_payload`; it does not call `load_extracted_filing`.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| Fresh-process extractor + `filing_cli` + `prepare_company_input` imports | ok; `load_extracted_filing` absent from `prepare_company_input` source |
+| `python3 -m bav --help` | rc 0; commands ingest / validate-source / reconcile / build / check / publish / list |
+| `/opt/anaconda3/bin/python -m pytest -q` filing JSON/CLI/reconciler, management-KPI admission/identity/reconciliation/history, operating-KPI facts, geographic-segment facts, revenue-driver, current-build, public CLI, Lululemon + Fast Retailing benchmarks | **1110 passed**, 5 warnings (pre-existing Swig importlib), 234.29s |
+| same interpreter `test_geographic_segment_analysis.py` + `test_geographic_segment_workbook.py` | **26 passed**, 6.14s |
+| Runtime import of extractor modules + `core.data.interface` + `management_kpi` + `filing_cli` + `bav` | no import cycle |
+| Static extractor → non-extractor imports | `management_kpi_json` lazy-imports `SUPPORTED_METRIC_MAPPINGS` for parse-time supported-metric shape; `interface.py` TYPE_CHECKING-only `StandardizedFinancials`; prepare script still calls `core.ingestion.note_handoff` |
+| Extractor scan for `admit_` / `reconcile_` / `validate_operating_kpi_fact` / `VERDICT_` / `KIND_CAUSAL` | none |
+| Stale operational refs to old filing/strategy/prepare paths (excluding inventory / IMPLEMENTATION / historical RESULT) | none in `*.py` |
+| `git diff --check` | rc 0 |
+| Native Office / company rebuild / publication | **Not run** — no workbook formula/dependency or presentation change; no canonical input or publication regeneration |
+
+## Preservation
+
+Round-trip payloads, schema rejection, missing-versus-zero, fiscal labels, reported labels, source hashes/pages, portable paths, diagnostics and admission outcomes are covered by the suites above against baseline behavior. Canonical company inputs were not modified. Optional Trainer, zero-byte placeholders, fail-closed controls and public `bav` were not redesigned. `disclosure_locator` format remains `source_file; page_reference; section; period-end {date}`. Management statements stay attributed evidence; driver selection is unchanged.
+
+## Remaining toward Completion
+
+Director specification and STYLE.md relocation, mixed Driver/assessment splits, remaining Modeler/Interpreter/Composer/Director moves, Trainer inversion, justified removals, and final representative build/check/publication verification remain subsequent migration work. Parse-time `metric_supports_occurrence_evidence` still consults Modeler `SUPPORTED_METRIC_MAPPINGS` (existing behavior; not admission). No new PDF extractor.
+
+This relocation does not establish Session 10 acceptance.
+

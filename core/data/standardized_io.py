@@ -14,7 +14,7 @@ from .historical_operating_kpis import (
     require_management_observation_text_fields,
     validate_historical_operating_kpis,
 )
-from .historical_strategy import (
+from extractor.data.historical_strategy import (
     deserialize_historical_strategy,
     serialize_historical_strategy,
     validate_historical_strategy,

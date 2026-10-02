@@ -13,7 +13,7 @@ import pytest
 
 from core.data.standardized_io import standardized_from_payload, standardized_to_payload
 from core.ingestion.filing_cli import load_and_validate_extracted_dir
-from core.ingestion.filing_json import load_extracted_filing, load_extracted_json_object
+from extractor.data.filing_json import load_extracted_filing, load_extracted_json_object
 from core.ingestion.filing_reconciler import reconcile_filings
 from core.ingestion.filing_standardizer import (
     reconciliation_conflicts_payload,
@@ -21,12 +21,12 @@ from core.ingestion.filing_standardizer import (
     reconciliation_provenance_payload,
     standardize_reconciled,
 )
-from core.ingestion.management_kpi import (
+from extractor.data.extracted_kind import (
     KIND_ANNUAL_FILING,
     KIND_MANAGEMENT_KPI,
     classify_extracted_payload,
-    load_management_kpi_document,
 )
+from extractor.data.management_kpi_json import load_management_kpi_document
 from core.model.operating_kpi import compute_operating_kpi_series
 from core.model.period_axis import canonical_fiscal_periods
 from core.tests.test_operating_kpi_analysis import _independent_from_counts

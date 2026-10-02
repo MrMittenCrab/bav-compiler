@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from core.data.filing import (
+from extractor.data.filing import (
     ExtractedFiling,
     ExtractedStatementRow,
     FilingMetadata,

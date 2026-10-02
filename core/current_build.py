@@ -167,7 +167,7 @@ def prepare_company_input(company: Company, staged: Path | None = None):
     mapping = issuer_fiscal_years_from_extracted(company.input / 'extracted')
     apply_issuer_fiscal_labels(fin, mapping, require_complete=True)
     if company.strategy_disclosures:
-        from .data.historical_strategy import load_strategy_disclosures
+        from extractor.data.historical_strategy import load_strategy_disclosures
         fin.historical_strategy = load_strategy_disclosures(ROOT / company.strategy_disclosures)
     return fin
 

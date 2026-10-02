@@ -19,7 +19,7 @@ from core.data.historical_segments import (
     SEGMENT_BRIDGE_TOLERANCE,
 )
 from core.data.standardized_io import standardized_from_payload, standardized_to_payload
-from core.ingestion.filing_json import load_extracted_filing
+from extractor.data.filing_json import load_extracted_filing
 from core.ingestion.filing_reconciler import reconcile_filings
 from core.ingestion.filing_standardizer import (
     reconciliation_provenance_payload,

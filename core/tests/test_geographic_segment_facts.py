@@ -13,14 +13,14 @@ from pathlib import Path
 
 import pytest
 
-from core.data.filing import (
+from extractor.data.filing import (
     ExtractedStatementRow,
     FilingValue,
     PresentationRole,
     SourceRef,
     SupplementalFact,
 )
-from core.ingestion.filing_json import extracted_filing_to_payload, load_extracted_filing
+from extractor.data.filing_json import extracted_filing_to_payload, load_extracted_filing
 from core.ingestion.filing_reconciler import SupplementalObservation, reconcile_filings
 from core.ingestion.filing_standardizer import (
     reconciliation_conflicts_payload,

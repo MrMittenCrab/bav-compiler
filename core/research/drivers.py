@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 
 from ..data.historical_operating_kpis import FAMILY_COMPARABLE_SALES_GROWTH
-from ..data.historical_strategy import ROLE_ATTRIBUTION
+from extractor.data.historical_strategy import ROLE_ATTRIBUTION
 from ..data.interface import StandardizedFinancials
 from ..model.geographic_segment import (
     compute_geographic_segment_series,

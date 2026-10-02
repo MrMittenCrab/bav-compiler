@@ -11,7 +11,7 @@ from datetime import date
 from pathlib import Path
 
 from core.data.standardized_io import standardized_from_payload
-from core.ingestion.filing_json import load_extracted_filing
+from extractor.data.filing_json import load_extracted_filing
 from core.ingestion.filing_validator import validate_extracted_filing
 from core.ingestion.reconciler import reconcile_financials
 from core.engine.reference_model import ReferenceModelBuilder
@@ -1248,7 +1248,7 @@ def test_fast_retailing_ownership_attribution_g5():
 
 
 def test_fast_retailing_share_basis_and_per_share_g6():
-    from core.ingestion.filing_json import load_extracted_filing
+    from extractor.data.filing_json import load_extracted_filing
     from core.ingestion.filing_reconciler import reconcile_filings
     from core.ingestion.filing_standardizer import standardize_reconciled
     from core.ingestion.filing_validator import validate_extracted_filing
@@ -1425,7 +1425,7 @@ def test_fast_retailing_share_basis_and_per_share_g6():
 
 def test_fast_retailing_g7_retained_conflict_policy():
     """G7: deterministic selection with both disagreeing observations retained."""
-    from core.ingestion.filing_json import load_extracted_filing
+    from extractor.data.filing_json import load_extracted_filing
     from core.ingestion.filing_reconciler import reconcile_filings
     from core.ingestion.filing_standardizer import (
         reconciliation_conflicts_payload,

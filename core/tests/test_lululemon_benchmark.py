@@ -18,7 +18,7 @@ from core.data.standardized_io import (
     standardized_from_payload,
     standardized_to_payload,
 )
-from core.ingestion.filing_json import load_extracted_filing
+from extractor.data.filing_json import load_extracted_filing
 from core.ingestion.filing_validator import validate_extracted_filing
 from core.model.classification import (
     UnclassifiedBalanceSheetLineError,

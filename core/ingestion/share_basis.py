@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from datetime import date
 from math import isclose
 
-from ..data.filing import PresentationRole
+from extractor.data.filing import PresentationRole
 from .filing_reconciler import ReconciledCompanyData, SupplementalObservation
 
 DERIVED_DILUTED_WAS_DERIVATION = "basic_weighted_average_shares + dilutive_shares"

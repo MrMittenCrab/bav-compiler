@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ..data.historical_strategy import (
+from extractor.data.historical_strategy import (
     ROLE_OBJECTIVE,
     ROLE_OPERATING_USE,
     ROLE_STRATEGY,
@@ -18,6 +18,7 @@ from ..data.historical_strategy import (
     THEME_PRODUCTIVITY,
     THEME_STORE_EXPANSION,
     HistoricalStrategyDisclosure,
+    disclosure_locator,
 )
 from ..data.interface import StandardizedFinancials
 from ..engine.component_catalog import (
@@ -125,13 +126,6 @@ class HistoricalStrategySynthesis:
 
 def strategy_synthesis_applicable(financials: StandardizedFinancials) -> bool:
     return revenue_driver_applicable(financials)
-
-
-def disclosure_locator(item: HistoricalStrategyDisclosure) -> str:
-    return (
-        f"{item.source_file}; {item.page_reference}; {item.section}; "
-        f"period-end {item.period.isoformat()}"
-    )
 
 
 def _featured_disclosure(

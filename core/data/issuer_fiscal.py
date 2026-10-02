@@ -11,7 +11,7 @@ from collections import defaultdict
 from datetime import date
 from pathlib import Path
 
-from .filing import PresentationRole
+from extractor.data.filing import PresentationRole
 from .interface import FinancialPeriod, StandardizedFinancials
 
 

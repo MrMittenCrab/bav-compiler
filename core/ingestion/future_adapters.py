@@ -6,7 +6,8 @@ layers consume StandardizedFinancials only; adapters are swappable.
 
 from __future__ import annotations
 
-from ..data.interface import DataSourceAdapter, DocumentManifest, ReconciliationReport, StandardizedFinancials
+from extractor.data.interface import DataSourceAdapter, DocumentManifest
+from ..data.interface import ReconciliationReport, StandardizedFinancials
 from .reconciler import reconcile_financials
 
 

@@ -6,7 +6,7 @@ from datetime import date
 
 import pytest
 
-from core.data.filing import PresentationRole, SourceRef, SupplementalFact
+from extractor.data.filing import PresentationRole, SourceRef, SupplementalFact
 from core.ingestion.filing_reconciler import (
     FilingObservation,
     ReconciledCompanyData,

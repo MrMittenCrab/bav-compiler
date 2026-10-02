@@ -15,9 +15,8 @@ import json
 from datetime import date, datetime
 from pathlib import Path
 
+from extractor.data.interface import DocumentManifest, DocumentType
 from ..data.interface import (
-    DocumentManifest,
-    DocumentType,
     FinancialPeriod,
     HistoricalShareData,
     LineItem,

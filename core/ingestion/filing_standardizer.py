@@ -6,7 +6,7 @@ from collections import defaultdict
 from datetime import date
 from typing import Any
 
-from ..data.filing import PresentationRole
+from extractor.data.filing import PresentationRole
 from ..data.historical_operating_kpis import validate_historical_operating_kpis
 from ..data.historical_segments import (
     GEOGRAPHIC_SEGMENT_NAMESPACE,

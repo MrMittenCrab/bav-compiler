@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Iterable
 
-from ..data.filing import PresentationRole
+from extractor.data.filing import PresentationRole
 from .filing_reconciler import (
     ROLE_RANK,
     ReconciledValue,

@@ -10,7 +10,7 @@ import shutil
 import pytest
 from openpyxl import load_workbook
 
-from core.data.historical_strategy import (
+from extractor.data.historical_strategy import (
     ROLE_OBJECTIVE,
     ROLE_OPERATING_USE,
     ROLE_STRATEGY,
@@ -21,6 +21,7 @@ from core.data.historical_strategy import (
     THEME_STORE_EXPANSION,
     HistoricalStrategyData,
     HistoricalStrategyDisclosure,
+    disclosure_locator,
     load_strategy_disclosures,
 )
 from core.data.standardized_io import standardized_from_payload, standardized_to_payload
@@ -73,7 +74,6 @@ from core.model.revenue_strategy_synthesis import (
     UNTESTED_INITIATIVES,
     WHAT_HISTORY_ESTABLISHES,
     compute_historical_strategy_synthesis,
-    disclosure_locator,
     strategy_synthesis_applicable,
 )
 from core.tests.test_capex import P1, P2, _tiny

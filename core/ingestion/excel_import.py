@@ -7,13 +7,8 @@ from pathlib import Path
 
 from openpyxl import load_workbook
 
-from ..data.interface import (
-    DocumentManifest,
-    DocumentType,
-    FinancialPeriod,
-    LineItem,
-    StandardizedFinancials,
-)
+from extractor.data.interface import DocumentManifest, DocumentType
+from ..data.interface import FinancialPeriod, LineItem, StandardizedFinancials
 from ..data.schema import normalize_label
 from .base import BaseIngestionAdapter
 

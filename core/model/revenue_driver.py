@@ -21,7 +21,7 @@ from ..data.interface import (
     HistoricalManagementKpiDeferredDisagreement,
     StandardizedFinancials,
 )
-from ..data.historical_strategy import (
+from extractor.data.historical_strategy import (
     ROLE_OBJECTIVE,
     THEME_COMPARABLE_SALES,
     THEME_GEOGRAPHIC_GROWTH,

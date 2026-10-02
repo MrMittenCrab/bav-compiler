@@ -10,12 +10,10 @@ from pathlib import Path
 
 import pytest
 
-from core.data.filing import PresentationRole
-from core.ingestion.filing_json import extracted_filing_to_payload, load_extracted_filing
-from core.ingestion.filing_validator import (
-    source_row_identity,
-    validate_extracted_filing,
-)
+from extractor.data.filing import PresentationRole
+from extractor.data.filing_json import extracted_filing_to_payload, load_extracted_filing
+from extractor.data.filing_validator import source_row_identity
+from core.ingestion.filing_validator import validate_extracted_filing
 
 
 def _minimal_filing_payload(**overrides) -> dict:

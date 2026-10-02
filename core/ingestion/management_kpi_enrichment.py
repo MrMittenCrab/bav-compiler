@@ -14,7 +14,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
-from .management_kpi import KIND_MANAGEMENT_KPI, classify_extracted_payload
+from extractor.data.extracted_kind import KIND_MANAGEMENT_KPI, classify_extracted_payload
 from .management_kpi_identity import (
     FAMILY_SALES_PER_SQUARE_FOOT,
     SUPPORTED_METRIC_MAPPINGS,

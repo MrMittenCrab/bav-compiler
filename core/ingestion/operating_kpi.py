@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import date
 
-from ..data.filing import PresentationRole
+from extractor.data.filing import PresentationRole
 from ..data.historical_operating_kpis import (
     validate_operating_kpi_fact,
     is_operating_kpi_fact_type,

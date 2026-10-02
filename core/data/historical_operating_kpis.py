@@ -13,7 +13,14 @@ from ..ingestion.management_kpi_identity import (
     SUPPORTED_METRIC_MAPPINGS,
     encode_metric_identity,
 )
-from .filing import PresentationRole, SupplementalFact
+from extractor.data.filing import PresentationRole, SupplementalFact
+from extractor.data.operating_kpi_contract import (
+    KPI_NAMESPACE,
+    KPI_PREFIX,
+    is_operating_kpi_fact_type,
+    reject_non_string_reported_label,
+    require_reported_label,
+)
 from .interface import (
     HistoricalManagementKpiDeferredDisagreement,
     HistoricalManagementKpiDeferredMember,
@@ -23,8 +30,6 @@ from .interface import (
     StandardizedFinancials,
 )
 
-KPI_NAMESPACE = "kpi.operating"
-KPI_PREFIX = KPI_NAMESPACE + "."
 METRIC_STORE_COUNT = "store_count"
 POPULATION_COMPANY_OPERATED = "company_operated"
 STORE_COUNT_FACT_TYPE = (
@@ -86,10 +91,6 @@ MANAGEMENT_TEXT_FIELDS = (
 )
 
 
-def is_operating_kpi_fact_type(fact_type: str) -> bool:
-    return fact_type.startswith(KPI_PREFIX)
-
-
 def split_operating_kpi_identity(fact_type: str) -> tuple[str, str]:
     """Return (metric, population) for a supported operating-KPI fact_type."""
     if not is_operating_kpi_fact_type(fact_type):
@@ -127,23 +128,6 @@ def require_kpi_unit(identity: str, unit: object) -> str:
             f"operating-KPI {identity} has unsupported unit: {unit!r}"
         )
     return normalized
-
-
-def require_reported_label(identity: str, label: object) -> str:
-    """Require a reported source label; note text is not a substitute."""
-    if not isinstance(label, str) or not label.strip():
-        raise ValueError(f"operating-KPI {identity} missing reported label")
-    return label
-
-
-def reject_non_string_reported_label(identity: str, label: object) -> None:
-    """Reject non-string serialized labels before source coercion.
-
-    ``None`` (omitted/null) is left to object-level validation.
-    """
-    if label is None or isinstance(label, str):
-        return
-    require_reported_label(identity, label)
 
 
 def validate_operating_kpi_fact(fact: SupplementalFact) -> tuple[str, str]:

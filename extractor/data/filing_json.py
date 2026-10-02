@@ -7,7 +7,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from ..data.filing import (
+from .filing import (
     ALLOWED_DOCUMENT_TYPES,
     ALLOWED_SUPPLEMENTAL_STATUS,
     ALLOWED_UNIT_SCALES,
@@ -20,7 +20,7 @@ from ..data.filing import (
     SourceRef,
     SupplementalFact,
 )
-from ..data.historical_operating_kpis import (
+from .operating_kpi_contract import (
     is_operating_kpi_fact_type,
     reject_non_string_reported_label,
 )

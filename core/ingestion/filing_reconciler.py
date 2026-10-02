@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Iterable
 
-from ..data.filing import (
+from extractor.data.filing import (
     ExtractedFiling,
     PresentationRole,
     SupplementalFact,

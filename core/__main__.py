@@ -12,7 +12,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from .data.interface import DocumentManifest, DocumentType
+from extractor.data.interface import DocumentManifest, DocumentType
 from .data.standardized_io import standardized_from_payload, standardized_to_payload
 from .engine.component_catalog import COMPONENT_CATALOG
 from .ingestion.filing_cli import load_and_validate_extracted_dir

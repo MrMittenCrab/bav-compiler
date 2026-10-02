@@ -182,3 +182,9 @@ def validate_historical_strategy(financials) -> None:
     restored = deserialize_historical_strategy(serialized)
     if restored != data:
         raise ValueError("historical_strategy round-trip identity failed")
+
+def disclosure_locator(item: HistoricalStrategyDisclosure) -> str:
+    return (
+        f"{item.source_file}; {item.page_reference}; {item.section}; "
+        f"period-end {item.period.isoformat()}"
+    )

@@ -3640,7 +3640,7 @@ def test_lululemon_five_period_temporary_pair_matches_selected_facts(tmp_path):
 
 
 def test_prior_presentation_mutation_survives_workbook_series():
-    from core.ingestion.filing_json import load_extracted_filing
+    from extractor.data.filing_json import load_extracted_filing
     from core.ingestion.filing_validator import validate_extracted_filing
     from core.tests.test_geographic_segment_analysis import EXTRACTED, SOURCE
     from core.tests.test_geographic_segment_analysis import FY2025_AMERICAS
