@@ -582,6 +582,8 @@ def test_geographic_mixed_when_a_segment_subtracts():
     assert test.sample_size == 1
     assert "not organic, constant-currency, or causal" in " ".join(test.limitations)
     assert any("negatively" in item.note for item in test.observations)
+    assert any(item.mix_conflict and item.counterexample for item in test.observations)
+    assert "contributed negatively" in test.finding
 
 
 def test_strategy_synthesis_connects_findings_without_claiming_outcomes():
@@ -1102,3 +1104,179 @@ def test_lululemon_revenue_reconstruction_and_seven_part_validation():
     assert spsf.kind == "unestablished_inference"
     for test in analysis.tests:
         assert test.assessment is not None
+
+
+def test_phase_boundaries_and_structured_flags_survive_wording():
+    import ast
+    from pathlib import Path
+
+    from composer.revenue_driver import word_identity_assessment, word_revenue_assessment
+    from interpreter.revenue_driver import interpret_revenue_assessment, interpret_theme
+    from modeler.revenue_driver import (
+        _identity_assessment,
+        compute_revenue_driver_analysis as compute_numeric,
+    )
+
+    root = Path(__file__).resolve().parents[2]
+    modeler_src = ast.parse((root / "modeler" / "revenue_driver.py").read_text())
+    interpreter_src = ast.parse((root / "interpreter" / "revenue_driver.py").read_text())
+    modeler_imports = {
+        alias.name
+        for node in modeler_src.body
+        if isinstance(node, ast.ImportFrom) and node.module
+        for alias in node.names
+    }
+    modeler_modules = {
+        node.module
+        for node in modeler_src.body
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+    interpreter_modules = {
+        node.module
+        for node in interpreter_src.body
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+    assert not any(module.startswith("interpreter") or module.startswith("composer") for module in modeler_modules)
+    assert not any(module.startswith("composer") for module in interpreter_modules)
+    assert "THEME_LABELS" not in modeler_imports
+
+    fin = _store_fin(
+        {P0: 10, P1: 12, P2: 15},
+        {P0: 100.0, P1: 130.0, P2: 160.0},
+        _disclosure(THEME_STORE_EXPANSION),
+    )
+    numeric = compute_numeric(fin)
+    bundle = numeric.theme_observations[0]
+    interpretation = interpret_theme(bundle)
+    assert any(item.counterexample for item in interpretation.observations.observations)
+    identity = _identity_assessment(
+        bundle.theme,
+        numeric.geographic_reconstruction,
+        numeric.footprint_identity,
+    )
+    from composer.revenue_driver import word_theme
+
+    test = word_theme(interpretation)
+    if identity is not None:
+        assessment = word_identity_assessment(identity, test)
+        assert assessment.kind == identity.kind
+        assert assessment.established == identity.established
+    else:
+        decision = interpret_revenue_assessment(interpretation)
+        assessment = word_revenue_assessment(decision, test)
+        assert assessment.kind == decision.kind
+        assert assessment.established == decision.established
+    assert any(item.note and item.counterexample == item.counterexample for item in test.observations)
+
+    deferred = _deferred_disagreement(period=P1)
+    deferred_fin = _attach_deferred(
+        _store_fin(
+            {P0: 10, P1: 12, P2: 15},
+            {P0: 100.0, P1: 130.0, P2: 160.0},
+            _disclosure(THEME_PRODUCTIVITY),
+            management=[_spsf(period=P2, value=1500)],
+        ),
+        deferred,
+    )
+    deferred_numeric = compute_numeric(deferred_fin)
+    productivity = interpret_theme(deferred_numeric.theme_observations[0])
+    assert productivity.has_deferred_spsf is True
+    from composer.revenue_driver import word_theme as word_prod
+
+    worded = word_prod(productivity)
+    assert worded.has_deferred_spsf is True
+    assert any(item.startswith("Deferred ") for item in worded.limitations)
+    interpreter_text = (root / "interpreter" / "revenue_driver.py").read_text()
+    historical_text = (root / "interpreter" / "historical_strategy.py").read_text()
+    assert "_is_counterexample_note" not in interpreter_text
+    assert '"Deferred' not in interpreter_text
+    assert '"Deferred' not in historical_text
+    assert "THEME_LABELS" not in historical_text
+
+    from modeler.revenue_driver import _conflicting_qualifier_fields
+
+    qualifier_item = _deferred_disagreement(
+        members=(
+            _deferred_member(
+                locator="a",
+                definition_text="same definition",
+                presentation_role="current",
+            ),
+            _deferred_member(
+                locator="b",
+                definition_text="same definition",
+                presentation_role="prior",
+            ),
+        )
+    )
+    qualifier_item.members[1].population = POP_STORES_AND_DTC
+    assert _conflicting_qualifier_fields(qualifier_item) == ("population",)
+
+    geo_fin = _geo_tiny(
+        _snapshot(P1, values=_corp_values(rev=(100.0, 20.0, 10.0))),
+        _snapshot(P2, values=_corp_values(rev=(90.0, 25.0, 10.0))),
+    )
+    _with_strategy(geo_fin, _disclosure(THEME_GEOGRAPHIC_GROWTH))
+    geo_numeric = compute_numeric(geo_fin)
+    geo_interp = interpret_theme(geo_numeric.theme_observations[0])
+    assert any(
+        item.consistent is False and item.counterexample
+        for item in geo_interp.observations.observations
+    )
+    geo_test = word_theme(geo_interp)
+    assert "did not grow" in geo_test.finding
+    geo_identity = _identity_assessment(
+        geo_numeric.theme_observations[0].theme,
+        geo_numeric.geographic_reconstruction,
+        geo_numeric.footprint_identity,
+    )
+    geo_assessment = word_identity_assessment(geo_identity, geo_test)
+    assert geo_assessment.kind == geo_identity.kind
+    assert geo_assessment.established == geo_identity.established
+    assert geo_assessment.contradictions == geo_test.finding
+
+    prod_fin = _store_fin(
+        {P1: 10, P2: 15},
+        {P1: 100.0, P2: 110.0},
+        _disclosure(THEME_PRODUCTIVITY, role=ROLE_OPERATING_USE),
+    )
+    prod_complete = compute_revenue_driver_analysis(prod_fin).tests[0]
+    assert prod_complete.rps_declines > 0
+    assert prod_complete.assessment is not None
+    assert prod_complete.assessment.contradictions == prod_complete.finding
+    assert "declined in" in prod_complete.finding
+
+
+def test_revenue_then_margin_assessment_order_is_first_name_wins():
+    from core.current_build import prepare_company_input, resolve_company
+    from core.research.drivers import assemble_drivers_view, _unique_assessments
+
+    fin = prepare_company_input(resolve_company("Lululemon"), Path("/tmp/unused"))
+    analysis = compute_revenue_driver_analysis(fin)
+    names = [item.name for item in analysis.assessments]
+    theme_order = [
+        "footprint and intensity identity",
+        "comparable-sales coincidence",
+        "sales-per-square-foot productivity",
+        "geographic revenue reconstruction",
+    ]
+    positions = [names.index(item) for item in theme_order]
+    assert positions == sorted(positions)
+    margin_names = [
+        "component operating-margin identity",
+        "component operating-margin contributions",
+        "gross-profit amount bridge",
+        "impairment or asset-related charges",
+        "mix, markdowns, freight, costs, or leverage",
+        "latest adjacent operating-margin movement",
+    ]
+    margin_positions = [names.index(item) for item in margin_names]
+    assert margin_positions == sorted(margin_positions)
+    assert names.index(theme_order[0]) < names.index(margin_names[0])
+    view = assemble_drivers_view(fin, "Lululemon")
+    unique_names = [item.name for item in view.assessments]
+    assert unique_names == list(dict.fromkeys(unique_names))
+    duplicated = _unique_assessments(analysis.assessments + analysis.assessments)
+    assert [item.name for item in duplicated] == unique_names or [
+        item.name for item in duplicated
+    ] == list(dict.fromkeys(names))

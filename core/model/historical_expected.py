@@ -60,7 +60,7 @@ from ..engine.semantic_map import ResolvedComponent
 from .acquisition_cash import AcquisitionCashSeries
 from .cash_rollforward import CashRollforwardSeries
 from .inventory_analysis import InventoryAnalysisSeries
-from .reported_margin import ReportedMarginSeries
+from modeler.reported_margin import ReportedMarginSeries
 from .share_repurchase import ShareRepurchaseSeries
 from .capex import CapexSeries
 from .earnings_quality import EarningsQualitySeries

@@ -10018,3 +10018,114 @@ This documentation relocation does not establish Session 10 acceptance.
 
 None.
 
+---
+
+# RESULT.md — Step 10.4 Split Driver assessment calculations, judgments and wording
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)  
+**Step:** 10.4 — Split Driver assessment calculations, judgments and wording  
+**Work:** `b0acea18798147eb824094bee2a60f09`  
+**Plan:** `a32e38ca62b94e2b8e59edbf0170c54b`  
+**Finding:** Split Driver assessment calculations, judgments and wording
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change.
+
+Preserved interruption work from this same Step 10.4 attempt was inspected and finished. A prior interruption is not completion evidence.
+
+## Baseline B
+
+Authenticated from populated `IMPLEMENT_BASE_SHA`. Fail-closed was not required.
+
+| Record | Value | Result |
+|---|---|---|
+| `.git/autocycle/resume-state` `IMPLEMENT_BASE_SHA` | `5fa23efac0d5a86e253832691ed330a04577541b` | Used as B |
+| `STATE_BRANCH` / `git HEAD` / branch tip | `checkpoint/20260913-183303` / same SHA | HEAD == B |
+| `implementation-baseline.json` `head` | same SHA | Bound |
+| Ancestry | `git merge-base --is-ancestor B HEAD` rc 0 | Bound |
+| `work-state` allocated `10.4` | `source` = B, `work_id` = `b0acea18798147eb824094bee2a60f09` | Bound |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | `step_id` 10.4, same `work_id` | Bound |
+| `.git/autocycle/latest-implementation` | leftover `77dc874…` (Step 10.3) | Ignored: `IMPLEMENT_BASE_SHA` populated |
+
+B blobs (`git show B:path`, SHA-256 / bytes):
+
+| Path at B | Bytes | SHA-256 |
+|---|---:|---|
+| `core/model/revenue_driver.py` | 59165 | `68464626d86bee4289ef08962c77fe90d748a4cbee59e69323de1f48cc04f3b5` |
+| `core/model/reported_margin.py` | 44917 | `94bb8a1c23e4ad5523716fac7fd355c7ff6fda3f778dce283a450afd4bf4eec4` |
+| `core/model/revenue_strategy_synthesis.py` | 14609 | `60b937c4e9c52a4315745db071c2aeac8e843375511b8b41a2a464368834d792` |
+
+Inventory §7.0 / §7.1 still name earlier-review hashes (`ff46fc45…` / `f9006d0f…`). Those were not substituted for this B. §7.4 `reported_margin.py` hash matches this B.
+
+## Responsibility mappings
+
+Director `director/driver_assessment.py` sequences Modeler compute → Interpreter interpret → Composer word. Collection assembly concatenates existing records; first-name-wins `_unique_assessments` is unchanged.
+
+| B mixed file | Destination | Owner |
+|---|---|---|
+| `core/model/revenue_driver.py` observations, identities, residual identity `kind`/`established`, applicability | `modeler/revenue_driver.py` | Modeler |
+| same file verdicts, hypotheses, mechanisms, `QUAL_*` / `REQ_*`, structured `counterexample` | `interpreter/revenue_driver.py` | Interpreter |
+| same file notes, findings, limitation sentences, assessment wording | `composer/revenue_driver.py` | Composer |
+| `core/model/reported_margin.py` series, signs, residuals, availability, identity validity, charge amounts, latest-pair flags | `modeler/reported_margin.py` | Modeler |
+| same file mix/cost/leverage limit, episodic charge typology, latest contradiction class | `interpreter/reported_margin.py` | Interpreter |
+| same file assessment sentences and `AMOUNT_BRIDGE_CONVENTION` | `composer/reported_margin.py` | Composer |
+| `core/model/revenue_strategy_synthesis.py` featured evidence, verdict groups, limit codes, deferred-SPSF / counterexample flags | `interpreter/historical_strategy.py` | Interpreter |
+| same file lead, inference sentences, navigation, fallback | `composer/overview.py` | Composer |
+| `strategy_synthesis_applicable` | `modeler/revenue_driver.py` beside `revenue_driver_applicable` | Modeler |
+
+`KIND_*` and `MarginRelationshipAssessment` stay on `modeler/reported_margin.py`. Identity `kind`/`established` remain residual-owned (`max_resid < 1e-4` for revenue identities; ratio/amount residual helpers for margin identities). Disclosure-presence `established` and latest-pair `established` stay Modeler. Composer copies `kind`/`established` unchanged.
+
+Counterexample extras and deferred-SPSF no longer scan Composer tokens. Geographic `counterexample` is `mix_conflict or consistent is False`. Productivity RPS-decline uses Modeler `rps_declines` so assessment `contradictions` still receive the existing finding when that identity declined. Qualifier-field difference names come from Modeler `_conflicting_qualifier_fields`; Composer maps labels and still inserts `"definition"` when definition texts differ.
+
+## Retained façades
+
+Temporary delegating façades only; they do not choose judgments or implement wording:
+
+- `core/model/revenue_driver.py` → `complete_revenue_driver_analysis`
+- `core/model/reported_margin.py` → `complete_reported_margin_series`
+- `core/model/revenue_strategy_synthesis.py` → `complete_historical_strategy_synthesis`
+
+Composer `compute_historical_strategy_synthesis` requires a completed analysis and does not run hidden tests. Director may still complete analysis when the façade receives `analysis=None`.
+
+## Caller handoffs
+
+| Consumer | After split |
+|---|---|
+| `core/research/drivers.py` | Director completed records; assemble concatenates; `_finding_sentence` / `_KIND_LABELS` remain here (later `drivers.py` split) |
+| `core/engine/reference_model.py` | Modeler numeric margin series; Director completed revenue-driver analysis for the sheet |
+| `core/model/historical_expected.py` | Modeler `ReportedMarginSeries` only |
+| `core/engine/component_catalog.py` | unchanged sheet-construction strings |
+| `core/trainer/checker.py` | Modeler numeric `compute_reported_margin_series` |
+| `core/trainer/workbook.py` `_add_bav_opening` | Director completed synthesis + Composer fallback (Trainer inversion later) |
+
+Theme order remains store → compsales → productivity → geographic. Margin branches append identity, contributions, GP-bridge, charges, mix, latest movement. First-name-wins dedup preserved.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| B authentication (resume-state, baseline JSON, branch ref, `git merge-base --is-ancestor`, work-state 10.4) | B = `5fa23efa…`; HEAD == B; fail-closed not required |
+| `git show B:` three mixed files | hashes in the B table above |
+| Split vs B: thresholds, identity residual rule, six margin guards, five revenue assessment branches, exceptions, SCOPE_NOTE / hypotheses / mechanisms / FAILED_* / mix limit / synthesis fallback | Preserved; Composer strings checked against B |
+| Import graph | Modeler has no Interpreter/Composer imports; Interpreter has no Composer imports and no `THEME_LABELS` / `_is_counterexample_note` / `"Deferred ` prose scan |
+| Numeric workbook consumers | `reference_model` / `checker` / `historical_expected` / `component_catalog` do not invoke `word_*` or Interpreter assessment helpers |
+| `/opt/anaconda3/bin/python -m pytest -q` on the eleven listed files | **555 passed**, 5 warnings (pre-existing Swig importlib), 244.25s |
+| `python3 -m bav --help` | rc 0; ingest / validate-source / reconcile / build / check / publish / list |
+| `git diff --check` | rc 0 |
+| Native Office / company rebuild / publication | **Not run** — no workbook formula/dependency or presentation change; no canonical input or publication regeneration. SESSION native-verify condition was not met |
+
+Focused regressions added for phase boundaries, unchanged `kind`/`established` through wording, structured geographic/productivity counterexamples, deferred-SPSF flags without prose scan, qualifier-field names from Modeler, and first-name-wins assessment order.
+
+## Preservation
+
+Canonical inputs, source evidence, accounting signs, fiscal distinctions, precision, admission/comparison independence, residual qualifications, fail-closed controls, optional Trainer behavior and zero-byte research placeholders were not modified. No second-phase features. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+## Remaining toward Completion
+
+The broader `drivers.py` / `selection.py` split, management-emphasis eligibility correction, remaining component relocation, Trainer inversion, justified removals and final representative build/check/publication verification remain subsequent work. Inventory §16 behavior defects were not repaired.
+
+This split does not establish Session 10 acceptance.
+
+## Required plan change
+
+None.
+

@@ -10,9 +10,9 @@ BAV Compiler has five active components. Visible packages exist; this Session is
 
 - **Director** — architecture, orchestration, contracts, and high-level specifications under `director/docs/`, including `director/docs/STYLE.md` and `director/docs/DRIVER.md`.
 - **Extractor** — source-faithful filing JSON contracts and loaders. This repository does not extract statements from PDF.
-- **Modeler** — reproducible calculations, workbook construction, and mechanical validity. Most implementation still lives under `core/` pending later relocation.
-- **Interpreter** — judgments about economic meaning. Mixed Driver and assessment splits remain subsequent work.
-- **Composer** — publication, argument structure, and figure presentation. Rendering implementation still lives under `core/research/` pending later relocation.
+- **Modeler** — reproducible calculations, workbook construction, and mechanical validity. Revenue-driver observations, reported-margin series, and identity validity live under `modeler/`; most other implementation still lives under `core/` pending later relocation.
+- **Interpreter** — judgments about economic meaning. Revenue-driver verdicts, reported-margin claim typology, and historical-strategy selection live under `interpreter/`. Broader `drivers.py` / `selection.py` splits remain subsequent work.
+- **Composer** — publication, argument structure, and figure presentation. Revenue-driver and margin assessment wording and Overview opening live under `composer/`; other rendering still lives under `core/research/` pending later relocation.
 
 **Legacy** holds useful prior functionality outside the active architecture, including optional Trainer derivation. Active BAV build and publication must not depend on Legacy as a hidden implementation layer.
 
@@ -169,7 +169,7 @@ No automatic HKEX/SEC scraping in this product.
 
 Next:
 
-- Complete the structural migration: remaining component relocation, mixed Driver and assessment splits, Trainer inversion, justified removals, and representative Lululemon / Fast Retailing build, check, and publication verification.
+- Complete the structural migration: remaining component relocation, the broader Drivers/selection split, Trainer inversion, justified removals, and representative Lululemon / Fast Retailing build, check, and publication verification.
 
 Later (deferred product capabilities):
 

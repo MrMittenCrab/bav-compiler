@@ -328,11 +328,12 @@ class TrainingWorkbookGenerator:
             and title != "Build Status"
             and wb[title].sheet_state == "visible"
         ]
-        from ..model.revenue_strategy_synthesis import (
-            PROFESSIONAL_FALLBACK,
-            compute_historical_strategy_synthesis,
-            strategy_synthesis_applicable,
+        from composer.overview import PROFESSIONAL_FALLBACK
+        from director.driver_assessment import (
+            complete_historical_strategy_synthesis,
+            complete_revenue_driver_analysis,
         )
+        from modeler.revenue_driver import strategy_synthesis_applicable
 
         ws = wb.create_sheet(BAV_OPENING_SHEET, 0)
         ws.sheet_view.showGridLines = False
@@ -384,7 +385,8 @@ class TrainingWorkbookGenerator:
         cursor = 6
         navigation: list[str] = []
         if strategy_synthesis_applicable(fin):
-            synthesis = compute_historical_strategy_synthesis(fin)
+            analysis = complete_revenue_driver_analysis(fin)
+            synthesis = complete_historical_strategy_synthesis(fin, analysis)
             _label(cursor, "Historical reading")
             _narrative(cursor, synthesis.lead)
             cursor += 2

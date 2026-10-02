@@ -25,19 +25,21 @@ from ..model.operating_kpi_relationships import (
 )
 from ..model.period_axis import PeriodAxisError, canonical_fiscal_periods
 from ..model.ratio_values import is_source_unavailable
-from ..model.reported_margin import (
+from director.driver_assessment import (
+    complete_reported_margin_series,
+    complete_revenue_driver_analysis,
+)
+from modeler.reported_margin import (
     MarginRelationshipAssessment,
-    compute_reported_margin_series,
     publication_reconstruction_allowed,
     reported_operating_margin_applicable,
 )
-from ..model.revenue_driver import (
+from extractor.data.historical_strategy import (
     THEME_COMPARABLE_SALES,
     THEME_GEOGRAPHIC_GROWTH,
     THEME_STORE_EXPANSION,
-    compute_revenue_driver_analysis,
-    revenue_driver_applicable,
 )
+from modeler.revenue_driver import revenue_driver_applicable
 from ..model.revenue_per_store import compute_revenue_per_store_series
 from .selection import (
     OFFSET_EXACT,
@@ -670,7 +672,7 @@ def assemble_drivers_view(
             float(rps.period_end_revenue_per_store[period]) for period in axis
         )
     margins = (
-        compute_reported_margin_series(financials, list(axis))
+        complete_reported_margin_series(financials, list(axis))
         if reported_operating_margin_applicable(financials)
         else None
     )
@@ -680,7 +682,7 @@ def assemble_drivers_view(
         else None
     )
     analysis = (
-        compute_revenue_driver_analysis(financials)
+        complete_revenue_driver_analysis(financials)
         if revenue_driver_applicable(financials)
         else None
     )

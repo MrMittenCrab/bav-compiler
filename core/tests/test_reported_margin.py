@@ -905,3 +905,65 @@ def test_fast_retailing_signed_sga_uses_analytical_expenses_and_keeps_residual()
     assert residual_blocks_reconstruction_claim(
         series.contribution_residual[latest], kind="ratio", publication=True
     )
+
+
+def test_margin_phase_boundaries_and_flags_copy_through_wording():
+    import ast
+    from pathlib import Path
+
+    from composer.reported_margin import (
+        word_latest_movement,
+        word_margin_contributions,
+        word_unsupported_mix,
+    )
+    from interpreter.reported_margin import (
+        interpret_latest_movement,
+        interpret_unsupported_mix,
+    )
+    from modeler.reported_margin import (
+        compute_reported_margin_series as compute_numeric,
+        _latest_adjacent_movement,
+        _margin_contribution_validity,
+    )
+
+    root = Path(__file__).resolve().parents[2]
+    modeler_modules = {
+        node.module
+        for node in ast.parse((root / "modeler" / "reported_margin.py").read_text()).body
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+    interpreter_modules = {
+        node.module
+        for node in ast.parse((root / "interpreter" / "reported_margin.py").read_text()).body
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+    assert not any(
+        module.startswith("interpreter") or module.startswith("composer")
+        for module in modeler_modules
+    )
+    assert not any(module.startswith("composer") for module in interpreter_modules)
+
+    payload = json.loads(LULU_RECONCILED.read_text(encoding="utf-8"))
+    fin = standardized_from_payload(payload)
+    periods = canonical_fiscal_periods(fin)
+    numeric = compute_numeric(fin, periods)
+    assert numeric.assessments == ()
+    contrib = _margin_contribution_validity(numeric)
+    worded = word_margin_contributions(contrib)
+    assert worded.kind == contrib.kind
+    assert worded.established == contrib.established
+    mix = word_unsupported_mix(interpret_unsupported_mix())
+    assert mix.kind == "unestablished_inference"
+    assert mix.established is False
+    latest = _latest_adjacent_movement(numeric)
+    movement = word_latest_movement(latest, interpret_latest_movement(latest))
+    assert movement.kind == "observed_relationship"
+    assert movement.established is True
+    assert movement.established == latest.established
+
+    checker_src = (root / "core" / "trainer" / "checker.py").read_text()
+    expected_src = (root / "core" / "model" / "historical_expected.py").read_text()
+    assert "composer.reported_margin" not in checker_src
+    assert "interpreter.reported_margin" not in checker_src
+    assert "word_margin" not in expected_src
+    assert "interpret_latest_movement" not in expected_src

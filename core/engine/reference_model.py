@@ -59,15 +59,15 @@ from ..model.operating_kpi_relationships import (
     operating_kpi_revenue_comparable_sales_relationship_applicable,
     operating_kpi_revenue_sales_per_square_foot_relationship_applicable,
 )
-from ..model.revenue_driver import (
-    SCOPE_NOTE as REVENUE_DRIVER_SCOPE_NOTE,
+from composer.revenue_driver import SCOPE_NOTE as REVENUE_DRIVER_SCOPE_NOTE
+from director.driver_assessment import complete_revenue_driver_analysis
+from extractor.data.historical_strategy import (
     THEME_COMPARABLE_SALES,
     THEME_GEOGRAPHIC_GROWTH,
     THEME_PRODUCTIVITY,
     THEME_STORE_EXPANSION,
-    compute_revenue_driver_analysis,
-    revenue_driver_applicable,
 )
+from modeler.revenue_driver import revenue_driver_applicable
 from ..model.revenue_per_store import (
     SCOPE_NOTE as REVENUE_PER_STORE_SCOPE_NOTE,
     compute_revenue_per_store_series,
@@ -114,7 +114,7 @@ from ..model.cash_rollforward import (
     cash_movement_difference_applicable,
     resolve_cash_rollforward_sources,
 )
-from ..model.reported_margin import (
+from modeler.reported_margin import (
     ACQUISITION_EXPENSE_CONCEPT,
     AMORTIZATION_CONCEPT,
     GAIN_ON_DISPOSAL_CONCEPT,
@@ -1452,7 +1452,7 @@ class ReferenceModelBuilder:
         if not revenue_driver_applicable(self.fin):
             self.revenue_driver_specs = ()
             return self.revenue_driver_specs
-        analysis = compute_revenue_driver_analysis(self.fin, self.periods)
+        analysis = complete_revenue_driver_analysis(self.fin, self.periods)
         self.revenue_driver_analysis = analysis
         (
             store_growth_periods,

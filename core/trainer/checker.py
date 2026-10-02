@@ -55,7 +55,7 @@ from ..model.cash_rollforward import (
     compute_cash_rollforward_series,
     cash_rollforward_applicable,
 )
-from ..model.reported_margin import (
+from modeler.reported_margin import (
     compute_reported_margin_series,
     reported_margin_applicable,
 )
