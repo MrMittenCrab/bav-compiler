@@ -6,8 +6,11 @@ Modeler, Interpreter, Composer, Legacy, or Remove. Classification follows the
 kind of decision. Configuration, tests, data and documentation inherit an
 owner and are not additional active components. Do not create `remove/`.
 
-Authenticated baseline **B** = `86ebdecb6c01a7153bbf6c90f5af16294753a3cd`.
-Tracked historical content is the Git tree at B. Current working-tree files
+Authenticated continuation baseline **B** = `312cb8aff118d427a73a3ad202693d2019d692bf`.
+The reviewed 10.1 attempt used `86ebdecb6c01a7153bbf6c90f5af16294753a3cd`; that
+commit is an ancestor of B (`86ebdec` → `02d7fcd` Step 10.1 → `312cb8a` Plan
+10.1.1). Mixed source blobs at both SHAs are byte-identical. Tracked historical
+content is the Git tree at this continuation’s B. Current working-tree files
 were inspected for local inputs, generated outputs and empty leftover dirs.
 
 ---
@@ -16,17 +19,18 @@ were inspected for local inputs, generated outputs and empty leftover dirs.
 
 | Record | Value | Result |
 |---|---|---|
-| `.git/autocycle/resume-state` `IMPLEMENT_BASE_SHA` | `86ebdecb6c01a7153bbf6c90f5af16294753a3cd` | Populated; used as B |
+| `.git/autocycle/resume-state` `IMPLEMENT_BASE_SHA` | `312cb8aff118d427a73a3ad202693d2019d692bf` | Populated; used as B |
 | `STATE_BRANCH` | `checkpoint/20260913-183303` | Matches `.git/HEAD` |
-| `.git/refs/heads/checkpoint/20260913-183303` | `86ebdecb6c01a7153bbf6c90f5af16294753a3cd` | HEAD == B |
+| `.git/refs/heads/checkpoint/20260913-183303` | `312cb8aff118d427a73a3ad202693d2019d692bf` | HEAD == B |
 | `.git/autocycle/implementation-baseline.json` `head` / `branch` | same SHA / same branch | Bound |
-| `.git/autocycle/work-state.json` allocated `10.1` | `source` = B, `work_id` = `7951a38d066a440e8bfa19cd9dc5ecc7`, `status` = `opened` | Attempt bound |
-| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | `step_id` 10.1, same `work_id` / `plan_id` | Bound |
-| Ancestry | HEAD equals B | B is an ancestor of HEAD |
-| `.git/autocycle/latest-implementation` | Points at `be5d9275…` and a `bav_trainer` log path | Ignored: `IMPLEMENT_BASE_SHA` is populated |
+| `.git/autocycle/work-state.json` allocated `10.1.1` | `source` = B, `work_id` = `7951a38d066a440e8bfa19cd9dc5ecc7`, `status` = `opened` | Attempt bound |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | `step_id` 10.1.1, same `work_id` | Bound |
+| Ancestry | HEAD equals B; `86ebdec…` is an ancestor of HEAD | Fail-closed not required |
+| Reviewed-attempt B | `86ebdecb6c01a7153bbf6c90f5af16294753a3cd` | Historical reference only; not this continuation’s B |
+| `.git/autocycle/latest-implementation` | Still names `86ebdec…` | Ignored: `IMPLEMENT_BASE_SHA` is populated |
 
-Fail-closed was not required. `latest-implementation` is leftover from another
-repository path and is not the implementation baseline.
+Fail-closed was not required. `latest-implementation` is leftover from the
+reviewed 10.1 attempt and is not the implementation baseline.
 
 ---
 
@@ -56,8 +60,8 @@ an entry. Mixed files have separate responsibility rows.
 | Public `bav` package | 4.2 | Preserve `python -m bav` |
 | `core/__main__.py`, `current_build.py`, `build_status.py`, `project_companies.json` | 4.2, 10 | Director orchestration |
 | `core/data/` | 4.3, 7 | Split Extractor contract vs Modeler payload |
-| `core/ingestion/` | 7 | Admission/reconcile = Modeler; no production extractor |
-| `core/model/` | 4.4, 7 | Active historical Modeler; dormant forecast/RI stay Modeler |
+| `core/ingestion/` | 7.3 | Extractor JSON contract I/O; Modeler admit/reconcile; no PDF extractor |
+| `core/model/` | 4.4, 7.0, 7.1 | Homogeneous Modeler plus exhaustive revenue-driver/synthesis splits |
 | `core/engine/` | 10 | Workbook construction = Modeler; registry policy = Director |
 | `core/trainer/` | 10 | Invert: BAV build is Modeler; practice overlay is Legacy |
 | `core/research/` | 5–9 | Mixed Driver split |
@@ -107,11 +111,13 @@ Preserve public package name `bav` and company interfaces
 | `core/__init__.py` `__version__ = "0.1.0"` | stay as compatibility package; rewrite Trainer branding when copy is touched | imports | Director | Package identity | version string |
 | `core/__main__.py` `main` / argparse | `director/cli.py`; `python -m core` remains an alias | `bav/__main__.py` | Director | Lifecycle coordination | `test_build_cli.py`, `test_filing_cli.py` |
 | `cmd_build` company path | Director orchestration calling Modeler + Composer | `python -m bav build <Company>` | Director | Does not choose accounting | `test_current_build.py`; Lulu/FR build |
-| `cmd_build` explicit JSON `-o` | Director route; body still Legacy Trainer derive | compatibility users | Director + Legacy | Dual-output remains a CLI compatibility path | `test_build_cli.py` |
+| `cmd_build` argparse / company path | `director/cli.py` `cmd_build` | CLI | Director | Route only | `test_build_cli.py` |
+| `cmd_build` explicit JSON `-o` Trainer derive body | `legacy/trainer/derive.py` (existing `build_training_workbook` path) | compatibility users | Legacy | Dual-output body; not a second active architecture | `test_build_cli.py` |
 | `cmd_check` / `cmd_publish` / `cmd_list` | Director routes | CLI | Director | Check diagnostic; publish Composer; list Modeler catalog | company check/publish/list |
 | `cmd_validate_source` | Director route over Extractor contract + Modeler bind | CLI | Director | Orchestrates already-extracted JSON | `test_filing_cli.py` |
 | `cmd_reconcile` | Director route; body Modeler | CLI | Director | Writes reconciled artifacts | `test_filing_reconciler.py` |
-| `cmd_ingest` + `HKManualDocumentAdapter` | Director route; adapter Legacy | CLI | Director + Legacy | Transcribed HK ingest, not canonical company path | `cmd_ingest` tests |
+| `cmd_ingest` argparse / route | `director/cli.py` `cmd_ingest` | CLI | Director | Route only | ingest tests |
+| `HKManualDocumentAdapter` | `legacy/ingestion/manual_hk.py` | `cmd_ingest` | Legacy | Transcribed HK ingest, not canonical company path | ingest tests |
 | `core/current_build.py` `PROJECTS`, `resolve_company`, `build_company`, `check_company_output`, `prepare_company_input`, atomic exchange | `director/current_build.py` | CLI, `document.py`, tests | Director | “Company metadata selects evidence locations, never accounting behavior” | `test_current_build.py` |
 | `core/project_companies.json` | `director/project_companies.json` | `current_build.PROJECTS` | Director | Names/slugs/aliases/fixture paths | resolve Lululemon/LULU/FastRetailing/9983 |
 | `core/build_status.py` | `modeler/build_status.py` | `build_company` | Modeler | Mechanical family availability | `test_current_build.py` |
@@ -122,14 +128,16 @@ Preserve public package name `bav` and company interfaces
 |---|---|---|---|---|---|
 | `core/data/filing.py` (`ExtractedFiling`, `SourceRef`, `FilingMetadata`) | `extractor/data/filing.py` (contract only) | ingestion loaders | Extractor | Documentary extracted-filing schema. Engine does not produce it from PDF | `test_filing_json.py` |
 | `core/data/interface.py` `DocumentManifest`, `DataSourceAdapter` | `extractor/data/interface.py` | `HKManualDocumentAdapter`, ingest | Extractor | Source-document handoff | ingest tests |
-| `core/data/interface.py` `StandardizedFinancials`, `LineItem`, statements | `modeler/data/interface.py`; Director names the handoff | engine, model, CLI, research | Modeler (payload) / Director (interface authority) | Model-facing contract | `standardized_from_payload(..., strict=True)` |
-| `core/data/schema.py` `validate_standardized` | Director contract check **or** Remove if still unused after move | exported only | Director (keep as unused contract) | Completeness of StandardizedFinancials; no production caller | grep remains export-only |
+| `core/data/interface.py` `StandardizedFinancials`, `LineItem`, statements | `modeler/data/interface.py` | engine, model, CLI, research | Modeler | Model-facing payload. Director documents the handoff in `director/docs/`; it does not own the type | `standardized_from_payload(..., strict=True)` |
+| `core/data/schema.py` `validate_standardized` | `director/data/schema.py` | exported only | Director | Unused completeness contract; keep, do not Remove, until out-of-tree use is known | grep remains export-only |
 | `core/data/validators.py` statement checksums | `modeler/data/validators.py` | reconciler, build refuse | Modeler | Arithmetic identities on standardized statements | `test_validators.py` |
 | `core/data/standardized_io.py` | `modeler/data/standardized_io.py` | `prepare_company_input`, CLI | Modeler | Model-only JSON; strips formulas | round-trip tests |
 | `core/data/line_identity.py` | `modeler/data/line_identity.py` | merge/classify | Modeler | Line identity | `test_line_identity.py` |
 | `core/data/issuer_fiscal.py` | `modeler/data/issuer_fiscal.py` | `prepare_company_input` | Modeler | Issuer FY labels; never from calendar year of period-end | `test_issuer_fiscal.py` |
-| `core/data/historical_operating_kpis.py` / `historical_segments.py` | `modeler/data/` | KPI/geo, IO | Modeler | Validated analytical contracts | KPI/geo tests |
-| `core/data/historical_strategy.py` + fixture `core/tests/fixtures/strategy/lululemon_management_disclosures.json` | disclosures stay company-input / Extractor-shaped; loader consumed by Modeler | `prepare_company_input` | Extractor (source-bound text+locator) | “Not an extraction or research framework”; pre-authored JSON | `test_revenue_driver.py` |
+| `core/data/historical_operating_kpis.py` | `modeler/data/historical_operating_kpis.py` | KPI/geo, IO | Modeler | Validated analytical contract | KPI tests |
+| `core/data/historical_segments.py` | `modeler/data/historical_segments.py` | geo IO | Modeler | Validated analytical contract | geo tests |
+| `core/data/historical_strategy.py` types, `load_strategy_disclosures`, `deserialize_historical_strategy`, `serialize_historical_strategy`, `validate_historical_strategy`, locators | `extractor/data/historical_strategy.py` | `prepare_company_input`, `standardized_io` | Extractor | Source-bound text+locator I/O and round-trip identity; not economic interpretation | `test_revenue_driver.py` |
+| fixture `core/tests/fixtures/strategy/lululemon_management_disclosures.json` | stay fixture path until company-input promotion | `project_companies.json` | Extractor-shaped attributed evidence | Same | `test_revenue_driver.py` |
 
 ### 4.4 Homogeneous Modeler modules
 
@@ -141,7 +149,7 @@ later split is listed.
 |---|---|---|---|
 | `classification.py`, `financial_math.py`, `line_resolver.py`, `period_axis.py`, `ratio_values.py`, `source_values.py`, `source_availability.py`, `historical_expected.py` | Modeler | engine, tests | matching `core/tests/test_*.py` |
 | `normalization.py` series arithmetic; `normalized_per_share.py` | Modeler | builder, checker | `test_normalization.py`, `test_normalized_per_share.py` |
-| `reported_margin.py`, `revenue_driver.py` (arithmetic/tests), `revenue_per_store.py`, `geographic_segment.py`, `operating_kpi.py`, `operating_kpi_relationships.py`, `management_kpi.py` | Modeler | research assemble, workbook | corresponding tests + `test_research_drivers.py` series |
+| `reported_margin.py`, `revenue_per_store.py`, `geographic_segment.py`, `operating_kpi.py`, `operating_kpi_relationships.py`, `management_kpi.py` | Modeler | research assemble, workbook | corresponding tests + `test_research_drivers.py` series |
 | `earnings_quality.py`, `earnings_quality_change.py`, `working_capital.py`, `profitability_drivers.py`, `profitability_change.py`, `roe_attribution.py`, `per_share.py`, `per_share_attribution.py`, `inventory_analysis.py`, `cash_rollforward.py`, `capex.py`, `fixed_asset.py`, `lease_liability.py`, `lease_rou.py`, `lease_repayment.py`, `deferred_tax.py`, `goodwill_intangibles.py`, `acquisition_cash.py`, `share_repurchase.py`, `ownership_attribution.py` | Modeler | engine, benchmarks | matching tests; Lulu/FR benchmarks |
 | `operating_forecast.py` | Modeler (dormant) | `test_operating_forecast.py` only | Do not activate |
 | `ri_engine.py` | Modeler (dormant) | `ReferenceModelBuilder` only if `include_deferred_forecast` | `test_normal_v1_build_does_not_call_run_scenario` |
@@ -152,8 +160,10 @@ Mixed inside otherwise Modeler files:
 |---|---|---|---|
 | `judgment.py` `classification_judgment_cases` (case list from `decision.ambiguous`) | `modeler/judgment.py` | Modeler | Deterministic case selection |
 | `judgment.py` `CLASSIFICATION_JUDGMENT_TEMPLATES` rationale / consequence / prompt | `interpreter/classification_judgment.py` | Interpreter | Meaning of alternatives |
-| `normalization.py` treatment rationales | Interpreter text; Modeler keeps case IDs and series | Interpreter + Modeler | Same split |
-| `revenue_strategy_synthesis.py` | see §7 | split | Mixed |
+| `normalization.py` case IDs, series, treatment selection | `modeler/normalization.py` | Modeler | Reproducible series | `test_normalization.py` |
+| `normalization.py` treatment rationales | `interpreter/normalization.py` | Interpreter | Meaning of alternatives | same tests’ rationale assertions |
+| `revenue_driver.py` | see §7.0 | split | Mixed; do not treat as homogeneous Modeler |
+| `revenue_strategy_synthesis.py` | see §7.1 | split | Mixed |
 
 ### 4.5 Tests (inherited owners)
 
@@ -162,17 +172,30 @@ implementation move.
 
 | Group | Owner |
 |---|---|
-| `test_filing_json.py`, `test_filing_cli.py`, `test_management_kpi_{admission,enrichment,identity,reconciliation,history}.py`, `test_operating_kpi_facts.py`, `test_geographic_segment_facts.py`, `test_normalization_candidate_admission.py` | Extractor (bind) + Modeler (admit/reconcile) |
+| `test_filing_json.py` parse / serialize / schema-reject cases | Extractor |
+| `test_filing_cli.py` | Director (route) calling Extractor load + Modeler validate/admit |
+| `test_management_kpi_admission.py` `load_extracted_json_object` / `classify_extracted_payload` / `load_extracted_filing` schema cases | Extractor |
+| `test_management_kpi_admission.py` admit/bind cases | Modeler |
+| `test_management_kpi_{enrichment,identity,reconciliation,history}.py` | Legacy enrich; Modeler identity/reconcile/history |
+| `test_operating_kpi_facts.py`, `test_geographic_segment_facts.py` load/round-trip | Extractor load + Modeler admit |
+| `test_normalization_candidate_admission.py` | Modeler (provisional) |
 | `test_filing_reconciler.py`, `test_validators.py`, `test_issuer_fiscal.py`, `test_line_identity.py`, `test_line_resolver.py`, `test_classification.py`, `test_share_basis.py`, `test_historical_segment.py`, `test_source_availability.py`, `test_normalization.py`, `test_reported_margin.py` | Modeler |
 | Analytical family `test_{earnings_quality*,working_capital,profitability_*,roe_attribution,per_share*,normalized_per_share,fixed_asset,lease_*,deferred_tax,goodwill_intangibles,capex,inventory_analysis,acquisition_cash,cash_rollforward,share_repurchase,ownership_attribution,operating_forecast}.py` | Modeler |
-| `test_{operating_kpi_analysis,operating_kpi_relationships,operating_kpi_workbook,operating_kpi_management_history,management_kpi_analysis,revenue_per_store,revenue_driver,geographic_segment_analysis,geographic_segment_workbook}.py` | Modeler |
+| `test_{operating_kpi_analysis,operating_kpi_relationships,operating_kpi_workbook,operating_kpi_management_history,management_kpi_analysis,revenue_per_store,geographic_segment_analysis,geographic_segment_workbook}.py` | Modeler |
+| `test_revenue_driver.py` catalog/link/axis/reconstruction/numeric observations | Modeler (`modeler/tests/test_revenue_driver.py`) |
+| `test_revenue_driver.py` verdict / limitation / deferred-SPSF / hypothesis-mechanism cases | Interpreter (`interpreter/tests/test_revenue_driver.py`) |
+| `test_revenue_driver.py` finding/note/opening/fallback wording and sheet narrative | Composer (`composer/tests/test_revenue_driver.py`) |
+| `test_lululemon_benchmark.py` / `test_fast_retailing_benchmark.py` `load_extracted_filing` setup | Extractor import; assertions stay Modeler |
 | `test_build_contract.py`, `test_reference_integrity.py`, `test_historical_v1_exit_gate.py`, `test_cross_company_robustness.py` | Modeler |
 | `test_build_cli.py`, `test_current_build.py` | Director |
 | `test_research_drivers.py` | split with §5 (Modeler / Interpreter / Composer) |
 | `test_publication.py` | Composer |
-| `test_learner_ready_presentation.py` | Composer + Director + Legacy (mixed file) |
+| `test_learner_ready_presentation.py` style / schedule wording / no-exercise-framing | Composer (`composer/tests/test_learner_ready_presentation.py`) |
+| `test_learner_ready_presentation.py` `test_root_readme_is_practical_trainer_guide` | Director (`director/tests/test_readme.py`) |
+| `test_learner_ready_presentation.py` committed Trainer/Answer Key pair cases | Legacy (`legacy/tests/test_learner_ready_presentation.py`) |
 | `test_trainer.py` | Legacy |
-| `test_lululemon_benchmark.py`, `test_fast_retailing_benchmark.py` | Director (fixture policy) + Modeler |
+| `test_lululemon_benchmark.py`, `test_fast_retailing_benchmark.py` fixture-policy assertions | Director |
+| `test_lululemon_benchmark.py`, `test_fast_retailing_benchmark.py` numerical / schedule assertions | Modeler |
 | `test_cached_workbook_verifier.py`, `test_reference_workbook_audit.py` | Legacy |
 | Fixtures `operating_kpis/lululemon_company_operated_stores.json` | Extractor-shaped fact handoff (referenced by `project_companies.json`) |
 | Fixtures `ordinary_reconcile/lululemon/*` | Modeler protected reconcile snapshot |
@@ -182,7 +205,7 @@ implementation move.
 
 | Current | Destination | Disposition | Reason | Verification |
 |---|---|---|---|---|
-| `scripts/prepare_lululemon_operating_kpi_filings.py` | stay scripts or `extractor/` helper | Extractor | Copies extracts + appends authored store facts; does not write protected PDFs | `augment_extracted_filings` |
+| `scripts/prepare_lululemon_operating_kpi_filings.py` | `extractor/scripts/prepare_lululemon_operating_kpi_filings.py` | Extractor | Copies extracts + appends authored store facts; does not write protected PDFs | `augment_extracted_filings` |
 | `scripts/build_lululemon_release.py`, `build_fast_retailing_release.py` | `legacy/scripts/` | Legacy | Retired Trainer/Answer Key release pair | not on `bav build` path |
 | `scripts/audit_fast_retailing_benchmark.py`, `audit_reference_workbook.py` | `legacy/scripts/` | Legacy | Stage / GOOGL audit | matching tests |
 | `scripts/extract_benchmark_pdf_text.py` | `legacy/scripts/` | Legacy | Regenerable PDF text cache | `requirements-benchmark.txt` |
@@ -251,7 +274,7 @@ No AWS/GCP/S3/Terraform.
 | `build/input/lululemon/evidence/ordinary-reconcile/*` | redundant with tracked fixtures | Legacy local copy | Tracked fixtures are the regression contract | fixture SHA tests |
 | `build/input/lululemon/evidence/stale-benchmark-reconciled/` | delete empty dir | Remove | Empty | `ls` empty |
 | `build/input/fast_retailing/evidence/_extract/*.txt` | delete after unused-script confirmation | Remove | Regenerable cache; not `prepare_company_input` | not read by build |
-| `build/input/fast_retailing/source_manifest.json` | stay; rewrite paths to `build/input/fast_retailing/source/` when PDFs are restored | Extractor + Director | SHA ledger; currently names obsolete `benchmark/` paths | restore-then-bind |
+| `build/input/fast_retailing/source_manifest.json` | stay `build/input/fast_retailing/source_manifest.json` | Extractor | SHA ledger of source filings. Director later rewrites obsolete `benchmark/` paths as a path-policy edit; the file owner remains Extractor | restore-then-bind |
 | `build/output/<slug>/` workbook + supporting JSON | stay | Modeler | Reproducible analytical artifacts | `python -m bav build/check` |
 | `build/output/<slug>/research/*.md`, `figures/`, `*.docx`, `*.pdf` | stay | Composer | Reproducible publication | `python -m bav publish`; Forecast/Valuation/Overview remain 0 bytes |
 
@@ -380,7 +403,7 @@ No new types. Handoffs remain `DriversView` → `ResearchSelection` → Markdown
 | `relationship_findings` | Composer (pre-worded sentences) |
 | `margin_explanation` | unused (`""` at assemble); do not invent a replacement |
 | `attributions` | Modeler container of Extractor locators |
-| `selection` | Interpreter + Composer per `ResearchSelection` fields |
+| `selection` | field owners in `ResearchSelection` below; not a second owner of the view |
 
 ### `ResearchClaim`
 
@@ -417,18 +440,206 @@ No new types. Handoffs remain `DriversView` → `ResearchSelection` → Markdown
 
 ---
 
-## 7. Synthesis, validators, ingestion
+## 7. Revenue-driver, synthesis, validators, ingestion
+
+Thin existing-data handoffs only. No reasoning ontology. After the split,
+Modeler must not import Interpreter or Composer; Interpreter must not import
+Composer labels; Composer consumes Modeler numbers and Interpreter codes.
+
+**Director sequence for existing callers** (`build_company`, research assemble,
+Overview opening): Modeler compute → Interpreter interpret → Composer word →
+consumer writes or renders. Keep one compatibility façade per mixed file only
+until those callers are updated; the façade may not choose judgments.
+
+### 7.0 `core/model/revenue_driver.py` (exhaustive)
+
+Git blob at B and at reviewed-attempt `86ebdec…`: SHA-256
+`ff46fc45f303a5fb883c01c2bd5520efe57a419b013b6d0a3ee4f117c828c4bb` (59157 bytes).
+
+#### A. Modeler — observations, arithmetic, mechanical validity
+
+Destination file: `modeler/revenue_driver.py`.
+
+| Source symbol / field | Destination symbol | Reason | Consumers | Verification |
+|---|---|---|---|---|
+| `CALCULATION_KIND` | same | Calculation provenance | `RevenueDriverAnalysis.calculation_kind` | `test_revenue_driver` |
+| `RevenueDriverPeriodObservation.period`, `.inputs`, `.consistent` | same | Aligned inputs and coincidence flags (`rev>0 and stores>0`). Not a verdict | workbook expand `_revenue_driver_expand_inputs`; research compsales points; Interpreter verdict | numeric tests |
+| `GeographicRevenueReconstruction` all fields | same | Component sum, residuals, contributions | `assemble_drivers_view`; `_assess_revenue_test` identity | reconstruction tests |
+| `FootprintIntensityIdentity` numeric fields | same | Stores × intensity identity and change split | assemble; identity assessment | footprint tests |
+| `FootprintIntensityIdentity.convention` formula clause | `FOOTPRINT_IDENTITY_FORMULA` | Arithmetic convention only | assessment magnitude; sheet | identity tests |
+| `RevenueDriverAnalysis.periods`, `.calculation_kind`, `.geographic_reconstruction`, `.footprint_identity` | same | Numeric analysis | workbook, research | `test_revenue_driver` |
+| `RevenueDriverHypothesisTest.theme`, `.admitted_inputs`, `.periods_tested`, `.sample_size`, `.disclosures` (container) | same | Theme key, admitted series, sample | workbook sample row; Interpreter | theme tests |
+| `revenue_driver_applicable` | same | `bool(data.disclosures)` gates optional series, not driver status | `_prepare_revenue_driver`; assemble; synthesis applicable | skip-without-disclosures |
+| `_require_annual_axis`, `_numeric` | same | Axis / numeric coerce | builders | interim-axis test |
+| `_disclosures_for` | same | Mechanical theme filter | builders | theme presence |
+| `_compsales_adjacent_comparison_ineligible` | same | Adjacent compsales growth is None | Interpreter limitation code | ineligible tests |
+| `_conflicting_qualifier_fields` (names only from `_QUALIFIER_FIELDS`) | `_QUALIFIER_FIELD_NAMES` | Which qualifier fields differ | deferred-disagreement detect | deferred-SPSF test |
+| `_spsf_missing_periods` / unavailable-reason codes from `_spsf_evidence_limitations` | `_spsf_evidence_gaps` | Missing periods and `REASON_*` codes | Interpreter gap codes | SPSF limitation tests |
+| `_deferred_disagreement_limitations` member selection | `_deferred_disagreements_for` | Filter `deferred_disagreements` by family | Interpreter | deferred-SPSF test |
+| `_THEME_BUILDERS` numeric phase | `_store_expansion_observations`, `_comparable_sales_observations`, `_productivity_observations`, `_geographic_observations` | Build observation inputs/flags only; leave `.note` empty | Interpreter / Composer | each hypothesis-test builder |
+| `_store_expansion_test` numeric body L544–650 | `_store_expansion_observations` | Applicability, relationship, RPS, coincidence, payload | workbook store rows | supported/mixed/contradicted/insufficient |
+| `_comparable_sales_test` numeric body L714–799 | `_comparable_sales_observations` | Identities, percents, differences, `consistent` | research compsales points; workbook | compsales tests |
+| `_productivity_test` numeric body L852–947 | `_productivity_observations` | SPSF growth availability, RPS rise/decline counts | Interpreter | SPSF tests |
+| `_geographic_test` numeric body L1015–1141 | `_geographic_observations` | Contribution signs, extra False flag for mix | Interpreter | geographic mixed test |
+| `compute_revenue_driver_analysis` L1192–1209, 1220–1228 numeric | same, numeric-only return | Axis, reconstructions, observation tests | Director sequence | missing-disclosures / axis |
+| `_geographic_reconstruction`, `_footprint_intensity_identity` | same | Pure arithmetic | assemble; assessments | reconstruction tests |
+| `_assess_revenue_test` identity residual branch L1376–1416 | `_identity_assessment` | `KIND_IDENTITY` + residual `< 1e-4` | `analysis.assessments` | seven-part validation |
+| `REASON_*` via management_kpi imports | stay Modeler admission codes | Mechanical unavailability | Composer labels | SPSF tests |
+
+#### B. Interpreter — hypotheses, mechanisms, verdicts, causal qualifications
+
+Destination file: `interpreter/revenue_driver.py`.
+
+| Source symbol / field | Destination symbol | Reason | Consumers | Verification |
+|---|---|---|---|---|
+| `VERDICT_*`, `SUPPORTED_VERDICTS` | same | Verdict vocabulary | Composer display; tests | verdict tests |
+| `HYPOTHESIS_*`, `MECHANISM_*` | same | Hypothesis and mechanism text already stored as judgment, not publication order | workbook “Analyst hypothesis” / “Economic mechanism” | hypothesis tests |
+| Semantic codes for `SCOPE_NOTE` / limitation clauses | `QUAL_NOT_OUTCOME`, `QUAL_DESCRIPTIVE_DIFFERENCE`, `QUAL_RPS_NOT_PRODUCTIVITY`, `QUAL_POPS_DISTINCT`, `QUAL_GAPS_NOT_BRIDGED`, `QUAL_NOT_ORGANIC_FX` | Qualification kinds; not sentences | Composer wording | limitation tests |
+| `FAILED_*` / `ADDITIONAL_*` as requirement ids | `REQ_STORE_GROWTH`, `REQ_COMPSALES`, `REQ_SPSF_GROWTH`, `REQ_GEOGRAPHIC`, `REQ_COMPSALES_HISTORY` | What evidence is missing | Composer phrases (preserve existing strings) | failed-requirement rows |
+| `RevenueDriverHypothesisTest.hypothesis`, `.mechanism`, `.verdict`, `.failed_requirement`, `.additional_evidence` | same fields, Interpreter-produced | Judgment and requirement codes | workbook verdict/failed rows; synthesis | verdict tests |
+| `RevenueDriverPeriodObservation.consistent` consumption | `_verdict_from_consistency` | Maps flags → verdict | each builder | mixed/contradicted |
+| Structured counterexample | `observation.counterexample: bool` replacing `_is_counterexample_note` token scan | Interpreter must not parse Composer notes | `_finding_with_counterexamples`; synthesis | counterexample tests |
+| `_objective_limitation` | `has_objective_role` + `QUAL_NOT_OUTCOME` | ROLE_OBJECTIVE is not an achieved outcome | Composer sentence | objective tests |
+| `_store_expansion_test` verdict/qualification | `interpret_store_expansion` | Verdict, codes, counterexample flags | Composer `word_store_expansion` | store-expansion tests |
+| `_comparable_sales_test` verdict/qualification | `interpret_comparable_sales` | same | Composer | compsales tests |
+| `_productivity_test` verdict/qualification | `interpret_productivity` | same | Composer | SPSF tests |
+| `_geographic_test` verdict/qualification | `interpret_geographic` | same; mix uses Modeler’s extra False flag | Composer | geographic mixed |
+| `_assess_revenue_test` `KIND_OBSERVED` / `KIND_UNESTABLISHED` / contradicted kind | `interpret_revenue_assessment` | Kind and `established` | Composer assessment wording | seven-part validation |
+| `RevenueDriverHypothesisTest.assessment.kind`, `.established` | Interpreter | Meaning of the test | research `_finding_sentence` via Composer | assessments |
+
+Do not have Interpreter import `_SEGMENT_LABELS`, `_format_ratio_pct`, or
+`THEME_LABELS`.
+
+#### C. Composer — publication wording
+
+Destination file: `composer/revenue_driver.py`.
+
+| Source symbol / field | Destination symbol | Reason | Consumers | Verification |
+|---|---|---|---|---|
+| `_SEGMENT_LABELS`, `_segment_label` | same | Display names | geographic notes | geo finding text |
+| `_SPSF_REASON_LABELS`, `_FAMILY_DISAGREEMENT_LABELS` | same | Display labels for Modeler codes | limitation sentences | SPSF / deferred tests |
+| `_QUALIFIER_FIELDS` labels | `_QUALIFIER_FIELD_LABELS` | Display only | deferred-disagreement prose | deferred-SPSF |
+| `_format_ratio_pct`, `_format_pp` | same | Display rounding | observation notes | finding strings |
+| `_finding_with_counterexamples` | same | Join base finding + counterexample notes | `test.finding` | “exceeded revenue growth” |
+| `_format_deferred_disagreement` | same | Existing deferred sentence | `test.limitations` | deferred-SPSF test |
+| `_compsales_population_limitations` wording | `word_compsales_population_limit` | Render distinct-population code | limitations | population tests |
+| `_spsf_evidence_limitations` wording | `word_spsf_evidence_limits` | Render gap codes | limitations | SPSF limitation tests |
+| `SCOPE_NOTE` rendered | same string | Preserve exact wording | `analysis.scope_note`; workbook A5 | `result.scope_note == SCOPE_NOTE` |
+| `FOOTPRINT_IDENTITY_CONVENTION` rendered | same string = formula + Interpreter productivity qualification | Preserve exact wording | `footprint.convention`; assessments | identity tests |
+| `RevenueDriverPeriodObservation.note` | same | Period interpretation sentences | workbook `_period_interpretations` | note assertions |
+| `RevenueDriverHypothesisTest.finding`, rendered `.limitations`, `.identity_notes` | same | Publication sentences | workbook Finding/Limitations; synthesis `test.finding`; research | finding tests |
+| Assessment text fields | same | `direction`, `magnitude`, `reconstruction`, `residual`, `stability`, `contradictions`, `disclosure_support`, `limitation` | `DriversView.relationship_findings` via `_finding_sentence` | seven-part |
+| `word_store_expansion` / `word_comparable_sales` / `word_productivity` / `word_geographic` | new | Fill notes/finding/limitations from existing templates | builders’ current return | same tests |
+
+#### `_store_expansion_test` executable split
+
+1. Modeler `_store_expansion_observations`: applicability, `compute_operating_kpi_revenue_store_relationship`, optional RPS, per-period `inputs` + `consistent`.
+2. Interpreter `interpret_store_expansion`: `_verdict_from_consistency`, `HYPOTHESIS_STORE_EXPANSION`, `MECHANISM_STORE_EXPANSION`, qualification codes, `REQ_STORE_GROWTH` when insufficient, `counterexample` on exceeded-growth / RPS-decline / store-up-revenue-down periods.
+3. Composer `word_store_expansion`: existing note sentences, `finding` including `Verdict: …`, limitation sentences including `REVENUE_PER_STORE_SCOPE_NOTE`.
+
+Same three-function pattern for `_comparable_sales_test`, `_productivity_test`,
+`_geographic_test`. `_THEME_BUILDERS` becomes a Modeler observation map;
+Interpreter/Composer maps stay beside it.
+
+#### Result-field producers (one producer each)
+
+| Field | Producer | Workbook | Research | Tests |
+|---|---|---|---|---|
+| `observation.inputs` / `.consistent` / `.period` | Modeler | expand + formula links | compsales points | numeric |
+| `observation.note` | Composer | period interpretation row | unused | finding/note |
+| `test.verdict` | Interpreter | verdict row (Composer displays `replace('_',' ')`) | unused | verdict |
+| `test.hypothesis` / `.mechanism` | Interpreter | hypothesis/mechanism rows | unused | hypothesis |
+| `test.finding` / `.limitations` / `.identity_notes` | Composer | Finding / Limitations / Identity note | synthesis copies finding | finding |
+| `test.failed_requirement` / `.additional_evidence` | Interpreter codes; Composer existing phrases | failed / additional rows | unused | failed-requirement |
+| `analysis.geographic_reconstruction` / `.footprint_identity` | Modeler | reconstruction block | assemble series | reconstruction |
+| `analysis.scope_note` | Composer | A5 | unused | `== SCOPE_NOTE` |
+| `analysis.assessments` kind/established | Interpreter | unused | `_finding_sentence` | seven-part |
+| `analysis.assessments` wording | Composer | unused | relationship_findings | seven-part |
+| `test.disclosures` | Extractor-shaped records already on financials | management-statement rows | unused | locator tests |
+
+**Imports after the move:** `modeler/revenue_driver.py` keeps relationship /
+KPI / geo / period_axis imports. `interpreter/revenue_driver.py` imports
+Modeler observation types and verdict constants only. `composer/revenue_driver.py`
+imports Interpreter codes + Modeler numbers; it does not compute series.
+`core.engine.reference_model` numeric expand imports Modeler only.
+`core.research.drivers` assemble imports Modeler observations; `_finding_sentence`
+imports Composer. `core.trainer.workbook._add_bav_opening` does not import
+this module.
+
+Preservation: existing `test_revenue_driver.py` strings, verdicts, residuals,
+and workbook link formulas stay. Composer keeps current sentences.
 
 ### 7.1 `core/model/revenue_strategy_synthesis.py`
 
-| Symbol | Destination | Disposition | Reason | Verification |
-|---|---|---|---|---|
-| `disclosure_locator` | Extractor-shaped helper consumed by Interpreter | Extractor | Formats `source_file; page_reference; section; period-end` | `test_revenue_driver.py` locators |
-| `strategy_synthesis_applicable` | `modeler/` | Modeler | `return revenue_driver_applicable(financials)` | applicability tests |
-| `compute_historical_strategy_synthesis` when it calls `compute_revenue_driver_analysis` and reads verdict / sample / finding / limitations | `modeler/` orchestrator | Modeler | Pulls admitted tests; does not invent values | `test_strategy_synthesis_connects_findings_without_claiming_outcomes` |
-| `_verdict_inference`, `_lead`, `_qualification`, `_productivity_gap`, `_counterexample_notes`, `_featured_disclosure` | `interpreter/historical_strategy.py` | Interpreter | Verdict wording, featured-role choice, causal limits | no “achieved outcome”; no promoting deferred SPSF |
-| `THEME_LABELS`, `THEME_SCHEDULES`, `_schedule_clause`, `_navigation`, `PROFESSIONAL_FALLBACK` | `composer/overview.py` | Composer | Sheet names, navigation, fallback opening | `test_learner_ready_presentation.py` |
-| `StrategyFindingInterpretation` / `HistoricalStrategySynthesis` | split: Interpreter owns `inference`/`limits`; Composer owns `navigation`/`heading` | Interpreter + Composer | Mixed record | round-trip tests |
+Git blob at B and at `86ebdec…`: SHA-256
+`f9006d0f6faceb643cc949e948c304e8f3316ff3725e338b78d4684de071f16c` (14784 bytes).
+
+#### A. Modeler
+
+| Source | Destination | Reason | Verification |
+|---|---|---|---|
+| `strategy_synthesis_applicable` | `modeler/revenue_driver.py` (next to `revenue_driver_applicable`) | `return revenue_driver_applicable(financials)` | applicability |
+| Optional `compute_revenue_driver_analysis` fetch | caller supplies `RevenueDriverAnalysis` | Composer/opening must not run tests as a hidden side effect after the move | `test_strategy_synthesis_connects_findings_without_claiming_outcomes` |
+
+#### B. Interpreter — `interpreter/historical_strategy.py`
+
+| Source | Destination symbol | Reason | Verification |
+|---|---|---|---|
+| `_ROLE_PRIORITY`, `_featured_disclosure` | same | Which disclosure role to feature | featured-statement tests |
+| `_management_statement` selection | `select_featured_disclosures` | Evidence selection | synthesis tests |
+| `_qualification` | `qualification_codes(test)` | Semantic codes, not sentences | no “achieved outcome” |
+| `_verdict_inference` **branch only** | `select_verdict_inference(test) -> {supported,mixed,contradicted,insufficient}` | Judgment selection. Must not read `THEME_LABELS` | verdict-without-outcome |
+| `_counterexample_notes` | `selected_counterexample_ids` using `observation.counterexample` | Stop scanning Composer tokens | counterexample tests |
+| `_has_deferred_spsf` | `has_deferred_spsf` on Interpreter limitations / Modeler disagreements | Stop parsing “Deferred …” prose | deferred-SPSF link-without-promotion |
+| `_productivity_gap` judgment | `productivity_gap_kind` | Insufficient vs other; do not promote deferred SPSF | same |
+| `UNTESTED_INITIATIVES`, `WHAT_HISTORY_ESTABLISHES`, `DEFERRED_SPSF_LINK` as codes | `LIMIT_UNTESTED`, `LIMIT_HISTORY`, `LIMIT_DEFERRED_SPSF` | Causal limits | synthesis limits |
+| `StrategyFindingInterpretation.theme`, semantic `inference` | Interpreter fields | Theme + selected inference | synthesis |
+| `HistoricalStrategySynthesis` semantic `limits` / `productivity_gap` / `untested` | Interpreter fields | Qualification payload | opening “Evidence limits” |
+
+#### C. Composer — `composer/overview.py`
+
+| Source | Destination symbol | Reason | Verification |
+|---|---|---|---|
+| `THEME_LABELS` | same | Display labels | `_verdict_inference` / `_lead` wording |
+| `THEME_SCHEDULES`, `_schedule_clause`, `_navigation` | same | Sheet names and “See ….” | `REVENUE_DRIVER_SHEET_NAME in store_row.finding` |
+| `_join_labels` | same | Plural join | lead sentences |
+| `_format_statement`, `disclosure_locator` consumption | `format_management_statement` | Wording of Extractor locator + text | locator tests |
+| `_verdict_inference` templates, lowercasing, `observation`/`s` | `word_verdict_inference` | Presentation only | no Composer labels in Interpreter |
+| `_lead` templates, capitalize, is/are | `word_lead` | Opening prose | opening tests |
+| `_productivity_gap` sentences | `word_productivity_gap` | Render Interpreter kind | deferred-SPSF |
+| `PROFESSIONAL_FALLBACK` | same | Opening when synthesis is inapplicable | `test_opening_without_strategy_stays_professional_fallback` |
+| `StrategyFindingInterpretation.heading`, `.management_statement`, `.finding` (finding + schedule clause), `.supporting_schedules`, rendered `.inference`, rendered `.counterexample` | Composer fields | Publication record | synthesis tests |
+| `HistoricalStrategySynthesis.lead`, `.navigation`, rendered limits/gap/untested | Composer fields | Overview opening | `_add_bav_opening` |
+| `compute_historical_strategy_synthesis` | `composer/overview.py` same name | Composer façade: require analysis, call Interpreter, word. Temporary optional analysis=None may call Modeler compute only | `test_strategy_synthesis_*` |
+| `_interpretations` | `compose_interpretations` | Assemble Composer fields from Interpreter + Modeler tests | same |
+
+`disclosure_locator` stays Extractor-shaped:
+`extractor/data/historical_strategy.py` `disclosure_locator` (same format
+`source_file; page_reference; section; period-end`). Composer formats; it does
+not invent locators.
+
+**Overview opening** (`core/trainer/workbook.py` `_add_bav_opening`): after
+Trainer inversion this function is Composer `composer/workbook_opening.py`
+`_add_bav_opening`. It consumes `lead`, rendered limits/gap/untested,
+`navigation`, and `PROFESSIONAL_FALLBACK`. Layout/hyperlinks are Composer.
+Company/period identity lines are Modeler facts displayed by Composer.
+
+#### Result-field producers
+
+| Field | Producer | Opening | Tests |
+|---|---|---|---|
+| `synthesis.lead` | Composer from Interpreter verdict groups | “Historical reading” | no “Historical finding”; no outcome claim |
+| `synthesis.limits` / `.productivity_gap` / `.untested` | Interpreter codes; Composer existing sentences | “Evidence limits” | limits without promoting SPSF |
+| `synthesis.navigation` | Composer | schedule hyperlinks | sheet names exist |
+| `row.inference` | Interpreter selection; Composer `word_verdict_inference` | unused (opening uses lead) | no Composer labels inside Interpreter |
+| `row.finding` | Composer (`test.finding` + schedule clause) | unused | `analysis.tests[0].finding in store_row.finding` |
+| `row.heading` / `.supporting_schedules` | Composer | unused | THEME_LABELS |
+| `PROFESSIONAL_FALLBACK` | Composer | fallback opening | fallback test |
+
+**Imports:** Interpreter historical_strategy imports Modeler test records and
+verdict codes only — never `THEME_LABELS`. Composer overview imports
+`THEME_LABELS`, Interpreter codes, Extractor `disclosure_locator`, and
+catalog sheet-name constants. `_add_bav_opening` imports Composer only.
 
 ### 7.2 Validators and admission
 
@@ -438,26 +649,80 @@ No new types. Handoffs remain `DriversView` → `ResearchSelection` → Markdown
 | `core/ingestion/filing_validator.py` `bind_source_file`, `source_row_identity` | Extractor | SHA-256 / portable `source_file` / page | `python -m bav validate-source` |
 | `filing_validator.validate_operating_kpi_fact` path | Modeler | Admission identity, not provenance | KPI fact tests |
 | `historical_operating_kpis` / `historical_segments` validators | Modeler | Fail-closed identity / bridge | matching tests |
-| `management_kpi.py` admit/bind/classify | Modeler | Content-aware admission of already-extracted KPI JSON | `test_management_kpi_admission.py` |
+| `management_kpi.py` `classify_extracted_payload`, `_annual_schema_complete`, `_management_schema_complete` | Extractor `extractor/data/extracted_kind.py` | Schema kind of already-extracted JSON; not admission | `test_management_kpi_admission.py` classify cases |
+| `management_kpi.py` `load_management_kpi_document`, `parse_management_kpi_document` | Extractor `extractor/data/management_kpi_json.py` | Source-faithful parse of management-KPI JSON | admission tests’ parse setup |
+| `management_kpi.py` admit/bind | Modeler `modeler/ingestion/management_kpi.py` | Content-aware admission of already-parsed KPI documents | `test_management_kpi_admission.py` admit |
 | `management_kpi_identity.py`, `management_kpi_reconciliation.py`, `management_kpi_history.py` | Modeler | Identity, conflict, history derivation | matching tests |
 | `operating_kpi.py` / `geographic_segment.py` selection | Modeler | Restated-vs-prior / Q4-2023 identity | fact tests |
-| `normalization_candidate_admission.py` | Modeler (provisional) + Interpreter (human treatments); not default reconcile | Opt-in; human judgments are not facts | `test_normalization_candidate_admission.py` |
+| `normalization_candidate_admission.py` case/series admission | Modeler `modeler/ingestion/normalization_candidate_admission.py` | Opt-in; not default reconcile | `test_normalization_candidate_admission.py` |
+| `normalization_candidate_admission.py` human treatment judgments | Interpreter `interpreter/normalization.py` | Human treatments are not facts | same tests |
 | `share_basis.py` | Modeler | Restatement-factor resolution | `test_share_basis.py` |
 
-### 7.3 Ingestion I/O
+### 7.3 Ingestion I/O — `load_extracted_filing` owner
 
-| Current | Disposition | Reason | Verification |
-|---|---|---|---|
-| `filing_json.py` `load_extracted_filing` | Director/Modeler loader of Extractor output | Parses extracted JSON; does not open PDFs | `test_filing_json.py` |
-| `filing_cli.py` | Director | Workflow over extracted dir | `test_filing_cli.py` |
-| `filing_reconciler.py` `reconcile_filings` | Modeler | Cross-filing selection | `test_filing_reconciler.py` |
-| `reconciliation_provenance_payload` | Extractor (`source_file`, `source_sha256`, `pdf_page`) + Modeler (`selection_rule`, rank) | Split raw vs analytical provenance | committed `provenance.json` |
-| `filing_standardizer.py` | Modeler | Emit model-only `StandardizedFinancials` | Lulu/FR reconcile |
-| `note_handoff.py` | Director staging helper | Appends already-authored note facts | prepare script |
-| `excel_import.py`, `manual_hk.py` | Legacy | Transcribed Excel/JSON adapters | ingest / demo tests |
-| `future_adapters.py` `HKEXAdapter`, `SECAdapter`, `SGXAdapter` | Remove | `NotImplementedError`; TARGET forbids HKEX scrape; no production import | `rg` definition + `README-HK-TRAINER.md` mention only |
-| `base.py` / `reconciler.py` | Modeler | Shared checksum reconcile | build refuse-on-fail |
-| `management_kpi_enrichment.py` `inspect_source_pdf`, `enrich_management_working_copies` | Legacy binder; **not** Extractor product | Opens PDFs to bind pages / optional traced SPSF; refuses to write protected `extracted/`; company build does not call enrich | `test_management_kpi_enrichment.py` |
+**Disposition: Extractor.** Exact destination
+`extractor/data/filing_json.py` keeping the current symbol names.
+
+This is source-faithful schema I/O of already-extracted JSON. It is not PDF
+extraction, not admission, not reconciliation, and not Director orchestration.
+Existing loading does not authorize building a new extractor.
+
+Git blob at B and at `86ebdec…`: SHA-256
+`46bc9271922965c3141a5161eceeb15c5485f5dd3ee2f5ca9b5ec55724d93562` (12851 bytes).
+
+| Source symbol | Destination | Disposition | Reason | Callers | Verification |
+|---|---|---|---|---|---|
+| `_required_nonempty_str`, `_optional_str`, `_required_positive_int`, `_parse_date` | `extractor/data/filing_json.py` | Extractor | Schema scalars | `load_extracted_filing` | `test_filing_json.py` rejects |
+| `_parse_source` | same | Extractor | `SourceRef` page/statement/note/label | statement/supplemental rows | page-required tests |
+| `_parse_values`, `_parse_statement_row` | same | Extractor | Statement rows and presentation roles | load | round-trip |
+| `_parse_supplemental` | same | Extractor | Note/share facts; parse-time `reject_non_string_reported_label` is contract shape, not admission | load | KPI label tests |
+| `load_extracted_filing` | same | Extractor | Parse one ExtractedFiling v1.0 file; does not open PDFs | `filing_cli.load_and_validate_extracted_dir`; tests listed below | `test_filing_json.py` |
+| `load_extracted_json_object` | same | Extractor | Raw object load, no schema dispatch | `filing_cli` before classify; `test_management_kpi_admission.py` | classify-then-load |
+| `extracted_filing_to_payload` | same | Extractor | Serialize the published contract | round-trip tests | payload == JSON |
+| `core/data/filing.py` types | `extractor/data/filing.py` | Extractor | Published contract | loaders | same tests |
+| `is_operating_kpi_fact_type`, `reject_non_string_reported_label` used at parse | `extractor/data/operating_kpi_contract.py` | Extractor | Parse-time type/label shape. Modeler admission keeps its own identity checks and may import the same type-set | `_parse_supplemental` | operating-KPI fact tests |
+
+**Not this loader**
+
+| Symbol | Owner | Why |
+|---|---|---|
+| `classify_extracted_payload` | Extractor `extractor/data/extracted_kind.py` | Schema kind; used after raw load |
+| `validate_extracted_filing` / `bind_source_file` | Extractor `extractor/data/filing_validator.py` | Provenance bind |
+| `validate_operating_kpi_fact` | Modeler | Admission identity |
+| `issuer_fiscal_years_from_extracted` | Modeler `modeler/data/issuer_fiscal.py` | Own `json.loads` for FY mapping; does not call `load_extracted_filing` |
+| `prepare_company_input` | Director → Modeler `standardized_from_payload` | Company build reads `reconciled/standardized.json`, not this loader |
+| `filing_cli.list_extracted_json_files`, `load_and_validate_extracted_dir` | Director `director/ingestion/filing_cli.py` | Lists files and sequences Extractor load + Modeler admit |
+| `cmd_validate_source` / `cmd_reconcile` | Director | CLI routes |
+
+**Production callers of `load_extracted_filing`:** only
+`core/ingestion/filing_cli.py` L66 (Director validate/reconcile path).
+
+**Test callers:** `test_filing_json.py`, `test_management_kpi_admission.py`,
+`test_operating_kpi_facts.py`, `test_geographic_segment_facts.py`,
+`test_geographic_segment_analysis.py`, `test_geographic_segment_workbook.py`,
+`test_lululemon_benchmark.py`, `test_fast_retailing_benchmark.py`.
+
+**Import changes:** `from extractor.data.filing_json import load_extracted_filing,
+load_extracted_json_object, extracted_filing_to_payload`. Director
+`filing_cli` imports Extractor loaders + `classify_extracted_payload`. Modeler
+reconcile/standardize consume `ExtractedFiling` instances; they do not parse
+JSON. Company `python -m bav build` does not gain an Extractor dependency
+through this loader.
+
+Remaining ingestion rows:
+
+| Current | Destination | Disposition | Reason | Verification |
+|---|---|---|---|---|
+| `filing_cli.py` | `director/ingestion/filing_cli.py` | Director | Workflow over extracted dir | `test_filing_cli.py` |
+| `filing_reconciler.py` `reconcile_filings` | `modeler/ingestion/filing_reconciler.py` | Modeler | Cross-filing selection | `test_filing_reconciler.py` |
+| `reconciliation_provenance_payload` `source_file` / `source_sha256` / `pdf_page` | Extractor fields on the payload | Extractor | Raw source provenance | committed `provenance.json` |
+| `reconciliation_provenance_payload` `selection_rule` / rank | Modeler fields on the same payload | Modeler | Analytical selection provenance | committed `provenance.json` |
+| `filing_standardizer.py` | `modeler/ingestion/filing_standardizer.py` | Modeler | Emit model-only `StandardizedFinancials` | Lulu/FR reconcile |
+| `note_handoff.py` | `director/ingestion/note_handoff.py` | Director | Appends already-authored note facts | prepare script |
+| `excel_import.py`, `manual_hk.py` | `legacy/ingestion/` | Legacy | Transcribed Excel/JSON adapters | ingest / demo tests |
+| `future_adapters.py` `HKEXAdapter`, `SECAdapter`, `SGXAdapter` | delete in place | Remove | `NotImplementedError`; TARGET forbids HKEX scrape; no production import | `rg` definition + `README-HK-TRAINER.md` mention only |
+| `base.py` / `reconciler.py` | `modeler/ingestion/` | Modeler | Shared checksum reconcile | build refuse-on-fail |
+| `management_kpi_enrichment.py` `inspect_source_pdf`, `enrich_management_working_copies` | `legacy/ingestion/management_kpi_enrichment.py` | Legacy | Working-copy PDF page bind; not Extractor product; company build does not call enrich | `test_management_kpi_enrichment.py` |
 
 Raw source provenance belongs to Extractor. Analytical transformations and
 calculation provenance belong to Modeler.
@@ -545,13 +810,17 @@ layer.
 
 | Current | Destination | Disposition | Reason | Verification |
 |---|---|---|---|---|
-| `core/engine/build_contract.py` `BUILD_MODULES` | `director/build_contract.py` policy + Modeler prepare/writers | Director + Modeler | `forecast` is `deferred` | `test_build_contract.py` |
-| `component_catalog.py`, `semantic_map.py`, `map_embed.py` | `modeler/` | Modeler | Semantic families / coordinates | `test_reference_integrity.py` |
+| `core/engine/build_contract.py` `BUILD_MODULES` policy table | `director/build_contract.py` | Director | `forecast` is `deferred` | `test_build_contract.py` |
+| `core/engine/build_contract.py` prepare/writer registration | `modeler/engine/build_contract.py` | Modeler | Executes Director policy | `test_build_contract.py` |
+| `component_catalog.py` | `modeler/engine/component_catalog.py` | Modeler | Semantic families / coordinates | `test_reference_integrity.py` |
+| `semantic_map.py` | `modeler/engine/semantic_map.py` | Modeler | Coordinate map | `test_reference_integrity.py` |
+| `map_embed.py` | `modeler/engine/map_embed.py` | Modeler | Embed sidecar | `verify_staged` |
 | `reference_model.py` `ReferenceModelBuilder.build` | `modeler/workbook.py` | Modeler | Workbook construction | Lulu/FR benchmarks |
 | `include_deferred_forecast` / `run_scenario` | stay gated default off | Modeler (dormant) | Do not activate | `test_historical_v1_exit_gate.py` |
 | `reference_model` lazy imports of `trainer.check_context` | `modeler/check_context.py` | Modeler | Live formulas and source-payload embed are BAV machinery | live-formula tests |
 | `core/trainer/workbook.py` `build_bav_workbook` | `modeler/build_bav.py` | Modeler | “professional BAV. Does not derive a Trainer.” Mis-housed | `test_current_build.py` |
-| `TrainingWorkbookGenerator.finalize_bav` / `_add_bav_opening` | Modeler finalize + Composer Overview | Modeler + Composer | Opening is publication inside the workbook | `verify_staged` Overview |
+| `TrainingWorkbookGenerator.finalize_bav` | `modeler/build_bav.py` `finalize_bav` | Modeler | Workbook finalize without opening prose | `verify_staged` |
+| `_add_bav_opening` | `composer/workbook_opening.py` `_add_bav_opening` | Composer | Overview prose, navigation, fallback; consumes §7.1 fields | `verify_staged` Overview; opening tests |
 | `core/trainer/semantic_io.py` `load_semantic_map`, sidecars | `modeler/semantic_io.py` | Modeler | Sidecar I/O is BAV | `verify_staged` |
 | `derive_trainer_workbook`, practice blanking, `checker.py` `check_workbook` | `legacy/trainer/` | Legacy | Practice overlay and scoring | `test_trainer.py`; optional check if Trainer exists |
 
@@ -612,30 +881,41 @@ product face to BAV Compiler must change the test in the same step.
 
 ---
 
-## 12. Extractor boundary (documentation only)
+## 12. Extractor boundary
 
-No production source-faithful statement extractor exists. The engine consumes
-already-extracted JSON (`load_extracted_filing` → `extracted/` +
-`reconciled/standardized.json`). Closest PDF-touching code is
-`inspect_source_pdf` / `enrich_management_working_copies`, which bind pages on
-working-copy KPI JSON and refuse to write protected `extracted/`. That is not
-a reason to build Extractor.
+Existing Extractor implementation is JSON-contract I/O only. There is still
+no production PDF/statement extractor. Do not implement extraction, scrapers,
+or `future_adapters`.
 
-**This migration specifies a documentation-only boundary. Do not implement
-extraction, scrapers, or `future_adapters`.**
+Owned Extractor destinations (existing code, moved later):
 
-Create later (not this step):
+- `extractor/data/filing.py` — `ExtractedFiling` contract
+- `extractor/data/filing_json.py` — `load_extracted_filing`, parse helpers,
+  `load_extracted_json_object`, `extracted_filing_to_payload`
+- `extractor/data/extracted_kind.py` — `classify_extracted_payload`
+- `extractor/data/management_kpi_json.py` — parse/load management-KPI documents
+- `extractor/data/filing_validator.py` — `bind_source_file`, `source_row_identity`
+- `extractor/data/operating_kpi_contract.py` — parse-time fact-type / label shape
+- `extractor/data/historical_strategy.py` — `disclosure_locator` + disclosure types
+- `extractor/README.md` — documentation-only PDF boundary
+
+Company `python -m bav build` reads `reconciled/standardized.json` through
+Modeler `standardized_from_payload`. It does not call `load_extracted_filing`.
+`validate-source` / `reconcile` Director routes call Extractor loaders.
+
+Closest PDF-touching code remains Legacy
+`inspect_source_pdf` / `enrich_management_working_copies`. That is not a
+reason to build a new Extractor.
+
+Create later with the Extractor move:
 
 ```
 extractor/README.md
   BAV consumes ExtractedFiling JSON and bound source PDFs.
   This repository does not extract statements from PDF.
   Upstream LLM/human extraction is permitted; the published contract is
-  filing.py. Do not add scrapers here.
+  filing.py plus filing_json loaders. Do not add scrapers here.
 ```
-
-Optional later move: `filing.py` types into `extractor/data/` as the published
-contract. Loaders stay Director/Modeler consumers.
 
 ---
 
@@ -685,13 +965,13 @@ Plugin zip: keep one Legacy copy. Deleting it is optional only because
 
 Subsequent reviewed steps execute this order. This step does not execute it.
 
-1. Create visible roots `director/`, `extractor/`, `modeler/`, `interpreter/`, `composer/`; keep `legacy/`. Add documentation-only `extractor/README.md`.
+1. Create visible roots `director/`, `extractor/`, `modeler/`, `interpreter/`, `composer/`; keep `legacy/`. Add `extractor/README.md`. Move Extractor contract + `filing_json` loaders + `classify_extracted_payload` + management-KPI parse + provenance bind per §7.3 / §12.
 2. Move `STYLE.md` and `DRIVER.md` to `director/docs/` and apply §11 reference updates, including README identity if that step touches README. Protected planning docs stay.
-3. Split `drivers.py` / `selection.py` in place (or during the move) per §5: assembly without `select_driver_argument`; Interpreter gates; Composer roles/render/plots. Apply the management-emphasis removal in §9. Deduplicate reconstruction helpers.
-4. Move Modeler calculation modules, data payload, ingestion reconcile/standardize, engine workbook, `build_bav_workbook`, semantic I/O, check-context embed.
+3. Split `revenue_driver.py` and `revenue_strategy_synthesis.py` per §7.0–7.1 (observations / verdicts / wording). Then split `drivers.py` / `selection.py` per §5. Apply the management-emphasis removal in §9. Deduplicate reconstruction helpers.
+4. Move remaining Modeler calculation modules, data payload, ingestion reconcile/standardize, engine workbook, `build_bav_workbook`, semantic I/O, check-context embed.
 5. Move Interpreter judgment functions and classification/normalization rationales / strategy inference.
-6. Move Composer `style.py`, `document.py`, `publish.py`, Drivers prose/plots, Overview navigation.
-7. Move Director CLI / `current_build` / `project_companies.json` / build-contract policy. Keep `python -m bav` and company name interfaces.
+6. Move Composer `style.py`, `document.py`, `publish.py`, Drivers prose/plots, Overview opening/navigation.
+7. Move Director CLI / `current_build` / `project_companies.json` / build-contract policy. Keep `python -m bav` and company name interfaces. Director `build_company` sequences Modeler → Interpreter → Composer before workbook write.
 8. Relocate Legacy (Trainer remainder, skills, automation, retired scripts, HK demo, historical docs/verifiers).
 9. Delete Remove items in place. Update imports, CLI routes, package docstrings, tests, README, `docs/FAST_RETAILING_BENCHMARK.md` stale paths, `source_manifest.json` if PDFs are restored.
 10. Verify §15. Stop. No second-phase features.
@@ -759,23 +1039,34 @@ Inventory completion does **not** establish migration acceptance.
 
 ---
 
-## 16. Unresolved issues (not disguised as completed classification)
+## 16. Remaining behavior defects (not ownership gaps)
 
-1. **`_latest_index` vs `_latest_growth_index`.** Selection uses the last period; prose/plots use the last period with non-None `revenue_growth`. Same view can qualify and narrate different years if trailing growth is missing. Split keeps both; later repair is not this design.
-2. **`_margin_is_material` is a non-zero test.** Named as materiality; classified here as Modeler eligibility. Interpreter economic materiality is not separately implemented.
+Ownership and destinations that previously blocked execution are decided in
+§7.0, §7.1, §7.3, §10 and §12. The items below are unrelated runtime or
+product-behavior defects. They must not be treated as unfinished ownership.
+Do not expand this inventory correction into runtime repairs.
+
+1. **`_latest_index` vs `_latest_growth_index`.** Selection uses the last period; prose/plots use the last period with non-None `revenue_growth`. Same view can qualify and narrate different years if trailing growth is missing. Both keep their §5 destinations; later repair is not this design.
+2. **`_margin_is_material` is a non-zero test.** Named as materiality; classified as Modeler eligibility. Interpreter economic materiality is not separately implemented.
 3. **Attribution without a margin question** (`select_driver_argument` L1179–1186) records `action=attribution.publication` but does not add the id to principal/secondary/appendix. `_attribution_block` still prints if `view.attributions` is set.
-4. **Disclosure-gated reconstructions.** No `historical_strategy` disclosures ⇒ footprint/geo reconstruction series are None, while store/geo levels still assemble. Optional revenue-driver module vs “emphasis gates audit series” is unresolved. It is not currently a principal-driver gate.
+4. **Disclosure-gated reconstructions.** No `historical_strategy` disclosures ⇒ footprint/geo reconstruction series are None, while store/geo levels still assemble. That is current Modeler gating via `revenue_driver_applicable`, not a principal-driver gate. Changing the gate is a later behavior decision.
 5. **`overlap` and `main_body_table_reason(s)` unused.** Combining footprint+compsales and margin+attribution is hard-coded.
 6. **`DriversView.margin_explanation` always `""`.** Dead field; do not invent a replacement.
 7. **`relationship_findings` / `assessments` do not affect `select_driver_argument`.** Appendix-only. No new schema.
 8. **`validate_standardized` unused.** Keep as Director contract pending out-of-tree confirmation.
-9. **`cmd_build -o` still derives a Trainer** while company builds do not. Compatibility vs single-output is a Director CLI decision.
+9. **`cmd_build -o` still derives a Trainer** while company builds do not. Compatibility vs single-output remains a Director CLI policy; owners are split in §4.2.
 10. **`_append_traced_spsf_occurrences`** can write KPI rows from PDF regexes into working copies. Off the canonical `extracted/` / `build` path. Legacy binder, not a reason to build Extractor.
-11. **Overview synthesis lives in `trainer/workbook.py`.** After Trainer inversion, Composer vs Modeler for `_add_bav_opening` layout vs Interpreter lead text follows §7.1.
-12. **Three “validator” layers** (`schema.validate_standardized`, `data.validators`, `filing_validator`) share a name and have different owners (Director / Modeler / Extractor+Modeler).
-13. **Source PDFs are absent locally and not tracked at B.** Canonical destination is `build/input/<company>/source/`. `source_manifest.json` still cites `benchmark/fast_retailing/source/`. Restore-and-bind is later work; do not invent PDFs.
-14. **`README.md` “BAV — Hong Kong Edition”** is asserted by `test_learner_ready_presentation.py`. Product-face rename must update that test together.
-15. **`latest-implementation` leftover** from `bav_trainer` is not an ambiguity of product ownership; it is ignored because `IMPLEMENT_BASE_SHA` is populated.
+11. **Three “validator” names.** `schema.validate_standardized` = Director unused contract; `data.validators` = Modeler checksums; `filing_validator.bind_source_file` = Extractor; `validate_operating_kpi_fact` = Modeler admission. Shared name only.
+12. **Source PDFs are absent locally and not tracked at B.** Canonical destination is `build/input/<company>/source/`. `source_manifest.json` still cites `benchmark/fast_retailing/source/`. Restore-and-bind is later work; do not invent PDFs.
+13. **`README.md` “BAV — Hong Kong Edition”** is asserted by `test_root_readme_is_practical_trainer_guide`. Product-face rename must update that Director test together.
+14. **`latest-implementation` leftover** names `86ebdec…`. Ignored because `IMPLEMENT_BASE_SHA` is populated.
 
-These items do not block beginning migration. They must not be treated as
-finished classification where they remain open.
+Resolved in this correction (no longer ownership blockers):
+
+- `revenue_driver.py` is not homogeneous Modeler; §7.0 assigns every symbol.
+- `_verdict_inference` judgment vs `THEME_LABELS` / templates is split in §7.1.
+- `load_extracted_filing` is Extractor `extractor/data/filing_json.py`.
+- `_add_bav_opening` is Composer; finalize is Modeler.
+- Shared CLI/test/manifest/build-contract labels are split to one owner each.
+
+These behavior items do not block beginning migration.

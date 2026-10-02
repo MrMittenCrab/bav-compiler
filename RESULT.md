@@ -9680,3 +9680,94 @@ The inventory and executable split design exist and assign dispositions, destina
 Inventory completion does not establish migration acceptance.
 
 
+# RESULT.md — Step 10.1.1 Complete mixed-responsibility inventory and ownership decisions
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.1.1 — Complete mixed-responsibility inventory and ownership decisions
+**Work:** `7951a38d066a440e8bfa19cd9dc5ecc7`
+**Plan:** `2175bfa613c644e8b32b5c1d2ed9012f`
+**Finding:** Inventory responsibilities and define migration splits
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged).
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `b597a1ad681be4ff24c3befd7d405796388e5de97e86bfed175232a7662de7b7` (6605).
+No commit / push / sync / checkpoint / branch change. No runtime move, delete, rebuild, publish, or native Office.
+
+## Required plan change
+
+No required plan change. This attempt corrected the inventory only. Session acceptance, file movement and representative rebuilds remain subsequent reviewed steps.
+
+## Unresolved fact and criterion
+
+Recorded fact: “Single owners, destination paths and dependency handoffs for remaining mixed revenue-driver/synthesis responsibilities and load_extracted_filing are not established.”
+
+Criterion: the parent Completion requires a complete responsibility inventory and executable splits without unresolved ownership decisions.
+
+**Resolution this attempt:** those ownership decisions are now specified in `director/docs/MIGRATION_INVENTORY.md` §7.0, §7.1 and §7.3. Remaining §16 items are behavior defects, not missing owners. Migration itself is not executed and is not claimed accepted.
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. Independently authenticated; the reviewed 10.1 attempt’s B was not reused as this continuation’s baseline.
+
+| Check | Measured |
+|---|---|
+| B | `312cb8aff118d427a73a3ad202693d2019d692bf` |
+| Branch | `checkpoint/20260913-183303` (`.git/HEAD` and branch ref) |
+| Branch tip | `312cb8a…` — HEAD equals B |
+| Ancestry | B is HEAD; `86ebdecb6c01a7153bbf6c90f5af16294753a3cd` is an ancestor (`86ebdec` → `02d7fcd` → `312cb8a`) |
+| `implementation-baseline.json` | `head` = B, `branch` matches |
+| Attempt binding | `work-state` allocated `10.1.1` `source` = B, `work_id` = `7951a38d066a440e8bfa19cd9dc5ecc7`, `status` = `opened` |
+| Reviewed-attempt B | `86ebdec…` used only as historical blob reference in admitted evidence_routes |
+| `latest-implementation` | Still names `86ebdec…`; ignored because `IMPLEMENT_BASE_SHA` is populated |
+
+Authentication succeeded. Fail-closed was not required.
+
+## Inventory artifact
+
+Corrected `director/docs/MIGRATION_INVENTORY.md` (SHA-256 `a535d972136e867a99b4867d01480cf58e29d0ce4f2674fcc93fe4ad0cef1127`, 84675 bytes; prior `c97dad5f…` / 57840). Retained full-repository coverage, Driver field splits, management-emphasis restrictions, Trainer inversion, removal justifications, canonical paths and Director specification destinations.
+
+## Concrete resolutions
+
+**`core/model/revenue_driver.py`** (blob SHA-256 `ff46fc45f303a5fb883c01c2bd5520efe57a419b013b6d0a3ee4f117c828c4bb` at B and at `86ebdec…`). Removed from the homogeneous Modeler list. §7.0 assigns every constant, helper, builder (including `_store_expansion_test`) and result field:
+
+- Modeler `modeler/revenue_driver.py`: observations, `consistent` flags, reconstructions, applicability, axis, identity residuals.
+- Interpreter `interpreter/revenue_driver.py`: hypotheses, mechanisms, `_verdict_from_consistency`, qualification/requirement codes, structured `counterexample`.
+- Composer `composer/revenue_driver.py`: notes, findings, limitation sentences, labels, formatters. Preserves existing `SCOPE_NOTE` / finding strings.
+
+`_store_expansion_test` split: `_store_expansion_observations` → `interpret_store_expansion` → `word_store_expansion`. Same pattern for compsales, productivity and geographic builders.
+
+Producer/consumer map covers workbook `_build_revenue_driver` / `_revenue_driver_expand_inputs`, research assemble / `_finding_sentence`, and `test_revenue_driver.py`.
+
+**`core/model/revenue_strategy_synthesis.py`** (blob SHA-256 `f9006d0f6faceb643cc949e948c304e8f3316ff3725e338b78d4684de071f16c`). `_verdict_inference` judgment selection (`select_verdict_inference`) is Interpreter and must not import `THEME_LABELS`. Labels, templates, pluralization and `_join_labels` are Composer `word_verdict_inference`. Featured-disclosure selection and qualification codes stay Interpreter; `_lead` / `_navigation` / `PROFESSIONAL_FALLBACK` stay Composer. Opening `_add_bav_opening` is Composer `composer/workbook_opening.py`.
+
+**`filing_json.load_extracted_filing`**: single owner Extractor, destination `extractor/data/filing_json.py`. Parse helpers, `load_extracted_json_object` and `extracted_filing_to_payload` move with it. `classify_extracted_payload` → `extractor/data/extracted_kind.py`. Management-KPI parse → `extractor/data/management_kpi_json.py`. Admit/reconcile stay Modeler. Director `filing_cli` sequences load + admit. Company `prepare_company_input` does not call this loader (reads `reconciled/standardized.json`). Existing loading does not authorize a new PDF extractor.
+
+**Shared-owner audit:** CLI `-o` / ingest routes split (Director route vs Legacy body). `StandardizedFinancials` is Modeler. Tests, `source_manifest.json`, `BUILD_MODULES`, `_add_bav_opening`, and `historical_strategy` I/O have single destinations. Remaining §16 items are behavior defects.
+
+**Handoffs:** Director sequences Modeler compute → Interpreter interpret → Composer word. Modeler must not import Interpreter/Composer; Interpreter must not import Composer labels. No new reasoning ontology.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| `resume-state` `IMPLEMENT_BASE_SHA`, `implementation-baseline.json`, `work-state` 10.1.1, `.git/HEAD`, branch ref, `git merge-base --is-ancestor` | B = `312cb8a…` authenticated as above |
+| `git show 86ebdec…:core/model/revenue_driver.py` | 59157 bytes, SHA-256 `ff46fc45…` |
+| `git show 86ebdec…:core/model/revenue_strategy_synthesis.py` | 14784 bytes, SHA-256 `f9006d0f…` |
+| `git show 86ebdec…:core/ingestion/filing_json.py` | 12851 bytes, SHA-256 `46bc9271…` |
+| Same three paths at B `312cb8a…` and working tree | Byte-identical to `86ebdec…` blobs |
+| `rg -n revenue_driver\|revenue_strategy_synthesis\|load_extracted_filing\|load_extracted_json_object\|extracted_filing_to_payload core bav` | 225 matching lines; production `load_extracted_filing` caller is `filing_cli.py` L66 only |
+| Inspect `_store_expansion_test`, `_verdict_inference`, `THEME_LABELS`, loader helpers, `prepare_company_input`, `_add_bav_opening`, `_revenue_driver_expand_inputs` | Mixed responsibilities and consumers traced |
+| `git diff --check` | rc 0; no whitespace errors |
+| Native Office / company rebuild / pytest | **Not run** — documentation-only correction |
+
+## Preservation
+
+No runtime code moved. No content deleted. No tests altered. No publications regenerated. No new features. Public `bav`, canonical `build/input` and `build/output`, STYLE.md / DRIVER.md locations, Trainer inversion design, management-emphasis restrictions, zero-byte placeholders and protected planning docs unchanged. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+## Remaining toward Completion
+
+Ownership destinations for the previously unresolved mixed revenue-driver/synthesis responsibilities and `load_extracted_filing` are now specified. Later reviewed work must execute the inventory, relocate Director specifications and STYLE.md, update references, preserve useful behavior, and verify representative builds and regressions without second-phase features.
+
+Inventory correction does not establish migration acceptance.
+
