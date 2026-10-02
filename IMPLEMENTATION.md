@@ -1,5 +1,6 @@
-# Step 10.6 — Relocate research styling and publication into Composer
-AUTOCYCLE_PLAN: {"finding_key": "Relocate research styling and publication into Composer", "kind": "work", "objective": "Relocate research styling and publication into Composer", "plan_id": "00ee6f3915e94889b800c8bb6048020e", "predecessor_review_sha256": "afd17fa9de2466496b9a5d130c4c1f1d6478910ea18b28febfbeb8acf0f91afb", "step_id": "10.6", "work_id": "9c134fea34e840dfbe25f98869e28acc"}
+# Step 10.6.1 — Restore Composer publication compatibility exports
+
+AUTOCYCLE_PLAN: {"finding_key": "Relocate research styling and publication into Composer", "kind": "work", "minor": 1, "objective": "Restore Composer publication compatibility exports", "plan_id": "13619243875e42cc8dcf8b926402cafd", "predecessor_review_sha256": "d97df35ef2dbe70bd3a8fb870ec8a6ab68bb10305db3d50456b6219bfa34cb03", "step_id": "10.6.1", "work_id": "9c134fea34e840dfbe25f98869e28acc"}
 
 ## Completion
 
@@ -7,36 +8,32 @@ Research styling, Word/PDF generation and publication execute from their invento
 
 ## Bounded work
 
-- Authenticate implementation baseline B through resume-state or normal baseline records, branch, ancestry and attempt/checkpoint bindings. Fail closed if unavailable; compare relocations with historical Git blobs at B.
-- Move `core/research/style.py`, `document.py` and `publish.py` implementation into their corresponding `composer/research/` destinations under inventory §5.3.
-- Update Composer rendering, company build/check orchestration, CLI publication routes and other affected callers to use canonical Composer imports.
-- Preserve supported `core.research` imports with thin delegation where needed; keep implementation solely in Composer. Follow existing façade conventions without introducing a compatibility framework.
-- Preserve callable signatures, return types, constants, company aliases, public `bav` commands, output filenames and canonical input/output paths.
-- Resolve imports according to existing ownership. Keep company routing and lifecycle coordination with Director; consume completed Modeler and Interpreter results without recalculation.
-- Preserve lazy dependency loading, font discovery, verified spacing, figure formatting, Markdown parsing, Word/PDF layout, publication validation and failure behavior.
-- Preserve apply-if-applicable behavior, heading contracts, referenced-figure validation, rejection of extra figures and zero-byte research placeholders.
-- Update directly affected documentation and inventory ownership status, including references to `director/docs/STYLE.md`.
-- Leave completed Driver handoffs and independent eligibility behavior intact.
+- Authenticate implementation baseline B using populated `IMPLEMENT_BASE_SHA` or normal baseline records, branch, ancestry and attempt/checkpoint bindings. Fail closed if unavailable.
+- Restore `CELL_INSET_MM`, `CHAR_WIDTH_PT`, `SHORT_IDENTIFIER_CHARS`, `DXA_PER_MM` and `Block` in `core/research/document.py` through explicit imports from `composer.research.document`, including all five names in `__all__`. Keep definitions and implementation solely in Composer.
+- Extend `core/tests/test_publication.py` compatibility coverage to explicitly import all five names through the legacy path, assert identity with canonical exports and check their inclusion in `__all__`.
+- Exercise the original `from core.research.document import CELL_INSET_MM` import in publication coverage; canonical implementation tests must not substitute for compatibility assertions.
+- Extend existing isolated import-order coverage to exercise both façade-first and Composer-first imports, checking restored exports and lazy converter loading.
 
 ## Verification
 
-- Compare moved implementations with B, documenting intentional import/path changes and canonical destination mapping. Use byte identity only for unchanged content; verify modified relocations semantically.
-- Exercise canonical Composer imports and retained public imports, including import order and lazy loading. Update tests to target canonical implementation while retaining focused compatibility coverage.
-- Run affected research/style/publication tests and existing build, CLI, contract, Lululemon/Fast Retailing benchmark and optional Trainer regressions using `/opt/anaconda3/bin/python -m pytest -q`.
-- Run `/opt/anaconda3/bin/python -m bav --help`.
-- Run existing public build, check and publish commands for Lululemon and FastRetailing. Verify publication filenames, Markdown content, figure references, placeholders and Word/PDF content/layout against baseline behavior; generated container bytes need not be identical.
-- Apply SESSION native-verification requirements if presentation or workbook formulas/dependencies change. Use Office Bridge and record unavailable verification explicitly.
+- Run the new compatibility checks before and after repair, recording the missing-export failure and subsequent result.
+- Run `/opt/anaconda3/bin/python -m pytest -q core/tests/test_publication.py core/tests/test_research_drivers.py core/tests/test_research_handoff.py core/tests/test_research_emphasis.py core/tests/test_drivers_numeric.py`.
+- Confirm the diff is limited to the façade, compatibility tests and appended results; Composer rendering, styling and publication implementations remain unchanged.
+- Reuse reviewed relocation, build/check/publish and broader regression evidence only while its dependencies remain applicable. Rerun affected checks if the repair expands beyond exports and tests.
+- Apply SESSION native-verification requirements if presentation or workbook formulas/dependencies change; use Office Bridge. Export-only repair does not newly trigger native verification.
 - Run `git diff --check`; historical RESULT Markdown hard-break whitespace remains advisory.
-- Append actual relocation mappings, interface checks, behavioral comparisons, measured verification and remaining scope to `RESULT.md`. Preserve historical records.
+- Append restored-export coverage, actual commands/results, applicable reused evidence and remaining scope to `RESULT.md`. Preserve historical records.
 
 ## Constraints and remaining scope
 
-Preserve canonical source evidence, accounting signs, fiscal distinctions, precision, provenance, admission/comparison independence, residual qualifications, fail-closed controls, first-name-wins assessments, CFO classification and optional Trainer behavior.
+Preserve callable signatures, return types, existing exports, company aliases, public `bav` commands, canonical paths, output filenames, lazy loading, publication validation and failure behavior, presentation, figure contracts and zero-byte research placeholders.
+
+Preserve canonical source evidence, accounting signs, fiscal distinctions, precision, provenance, admission/comparison independence, residual qualifications, fail-closed controls, first-name-wins assessments, CFO classification, completed Driver handoffs and optional Trainer behavior.
 
 Preserve attribution amounts, locators, counterfactual scope, `supported_as_attribution`, `not independently verified` and `outside the accounting bridge`. Retain attribution appendices independently of principal selection; accompanying margin prose requires independently selected margin evidence.
 
-Preserve ownership/recovery safeguards, protected documents and unrelated dirty work. Verify canonical continuity before moving irreplaceable non-Git evidence; this step does not require moving company inputs.
+Preserve ownership/recovery safeguards, protected documents and unrelated dirty work. No compatibility framework, report redesign, inventory §16 behavior repair or second-phase features.
 
-Engine/Trainer inversion, other component relocation, removals and final repository-wide migration verification remain subsequent work. Do not repair inventory §16 behavior defects, redesign reports or implement second-phase features.
+Engine/Trainer inversion, other component relocation, removals and final repository-wide migration verification remain subsequent work.
 
 Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
