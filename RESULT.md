@@ -9400,4 +9400,146 @@ Native Word is complete under ordinary page locators: Lululemon 1–14 and Fast 
 
 Technical publication of both companies through the shared path is recorded. Complete native Word coverage is captured. Review adjudicates Step closure.
 
+---
+
+# RESULT.md — Step 9.1.2 Complete preserved publication verification
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure; human editorial sign-off remains pending)  
+**Step:** 9.1.2 — Complete preserved publication verification  
+**Work:** `362810cf9ddb42ba820dff960656a5cb`  
+**Plan:** `342ccad7e9d8445aaa242d24c7a40007`  
+**Finding:** Generalized Driver publication for Lululemon and Fast Retailing  
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged vs this child's start).  
+TARGET SHA-256 `1efdf06ff9cd7274658a41978e665169235f169914fc6f36c9280b7e9c47ad40` (37157).  
+SESSION SHA-256 `e581184c06bdaa23c317f2374bbed2ac595c463c4d18ac49152c7ce973dbcf98` (4420).  
+IMPLEMENTATION SHA-256 `c938446fcb2f61875394f8e5b5cc5d958a19ba01cb468789c16f90caa388a1e2` (6840).  
+No commit / push / sync / checkpoint / branch change.
+
+## Baseline
+
+`IMPLEMENT_BASE_SHA` from `.git/autocycle/resume-state`: `be5d9275f9c8f1ec825980e82bf600f41314fe59`.  
+`STATE_BRANCH=checkpoint/20260913-183303`.  
+`.git/HEAD` → `refs/heads/checkpoint/20260913-183303`; that ref and `.git/autocycle/implementation-baseline.json` `head` both equal `be5d9275f9c8f1ec825980e82bf600f41314fe59`.  
+`.git/logs/HEAD` last event: merge `d6b05d5e9a7755db3d8cff939f00a845c9f384d6` → `be5d9275f9c8f1ec825980e82bf600f41314fe59`. HEAD equals B; the Step 9.1.1 repairs commit is the parent and is preserved.  
+`.git/autocycle/latest-implementation` HEAD `0e4a249d8c93d2a8f12cce20f240bccedf7c16cf` is the prior Step 9.1.1 start; **not** used as B.  
+Word observations carry `requested_head` / `reviewed_head` `be5d9275…`. No commit, push, sync, checkpoint or branch change.
+
+## Required plan change
+
+No required plan change. Human editorial sign-off, forecasting and earlier deferred obligations remain subsequent work.
+
+## Correction of prior Step 9.1.1 complete-coverage assertion
+
+The Step 9.1.1 record is left in place. These measured facts replace its defective coverage conclusion:
+
+| Prior Step 9.1.1 assertion | This-step measurement |
+|---|---|
+| Native Word is complete under ordinary page locators for Fast Retailing pages 1–7 | Ordinary FR page 1 (`3fbac164…`) ends on the figure caption. The crop bottom shows only the truncated heading start `Second`. The secondary cash-conversion paragraph was not in that raster. That was a **coverage gap**, not a product defect. |
+| First-page capture does not show the −JPY 5,253 remainder | The signed remainder is in the main-body secondary paragraph. Ordinary page 1 did not reach it. Character-position captures `8ddeda4c…` / `6de5c621…` now display it. |
+
+Lululemon pages 1–14 on DOCX `00fe4e8a…` remain applicable and were not recaptured. Analytical signs, CFO component sum −JPY 65,650 million, signed remainder −JPY 5,253 million, total-cash exclusion and incomplete-bridge qualification are unchanged.
+
+## Preserved-output applicability
+
+Current bytes match the Step 9.1.1 recorded bindings. No rebuild, republish or analytical-path edit. Lululemon-before-FastRetailing ordering is retained. Completed build/check/publication, focused regressions, figure and PDF evidence remain applicable because every listed canonical hash is unchanged.
+
+| Path | SHA-256 | Bytes | vs 9.1.1 binding |
+|---|---|---:|---|
+| `build/output/lululemon/Lululemon_BAV.xlsx` | `2876815eaab6e368690ab10a75b1541b931f8d0a295e02eb62ff2cbd633f3360` | 229735 | match |
+| `build/output/lululemon/Lululemon_BAV.docx` | `00fe4e8aa4836467a53caa0535b4b06d610b11a10147205f2d75d35e61747392` | 161317 | match |
+| `build/output/lululemon/Lululemon_BAV.pdf` | `c9627a85aab50eed4a99b5f83e0a3479c4c58839ce3f23748a94d56474e3c518` | 182752 | match |
+| `build/output/lululemon/research/Lululemon_Drivers.md` | `36cce28e6f5d2984a9347b53f153a706dfcfbdfde40969e0f4dec36460d0826b` | 21915 | match |
+| `build/output/lululemon/figures/drivers/margin.png` | `55ccb38cfc0727718e93dd4cad52b586eb10bead096ce75cd5063159cabd754e` | 52237 | match |
+| `build/output/lululemon/figures/drivers/geography.png` | `9d99bf699ee442389e9f422898730524d662ad634779fc2d9d6ae9b94b08098d` | 65707 | match |
+| `build/output/fast_retailing/FastRetailing_BAV.xlsx` | `d0c2ee00c2cbdf84f677d6a0720e37024dc58cd1af8486a66b8a5371d5adf716` | 137901 | match |
+| `build/output/fast_retailing/FastRetailing_BAV.docx` | `4af68ec70c3f4a11ddbcde8b249637100c7a94cf4689d0b80dd629bb01d39c44` | 92459 | match |
+| `build/output/fast_retailing/FastRetailing_BAV.pdf` | `c345f0d3de92d91d82f76810666b6a23a0dd4f1033691871f409b6bb82cc0845` | 86230 | match |
+| `build/output/fast_retailing/research/FastRetailing_Drivers.md` | `5b3aca6c933fe2686ceddd9efd622003af933664fd3cfb2284649e44f020cc6d` | 10320 | match |
+| `build/output/fast_retailing/figures/drivers/margin.png` | `126bf479caea091bb334ffe112d766beb24f0ed3d935d96982f204df0f441a52` | 49663 | match |
+| Forecast / Valuation / Overview (both) | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 | match |
+| `DRIVER.md` | `cbb6eff0f4166d1ec759a5bf393ba5f0dcaa81d539647c4e46f6e357ed41c70b` | 47249 | match |
+| `STYLE.md` | `4360b24bb849370a0fa48f21aa7cc83b8bf6b35c2ad9bac7e10de2829a107fc6` | 1645 | match |
+
+## Independent Excel references
+
+Created/retained `docs/native-excel-fast-retailing-signed-expense-references.json`.
+
+| Field | Measured |
+|---|---|
+| SHA-256 | `636228fbd1d1e35240990f5f4d5892890013167be2a732d74407eb31b0d91dd1` (350719) |
+| `source_sha256` | `d0c2ee00…` (matches current canonical XLSX) |
+| `sheets` | `ALT DuPont` |
+| `cells` | **572** |
+| ALT DuPont formulas | **572**; missing formula refs **0** |
+| B114:F114 / C121:F121 | present |
+
+Expectations are independent arithmetic on `build/input/fast_retailing/reconciled/standardized.json` face amounts (JPY millions; FY2021–FY2025 ended 31 August). Revenue 2132992/2301122/2766557/3103836/3400539; reported SG&A −818427/−900154/−1054368/−1187713/−1277701; analytical factor −1. Rechecked this attempt: B114 = 818427/2132992 = 0.3836990480976956; F114 = 1277701/3400539 = 0.37573484674047264; C121 = (−1)×(−900154−(−818427)) = 81727; F121 = (−1)×(−1277701−(−1187713)) = 89988. Values match the reference file. Not read from saved caches or production-model results. No other downstream sheet required an independent formula-reference set; transitive A1 dependencies were included in the native check.
+
+## Native Excel saved-cache
+
+Listed Office Bridge command already executed on these unchanged bytes (interrupted prior attempt of this same step; hashes reconfirmed, not rerun):
+
+`python3 /Users/lizhiguo/.autocycle/native_office.py verify excel build/output/fast_retailing/FastRetailing_BAV.xlsx python3 scripts/verify_cached_workbook.py {document} --original build/output/fast_retailing/FastRetailing_BAV.xlsx --references docs/native-excel-fast-retailing-signed-expense-references.json`
+
+| Evidence | Measured |
+|---|---|
+| Evidence id | `88ddfc416bc649b3b2104af1299d47f3` |
+| Status | **VERIFIED**; `action: NONE` |
+| Source SHA-256 | `d0c2ee00c2cbdf84f677d6a0720e37024dc58cd1af8486a66b8a5371d5adf716` |
+| Copy SHA-256 | `074176be1521637896ae24a7782e966973d62c6bb8009336d961b9caa1c2204e` |
+| References SHA-256 | `636228fbd1d1e35240990f5f4d5892890013167be2a732d74407eb31b0d91dd1` |
+| Immutable saved copy | `.git/autocycle/office/evidence/excel/88ddfc416bc649b3b2104af1299d47f3/saved-copy.xlsx` (174503) |
+| Verifier log | `formulas_preserved: true`; checked_cells **1068**; independent_references **572**; affected_sheets `ALT DuPont` |
+
+Canonical workbook was not opened for verification and remains `d0c2ee00…`. Earlier same-source retry `8170c5af03c14febb459e52c041bc6f9` was also VERIFIED; the later `88ddfc41…` receipt is the bound evidence. Blank caches or ordinary `check` were not treated as acceptance.
+
+## Native Word coverage
+
+Index `.git/autocycle/office/review-index.json` SHA-256 `413a63ee0a4fb976e71ccb3df5f0493a1c55605bdd0bd39340f71fe0ea37a027`, 140 entries. Listed character-position captures returned to this work identity; both `CAPTURED`; source SHA-256 `4af68ec7…`; `requested_head` / `reviewed_head` `be5d9275…`; `action: NONE`. Earlier same-locator attempt `94b12d84…` was superseded by `8ddeda4c…`.
+
+| Capture | Locator | Page | Screenshot SHA-256 | Visible |
+|---|---|---:|---|---|
+| `8ddeda4c676d41bd96a4bda3aca9aa7a` | start=900 / end=900 | 1 of 7 (then Appendix p.2) | `0c3191ea12e5c78befc233eb624e89254f7ed82ac3963135f8f3d4e4d8b4a465` | Entire cash-conversion paragraph; Page 1 footer; Appendix / Selected claims |
+| `6de5c621e18848cf98420b22ebc9baab` | start=1200 / end=1200 | 1 of 7 (then Appendix p.2) | `3803e163bc1b9e618cba870e6c29681f5de2fca21f36ababdb856a2c44ae3657` | Overlap from −JPY 70,903 through remainder; Appendix transition |
+
+Rendered canvas (not XML): CFO **JPY 651,521 → 580,618** million; net income **JPY 393,605 → 459,153** million; CFO/NI 1.66 → 1.26; cash change **−JPY 70,903** million; qualification that operating-section component changes do not explain the whole movement; signed unexplained remainder **−JPY 5,253.000 million**.
+
+### Reconciliation with retained pages
+
+**Lululemon** DOCX `00fe4e8a…` pages 1–14 remain complete under ordinary locators (headline through appendix residuals; secondary CFO remainder −$67.381 million on page 2). Not recaptured.
+
+**Fast Retailing** DOCX `4af68ec7…`:
+
+| Surface | Visible | Page bottom |
+|---|---|---|
+| Ordinary p.1 `3fbac164…` | Headline; principal 1; margin figure; caption | Figure caption, then truncated `Second` |
+| start=900 | Full secondary paragraph; Page 1 footer; Appendix heading and Selected-claims table | Page 1 footer, then page 2 Appendix |
+| start=1200 | Remainder sentence through −JPY 5,253.000; Appendix | Same Appendix table |
+| Ordinary p.2–7 | Appendix claims, margin bridges, cash table (−65,650 / −5,253), residuals | Unchanged retained rasters |
+
+**Remaining heading-label gap:** the full heading string `Secondary signals` is not in one raster. Ordinary page 1 shows only `Second` at the crop bottom; start=900 opens on `Cash conversion:`. The heading sits in that thin band. The required numeric paragraph is fully visible. Not treated as a product defect.
+
+## Prospective declarations
+
+Verified generated outputs bound to this attempt and Plan HEAD `be5d9275…` (measured SHA-256 above). Structured `CHECKPOINT_ARTIFACTS` in the implementation result; not a retrofit of the previous checkpoint.
+
+Supporting generated artifacts also rehashed:  
+`fast_retailing/supporting/build_status.json` `6366dcfb…` (3046); `rowmap.json` `5e81fbc8…` (94533); `assumptions.json` `73fbb33f…` (69); `component_map.json` `22ec286b…` (644555).  
+`lululemon/supporting/build_status.json` `4f6ed926…` (2695); `rowmap.json` `afc670e7…` (169892); `assumptions.json` `73fbb33f…` (69); `component_map.json` `ff8266d4…` (1202071).
+
+## Preservation
+
+`DRIVER.md` / `STYLE.md` byte-identical. Shared publication path, Lululemon analytical boundaries and signed CFO remainder, Fast Retailing signed remainder / total-cash exclusion / incomplete-bridge qualification, upstream inputs, optional Trainer behavior, zero-byte reserved modules, immutable snapshots, historical receipts and ownership/recovery safeguards were not rewritten. Canonical workbooks were not mutated during copy verification. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+## Remaining toward Completion
+
+- Human editorial sign-off is not supplied and remains pending.
+- Fast Retailing reconstruction remains partial; residuals stay visible.
+- Fast Retailing CFO remainder −5,253 is a reviewed-set remainder, not a complete CFO bridge.
+- The `Secondary signals` heading label is only partly visible across the page-1 / start=900 join.
+- Lululemon −$67.381 million CFO remainder, mechanism, attribution counterfactual, comparable-sales join and store-only productivity remain open as previously bounded.
+
+Technical publication of both companies through the shared path is recorded. Native Excel saved-cache is VERIFIED. The previously missing Fast Retailing secondary paragraph is visible in native Word. Review adjudicates Step closure.
+
 
