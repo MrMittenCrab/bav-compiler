@@ -1,39 +1,40 @@
-# Step 10.6.1 — Restore Composer publication compatibility exports
-
-AUTOCYCLE_PLAN: {"finding_key": "Relocate research styling and publication into Composer", "kind": "work", "minor": 1, "objective": "Restore Composer publication compatibility exports", "plan_id": "13619243875e42cc8dcf8b926402cafd", "predecessor_review_sha256": "d97df35ef2dbe70bd3a8fb870ec8a6ab68bb10305db3d50456b6219bfa34cb03", "step_id": "10.6.1", "work_id": "9c134fea34e840dfbe25f98869e28acc"}
+# Step 10.7 — Invert Engine and Trainer ownership
+AUTOCYCLE_PLAN: {"finding_key": "Invert Engine and Trainer ownership", "kind": "work", "objective": "Invert Engine and Trainer ownership", "plan_id": "3ffdc544eb0f4dbabfe4e33a855a521e", "predecessor_review_sha256": "70ee9928e3667b73430dab12a703d45b9cbc18b64e6dd1a87d7aa9c16765be48", "step_id": "10.7", "work_id": "4ea4f5cca6b144b2b4361a06e030107f"}
 
 ## Completion
 
-Research styling, Word/PDF generation and publication execute from their inventory-defined Composer destinations, with updated callers and preserved public interfaces, artifact contracts and presentation behavior.
+BAV workbook construction and reusable checking machinery execute under Modeler, build policy under Director and workbook opening presentation under Composer, with optional Trainer derivation and scoring preserved under Legacy and no required Legacy dependency in normal BAV build, check or publication.
 
 ## Bounded work
 
-- Authenticate implementation baseline B using populated `IMPLEMENT_BASE_SHA` or normal baseline records, branch, ancestry and attempt/checkpoint bindings. Fail closed if unavailable.
-- Restore `CELL_INSET_MM`, `CHAR_WIDTH_PT`, `SHORT_IDENTIFIER_CHARS`, `DXA_PER_MM` and `Block` in `core/research/document.py` through explicit imports from `composer.research.document`, including all five names in `__all__`. Keep definitions and implementation solely in Composer.
-- Extend `core/tests/test_publication.py` compatibility coverage to explicitly import all five names through the legacy path, assert identity with canonical exports and check their inclusion in `__all__`.
-- Exercise the original `from core.research.document import CELL_INSET_MM` import in publication coverage; canonical implementation tests must not substitute for compatibility assertions.
-- Extend existing isolated import-order coverage to exercise both façade-first and Composer-first imports, checking restored exports and lazy converter loading.
+- Authenticate implementation baseline B through populated `IMPLEMENT_BASE_SHA` or normal baseline records, branch, ancestry and attempt/checkpoint bindings. Fail closed if unavailable. Use historical Git blobs at B for relocation comparisons.
+- Apply `director/docs/MIGRATION_INVENTORY.md` §10 and the related §4.2 and §7.1 handoffs.
+- Move `core/engine/reference_model.py` construction into `modeler/workbook.py`; move `component_catalog.py`, `semantic_map.py` and `map_embed.py` into `modeler/engine/`. Preserve workbook construction behavior and keep deferred forecasting disabled by default.
+- Split `core/engine/build_contract.py`: Director owns `BUILD_MODULES` policy in `director/build_contract.py`; Modeler owns preparation, writer registration and execution in `modeler/engine/build_contract.py`. Preserve module ordering, required inputs and deferred statuses without introducing a registry framework.
+- Extract `build_bav_workbook` and `TrainingWorkbookGenerator.finalize_bav` from `core/trainer/workbook.py` into `modeler/build_bav.py`. BAV finalization must not instantiate or depend on a Legacy Trainer generator.
+- Move `_add_bav_opening` and its presentation helpers into `composer/workbook_opening.py`, preserving existing Overview prose, navigation, fallbacks and completed historical-strategy handoffs.
+- Move reusable semantic-map/sidecar I/O into `modeler/semantic_io.py` and live formulas, source-payload embedding and reusable check-context machinery into `modeler/check_context.py`. Keep practice-only behavior with Legacy.
+- Relocate Trainer derivation, practice blanking, scoring, chrome and Trainer-only helpers into `legacy/trainer/`. Preserve optional derivation from a completed BAV workbook; avoid substantial Legacy refactoring.
+- Update `core/current_build.py`, `core/__main__.py`, affected verification code and other callers to use canonical owners. Normal company build/check/publish must work without loading Trainer implementation. Load Legacy lazily only for explicitly requested Trainer behavior or checking an existing Trainer file.
+- Preserve explicit JSON `bav build … -o …` dual-output compatibility through the inventory-defined `legacy/trainer/derive.py` route, consuming Modeler construction.
+- Retain only necessary thin compatibility exports at existing import paths; preserve existing callable interfaces and exports without duplicate implementations. Update affected tests and documentation references, and record executed ownership splits in the inventory.
 
 ## Verification
 
-- Run the new compatibility checks before and after repair, recording the missing-export failure and subsequent result.
-- Run `/opt/anaconda3/bin/python -m pytest -q core/tests/test_publication.py core/tests/test_research_drivers.py core/tests/test_research_handoff.py core/tests/test_research_emphasis.py core/tests/test_drivers_numeric.py`.
-- Confirm the diff is limited to the façade, compatibility tests and appended results; Composer rendering, styling and publication implementations remain unchanged.
-- Reuse reviewed relocation, build/check/publish and broader regression evidence only while its dependencies remain applicable. Rerun affected checks if the repair expands beyond exports and tests.
-- Apply SESSION native-verification requirements if presentation or workbook formulas/dependencies change; use Office Bridge. Export-only repair does not newly trigger native verification.
-- Run `git diff --check`; historical RESULT Markdown hard-break whitespace remains advisory.
-- Append restored-export coverage, actual commands/results, applicable reused evidence and remaining scope to `RESULT.md`. Preserve historical records.
+- Add focused coverage for canonical imports, retained compatibility exports and both import orders where façades remain.
+- Verify normal BAV build/check/publication succeeds with Legacy and `core.trainer` imports unavailable; separately exercise explicit Trainer derivation and optional Trainer checking.
+- Run `/opt/anaconda3/bin/python -m pytest -q core/tests/test_build_contract.py core/tests/test_reference_integrity.py core/tests/test_current_build.py core/tests/test_build_cli.py core/tests/test_historical_v1_exit_gate.py core/tests/test_trainer.py core/tests/test_learner_ready_presentation.py core/tests/test_lululemon_benchmark.py core/tests/test_fast_retailing_benchmark.py core/tests/test_publication.py`, following relocated tests where applicable. Run affected live-formula and opening-presentation coverage.
+- Run representative `python -m bav build`, `check` and `publish` for both `Lululemon` and `FastRetailing`; confirm normal builds do not derive Trainers.
+- Compare generated workbook formulas, dependency relationships, semantic maps, source/context embedding, sheet structure and opening presentation against authenticated baseline behavior. Preserve canonical filenames, sidecars and zero-byte research placeholders.
+- Apply SESSION native verification when workbook formulas/dependencies or presentation change: Office Bridge recalculation and independent saved-cache verification for the former, relevant readability inspection for the latter. Reuse earlier evidence only while its dependencies remain applicable.
+- Run `git diff --check`. Append measured results, relocation mappings, compatibility coverage and remaining migration scope to `RESULT.md`; preserve historical records.
 
 ## Constraints and remaining scope
 
-Preserve callable signatures, return types, existing exports, company aliases, public `bav` commands, canonical paths, output filenames, lazy loading, publication validation and failure behavior, presentation, figure contracts and zero-byte research placeholders.
+Preserve public `bav` commands, company aliases, signatures, return types, output contracts, lazy loading and fail-closed behavior. Preserve canonical source evidence, accounting signs, fiscal distinctions, precision, provenance, admission/comparison independence and residual qualifications.
 
-Preserve canonical source evidence, accounting signs, fiscal distinctions, precision, provenance, admission/comparison independence, residual qualifications, fail-closed controls, first-name-wins assessments, CFO classification, completed Driver handoffs and optional Trainer behavior.
+Preserve completed Driver handoffs, first-name-wins assessments, CFO classification, attribution amounts and locators, counterfactual scope, `supported_as_attribution`, `not independently verified` and `outside the accounting bridge`. Retain attribution appendices independently of principal selection; accompanying margin prose requires independently selected margin evidence.
 
-Preserve attribution amounts, locators, counterfactual scope, `supported_as_attribution`, `not independently verified` and `outside the accounting bridge`. Retain attribution appendices independently of principal selection; accompanying margin prose requires independently selected margin evidence.
+Do not redesign algorithms, workbook architecture or reports, expand Trainer, repair unrelated inventory §16 defects or implement second-phase features. Remaining calculation/data relocations, unrelated Legacy/removal work and final repository-wide migration verification remain subsequent work.
 
-Preserve ownership/recovery safeguards, protected documents and unrelated dirty work. No compatibility framework, report redesign, inventory §16 behavior repair or second-phase features.
-
-Engine/Trainer inversion, other component relocation, removals and final repository-wide migration verification remain subsequent work.
-
-Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
+Preserve ownership/recovery safeguards, protected documents and unrelated dirty work. Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
