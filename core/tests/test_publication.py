@@ -1708,7 +1708,13 @@ def test_publish_writes_only_under_canonical_output(tmp_path, monkeypatch):
 
 
 def test_core_research_publication_facades_delegate_to_composer():
+    from core.research.document import CELL_INSET_MM
     from composer.research.document import (
+        Block as canonical_block,
+        CELL_INSET_MM as canonical_cell_inset,
+        CHAR_WIDTH_PT as canonical_char_width,
+        DXA_PER_MM as canonical_dxa,
+        SHORT_IDENTIFIER_CHARS as canonical_short_id,
         publication_filenames as canonical_filenames,
         publish_company_documents as canonical_publish,
     )
@@ -1721,9 +1727,15 @@ def test_core_research_publication_facades_delegate_to_composer():
         resolve_required_fonts as canonical_fonts,
     )
     from core.research.document import (
+        Block as facade_block,
+        CELL_INSET_MM as facade_cell_inset,
+        CHAR_WIDTH_PT as facade_char_width,
+        DXA_PER_MM as facade_dxa,
+        SHORT_IDENTIFIER_CHARS as facade_short_id,
         publication_filenames as facade_filenames,
         publish_company_documents as facade_publish,
     )
+    from core.research.document import __all__ as facade_document_all
     from core.research.publish import (
         publish_company_research as facade_research,
         verify_research_artifacts as facade_verify,
@@ -1739,18 +1751,55 @@ def test_core_research_publication_facades_delegate_to_composer():
     assert facade_verify is canonical_verify
     assert facade_style is canonical_style
     assert facade_fonts is canonical_fonts
+    assert CELL_INSET_MM is canonical_cell_inset
+    assert facade_cell_inset is canonical_cell_inset
+    assert facade_char_width is canonical_char_width
+    assert facade_short_id is canonical_short_id
+    assert facade_dxa is canonical_dxa
+    assert facade_block is canonical_block
+    for name in (
+        "CELL_INSET_MM",
+        "CHAR_WIDTH_PT",
+        "SHORT_IDENTIFIER_CHARS",
+        "DXA_PER_MM",
+        "Block",
+    ):
+        assert name in facade_document_all
 
 
 def test_publication_import_order_keeps_converter_loading_lazy():
-    script = r"""
+    orders = (
+        (
+            "import core.research.document as facade_document\n"
+            "import composer.research.document as canonical\n"
+        ),
+        (
+            "import composer.research.document as canonical\n"
+            "import core.research.document as facade_document\n"
+        ),
+    )
+    for import_order in orders:
+        script = f"""
 import sys
-import composer.research.document as canonical
+{import_order}
 import composer.research.publish as publish
 import composer.research.style as style
-import core.research.document as facade_document
 import core.research.publish as facade_publish
 import core.research.style as facade_style
 assert facade_document.publish_company_documents is canonical.publish_company_documents
+assert facade_document.CELL_INSET_MM is canonical.CELL_INSET_MM
+assert facade_document.CHAR_WIDTH_PT is canonical.CHAR_WIDTH_PT
+assert facade_document.SHORT_IDENTIFIER_CHARS is canonical.SHORT_IDENTIFIER_CHARS
+assert facade_document.DXA_PER_MM is canonical.DXA_PER_MM
+assert facade_document.Block is canonical.Block
+for name in (
+    "CELL_INSET_MM",
+    "CHAR_WIDTH_PT",
+    "SHORT_IDENTIFIER_CHARS",
+    "DXA_PER_MM",
+    "Block",
+):
+    assert name in facade_document.__all__
 assert facade_publish.verify_research_artifacts is publish.verify_research_artifacts
 assert facade_style.apply_research_style is style.apply_research_style
 assert canonical._LIBS_LOADED is False
@@ -1761,11 +1810,11 @@ assert canonical._LIBS_LOADED is True
 assert "docx" in sys.modules
 assert "reportlab" in sys.modules
 """
-    result = subprocess.run(
-        [sys.executable, "-c", script],
-        check=False,
-        capture_output=True,
-        text=True,
-        cwd=str(ROOT),
-    )
-    assert result.returncode == 0, result.stderr or result.stdout
+        result = subprocess.run(
+            [sys.executable, "-c", script],
+            check=False,
+            capture_output=True,
+            text=True,
+            cwd=str(ROOT),
+        )
+        assert result.returncode == 0, result.stderr or result.stdout

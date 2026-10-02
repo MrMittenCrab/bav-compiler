@@ -10532,4 +10532,86 @@ This relocation does not establish Session 10 acceptance.
 
 None.
 
+---
+
+# RESULT.md — Step 10.6.1 Restore Composer publication compatibility exports
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)  
+**Step:** 10.6.1 — Restore Composer publication compatibility exports  
+**Work:** `9c134fea34e840dfbe25f98869e28acc`  
+**Plan:** `13619243875e42cc8dcf8b926402cafd`  
+**Finding:** Relocate research styling and publication into Composer
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change.
+
+## Baseline B
+
+Authenticated from populated `IMPLEMENT_BASE_SHA`. Fail-closed was not required.
+
+| Record | Value | Result |
+|---|---|---|
+| `.git/autocycle/resume-state` `IMPLEMENT_BASE_SHA` | `f75d9a082fec8270f8d4f5730f5dedbf57d2a48b` | Used as B |
+| `STATE_BRANCH` / `.git/HEAD` / branch tip | `checkpoint/20260913-183303` / same SHA | HEAD == B |
+| `implementation-baseline.json` `head` | same SHA | Bound |
+| `work-state` allocated `10.6.1` | `source` = B, `work_id` = `9c134fea34e840dfbe25f98869e28acc`, `status` = `opened` | Bound |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | `step_id` 10.6.1, same `work_id` | Bound |
+| Predecessor review SHA-256 | `d97df35ef2dbe70bd3a8fb870ec8a6ab68bb10305db3d50456b6219bfa34cb03` | Bound |
+| `.git/autocycle/latest-implementation` | leftover `e00052d6…` (Step 10.6) | Ignored: `IMPLEMENT_BASE_SHA` populated |
+
+Composer rendering/styling/publication implementations remain the reviewed destinations. Compared `composer/research/{style,document,publish}.py` hashes to the predecessor review; all three unchanged.
+
+## Repair
+
+`core/research/document.py` now re-exports `CELL_INSET_MM`, `CHAR_WIDTH_PT`, `SHORT_IDENTIFIER_CHARS`, `DXA_PER_MM` and `Block` from `composer.research.document` and lists all five in `__all__`. Definitions remain solely in Composer.
+
+`core/tests/test_publication.py` compatibility coverage now:
+
+- executes the original `from core.research.document import CELL_INSET_MM` import;
+- imports all five names through the legacy path and asserts identity with Composer exports;
+- asserts all five names are in the façade `__all__`;
+- exercises isolated façade-first and Composer-first import order, including restored exports and lazy converter loading.
+
+Canonical implementation tests continue to import layout helpers from Composer and do not substitute for those compatibility assertions.
+
+## Restored-export coverage
+
+| Check | Measured result |
+|---|---|
+| Compatibility tests before repair | **2 failed** in 0.73s. `test_core_research_publication_facades_delegate_to_composer`: `ImportError: cannot import name 'CELL_INSET_MM' from 'core.research.document'`. `test_publication_import_order_keeps_converter_loading_lazy`: `AttributeError: module 'core.research.document' has no attribute 'CELL_INSET_MM'` on the façade-first isolated import |
+| Compatibility tests after repair | **2 passed** in 1.07s. Legacy imports resolve; all five names are identity-equal to Composer and present in `__all__`; both import orders keep `docx` / `reportlab` unloaded until `require_publication_libraries()` |
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| B authentication (resume-state, baseline JSON, work-state 10.6.1, branch, HEAD==B) | B = `f75d9a08…`; HEAD == B; fail-closed not required |
+| Listed pytest `/opt/anaconda3/bin/python -m pytest -q core/tests/test_publication.py core/tests/test_research_drivers.py core/tests/test_research_handoff.py core/tests/test_research_emphasis.py core/tests/test_drivers_numeric.py` | **70 passed**, 5 warnings (pre-existing Swig importlib), 26.65s |
+| Composer SHA-256 vs predecessor review | `style.py` `6a1d6d23…` (9522), `document.py` `2ad7d961…` (52708), `publish.py` `77cf8f71…` (3299) unchanged |
+| `git diff --stat` | `core/research/document.py` +10; `core/tests/test_publication.py` +71/−11; `RESULT.md` append. No Composer implementation edits |
+| `git diff --check` | façade and tests clean. RESULT header hard-break whitespace on the new 10.6.1 status lines matches historical RESULT style and remains advisory |
+| Native Office | **Not run** — export-only façade/test repair; workbook formulas/dependencies and presentation implementations unchanged. SESSION native-verify condition was not newly met |
+
+## Reused evidence
+
+Step 10.6 relocation, build/check/publish and broader regression evidence remain applicable: this repair did not change Composer rendering, styling, publication implementations, callers, artifact contracts or presentation. Reused while those dependencies hold:
+
+- `style.py` byte-identical relocation; `document.py` / `publish.py` import-only semantic moves
+- Lululemon and Fast Retailing `python -m bav build/check/publish` rc 0; canonical Word/PDF filenames; 0-byte Forecast/Valuation/Overview placeholders `e3b0c442…`
+- Listed broader build/CLI/contract/revenue/margin/Lululemon+FR benchmark/Trainer/learner-ready: **508 passed**, 193.15s
+- Public `bav` commands unchanged (`ingest` / `validate-source` / `reconcile` / `build` / `check` / `publish` / `list`)
+
+## Preservation
+
+Callable signatures, return types, existing exports, company aliases, public `bav` commands, canonical paths, output filenames, lazy loading, publication validation and failure behavior, presentation, figure contracts and zero-byte research placeholders were not redesigned. Canonical source evidence, accounting signs, fiscal distinctions, precision, provenance, admission/comparison independence, residual qualifications, fail-closed controls, first-name-wins assessments, CFO classification, completed Driver handoffs and optional Trainer behavior remain. Attribution amounts, locators, counterfactual scope, `supported_as_attribution`, `not independently verified` and `outside the accounting bridge` remain. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+## Remaining toward Completion
+
+Engine/Trainer inversion, other component relocation, removals and final repository-wide migration verification remain subsequent work. Inventory §16 behavior defects were not repaired. No compatibility framework, report redesign or second-phase features.
+
+This export repair does not establish Session 10 acceptance.
+
+## Required plan change
+
+None.
+
 
