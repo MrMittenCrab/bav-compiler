@@ -6,12 +6,18 @@ Modeler, Interpreter, Composer, Legacy, or Remove. Classification follows the
 kind of decision. Configuration, tests, data and documentation inherit an
 owner and are not additional active components. Do not create `remove/`.
 
-Authenticated continuation baseline **B** = `312cb8aff118d427a73a3ad202693d2019d692bf`.
-The reviewed 10.1 attempt used `86ebdecb6c01a7153bbf6c90f5af16294753a3cd`; that
-commit is an ancestor of B (`86ebdec` → `02d7fcd` Step 10.1 → `312cb8a` Plan
-10.1.1). Mixed source blobs at both SHAs are byte-identical. Tracked historical
-content is the Git tree at this continuation’s B. Current working-tree files
-were inspected for local inputs, generated outputs and empty leftover dirs.
+Authenticated continuation baseline **B** = `2f292e955fa4e4d1828d795f472ae0ed15764cbf`
+(Plan 10.1.2; HEAD). Independently authenticated from populated
+`IMPLEMENT_BASE_SHA`. The reviewed 10.1.1 attempt used B
+`312cb8aff118d427a73a3ad202693d2019d692bf` and checkpoint
+`49a0a26c06675e24c898ff51bd471d1cec9419d3`; both are ancestors of this B
+(`86ebdec` → `02d7fcd` Step 10.1 → `312cb8a` Plan 10.1.1 → `49a0a26` Step
+10.1.1 → `2f292e9`). Mixed assessment source blobs
+`core/model/reported_margin.py` and `core/model/revenue_driver.py` are
+byte-identical at `312cb8a`, B and the working tree. Tracked historical
+content is the Git tree at this continuation’s B. Loader and synthesis
+decisions from 10.1.1 are retained. Current working-tree files were
+inspected for local inputs, generated outputs and empty leftover dirs.
 
 ---
 
@@ -19,18 +25,18 @@ were inspected for local inputs, generated outputs and empty leftover dirs.
 
 | Record | Value | Result |
 |---|---|---|
-| `.git/autocycle/resume-state` `IMPLEMENT_BASE_SHA` | `312cb8aff118d427a73a3ad202693d2019d692bf` | Populated; used as B |
+| `.git/autocycle/resume-state` `IMPLEMENT_BASE_SHA` | `2f292e955fa4e4d1828d795f472ae0ed15764cbf` | Populated; used as B |
 | `STATE_BRANCH` | `checkpoint/20260913-183303` | Matches `.git/HEAD` |
-| `.git/refs/heads/checkpoint/20260913-183303` | `312cb8aff118d427a73a3ad202693d2019d692bf` | HEAD == B |
+| `.git/refs/heads/checkpoint/20260913-183303` | `2f292e955fa4e4d1828d795f472ae0ed15764cbf` | HEAD == B |
 | `.git/autocycle/implementation-baseline.json` `head` / `branch` | same SHA / same branch | Bound |
-| `.git/autocycle/work-state.json` allocated `10.1.1` | `source` = B, `work_id` = `7951a38d066a440e8bfa19cd9dc5ecc7`, `status` = `opened` | Attempt bound |
-| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | `step_id` 10.1.1, same `work_id` | Bound |
-| Ancestry | HEAD equals B; `86ebdec…` is an ancestor of HEAD | Fail-closed not required |
-| Reviewed-attempt B | `86ebdecb6c01a7153bbf6c90f5af16294753a3cd` | Historical reference only; not this continuation’s B |
-| `.git/autocycle/latest-implementation` | Still names `86ebdec…` | Ignored: `IMPLEMENT_BASE_SHA` is populated |
+| `.git/autocycle/work-state.json` allocated `10.1.2` | `source` = B, `work_id` = `7951a38d066a440e8bfa19cd9dc5ecc7`, `status` = `opened` | Attempt bound |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | `step_id` 10.1.2, same `work_id` | Bound |
+| Ancestry | HEAD equals B; `312cb8a…` and `49a0a26…` are ancestors of HEAD | Fail-closed not required |
+| Reviewed 10.1.1 B / checkpoint | `312cb8a…` / `49a0a26…` | Historical blob reference only; not this continuation’s B |
+| `.git/autocycle/latest-implementation` | Still names `312cb8a…` | Ignored: `IMPLEMENT_BASE_SHA` is populated |
 
 Fail-closed was not required. `latest-implementation` is leftover from the
-reviewed 10.1 attempt and is not the implementation baseline.
+reviewed 10.1.1 attempt and is not the implementation baseline.
 
 ---
 
@@ -61,7 +67,7 @@ an entry. Mixed files have separate responsibility rows.
 | `core/__main__.py`, `current_build.py`, `build_status.py`, `project_companies.json` | 4.2, 10 | Director orchestration |
 | `core/data/` | 4.3, 7 | Split Extractor contract vs Modeler payload |
 | `core/ingestion/` | 7.3 | Extractor JSON contract I/O; Modeler admit/reconcile; no PDF extractor |
-| `core/model/` | 4.4, 7.0, 7.1 | Homogeneous Modeler plus exhaustive revenue-driver/synthesis splits |
+| `core/model/` | 4.4, 7.0, 7.1, 7.4 | Homogeneous Modeler plus exhaustive revenue-driver, synthesis and reported-margin assessment splits |
 | `core/engine/` | 10 | Workbook construction = Modeler; registry policy = Director |
 | `core/trainer/` | 10 | Invert: BAV build is Modeler; practice overlay is Legacy |
 | `core/research/` | 5–9 | Mixed Driver split |
@@ -149,7 +155,7 @@ later split is listed.
 |---|---|---|---|
 | `classification.py`, `financial_math.py`, `line_resolver.py`, `period_axis.py`, `ratio_values.py`, `source_values.py`, `source_availability.py`, `historical_expected.py` | Modeler | engine, tests | matching `core/tests/test_*.py` |
 | `normalization.py` series arithmetic; `normalized_per_share.py` | Modeler | builder, checker | `test_normalization.py`, `test_normalized_per_share.py` |
-| `reported_margin.py`, `revenue_per_store.py`, `geographic_segment.py`, `operating_kpi.py`, `operating_kpi_relationships.py`, `management_kpi.py` | Modeler | research assemble, workbook | corresponding tests + `test_research_drivers.py` series |
+| `revenue_per_store.py`, `geographic_segment.py`, `operating_kpi.py`, `operating_kpi_relationships.py`, `management_kpi.py` | Modeler | research assemble, workbook | corresponding tests + `test_research_drivers.py` series |
 | `earnings_quality.py`, `earnings_quality_change.py`, `working_capital.py`, `profitability_drivers.py`, `profitability_change.py`, `roe_attribution.py`, `per_share.py`, `per_share_attribution.py`, `inventory_analysis.py`, `cash_rollforward.py`, `capex.py`, `fixed_asset.py`, `lease_liability.py`, `lease_rou.py`, `lease_repayment.py`, `deferred_tax.py`, `goodwill_intangibles.py`, `acquisition_cash.py`, `share_repurchase.py`, `ownership_attribution.py` | Modeler | engine, benchmarks | matching tests; Lulu/FR benchmarks |
 | `operating_forecast.py` | Modeler (dormant) | `test_operating_forecast.py` only | Do not activate |
 | `ri_engine.py` | Modeler (dormant) | `ReferenceModelBuilder` only if `include_deferred_forecast` | `test_normal_v1_build_does_not_call_run_scenario` |
@@ -164,6 +170,7 @@ Mixed inside otherwise Modeler files:
 | `normalization.py` treatment rationales | `interpreter/normalization.py` | Interpreter | Meaning of alternatives | same tests’ rationale assertions |
 | `revenue_driver.py` | see §7.0 | split | Mixed; do not treat as homogeneous Modeler |
 | `revenue_strategy_synthesis.py` | see §7.1 | split | Mixed |
+| `reported_margin.py` | see §7.4 | split | Mixed; series/residuals stay Modeler; assessment judgments and wording do not |
 
 ### 4.5 Tests (inherited owners)
 
@@ -179,7 +186,10 @@ implementation move.
 | `test_management_kpi_{enrichment,identity,reconciliation,history}.py` | Legacy enrich; Modeler identity/reconcile/history |
 | `test_operating_kpi_facts.py`, `test_geographic_segment_facts.py` load/round-trip | Extractor load + Modeler admit |
 | `test_normalization_candidate_admission.py` | Modeler (provisional) |
-| `test_filing_reconciler.py`, `test_validators.py`, `test_issuer_fiscal.py`, `test_line_identity.py`, `test_line_resolver.py`, `test_classification.py`, `test_share_basis.py`, `test_historical_segment.py`, `test_source_availability.py`, `test_normalization.py`, `test_reported_margin.py` | Modeler |
+| `test_filing_reconciler.py`, `test_validators.py`, `test_issuer_fiscal.py`, `test_line_identity.py`, `test_line_resolver.py`, `test_classification.py`, `test_share_basis.py`, `test_historical_segment.py`, `test_source_availability.py`, `test_normalization.py` | Modeler |
+| `test_reported_margin.py` series / signs / residuals / availability / catalog / workbook formulas | Modeler (`modeler/tests/test_reported_margin.py`) |
+| `test_reported_margin.py` assessment kind/established, mix unestablished, episodic-versus-recurring, contradiction class | Interpreter (`interpreter/tests/test_reported_margin.py`) |
+| `test_reported_margin.py` assessment sentences, formatted charges, contribution-schedule labels | Composer (`composer/tests/test_reported_margin.py`) |
 | Analytical family `test_{earnings_quality*,working_capital,profitability_*,roe_attribution,per_share*,normalized_per_share,fixed_asset,lease_*,deferred_tax,goodwill_intangibles,capex,inventory_analysis,acquisition_cash,cash_rollforward,share_repurchase,ownership_attribution,operating_forecast}.py` | Modeler |
 | `test_{operating_kpi_analysis,operating_kpi_relationships,operating_kpi_workbook,operating_kpi_management_history,management_kpi_analysis,revenue_per_store,geographic_segment_analysis,geographic_segment_workbook}.py` | Modeler |
 | `test_revenue_driver.py` catalog/link/axis/reconstruction/numeric observations | Modeler (`modeler/tests/test_revenue_driver.py`) |
@@ -300,7 +310,7 @@ Keep existing types. Do not invent a reasoning schema. After the split,
 | `DriversView` numeric/identity/recon fields L538–622 except `selection` | same | select, render, plot | “Numbers for Markdown and figures; all from the same BAV compute path” | assemble + Lulu/FR builds |
 | `assemble_drivers_view` L640–967 (**not** L968) | same | `publish_drivers`, tests | Assembly from existing compute path | `test_research_drivers`, `test_reported_margin` |
 | `financial_drivers_applicable` L167–177 | same | assemble, `publish_company_research` | Applicability = verified revenue + operating-profit history | early return on publish |
-| `_unique_assessments` L1023–1033 | same | assemble | Dedup assessments | appendix |
+| `_unique_assessments` L1023–1033 | same | assemble | First-name-wins concatenation; **not** a semantic producer | appendix order |
 | `_latest_growth_index`, `_operating_profit_change`, `_series_at`, `margin_reconstruction_complete` L1493–1532 | same | headline, plots, tests | Mechanical reconstruction gate via `publication_reconstruction_allowed` | reconstruction tests ~L1025–1073 |
 
 **B. Interpreter — not implemented as standalone functions in this file**
@@ -384,11 +394,11 @@ judgment; Composer owns the sentence.
 
 No new types. Handoffs remain `DriversView` → `ResearchSelection` → Markdown/figures.
 
-**Handoff 1 (Modeler → Interpreter):** `DriversView` numeric fields + `attributions` + `comparable_sales` + `assessments`. Interpreter already reads them.
+**Handoff 1 (Modeler → Interpreter):** `DriversView` numeric fields + `attributions` + `comparable_sales` + identity `kind`/`established` + reported-fact amounts/zeros + observed-movement direction tests. Interpreter does not reread Composer wording.
 
-**Handoff 2 (Interpreter → Composer):** `ResearchSelection` on the same view. Composer already reads `principal_ids`, `secondary_ids`, `figure_ids`, `questions[].strongest_conclusion`, `unresolved_requirement`.
+**Handoff 2 (Interpreter → Composer):** `ResearchSelection` on the same view, plus assessment judgment fields (`kind`/`established` for descriptive, causal, reported-fact and unestablished branches; recurrence; contradiction class; unsupported-mix). Composer already reads `principal_ids`, `secondary_ids`, `figure_ids`, `questions[].strongest_conclusion`, `unresolved_requirement`.
 
-**Handoff 3 (Modeler → Composer):** same series for appendix tables and plot arrays. Composer must not recompute identities.
+**Handoff 3 (Modeler → Composer):** same series for appendix tables and plot arrays. Composer must not recompute identities or change `kind`/`established`.
 
 ### `DriversView`
 
@@ -398,9 +408,10 @@ No new types. Handoffs remain `DriversView` → `ResearchSelection` → Markdown
 | `display_name`, `period_ended` | Composer |
 | All revenue/profit/margin/geo/cash/inventory/footprint series and residuals L548–621 | Modeler |
 | `stores`, `revenue_growth`, `store_growth`, `revenue_per_store`, `comparable_sales`, `store_only_comparable_sales` | Modeler |
-| `fifty_three_week_period`, `issuer_fiscal_name`, `amount_bridge_convention` | Modeler |
-| `assessments` | Modeler |
-| `relationship_findings` | Composer (pre-worded sentences) |
+| `fifty_three_week_period`, `issuer_fiscal_name` | Modeler |
+| `amount_bridge_convention` | Composer rendered sentence; Modeler owns the formula only (`AMOUNT_BRIDGE_FORMULA`) |
+| `assessments` | container only; see §7.0 / §7.4 field-and-branch maps. Assembly is not a producer |
+| `relationship_findings` | Composer (`_finding_sentence` over assembled assessments; preserves `kind`/`established`) |
 | `margin_explanation` | unused (`""` at assemble); do not invent a replacement |
 | `attributions` | Modeler container of Extractor locators |
 | `selection` | field owners in `ResearchSelection` below; not a second owner of the view |
@@ -483,7 +494,7 @@ Destination file: `modeler/revenue_driver.py`.
 | `_geographic_test` numeric body L1015–1141 | `_geographic_observations` | Contribution signs, extra False flag for mix | Interpreter | geographic mixed test |
 | `compute_revenue_driver_analysis` L1192–1209, 1220–1228 numeric | same, numeric-only return | Axis, reconstructions, observation tests | Director sequence | missing-disclosures / axis |
 | `_geographic_reconstruction`, `_footprint_intensity_identity` | same | Pure arithmetic | assemble; assessments | reconstruction tests |
-| `_assess_revenue_test` identity residual branch L1376–1416 | `_identity_assessment` | `KIND_IDENTITY` + residual `< 1e-4` | `analysis.assessments` | seven-part validation |
+| `_assess_revenue_test` identity residual branch L1376–1416 | `_identity_assessment` | **Only** `kind=KIND_IDENTITY` and residual-based `established` (`max_resid < 1e-4`). Not wording | `test.assessment` identity items | seven-part names; residual tests |
 | `REASON_*` via management_kpi imports | stay Modeler admission codes | Mechanical unavailability | Composer labels | SPSF tests |
 
 #### B. Interpreter — hypotheses, mechanisms, verdicts, causal qualifications
@@ -504,8 +515,7 @@ Destination file: `interpreter/revenue_driver.py`.
 | `_comparable_sales_test` verdict/qualification | `interpret_comparable_sales` | same | Composer | compsales tests |
 | `_productivity_test` verdict/qualification | `interpret_productivity` | same | Composer | SPSF tests |
 | `_geographic_test` verdict/qualification | `interpret_geographic` | same; mix uses Modeler’s extra False flag | Composer | geographic mixed |
-| `_assess_revenue_test` `KIND_OBSERVED` / `KIND_UNESTABLISHED` / contradicted kind | `interpret_revenue_assessment` | Kind and `established` | Composer assessment wording | seven-part validation |
-| `RevenueDriverHypothesisTest.assessment.kind`, `.established` | Interpreter | Meaning of the test | research `_finding_sentence` via Composer | assessments |
+| `_assess_revenue_test` compsales / productivity / fallback L1417–1459 | `interpret_revenue_assessment` | Descriptive/causal `kind` and `established` only. Does **not** write identity `kind`/`established` | Composer wording | seven-part SPSF flags |
 
 Do not have Interpreter import `_SEGMENT_LABELS`, `_format_ratio_pct`, or
 `THEME_LABELS`.
@@ -553,21 +563,50 @@ Interpreter/Composer maps stay beside it.
 | `test.failed_requirement` / `.additional_evidence` | Interpreter codes; Composer existing phrases | failed / additional rows | unused | failed-requirement |
 | `analysis.geographic_reconstruction` / `.footprint_identity` | Modeler | reconstruction block | assemble series | reconstruction |
 | `analysis.scope_note` | Composer | A5 | unused | `== SCOPE_NOTE` |
-| `analysis.assessments` kind/established | Interpreter | unused | `_finding_sentence` | seven-part |
-| `analysis.assessments` wording | Composer | unused | relationship_findings | seven-part |
+| `test.assessment` container | not a producer | unused as a blob | `_finding_sentence` | see branch map |
+| `test.assessment` identity `kind` / residual `established` | Modeler | unused | `_finding_sentence` copies flags | geo/footprint residual `< 1e-4` |
+| `test.assessment` descriptive/causal `kind` / `established` | Interpreter | unused | same | SPSF / compsales / fallback |
+| `test.assessment` wording fields | Composer; must copy `kind`/`established` unchanged | unused | relationship_findings | seven-part names |
+| `analysis.assessments` | concatenation of non-None `test.assessment` then `margins.assessments`; **not** a producer | unused | assemble `_unique_assessments` | order: `_THEME_BUILDERS` then §7.4 append order |
 | `test.disclosures` | Extractor-shaped records already on financials | management-statement rows | unused | locator tests |
 
+#### `_assess_revenue_test` branch producers (one kind/established producer each)
+
+Precedence is the current if-chain. Later branches do not rewrite an earlier
+return. Composer fills text after the branch owner sets `kind`/`established`.
+
+| Branch (current guard) | `kind` | `established` | Wording | Destination symbols |
+|---|---|---|---|---|
+| `THEME_GEOGRAPHIC_GROWTH` and `geo is not None` L1376–1395 | Modeler `KIND_IDENTITY` | Modeler `max_resid is not None and max_resid < 1e-4` | Composer; `contradictions` uses Interpreter `counterexample` then existing finding text or `"none required"` | `_identity_assessment` / `word_identity_assessment` |
+| `THEME_STORE_EXPANSION` and `footprint is not None` L1396–1416 | Modeler `KIND_IDENTITY` | Modeler same residual rule on `reconstruction_residual` | Composer; same counterexample rule | `_identity_assessment` / `word_identity_assessment` |
+| `THEME_COMPARABLE_SALES` L1417–1430 | Interpreter `KIND_OBSERVED` if any `consistent is not None` else `KIND_UNESTABLISHED` | Interpreter `bool(known) and verdict != VERDICT_INSUFFICIENT` | Composer | `interpret_revenue_assessment` / `word_revenue_assessment` |
+| `THEME_PRODUCTIVITY` L1431–1444 | Interpreter `KIND_UNESTABLISHED` if insufficient else `KIND_OBSERVED` | Interpreter `verdict != VERDICT_INSUFFICIENT` | Composer | same |
+| Fallback L1445–1459 (geo without reconstruction, store without footprint, or other) | Interpreter `KIND_CAUSAL` if contradicted else observed/unestablished from `known` / insufficient | Interpreter `verdict == VERDICT_SUPPORTED` | Composer | same |
+
+`RevenueDriverHypothesisTest.assessment` is the container for that branch
+result. It is not itself a producer.
+
 **Imports after the move:** `modeler/revenue_driver.py` keeps relationship /
-KPI / geo / period_axis imports. `interpreter/revenue_driver.py` imports
-Modeler observation types and verdict constants only. `composer/revenue_driver.py`
-imports Interpreter codes + Modeler numbers; it does not compute series.
+KPI / geo / period_axis / `MarginRelationshipAssessment` type imports. It
+must not import Interpreter or Composer. `interpreter/revenue_driver.py`
+imports Modeler observation types, identity residuals, and verdict/KIND
+constants only — not Composer labels or formatters.
+`composer/revenue_driver.py` imports Interpreter codes + Modeler numbers;
+it copies `kind`/`established` and does not compute series.
 `core.engine.reference_model` numeric expand imports Modeler only.
-`core.research.drivers` assemble imports Modeler observations; `_finding_sentence`
-imports Composer. `core.trainer.workbook._add_bav_opening` does not import
-this module.
+`core.research.drivers` assemble imports Modeler observations and already-
+filled assessment records; `_finding_sentence` / `_KIND_LABELS` /
+`_assessment_block` import Composer. `core.trainer.workbook._add_bav_opening`
+does not import this module.
+
+Director sequences existing callers: Modeler compute → Interpreter
+`interpret_revenue_assessment` (descriptive/causal branches only) → Composer
+word → `assemble_drivers_view` concatenates. Keep one compatibility façade
+until those callers are updated; the façade may not choose judgments.
 
 Preservation: existing `test_revenue_driver.py` strings, verdicts, residuals,
-and workbook link formulas stay. Composer keeps current sentences.
+and workbook link formulas stay. Composer keeps current sentences. Identity
+`kind`/`established` stay residual-owned.
 
 ### 7.1 `core/model/revenue_strategy_synthesis.py`
 
@@ -727,6 +766,174 @@ Remaining ingestion rows:
 Raw source provenance belongs to Extractor. Analytical transformations and
 calculation provenance belong to Modeler.
 
+### 7.4 `core/model/reported_margin.py` (exhaustive)
+
+Git blob at B, at reviewed 10.1.1 B `312cb8a…`, and the working tree: SHA-256
+`94bb8a1c23e4ad5523716fac7fd355c7ff6fda3f778dce283a450afd4bf4eec4`
+(44917 bytes). Do not classify this file as homogeneous Modeler.
+
+Shared existing contract (no new type): `MarginRelationshipAssessment` and
+the `KIND_*` string constants stay on `modeler/reported_margin.py`. Director
+documents the field-and-branch producers; Director does not own the type.
+Interpreter and Composer import the type and constants. `KIND_ATTRIBUTED_EXPLANATION`
+is unused by current assemblers; it remains Interpreter claim vocabulary
+with Composer `_KIND_LABELS` display `"management explanation"`.
+
+After the split, Modeler must not import Interpreter or Composer; Interpreter
+must not import Composer labels or formatters.
+
+#### A. Modeler — series, signs, contributions, residuals, availability, mechanical validity
+
+Destination file: `modeler/reported_margin.py`.
+
+| Source symbol / field | Destination symbol | Reason | Consumers | Verification |
+|---|---|---|---|---|
+| `GROSS_PROFIT_CONCEPT` … `OTHER_OPERATING_CONCEPTS` | same | Concept keys | resolvers, workbook | resolution tests |
+| `EXPENSE_PRESENTATION_POSITIVE` / `_SIGNED` | same | Convention codes | `expense_presentation_factor` | signed-SG&A tests |
+| `RATIO_RECONSTRUCTION_TOLERANCE` `1e-8`, `AMOUNT_RECONSTRUCTION_TOLERANCE` `1e-4`, `PUBLICATION_RATIO_TOLERANCE` `5e-5`, `PUBLICATION_AMOUNT_TOLERANCE` `1.0` | same | Mechanical claim gates | `residual_blocks_reconstruction_claim`; identity `established` | residual / publication tests |
+| `KIND_IDENTITY`, `KIND_REPORTED_FACT`, `KIND_OBSERVED`, `KIND_CAUSAL`, `KIND_UNESTABLISHED`, `KIND_ATTRIBUTED_EXPLANATION` | same constants on this file | Shared vocabulary; **producers** are the branch maps below | Interpreter / Composer | kind assertions |
+| `AMOUNT_BRIDGE_CONVENTION` formula clause | `AMOUNT_BRIDGE_FORMULA` | `ΔGP = GM_prior × ΔRevenue + Revenue_prior × ΔGM + ΔRevenue × ΔGM` only | GP-bridge residual; sheet math | Lulu GP residual `< 1e-6` |
+| `ReportedMarginAvailability` / `ReportedMarginSources` | same | Unique IS resolution flags and LineItems | compute; workbook provenance | availability / source-fidelity |
+| `ReportedMarginSeries` numeric fields L119–160 | same | Levels, changes, signed contributions, residuals | assemble; `historical_expected`; `reference_model`; checker | `test_reported_margin` series |
+| `ReportedMarginSeries.amount_bridge_convention` | Composer field on the same record | Rendered sentence, not the formula | `_amount_bridge_block` | convention text |
+| `ReportedMarginSeries.assessments` | container only | Not a producer | assemble; `analysis.assessments` concat | see branch map |
+| `MarginRelationshipAssessment` dataclass | same (shared contract) | Existing seven-part record | revenue + margin + research | type import |
+| `_resolve_unique_is`, `reported_margin_availability`, `resolve_reported_margin_sources` | same | Unique explicit IS lines; no label fallback | compute; workbook | concept / renamed-label |
+| `_revenue_ready` and `*_applicable` | same | Family presence from unique sources | compute; assemble gate | independent-family omissions |
+| `expense_presentation_factor`, `analytical_expense`, `expense_presentation_factor_for_sources` | same | Majority nonzero sign; keep opposite-sign reversals; do not `abs()` source values | compute; `reference_model` | positive vs signed; FR SG&A |
+| `residual_blocks_reconstruction_claim`, `publication_reconstruction_allowed` | same | Unknown/material residual blocks an exact claim | identity `established`; `selection.publication_reconstruction_allowed` | residual / reconstruction tests |
+| `_difference_or_na`, `_adjacent_changes`, `_adjacent_amount_changes`, `_adjacent_optional_changes` | same | Missing ≠ zero; opening period None | compute | zeros / missing |
+| `_sum_optional`, `_reconstruct_operating_profit` | same | GP − SG&A − optional impairment − optional other | compute | Lulu residual 0 |
+| `_signed_ratio_contributions`, `_sum_contributions`, `_pair_residual`, `_numeric_ratio` | same | Expense contributions negated; omitted parts stay omitted | compute; latest-movement tests | sign / missing / zero |
+| `compute_reported_margin_series` numeric body L382–655, 680–718 | same, numeric-only return | Series and residuals only; do not call interpret/word | Director sequence; assemble; workbook | series tests |
+| Identity residual facts for assessments | `_margin_identity_validity`, `_margin_contribution_validity`, `_gross_profit_bridge_validity` | `max_resid` and `residual_blocks_reconstruction_claim` | Interpreter/Composer consume flags | Lulu contribution `established` |
+| Disclosed charge observations | `_impairment_charge_observations` | Periods with `amount > 0`, disclosed zeros, line presence | Interpreter recurrence; Composer magnitude | Lulu FY2023 407913 / later 0 |
+| Latest-movement numeric tests | `_latest_adjacent_movement` | Latest index with defined OM pair; `om_move`; signed `gm_move`/`sga_move`/`imp_move`/`other_move`; `om_move < 0`; `gm_move * om_move < 0`; both-negative conjunction | Interpreter contradiction class; Composer pp | oppose-aggregate test |
+
+#### B. Interpreter — causal limits, recurrence, interpretive support
+
+Destination file: `interpreter/reported_margin.py`.
+
+| Source symbol / field | Destination symbol | Reason | Consumers | Verification |
+|---|---|---|---|---|
+| Mix/cost/leverage support decision L976–997 | `interpret_unsupported_mix` | Always emitted. `kind=KIND_UNESTABLISHED`, `established=False`. Causal limit: face-of-statement components do not isolate mix/markdowns/freight/costs/occupancy/leverage | Composer `word_unsupported_mix` | FR/Lulu `unestablished_inference` and mix name |
+| Impairment recurrence L970 | `interpret_disclosed_charges` | `stability` judgment: episodic, not a recurring operating burden. `kind=KIND_REPORTED_FACT` (claim typology). Does **not** own amounts or zeros | Composer charge sentences | no current wording assertion (gap) |
+| Latest-movement contradiction class L1057–1073 | `interpret_latest_movement` | Class only: both GM and SG&A reduced OM; component direction differs from reported OM; or none required. `kind=KIND_OBSERVED` | Composer contradiction sentences | `test_component_direction_can_oppose_aggregate_margin` |
+| Identity branches | none beyond consuming Modeler validity | No causal or recurrence judgment | Composer identity sentences | Lulu identity `established` is Modeler |
+
+Do not have Interpreter import `_format_*`, contribution-schedule labels,
+or `AMOUNT_BRIDGE_CONVENTION` prose.
+
+#### C. Composer — labels, sentences, numeric formatting, rendered qualifications
+
+Destination file: `composer/reported_margin.py`.
+
+| Source symbol / field | Destination symbol | Reason | Consumers | Verification |
+|---|---|---|---|---|
+| `AMOUNT_BRIDGE_CONVENTION` rendered | same string | Preserve exact wording | `ReportedMarginSeries.amount_bridge_convention`; GP-bridge `magnitude`; `_amount_bridge_block` fallback | convention paragraph |
+| Identity / contribution / GP-bridge text fields | `word_margin_identity`, `word_margin_contributions`, `word_gross_profit_bridge` | `name`, `direction`, `magnitude`, `reconstruction`, formatted `residual`, `stability`, `contradictions`, `disclosure_support`, `limitation`. Copy Modeler `kind`/`established` | research appendix; `_finding_sentence` | Lulu contribution name + `established` |
+| Charge sentences | `word_disclosed_charges` | `"{period.isoformat()} {amount:,.0f}"` join or `"disclosed zeros only"`; residual/zero prose; copy Interpreter `kind` and Modeler disclosure-`established` | same | no current format assertion (gap) |
+| Mix sentences | `word_unsupported_mix` | Preserve `mix_limit` wording; copy Interpreter flags | same | mix name + not established |
+| Latest-movement sentences | `word_latest_movement` | `"operating margin fell"` / `"rose"`; `{om_move * 100:+.2f} pp`; component pp parts; contradiction sentences from Interpreter class | same | oppose-aggregate substring |
+| Workbook contribution labels | stay with `reference_model` / catalog (Modeler sheet construction uses these strings) | `"Δ gross margin contribution"` and signed SG&A/impairment/other labels are existing sheet text | ALT DuPont | `test_rendered_component_contribution_schedule` |
+
+#### `_assess_margin_relationships` branch producers
+
+Append order is the current if-chain. Collection order after revenue
+assessments is this order. Composer words each branch after its
+`kind`/`established` owner.
+
+| Branch (current guard) | `kind` | `established` | Other judgment | Wording | Destination symbols |
+|---|---|---|---|---|---|
+| Component identity L864–897 (`reconstructed_om`, `om_residual`, `sga_disclosed`) | Modeler `KIND_IDENTITY` | Modeler `max_resid is not None` and not `residual_blocks_reconstruction_claim(..., kind="ratio")` | none | Composer | `_margin_identity_validity` / `word_margin_identity` |
+| Component contributions L898–927 (`contribution_sum`, `contribution_resid`) | Modeler `KIND_IDENTITY` | Modeler same ratio residual rule | none | Composer | `_margin_contribution_validity` / `word_margin_contributions` |
+| Gross-profit bridge L928–949 (`gp_change_residual is not None`) | Modeler `KIND_IDENTITY` | Modeler `max_gp is not None` and not `residual_blocks_reconstruction_claim(..., kind="amount")` | none | Composer | `_gross_profit_bridge_validity` / `word_gross_profit_bridge` |
+| Disclosed charges L950–975 (`impairment_disclosed` and amounts) | Interpreter `KIND_REPORTED_FACT` | Modeler True from disclosed line + amounts tuple (actual decision is observation presence, not recurrence) | Interpreter episodic-versus-recurring | Composer formats amounts/zeros separately from recurrence | `_impairment_charge_observations` / `interpret_disclosed_charges` / `word_disclosed_charges` |
+| Unsupported mix/cost/leverage L976–997 (always) | Interpreter `KIND_UNESTABLISHED` | Interpreter `False` | Interpreter causal limit | Composer `mix_limit` | `interpret_unsupported_mix` / `word_unsupported_mix` |
+| Latest adjacent movement L999–1080 (OM, `sga_ratio`, GM, latest defined pair) | Interpreter `KIND_OBSERVED` | Modeler True from latest defined OM pair (actual decision is pair availability, not the contradiction class) | Interpreter contradiction class; Modeler owns the numerical direction tests | Composer direction phrase and `+.2f` pp | `_latest_adjacent_movement` / `interpret_latest_movement` / `word_latest_movement` |
+
+Numerical direction tests (`om_move < 0`, `gm_move * om_move < 0`, both
+contributions negative) are Modeler. Their English expression and the
+causal reading of those signs are not.
+
+#### Result-field producers (containers are not producers)
+
+| Field | Producer |
+|---|---|
+| `ReportedMarginSeries` numeric fields | Modeler |
+| `ReportedMarginSeries.amount_bridge_convention` | Composer |
+| `ReportedMarginSeries.assessments` | concatenation of the six branches above; **not** a producer |
+| `RevenueDriverHypothesisTest.assessment` | the `_assess_revenue_test` branch that returned it; **not** a producer |
+| `RevenueDriverAnalysis.assessments` | `tuple(test.assessment for test in assessed if assessment)` then `+ margins.assessments`; **not** a producer |
+| `DriversView.assessments` | `_unique_assessments(analysis_assessments + margin_assessments)`; **not** a producer |
+| `DriversView.relationship_findings` | Composer `_finding_sentence` |
+
+**Branch precedence and concatenation.** `_THEME_BUILDERS` order is store
+expansion, comparable sales, productivity, geographic growth. Margin
+branches then append in the table order above. `assemble_drivers_view`
+concatenates `analysis.assessments + margins.assessments`. When analysis
+ran, it already includes `margins.assessments`, so the second copy is a
+duplicate. `_unique_assessments` keeps the first `name` and drops later
+duplicates. Revenue names and margin names do not collide. Preserve this
+first-name-wins order; do not re-sort.
+
+#### Handoffs, callers, destination imports
+
+Director sequences existing callers (`build_company`, `assemble_drivers_view`,
+`publish_drivers`, Overview opening, workbook):
+
+1. Modeler `compute_reported_margin_series` (numeric) and
+   `compute_revenue_driver_analysis` observations + identity
+   `kind`/`established`.
+2. Interpreter `interpret_margin_relationships` and descriptive/causal
+   `interpret_revenue_assessment`.
+3. Composer `word_margin_relationships` / `word_revenue_assessment`
+   (preserve `kind`/`established`).
+4. `assemble_drivers_view` concatenates existing records; it does not
+   interpret or word.
+5. `select_driver_argument` does not read assessments (appendix-only).
+6. Composer `_assessment_block` / `_finding_sentence` / `_KIND_LABELS` /
+   `_amount_bridge_block`.
+
+Workbook consumers (`reference_model._prepare_reported_margin`,
+`historical_expected.reported_margin_expected_series`,
+`trainer.checker` live formulas, `component_catalog` families) use series
+and specs only. They must import Modeler `reported_margin` and must not
+import Interpreter or Composer assessment helpers.
+
+| After-move import | Allowed dependencies |
+|---|---|
+| `modeler/reported_margin.py` | `line_resolver`, `ratio_values`, `source_values`, `data.interface` |
+| `interpreter/reported_margin.py` | Modeler series, KIND constants, residual helpers |
+| `composer/reported_margin.py` | Modeler numbers + Interpreter codes; no series math |
+| `modeler/revenue_driver.py` | Modeler margin series/type; not Interpreter/Composer |
+| `composer/research/drivers.py` | filled assessment records + `_KIND_LABELS` |
+| Compatibility façade in current files | sequences the three phases; may not choose judgments |
+
+#### Preservation checks (existing coverage → future split)
+
+| Check | Owner after split | Existing coverage | Gap |
+|---|---|---|---|
+| Residual thresholds 1e-8 / 1e-4 / publication 5e-5 and 1.0 | Modeler | `test_reported_margin` Lulu residuals 0 / `< 1e-12`; FR residual blocks publication; `residual_blocks_reconstruction_claim` | no assertion that identity `established` uses those exact limits |
+| Revenue identity `established` iff `max_resid < 1e-4` | Modeler | geo/footprint residuals `== 0` or `< 1e-6` in seven-part | seven-part does **not** assert identity `kind`/`established` |
+| Missing ≠ zero; opening None; omitted line None | Modeler | `test_component_contributions_sign_missing_zero_and_residual`; zeros/undefined | none for those series facts |
+| Signed contributions (expense negated) | Modeler | sign tests; FR analytical SG&A | none |
+| Fiscal alignment / canonical axis | Modeler | Lulu/FR period lists; `test_revenue_driver` interim-axis reject | none |
+| Provenance / source signs unchanged | Modeler | source-fidelity; FR source SG&A negative, series positive | none |
+| Identity `kind` + contribution `established` | Modeler | Lulu kinds contain `identity`; contribution name `established` | GP-bridge assessment unasserted |
+| Mix `kind=unestablished_inference`, `established=False` | Interpreter | Lulu/FR any-unestablished and mix name | `mix_limit` sentence unasserted |
+| Latest-movement contradiction wording | Interpreter class + Composer sentence | oppose-aggregate substring | class enum not separately tested |
+| Impairment episodic judgment | Interpreter | none | coverage gap |
+| Charge amount formatting / disclosed zeros | Composer | none | coverage gap |
+| Assessment order / first-name-wins dedup | assemble pass-through | none | coverage gap |
+| `_finding_sentence` / `_KIND_LABELS` / appendix table | Composer | `test_research_drivers` does not read `view.assessments` or `relationship_findings` | coverage gap |
+| Current rendered assessment sentences | Composer | only the oppose-aggregate substring and mix/identity names | do not invent new wording checks; preserve current strings when tests exist |
+| Workbook contribution labels | Composer/sheet text already asserted | `test_rendered_component_contribution_schedule` | none |
+| Seven-part names + SPSF flags | revenue §7.0 | `test_lululemon_revenue_reconstruction_and_seven_part_validation` | identity flags and finding-sentence format unasserted |
+
+Do not invent completed checks for the gaps. Later executing steps reuse
+these existing tests after the split.
+
 ---
 
 ## 8. Figures versus relationships versus presentation
@@ -738,6 +945,7 @@ calculation provenance belong to Modeler.
 | `document.py` | none (reads Markdown/PNG) | none | Word/PDF layout, captions |
 | `publish.py` | none | none | apply-if-applicable, verify headings/figures |
 | `figure_ids` | — | Interpreter may ask a figure question | Composer decides whether a PNG is emitted |
+| Drivers assessment appendix | Modeler residuals and identity `established`; Interpreter descriptive/causal/`reported_fact` kinds and support | same field-and-branch map as §7.0 / §7.4 | `_KIND_LABELS`, `_finding_sentence`, table form |
 
 A persuasive chart does not invent an analytical relationship.
 
@@ -967,7 +1175,7 @@ Subsequent reviewed steps execute this order. This step does not execute it.
 
 1. Create visible roots `director/`, `extractor/`, `modeler/`, `interpreter/`, `composer/`; keep `legacy/`. Add `extractor/README.md`. Move Extractor contract + `filing_json` loaders + `classify_extracted_payload` + management-KPI parse + provenance bind per §7.3 / §12.
 2. Move `STYLE.md` and `DRIVER.md` to `director/docs/` and apply §11 reference updates, including README identity if that step touches README. Protected planning docs stay.
-3. Split `revenue_driver.py` and `revenue_strategy_synthesis.py` per §7.0–7.1 (observations / verdicts / wording). Then split `drivers.py` / `selection.py` per §5. Apply the management-emphasis removal in §9. Deduplicate reconstruction helpers.
+3. Split `revenue_driver.py`, `revenue_strategy_synthesis.py` and `reported_margin.py` per §7.0–7.1 and §7.4 (observations / identity validity / verdicts / wording). Then split `drivers.py` / `selection.py` per §5. Apply the management-emphasis removal in §9. Deduplicate reconstruction helpers. Assessment concatenation stays first-name-wins; façades may not choose judgments.
 4. Move remaining Modeler calculation modules, data payload, ingestion reconcile/standardize, engine workbook, `build_bav_workbook`, semantic I/O, check-context embed.
 5. Move Interpreter judgment functions and classification/normalization rationales / strategy inference.
 6. Move Composer `style.py`, `document.py`, `publish.py`, Drivers prose/plots, Overview opening/navigation.
@@ -999,7 +1207,7 @@ This inventory step does not rebuild, publish, or run native Office.
 
 - `core/tests/test_research_drivers.py` — Drivers split, CFO, reconstruction, headings, STYLE/DRIVER paths
 - `core/tests/test_publication.py`, `test_current_build.py`, `test_build_cli.py`, `test_build_contract.py`
-- `core/tests/test_reported_margin.py`, `test_revenue_driver.py`
+- `core/tests/test_reported_margin.py`, `test_revenue_driver.py` — after the §7.0 / §7.4 split, keep residual, missing-versus-zero, sign, fiscal, provenance, kind/flag and current wording assertions; do not treat collection assembly as a second producer
 - Filing / KPI / geo admission and reconcile suites
 - Analytical family suites listed in §4.5
 - `test_lululemon_benchmark.py`, `test_fast_retailing_benchmark.py`
@@ -1042,7 +1250,7 @@ Inventory completion does **not** establish migration acceptance.
 ## 16. Remaining behavior defects (not ownership gaps)
 
 Ownership and destinations that previously blocked execution are decided in
-§7.0, §7.1, §7.3, §10 and §12. The items below are unrelated runtime or
+§7.0, §7.1, §7.3, §7.4, §10 and §12. The items below are unrelated runtime or
 product-behavior defects. They must not be treated as unfinished ownership.
 Do not expand this inventory correction into runtime repairs.
 
@@ -1059,7 +1267,7 @@ Do not expand this inventory correction into runtime repairs.
 11. **Three “validator” names.** `schema.validate_standardized` = Director unused contract; `data.validators` = Modeler checksums; `filing_validator.bind_source_file` = Extractor; `validate_operating_kpi_fact` = Modeler admission. Shared name only.
 12. **Source PDFs are absent locally and not tracked at B.** Canonical destination is `build/input/<company>/source/`. `source_manifest.json` still cites `benchmark/fast_retailing/source/`. Restore-and-bind is later work; do not invent PDFs.
 13. **`README.md` “BAV — Hong Kong Edition”** is asserted by `test_root_readme_is_practical_trainer_guide`. Product-face rename must update that Director test together.
-14. **`latest-implementation` leftover** names `86ebdec…`. Ignored because `IMPLEMENT_BASE_SHA` is populated.
+14. **`latest-implementation` leftover** names `312cb8a…`. Ignored because `IMPLEMENT_BASE_SHA` is populated.
 
 Resolved in this correction (no longer ownership blockers):
 
@@ -1068,5 +1276,12 @@ Resolved in this correction (no longer ownership blockers):
 - `load_extracted_filing` is Extractor `extractor/data/filing_json.py`.
 - `_add_bav_opening` is Composer; finalize is Modeler.
 - Shared CLI/test/manifest/build-contract labels are split to one owner each.
+- `reported_margin.py` is not homogeneous Modeler; §7.4 assigns every symbol
+  and every `_assess_margin_relationships` branch.
+- Revenue identity `kind`/`established` are Modeler residual products;
+  descriptive/causal `kind`/`established` are Interpreter. Composer wording
+  copies those fields. Blanket ownership of `test.assessment`,
+  `analysis.assessments`, `ReportedMarginSeries.assessments` and
+  `DriversView.assessments` is replaced by the field-and-branch maps.
 
 These behavior items do not block beginning migration.

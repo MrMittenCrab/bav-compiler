@@ -9771,3 +9771,96 @@ Ownership destinations for the previously unresolved mixed revenue-driver/synthe
 
 Inventory correction does not establish migration acceptance.
 
+# RESULT.md — Step 10.1.2 Correct assessment ownership and producer handoffs
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.1.2 — Correct assessment ownership and producer handoffs
+**Work:** `7951a38d066a440e8bfa19cd9dc5ecc7`
+**Plan:** `00e2c3ae525f429bb94822fd5f1e28e6`
+**Finding:** Inventory responsibilities and define migration splits
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged).
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `8a3e44b6635bcbd3c484b4274073b516ff8286c391fbdabd08e4ae098f72c55e` (7336).
+No commit / push / sync / checkpoint / branch change. No runtime move, delete, rebuild, publish, or native Office.
+
+## Required plan change
+
+No required plan change. This attempt corrected the inventory only. Session acceptance, file movement and representative rebuilds remain subsequent reviewed steps.
+
+## Unresolved fact and criterion
+
+Recorded fact: “Exact owners, destinations and handoffs for reported-margin assessment judgments and wording remain unspecified; revenue identity-assessment kind/established producers are contradictory.”
+
+Criterion: “The parent Completion requires every meaningful responsibility to have exactly one authorized disposition and executable splits without unresolved ownership decisions.”
+
+**Resolution this attempt:** those ownership decisions are now specified in `director/docs/MIGRATION_INVENTORY.md` §7.0 branch maps and new §7.4. Remaining §16 items are behavior defects or coverage gaps, not missing owners. Migration itself is not executed and is not claimed accepted.
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. Independently authenticated; the reviewed 10.1.1 B/checkpoint were not reused as this continuation’s baseline.
+
+| Check | Measured |
+|---|---|
+| B | `2f292e955fa4e4d1828d795f472ae0ed15764cbf` |
+| Branch | `checkpoint/20260913-183303` (`.git/HEAD` and `git rev-parse --abbrev-ref HEAD`) |
+| Branch tip | `2f292e9…` — HEAD equals B (Plan 10.1.2) |
+| Ancestry | `312cb8a…` and `49a0a26…` are ancestors (`86ebdec` → `02d7fcd` → `312cb8a` → `49a0a26` → `2f292e9`) |
+| `implementation-baseline.json` | `head` = B, `branch` matches |
+| Attempt binding | `work-state` allocated `10.1.2` `source` = B, `work_id` = `7951a38d066a440e8bfa19cd9dc5ecc7`, `status` = `opened` |
+| Reviewed 10.1.1 B / checkpoint | `312cb8a…` / `49a0a26…` used only as historical blob references in admitted evidence_routes |
+| `latest-implementation` | Still names `312cb8a…`; ignored because `IMPLEMENT_BASE_SHA` is populated |
+
+Authentication succeeded. Fail-closed was not required.
+
+## Inventory artifact
+
+Corrected `director/docs/MIGRATION_INVENTORY.md` (SHA-256 `69983f6478c37dd955a4fd1678f1001055901436f7d985bdb3fceca1c7c21516`, 106484 bytes; prior `a535d972…` / 84675). Retained full-repository coverage, completed loader and synthesis decisions, Driver field splits, management-emphasis restrictions, Trainer inversion, removal justifications, canonical paths and Director specification destinations.
+
+## Concrete resolutions
+
+**`core/model/reported_margin.py`** (blob SHA-256 `94bb8a1c23e4ad5523716fac7fd355c7ff6fda3f778dce283a450afd4bf4eec4`, 44917 bytes at B, `312cb8a…` and the working tree). Removed from the homogeneous Modeler list. §7.4 assigns every symbol and every `_assess_margin_relationships` branch:
+
+- Modeler `modeler/reported_margin.py`: series, signs, contributions, residuals, availability, mechanical validity, identity `kind`/`established`, disclosed charge amounts/zeros, latest-movement direction tests.
+- Interpreter `interpreter/reported_margin.py`: `KIND_REPORTED_FACT` / `KIND_OBSERVED` / `KIND_UNESTABLISHED` typology, episodic-versus-recurring, unsupported mix/cost/leverage, contradiction class.
+- Composer `composer/reported_margin.py`: labels, sentences, numeric formatting, rendered qualifications. Copies `kind`/`established` unchanged.
+- Shared contract: existing `MarginRelationshipAssessment` + `KIND_*` stay on `modeler/reported_margin.py`.
+
+Reported-fact `established` is Modeler disclosure presence; observed-movement `established` is Modeler latest-pair availability. Those are the actual decisions in the current branches.
+
+**`core/model/revenue_driver.py`** (blob SHA-256 `ff46fc45f303a5fb883c01c2bd5520efe57a419b013b6d0a3ee4f117c828c4bb`, 59157 bytes at B, `312cb8a…` and the working tree). §7.0 no longer assigns identity `kind`/`established` to Interpreter. Branch map:
+
+- Geographic/footprint identity: Modeler `KIND_IDENTITY` and `max_resid < 1e-4`.
+- Compsales / productivity / fallback: Interpreter descriptive/causal `kind` and `established`.
+- Composer words all branches and preserves those fields.
+
+`RevenueDriverHypothesisTest.assessment`, `analysis.assessments`, `ReportedMarginSeries.assessments` and `DriversView.assessments` are containers/concatenation. `_unique_assessments` is first-name-wins; order is `_THEME_BUILDERS` then margin append order. Analysis already includes margin assessments, so assemble’s second copy is dropped by name.
+
+**Handoffs:** Director sequences Modeler compute → Interpreter interpret → Composer word → assemble concatenates. Modeler must not import Interpreter/Composer; Interpreter must not import Composer labels. Workbook/checker/`historical_expected` import Modeler series only. No new reasoning ontology.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| `resume-state` `IMPLEMENT_BASE_SHA`, `implementation-baseline.json`, `work-state` 10.1.2, `git rev-parse HEAD`, branch, ancestry | B = `2f292e9…` authenticated as above |
+| `git show 312cb8a…:core/model/reported_margin.py` | 44917 bytes, SHA-256 `94bb8a1c…` |
+| `git show 312cb8a…:core/model/revenue_driver.py` | 59157 bytes, SHA-256 `ff46fc45…` |
+| Same two paths at B `2f292e9…` and working tree | Byte-identical to `312cb8a…` blobs |
+| `rg -n MarginRelationshipAssessment\|_assess_margin_relationships\|_assess_revenue_test\|assessments\|reported_margin` on `core` and `director/docs/MIGRATION_INVENTORY.md` | Matches in reported_margin, revenue_driver, drivers assemble/dedup/render, selection `publication_reconstruction_allowed`, workbook/checker, and the three named tests |
+| Inspect `_assess_margin_relationships` six branches and `_assess_revenue_test` five-guard chain | Residual identity vs descriptive/causal vs reported-fact/observed-movement decisions traced |
+| `git diff --check` | rc 0; no whitespace errors. Dirty paths: `director/docs/MIGRATION_INVENTORY.md`, `RESULT.md` only |
+| Native Office / company rebuild / pytest | **Not run** — documentation-only correction |
+
+## Preservation
+
+No runtime code moved. No content deleted. No tests altered. No publications regenerated. No new features. Public `bav`, canonical `build/input` and `build/output`, STYLE.md / DRIVER.md locations, Trainer inversion design, management-emphasis restrictions, zero-byte placeholders and protected planning docs unchanged. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified. Historical RESULT sections were not rewritten.
+
+Existing coverage mapped without inventing completed checks: series/residual/sign/missing-zero tests stay Modeler; Lulu/FR unestablished and mix flags stay Interpreter; oppose-aggregate contradiction substring and contribution-schedule labels stay Composer. Gaps: identity `established` threshold on revenue assessments, episodic charge wording, charge formatting, assessment order/dedup, `_finding_sentence` / `view.assessments` in `test_research_drivers.py`.
+
+## Remaining toward Completion
+
+Assessment ownership and producer handoffs that previously contradicted §4.4 / §7.0 are now specified. Later reviewed work must execute the inventory, relocate Director specifications and STYLE.md, update references, preserve useful behavior, and verify representative builds and regressions without second-phase features.
+
+Inventory correction does not establish migration acceptance.
+
