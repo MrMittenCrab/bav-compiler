@@ -1,4 +1,4 @@
-"""Shared Matplotlib style derived from root STYLE.md.
+"""Shared Matplotlib style derived from director/docs/STYLE.md.
 
 Individual figures must not set typography, spacing, or palettes.
 Fonts are resolved from the host; they are never copied into the repository.

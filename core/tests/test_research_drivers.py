@@ -83,7 +83,7 @@ FORBIDDEN_PROSE = (
 
 
 def test_style_specification_and_fonts():
-    text = (ROOT / "STYLE.md").read_text(encoding="utf-8")
+    text = (ROOT / "director" / "docs" / "STYLE.md").read_text(encoding="utf-8")
     assert "Aptos Regular" in text
     assert "DengXian Regular" in text
     assert "14" in text and "10" in text
@@ -107,7 +107,7 @@ def test_readme_documents_architecture_without_copying_style():
     assert "build/output/lululemon/research/*.md" in text
     assert "build/output/lululemon/figures/" in text
     assert "Drivers → Forecast → Valuation → Overview" in text
-    assert "STYLE.md" in text
+    assert "director/docs/STYLE.md" in text
     assert "Aptos Regular" not in text
     assert "DengXian Regular" not in text
 
@@ -964,7 +964,7 @@ def test_zero_figures_and_positive_margin_are_publishable(tmp_path):
 
 
 def test_driver_md_states_company_agnostic_hierarchy():
-    text = (ROOT / "DRIVER.md").read_text(encoding="utf-8")
+    text = (ROOT / "director" / "docs" / "DRIVER.md").read_text(encoding="utf-8")
     assert "Headline conclusion → Principal drivers → Secondary signals → Appendix" in text
     assert "labeled regression fixtures" in text
     assert "Portability" in text

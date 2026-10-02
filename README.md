@@ -1,8 +1,22 @@
-# BAV — Hong Kong Edition
+# BAV Compiler
 
-BAV is the source-grounded Business Analysis and Valuation product. Supported companies are **Lululemon** and **Fast Retailing**. The ordinary company build produces `<Company>_BAV.xlsx` together with canonical Markdown research, reusable figures, and Word/PDF publication. A matching `<Company>_BAV_Trainer.xlsx` remains an optional derivative of the completed model.
+BAV Compiler is the source-grounded Business Analysis and Valuation equity-research system. Supported companies are **Lululemon** and **Fast Retailing**. The public CLI remains `python -m bav`. The ordinary company build produces `<Company>_BAV.xlsx` together with canonical Markdown research, reusable figures, and Word/PDF publication. A matching `<Company>_BAV_Trainer.xlsx` remains an optional derivative of the completed model.
 
-Hong Kong-listed **non-financial** companies are the current curriculum scope.
+The analytical scope is **non-financial** operating companies. Hong Kong company input may remain manual.
+
+## Architecture
+
+BAV Compiler has five active components. Visible packages exist; this Session is a structural migration, so ownership and locations are only partly relocated.
+
+- **Director** — architecture, orchestration, contracts, and high-level specifications under `director/docs/`, including `director/docs/STYLE.md` and `director/docs/DRIVER.md`.
+- **Extractor** — source-faithful filing JSON contracts and loaders. This repository does not extract statements from PDF.
+- **Modeler** — reproducible calculations, workbook construction, and mechanical validity. Most implementation still lives under `core/` pending later relocation.
+- **Interpreter** — judgments about economic meaning. Mixed Driver and assessment splits remain subsequent work.
+- **Composer** — publication, argument structure, and figure presentation. Rendering implementation still lives under `core/research/` pending later relocation.
+
+**Legacy** holds useful prior functionality outside the active architecture, including optional Trainer derivation. Active BAV build and publication must not depend on Legacy as a hidden implementation layer.
+
+`director/docs/STYLE.md` is the single authority for human-facing presentation and language. Do not copy that specification here.
 
 ## What works now
 
@@ -47,15 +61,15 @@ Publication converters and fonts are not bundled. Install and keep on PATH:
 
 - `pandoc` 3.x — Markdown parser (`brew install pandoc` or https://pandoc.org/installing.html)
 - Python packages from `requirements-trainer.txt`: `python-docx`, `reportlab`, `pymupdf`
-- The host fonts named in root `STYLE.md`, resolved at generation time. Do not copy or vendor font files. Missing faces fail instead of substituting.
+- The host fonts named in `director/docs/STYLE.md`, resolved at generation time. Do not copy or vendor font files. Missing faces fail instead of substituting.
 
 `python -m bav publish Lululemon` writes `Lululemon_BAV.docx` and
 `Lululemon_BAV.pdf` under `build/output/lululemon/`. Presentation follows
-root `STYLE.md`. Forecast, Valuation and Overview stay empty placeholders and
+`director/docs/STYLE.md`. Forecast, Valuation and Overview stay empty placeholders and
 are not added as report sections. Failed conversion leaves the last successful
 Word and PDF in place and does not change canonical research, figures, or the
 workbook. A company without publishable Drivers research fails with a
-diagnostic; publication does not invent research or use legacy paths.
+diagnostic; publication does not invent research or use obsolete paths.
 
 Persistent inputs live under `build/input/<company>/` (`source/`, `extracted/`,
 `reconciled/`). Ordinary `python -m bav build Lululemon` consumes
@@ -69,7 +83,7 @@ Persistent inputs live under `build/input/<company>/` (`source/`, `extracted/`,
 
 Research module order is Drivers → Forecast → Valuation → Overview. Drivers is
 implemented. Forecast, Valuation and Overview remain reserved empty files.
-Presentation and language follow root `STYLE.md`.
+Presentation and language follow `director/docs/STYLE.md`.
 
 Keep the BAV, research, figures and generated sidecars together. Outputs are
 not a second persistent input store. `build/` is ignored by Git.
@@ -77,11 +91,12 @@ not a second persistent input store. `build/` is ignored by Git.
 Ordinary `python -m bav build Lululemon` does not generate a Trainer. The same
 completed model can still produce `Lululemon_BAV_Trainer.xlsx`.
 
-Company builds consume the accepted reconciled model plus source-grounded
-issuer fiscal-year labels. Project settings retain established comparative-period
-admission and supported note-fact handoffs (including the vetted store-count
-handoff); they do not change accounting or evidence rules. Invalid or missing
-canonical input aborts the build.
+Company builds consume the accepted reconciled model
+`reconciled/standardized.json` plus source-grounded issuer fiscal-year labels.
+They do not run `validate-source` or `reconcile`. Project settings retain
+established comparative-period admission and supported note-fact handoffs
+(including the vetted store-count handoff); they do not change accounting or
+evidence rules. Invalid or missing canonical input aborts the build.
 
 A build is a **development snapshot**, not parent-module completion or release
 acceptance. Independently integrated, admitted families appear immediately.
@@ -110,9 +125,9 @@ python -m bav list --workbook build/output/custom/Company_BAV.xlsx
 ```
 
 Explicit input accepts strict canonical StandardizedFinancials JSON or Excel;
-`-o` is a filename stem, and `-a assumptions.json` remains supported. This legacy
+`-o` is a filename stem, and `-a assumptions.json` remains supported. This
 path mode writes at the requested paths; the atomic current-directory contract
-applies to company builds. Source-extraction JSON and legacy partial HK JSON are
+applies to company builds. Source-extraction JSON and partial HK JSON are
 not canonical build inputs. `python -m core` remains an internal compatibility
 entry point; `bav` is the public interface. Existing internal `core` imports remain
 supported.
@@ -139,7 +154,10 @@ PDF/filing → extracted JSON per filing → validate-source → reconcile → b
 ```
 
 - `validate-source` / `reconcile` consume one extracted JSON per filing and write
-  `standardized.json` + audit artifacts; company `build` runs this pipeline automatically
+  `reconciled/standardized.json` plus audit artifacts. These are explicit
+  workflows, distinct from company `build`.
+- Ordinary company `build` consumes the accepted `reconciled/standardized.json`
+  and does not run validate-source or reconcile.
 - Manual standardized JSON or Excel / Bloomberg / Wind-style exports remain supported
 - Automatic PDF/AI extraction is not part of the CLI yet
 - Actual historical share data is required for per-share modules
@@ -151,9 +169,9 @@ No automatic HKEX/SEC scraping in this product.
 
 Next:
 
-- Continue Step 9 historical convergence; next candidate is goodwill / acquired intangibles / acquisition-cash diagnostics (see `docs/GOOGL_HISTORICAL_REFERENCE.md`). Capex/reinvestment and split lease-liability aggregation remain deferred until explicit contracts exist.
+- Complete the structural migration: remaining component relocation, mixed Driver and assessment splits, Trainer inversion, justified removals, and representative Lululemon / Fast Retailing build, check, and publication verification.
 
-Later:
+Later (deferred product capabilities):
 
 - Driver-based forecasting
 - Valuation

@@ -9937,3 +9937,84 @@ Director specification and STYLE.md relocation, mixed Driver/assessment splits, 
 
 This relocation does not establish Session 10 acceptance.
 
+---
+
+# RESULT.md — Step 10.3 Relocate Director specifications and update operational references
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)  
+**Step:** 10.3 — Relocate Director specifications and update operational references  
+**Work:** `1fa333611fee4d899f0896036f117f2a`  
+**Plan:** `f8a7b9cf43b244d28a758423944d7a14`  
+**Finding:** Relocate Director specifications and update operational references
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change.
+
+## Baseline B
+
+Authenticated from populated `IMPLEMENT_BASE_SHA`. Fail-closed was not required.
+
+| Record | Value | Result |
+|---|---|---|
+| `.git/autocycle/resume-state` `IMPLEMENT_BASE_SHA` | `77dc874803183e13ffd2be8b46b4aff7404382a9` | Used as B |
+| `STATE_BRANCH` / `git HEAD` | `checkpoint/20260913-183303` / same SHA | HEAD == B |
+| `implementation-baseline.json` `head` | same SHA | Bound |
+| `work-state` allocated `10.3` | `source` = B, `work_id` = `1fa333611fee4d899f0896036f117f2a`, `status` = `opened` | Bound |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | `step_id` 10.3, same `work_id` | Bound |
+| `.git/autocycle/latest-implementation` | leftover `2502a7d…` (Step 10.2) | Ignored: `IMPLEMENT_BASE_SHA` populated |
+
+Working-tree files at the old paths were byte-identical to `git show B:path` before the moves.
+
+## Relocation mappings
+
+| B path | Destination | Continuity |
+|---|---|---|
+| `STYLE.md` | `director/docs/STYLE.md` | Unchanged move. 1645 bytes, SHA-256 `4360b24bb849370a0fa48f21aa7cc83b8bf6b35c2ad9bac7e10de2829a107fc6` identical to B. Single presentation authority preserved |
+| `DRIVER.md` | `director/docs/DRIVER.md` | Intentional STYLE-path edits only. B `cbb6eff0…` / 47249 → now `d4443ec8…` / 47361 |
+| `docs/build-contract.md` | `director/docs/build-contract.md` | Unchanged move. 4884 bytes, SHA-256 `93062ba29cf5403dba4344e4cf1d69d3998421f2ed40a03bfbc534cb58627bb5` identical to B. Implementation paths still name unmoved `core/engine/build_contract.py` and `core/current_build.py` |
+| `docs/FAST_RETAILING_BENCHMARK.md` | `director/docs/FAST_RETAILING_BENCHMARK.md` | Operational source-path rewrite. B `d327fb8b…` / 7699 → now `68a81879…` / 8002 |
+
+Old paths are absent. No duplicate copies. Inventory historical mappings and prior RESULT path names were left as historical evidence.
+
+## Intentional content changes
+
+**DRIVER.md** (lines 5, 29, 115, 117, 175, 204, 209): eight bare `STYLE.md` mentions became `director/docs/STYLE.md`. Requirements, evidence qualifications, source attributions, hierarchy, fixtures and Portability text are otherwise unchanged versus B.
+
+**FAST_RETAILING_BENCHMARK.md:** obsolete `benchmark/fast_retailing/source/*.pdf` operational paths became `build/input/fast_retailing/source/*.pdf`. The spec now distinguishes the historical Step 9 baseline from current operational location and does not assert that the PDFs are present. Historical company/period, provenance, 2025 anchors and Step 9M phase descriptions are unchanged. Source manifests were not rewritten. This working tree has the five named PDFs under `build/input/fast_retailing/source/` (gitignored `/build/`; not represented at B).
+
+**README.md:** title and product face are BAV Compiler. Documents the five active components and Legacy at the current migration state (Director specs and Extractor JSON loaders relocated; Modeler/Interpreter/Composer implementations still largely under `core/`; mixed Driver splits pending). Ordinary company `build` consumes `reconciled/standardized.json`; `validate-source` / `reconcile` remain distinct explicit workflows. Immediate Step 9 roadmap replaced by structural-migration priority; deferred forecasting/valuation/scenario/investment capabilities retained. Useful commands, supported companies and optional Trainer guidance retained. SHA-256 `51e6985d…` / 9752.
+
+**Tests (locations unchanged):** `test_research_drivers.py` reads `director/docs/STYLE.md` and `director/docs/DRIVER.md`; README architecture assertion requires `director/docs/STYLE.md`. `test_learner_ready_presentation.py` heading assertion is `# BAV Compiler`. Substantive README and specification checks retained.
+
+**`core/research/style.py`:** module docstring `root STYLE.md` → `director/docs/STYLE.md`. Style rules and implementation unchanged.
+
+`build/current-workflow-verification.md` still lists historical `docs/build-contract.md` in a prior dirty-file snapshot; that is historical evidence, not an operational read.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| `resume-state` `IMPLEMENT_BASE_SHA`, `implementation-baseline.json`, `work-state` 10.3, `git rev-parse HEAD`, branch | B = `77dc874…` authenticated as above |
+| `git show B:STYLE.md` vs destination | byte-identical; SHA-256 `4360b24b…` / 1645 |
+| `git show B:DRIVER.md` vs destination | STYLE-path lines only; 209/209 line count unchanged |
+| `git show B:docs/build-contract.md` vs destination | byte-identical; SHA-256 `93062ba2…` / 4884 |
+| `git show B:docs/FAST_RETAILING_BENCHMARK.md` vs destination | source-path / availability wording only |
+| Stale operational path search (exclude inventory / IMPLEMENTATION / historical RESULT) | no active `ROOT / "STYLE.md"` or `ROOT / "DRIVER.md"`; no active `docs/build-contract.md` or `docs/FAST_RETAILING_BENCHMARK.md` consumers |
+| `/opt/anaconda3/bin/python -m bav --help` | rc 0; commands ingest / validate-source / reconcile / build / check / publish / list |
+| same interpreter `-m pytest -q` `test_research_drivers.py` `test_learner_ready_presentation.py` `test_build_contract.py` `test_fast_retailing_benchmark.py` | **339 passed**, 5 warnings (pre-existing Swig importlib), 169.51s |
+| `git diff --check` | rc 0 |
+| Native Office / company rebuild / publication | **Not run** — no workbook formula/dependency or presentation change; no canonical input or publication regeneration |
+
+## Preservation
+
+Canonical company inputs, source evidence, accounting signs, precision, provenance, fail-closed controls, optional Trainer behavior and zero-byte research placeholders were not modified. Style rules, analytical behavior and generated publications were not altered. Source PDFs were not restored or deleted; manifests were not rewritten; runtime implementations were not relocated. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+## Remaining toward Completion
+
+Mixed Driver/assessment splits, remaining Modeler/Interpreter/Composer/Director relocation, Trainer inversion, justified removals, and final representative build/check/publication verification remain subsequent migration work. No second-phase features.
+
+This documentation relocation does not establish Session 10 acceptance.
+
+## Required plan change
+
+None.
+

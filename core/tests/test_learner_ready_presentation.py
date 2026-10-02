@@ -512,7 +512,7 @@ def test_canonical_bav_schedules_have_professional_wording(tmp_path):
 def test_root_readme_is_practical_trainer_guide():
     text = (ROOT / "README.md").read_text(encoding="utf-8")
     for heading in (
-        "# BAV — Hong Kong Edition",
+        "# BAV Compiler",
         "## What works now",
         "## Quick start",
         "## How to practice",

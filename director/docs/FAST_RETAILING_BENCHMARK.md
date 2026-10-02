@@ -19,14 +19,14 @@ The synthetic DEMO and services/retail/manufacturer fixtures remain necessary fo
 
 ## Immutable source set
 
-The benchmark source of truth is the five committed audited consolidated-financial-statement PDFs:
+The historical Step 9 benchmark named five audited consolidated-financial-statement PDFs as the source of truth. Their current operational location is `build/input/fast_retailing/source/` (replacing the obsolete `benchmark/fast_retailing/source/` tree). This specification records those filenames and the historical baseline; it does not assert that the PDFs are present in the working tree.
 
 ```text
-benchmark/fast_retailing/source/Fastretailing_CFS2021.pdf
-benchmark/fast_retailing/source/Fastretailing_CFS2022.pdf
-benchmark/fast_retailing/source/Fastretailing_CFS2023.pdf
-benchmark/fast_retailing/source/Fastretailing_CFS2024.pdf
-benchmark/fast_retailing/source/Fastretailing_CFS2025.pdf
+build/input/fast_retailing/source/Fastretailing_CFS2021.pdf
+build/input/fast_retailing/source/Fastretailing_CFS2022.pdf
+build/input/fast_retailing/source/Fastretailing_CFS2023.pdf
+build/input/fast_retailing/source/Fastretailing_CFS2024.pdf
+build/input/fast_retailing/source/Fastretailing_CFS2025.pdf
 ```
 
 Do not use web values, analyst databases, or the illustrative DEMO to fill gaps in this benchmark. Additional Fast Retailing materials may be added later only as explicitly identified supplementary sources.
