@@ -3,6 +3,7 @@
 from composer.workbook_opening import BAV_OPENING_SHEET, _add_bav_opening
 from modeler.build_bav import (
     BASE_FONT,
+    CLEAR_BORDER,
     FONT_NAME,
     JUDGMENT_FIRST_DATA_ROW,
     JUDGMENT_RESPONSE_COLS,
@@ -25,6 +26,7 @@ from legacy.trainer.workbook import (
 __all__ = [
     "BAV_OPENING_SHEET",
     "BASE_FONT",
+    "CLEAR_BORDER",
     "COMPONENT_MAP_SHEET",
     "FONT_NAME",
     "JUDGMENT_FIRST_DATA_ROW",

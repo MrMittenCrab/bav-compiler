@@ -172,3 +172,125 @@ def test_explicit_json_build_derives_trainer(tmp_path):
     assert (tmp_path / "Example_BAV.xlsx").is_file()
     assert trainer.is_file()
     assert main(["check", "--workbook", str(trainer)]) == 0
+
+
+RESTORED_BUILD_WRITERS = (
+    "SOURCE",
+    "CONDENSED",
+    "DUPONT",
+    "JUDGMENT",
+    "OWNERSHIP",
+    "NORMALIZATION_JUDGMENT",
+    "NORMALIZATION",
+    "QUALITY",
+    "WORKING_CAPITAL",
+    "PER_SHARE",
+    "GEOGRAPHIC",
+    "OPERATING_KPI",
+    "COMPARABLE_SALES",
+    "SALES_PER_SQUARE_FOOT",
+    "REVENUE_PER_STORE",
+    "REVENUE_DRIVER",
+)
+
+
+def test_restored_compatibility_exports_are_identity_equal():
+    from core.engine.build_contract import (
+        COMPARABLE_SALES,
+        CONDENSED,
+        DUPONT,
+        GEOGRAPHIC,
+        JUDGMENT,
+        NORMALIZATION,
+        NORMALIZATION_JUDGMENT,
+        OPERATING_KPI,
+        OWNERSHIP,
+        PER_SHARE,
+        QUALITY,
+        REVENUE_DRIVER,
+        REVENUE_PER_STORE,
+        SALES_PER_SQUARE_FOOT,
+        SOURCE,
+        WORKING_CAPITAL,
+        __all__ as facade_contract_all,
+    )
+    from core.trainer.workbook import CLEAR_BORDER, __all__ as facade_workbook_all
+    from modeler.build_bav import CLEAR_BORDER as canonical_clear_border
+    from modeler.engine.build_contract import (
+        COMPARABLE_SALES as canonical_comparable_sales,
+        CONDENSED as canonical_condensed,
+        DUPONT as canonical_dupont,
+        GEOGRAPHIC as canonical_geographic,
+        JUDGMENT as canonical_judgment,
+        NORMALIZATION as canonical_normalization,
+        NORMALIZATION_JUDGMENT as canonical_normalization_judgment,
+        OPERATING_KPI as canonical_operating_kpi,
+        OWNERSHIP as canonical_ownership,
+        PER_SHARE as canonical_per_share,
+        QUALITY as canonical_quality,
+        REVENUE_DRIVER as canonical_revenue_driver,
+        REVENUE_PER_STORE as canonical_revenue_per_store,
+        SALES_PER_SQUARE_FOOT as canonical_sales_per_square_foot,
+        SOURCE as canonical_source,
+        WORKING_CAPITAL as canonical_working_capital,
+    )
+
+    assert SOURCE is canonical_source
+    assert CONDENSED is canonical_condensed
+    assert DUPONT is canonical_dupont
+    assert JUDGMENT is canonical_judgment
+    assert OWNERSHIP is canonical_ownership
+    assert NORMALIZATION_JUDGMENT is canonical_normalization_judgment
+    assert NORMALIZATION is canonical_normalization
+    assert QUALITY is canonical_quality
+    assert WORKING_CAPITAL is canonical_working_capital
+    assert PER_SHARE is canonical_per_share
+    assert GEOGRAPHIC is canonical_geographic
+    assert OPERATING_KPI is canonical_operating_kpi
+    assert COMPARABLE_SALES is canonical_comparable_sales
+    assert SALES_PER_SQUARE_FOOT is canonical_sales_per_square_foot
+    assert REVENUE_PER_STORE is canonical_revenue_per_store
+    assert REVENUE_DRIVER is canonical_revenue_driver
+    assert CLEAR_BORDER is canonical_clear_border
+    for name in RESTORED_BUILD_WRITERS:
+        assert name in facade_contract_all
+    assert "CLEAR_BORDER" in facade_workbook_all
+
+
+def test_restored_export_import_orders():
+    orders = (
+        (
+            "import core.engine.build_contract as facade_bc\n"
+            "import modeler.engine.build_contract as canonical_bc\n"
+            "import core.trainer.workbook as facade_wb\n"
+            "import modeler.build_bav as canonical_bav\n"
+        ),
+        (
+            "import modeler.engine.build_contract as canonical_bc\n"
+            "import core.engine.build_contract as facade_bc\n"
+            "import modeler.build_bav as canonical_bav\n"
+            "import core.trainer.workbook as facade_wb\n"
+        ),
+    )
+    names = ", ".join(RESTORED_BUILD_WRITERS)
+    for import_order in orders:
+        script = f"""
+{import_order}
+from core.engine.build_contract import {names}
+from core.trainer.workbook import CLEAR_BORDER
+from modeler.build_bav import CLEAR_BORDER as canonical_clear_border
+from modeler.engine.build_contract import {names}
+assert facade_wb.CLEAR_BORDER is canonical_bav.CLEAR_BORDER is CLEAR_BORDER is canonical_clear_border
+assert "CLEAR_BORDER" in facade_wb.__all__
+for name in {RESTORED_BUILD_WRITERS!r}:
+    assert getattr(facade_bc, name) is getattr(canonical_bc, name)
+    assert name in facade_bc.__all__
+"""
+        result = subprocess.run(
+            [sys.executable, "-c", script],
+            check=False,
+            capture_output=True,
+            text=True,
+            cwd=str(ROOT),
+        )
+        assert result.returncode == 0, result.stderr or result.stdout

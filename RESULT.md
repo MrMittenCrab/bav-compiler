@@ -10700,4 +10700,93 @@ This inversion does not establish Session 10 acceptance.
 
 None.
 
+---
+
+# RESULT.md — Step 10.7.1 Restore Engine and Trainer compatibility exports
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)  
+**Step:** 10.7.1 — Restore Engine and Trainer compatibility exports  
+**Work:** `4ea4f5cca6b144b2b4361a06e030107f`  
+**Plan:** `5d12a71992dd412e876fd43cc3cbafac`  
+**Finding:** Invert Engine and Trainer ownership
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change.
+
+## Baseline B
+
+Authenticated from populated `IMPLEMENT_BASE_SHA`. Fail-closed was not required.
+
+| Record | Value | Result |
+|---|---|---|
+| `.git/autocycle/resume-state` `IMPLEMENT_BASE_SHA` | `0d2bf8efe9754ac3f248aee950c50a987e89d2e0` | Used as B |
+| `STATE_BRANCH` / `.git/HEAD` / branch tip | `checkpoint/20260913-183303` / same SHA | HEAD == B |
+| `implementation-baseline.json` `head` | same SHA | Bound |
+| `work-state` allocated `10.7.1` | `source` = B, `work_id` = `4ea4f5cca6b144b2b4361a06e030107f`, `status` = `opened` | Bound |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | `step_id` 10.7.1, same `work_id` | Bound |
+| Predecessor review SHA-256 | `29872ebc47530c07de1647cf9e95881733017e3b731c9802d4888258bbb1d256` | Bound |
+| Reviewed HEAD | `eba43fe6758ff8fafdff260fe8d8e8678ec91269` (Step 10.7 commit; parent of B) | Ancestry |
+| `.git/autocycle/latest-implementation` | leftover `813d0e02…` (Step 10.7 start) | Ignored: `IMPLEMENT_BASE_SHA` populated |
+
+Compared façades and canonical owners with Git blobs at B via `git show B:path`. Current working-tree hashes of `modeler/engine/build_contract.py`, `modeler/build_bav.py`, `director/build_contract.py`, `composer/workbook_opening.py`, `legacy/trainer/derive.py`, `core/current_build.py` and `core/__main__.py` match B. Pre-inversion blob `813d0e02:core/engine/build_contract.py` (10634 bytes) contains all 16 writer names; `813d0e02:core/trainer/workbook.py` (25647 bytes) contains `CLEAR_BORDER`. B / reviewed façades omitted those 17 names.
+
+## Repair
+
+`core/engine/build_contract.py` now re-exports `SOURCE`, `CONDENSED`, `DUPONT`, `JUDGMENT`, `OWNERSHIP`, `NORMALIZATION_JUDGMENT`, `NORMALIZATION`, `QUALITY`, `WORKING_CAPITAL`, `PER_SHARE`, `GEOGRAPHIC`, `OPERATING_KPI`, `COMPARABLE_SALES`, `SALES_PER_SQUARE_FOOT`, `REVENUE_PER_STORE` and `REVENUE_DRIVER` from `modeler.engine.build_contract` and lists them in `__all__`.
+
+`core/trainer/workbook.py` now re-exports `CLEAR_BORDER` from `modeler.build_bav` and lists it in `__all__`.
+
+Existing façade exports remain. Definitions stay with canonical owners. Object identity is preserved.
+
+`core/tests/test_engine_trainer_ownership.py` now:
+
+- explicitly imports all 17 restored names through compatibility paths and asserts identity with canonical exports;
+- asserts all 17 names are in the relevant façade `__all__`;
+- exercises isolated façade-first and canonical-first import order for both repaired modules;
+- retains the existing blocked-Legacy company build/check/publication test and explicit Trainer derive/check test.
+
+## Restored-export coverage
+
+| Check | Measured result |
+|---|---|
+| Compatibility tests before repair | **2 failed** in 0.41s. `test_restored_compatibility_exports_are_identity_equal`: `ImportError: cannot import name 'COMPARABLE_SALES' from 'core.engine.build_contract'`. `test_restored_export_import_orders`: façade-first isolated import `ImportError: cannot import name 'SOURCE' from 'core.engine.build_contract'` |
+| Compatibility tests after repair | **2 passed** in 0.54s. All 17 names import through compatibility paths; each is identity-equal to its canonical export and present in the façade `__all__`; both import orders succeed for both modules |
+| Existing 5 ownership tests | retained and passed inside the listed suite |
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| B authentication (resume-state, baseline JSON, work-state 10.7.1, branch, HEAD==B) | B = `0d2bf8ef…`; HEAD == B; fail-closed not required |
+| Historical blobs | 16 writers present at `813d0e02:core/engine/build_contract.py`; `CLEAR_BORDER` present at `813d0e02:core/trainer/workbook.py`; both absent from B façades; present on B canonical owners |
+| Listed pytest `/opt/anaconda3/bin/python -m pytest -q core/tests/test_engine_trainer_ownership.py core/tests/test_build_contract.py core/tests/test_trainer.py` | **88 passed** in 21.82s (ownership 7, build_contract 23, trainer 58) |
+| Canonical / caller SHA-256 vs B | `modeler/engine/build_contract.py` `8bdf1ef5…` (9755), `modeler/build_bav.py` `97ae4b30…` (5683), `director/build_contract.py` `48c3e80a…` (3510), `composer/workbook_opening.py` `cf2e2d01…`, `legacy/trainer/derive.py` `a6f6c69b…`, `core/current_build.py` `b48910f3…`, `core/__main__.py` `6dceb602…` unchanged |
+| `git diff --stat` | `core/engine/build_contract.py` +32; `core/trainer/workbook.py` +2; `core/tests/test_engine_trainer_ownership.py` +122; `RESULT.md` append. No canonical implementation or runtime-caller edits |
+| `git diff --check` | façade and tests clean. RESULT header hard-break whitespace on the new 10.7.1 status lines matches historical RESULT style and remains advisory |
+| Native Office | **Not run** — export-only façade/test repair; workbook formulas/dependencies and presentation implementations unchanged. SESSION native-verify condition was not newly met |
+
+## Reused evidence
+
+Step 10.7 relocation, broader regression and representative Lululemon/FastRetailing build/check/publication evidence remain applicable: this repair did not change canonical implementations, runtime callers, artifact contracts or presentation. Reused while those dependencies hold:
+
+- catalog / semantic_map / map_embed / xlsx_fill_patch byte-identical relocations; construction/check-context import-only semantic moves
+- Company `build` / `check` / `publish` with Legacy and `core.trainer` blocked: subprocess rc 0; those modules absent from `sys.modules`; no Trainer file
+- Explicit JSON `-o` derive + `check --workbook` Trainer: rc 0
+- Lululemon and Fast Retailing `python -m bav build/check/publish` rc 0; no `*_BAV_Trainer.xlsx`; canonical `*_BAV.xlsx` / `.docx` / `.pdf`; 0-byte Forecast/Valuation/Overview placeholders `e3b0c442…`
+- Listed broader suite including live-formula and opening: **581 passed**, 222.10s
+- Public `bav` commands unchanged (`ingest` / `validate-source` / `reconcile` / `build` / `check` / `publish` / `list`)
+
+## Preservation
+
+Callable signatures, return types, existing exports, company aliases, public `bav` commands, canonical paths, output filenames, lazy loading, fail-closed behavior, optional JSON dual-output Trainer derivation and deferred forecasting (default off) were not redesigned. Canonical source evidence, accounting signs, fiscal distinctions, precision, provenance, admission/comparison independence, residual qualifications, fail-closed controls, first-name-wins assessments, CFO classification, completed Driver handoffs and optional Trainer behavior remain. Attribution amounts, locators, counterfactual scope, `supported_as_attribution`, `not independently verified` and `outside the accounting bridge` remain. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+## Remaining toward Completion
+
+Remaining calculation/data relocations, unrelated Legacy/removal work and final repository-wide migration verification remain subsequent work. Inventory §16 behavior defects were not repaired. No compatibility framework, Trainer expansion, report redesign or second-phase features.
+
+This export repair does not establish Session 10 acceptance.
+
+## Required plan change
+
+None.
+
 
