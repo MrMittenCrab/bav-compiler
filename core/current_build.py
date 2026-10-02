@@ -74,8 +74,7 @@ def resolve_company(query: str) -> Company:
 def check_company_output(query: str) -> int:
     """Resolve canonical output and check it without path arguments."""
     from composer.research.publish import verify_research_artifacts
-    from .trainer.checker import check_workbook
-    from .trainer.semantic_io import load_semantic_map, sidecar_paths
+    from modeler.semantic_io import load_semantic_map, sidecar_paths
     company = resolve_company(query)
     if not company.bav.is_file():
         raise ValueError(
@@ -90,6 +89,7 @@ def check_company_output(query: str) -> int:
     if (research / f'{company.name}_Drivers.md').is_file():
         verify_research_artifacts(company.output, company.name)
     if company.trainer.is_file():
+        from legacy.trainer.checker import check_workbook
         summary = check_workbook(company.trainer)
         print(
             f'Checked {summary.total} practice cells: '
@@ -175,12 +175,11 @@ def prepare_company_input(company: Company, staged: Path | None = None):
 def verify_staged(fin, bav: Path, assumptions=None, trainer: Path | None = None):
     """Verify the BAV independently of Trainer existence; optionally verify a Trainer."""
     from openpyxl import load_workbook
-    from .engine.reference_model import ReferenceModelBuilder
-    from .engine.build_contract import verify_complete_build
-    from .engine.component_catalog import is_operating_kpi_source_identity
-    from .engine.semantic_map import SemanticMap
-    from .trainer.semantic_io import load_semantic_map, sidecar_paths
-    from .trainer.checker import check_workbook
+    from modeler.workbook import ReferenceModelBuilder
+    from modeler.engine.build_contract import verify_complete_build
+    from modeler.engine.component_catalog import is_operating_kpi_source_identity
+    from modeler.engine.semantic_map import SemanticMap
+    from modeler.semantic_io import load_semantic_map, sidecar_paths
     for path in sidecar_paths(bav):
         if not path.is_file():
             raise ValueError(f'Missing required sidecar: {path.name}')
@@ -226,6 +225,7 @@ def verify_staged(fin, bav: Path, assumptions=None, trainer: Path | None = None)
         finally:
             wb.close()
     if trainer is not None:
+        from legacy.trainer.checker import check_workbook
         result = check_workbook(trainer)
         if result.correct or result.incorrect or result.blank != result.total:
             raise ValueError('Pristine Trainer Check failed')
@@ -275,9 +275,9 @@ def _exchange_directories(staged: Path, current: Path):
 
 
 def build_company(company: Company, assumptions=None):
-    from .trainer.workbook import build_bav_workbook
+    from modeler.build_bav import build_bav_workbook
     from .build_status import status_rows
-    from .trainer.semantic_io import load_semantic_map
+    from modeler.semantic_io import load_semantic_map
     current = company.output
     from .__main__ import _validate_build_output
     _validate_build_output(company.bav, [])

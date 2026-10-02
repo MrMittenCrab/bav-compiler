@@ -51,7 +51,7 @@ def _at_period(smap, family_id: str, period_index: int):
 
 
 def test_normal_v1_build_does_not_call_run_scenario(tmp_path, monkeypatch):
-    import core.engine.reference_model as rm
+    import modeler.workbook as rm
 
     def fail(*args, **kwargs):
         raise AssertionError("forecast engine executed in historical-only v1")

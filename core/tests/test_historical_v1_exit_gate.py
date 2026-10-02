@@ -215,7 +215,7 @@ def test_historical_v1_active_catalog_namespace_is_frozen():
 def test_normal_historical_build_never_executes_dormant_forecast(
     monkeypatch, tmp_path, case_key
 ):
-    import core.engine.reference_model as reference_model
+    import modeler.workbook as reference_model
 
     monkeypatch.setattr(reference_model, "run_scenario", _forecast_must_not_run)
     monkeypatch.setattr(reference_model, "weighted_ivps", _forecast_must_not_run)

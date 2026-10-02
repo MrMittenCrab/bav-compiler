@@ -40,7 +40,7 @@ GROUPS = (
 
 
 def status_rows(smap):
-    from .engine.build_contract import BUILD_MODULES
+    from modeler.engine.build_contract import BUILD_MODULES
     modules = {m.id: m for m in BUILD_MODULES}
     components = smap.all_ordered()
     counts = Counter(c.family_id for c in components)

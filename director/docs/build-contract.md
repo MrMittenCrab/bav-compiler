@@ -1,8 +1,10 @@
 # Current Build and release contracts
 
-`python -m bav build Company` and both company release builders use
-`build_training_workbook → ReferenceModelBuilder → BUILD_MODULES` in
-`core/engine/build_contract.py`. There is no discovery of Python files.
+`python -m bav build Company` uses Modeler `build_bav_workbook` →
+`ReferenceModelBuilder` → Modeler execution of Director `BUILD_MODULES`
+policy in `director/build_contract.py`. Explicit JSON `-o` dual-output
+still derives a Trainer through `legacy/trainer/derive.py`. There is no
+discovery of Python files.
 
 Release/explicit-input builds retain the `status="complete"`,
 `workbook_capable=True`, `complete_analysis=True` selection gate. Company current
@@ -76,6 +78,8 @@ the same expected specs. Historical benchmark assertions may still describe
 fixed fixtures, but production completeness checks have no fixed total.
 
 Company routing and staged reconciliation live in `core/current_build.py`.
+Director policy is `director/build_contract.py`. Modeler binds writers and
+executes the policy in `modeler/engine/build_contract.py`.
 The public `bav` package delegates to the compatible internal `core` CLI.
 Company builds verify the professional `<Company>_BAV.xlsx` and sidecars before
 atomically exchanging the canonical `build/output/<Company>/` directory. Trainer

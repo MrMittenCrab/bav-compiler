@@ -1211,7 +1211,7 @@ def _verify_practice_contract(
     *,
     allow_frozen_yellow_answer_key: bool = False,
 ) -> None:
-    from core.trainer.semantic_io import parse_cell_ref
+    from modeler.semantic_io import parse_cell_ref
 
     for comp in comps:
         row, col = parse_cell_ref(comp.cell)
@@ -1273,7 +1273,7 @@ def _verify_practice_contract(
 
 def _assert_frozen_yellow_answer_key_signature(wb_a, comps) -> None:
     """Refuse the frozen-yellow exception unless Answer-Key practice cells are yellow."""
-    from core.trainer.semantic_io import parse_cell_ref
+    from modeler.semantic_io import parse_cell_ref
 
     for comp in comps:
         row, col = parse_cell_ref(comp.cell)
@@ -1293,13 +1293,13 @@ def _verify_release_pair_contents(
     skip_answer_key_yellow: bool = False,
 ) -> str:
     """Source fidelity, practice contract, visibility, and visible structural parity."""
-    from core.trainer.semantic_io import load_semantic_map, parse_cell_ref
+    from modeler.semantic_io import load_semantic_map, parse_cell_ref
     from openpyxl import load_workbook
 
     smap = load_semantic_map(answer_key_path)
     comps = smap.all_ordered()
-    from core.engine.reference_model import ReferenceModelBuilder
-    from core.engine.build_contract import verify_complete_build
+    from modeler.workbook import ReferenceModelBuilder
+    from modeler.engine.build_contract import verify_complete_build
 
     verify_complete_build(ReferenceModelBuilder(fin).expected_specs, smap)
     practice_coords = {
@@ -1602,7 +1602,7 @@ def run_audit(
     # Stage 4
     builder = None
     try:
-        from core.engine.reference_model import ReferenceModelBuilder
+        from modeler.workbook import ReferenceModelBuilder
 
         builder = ReferenceModelBuilder(fin)
         expected_total = len(builder.expected_specs)
@@ -1644,8 +1644,8 @@ def run_audit(
 
     # Stage 5–7: either use persisted release pair or generate temporary workbooks.
     try:
-        from core.trainer.checker import check_workbook
-        from core.trainer.semantic_io import load_semantic_map, parse_cell_ref
+        from legacy.trainer.checker import check_workbook
+        from modeler.semantic_io import load_semantic_map, parse_cell_ref
         from openpyxl import load_workbook
 
         with tempfile.TemporaryDirectory(prefix="fr_bench_") as tmp:
@@ -1680,7 +1680,7 @@ def run_audit(
                     )
                 )
             else:
-                from core.trainer.workbook import build_training_workbook
+                from legacy.trainer.derive import build_training_workbook
 
                 trainer, answer = build_training_workbook(
                     fin, tmp_path / "FastRetailing_Trainer.xlsx"
@@ -1692,7 +1692,7 @@ def run_audit(
                 }
                 stages.append(StageResult("5_workbook_generation", "pass"))
 
-            from core.engine.build_contract import verify_complete_build
+            from modeler.engine.build_contract import verify_complete_build
             verify_complete_build(builder.expected_specs, load_semantic_map(answer))
 
             # Stage 6

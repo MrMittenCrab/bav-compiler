@@ -1,1 +1,1 @@
-"""Modeler package root (calculation modules relocate in later steps)."""
+"""Modeler package root — workbook construction and reusable checking machinery."""

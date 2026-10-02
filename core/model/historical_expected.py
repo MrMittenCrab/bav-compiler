@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from ..engine.component_catalog import (
+from modeler.engine.component_catalog import (
     ACQUISITION_CASH_COMPONENT_CATALOG,
     CASH_ROLLFORWARD_COMPONENT_CATALOG,
     GEOGRAPHIC_SEGMENT_COMPONENT_CATALOG,
@@ -56,7 +56,7 @@ from ..engine.component_catalog import (
     ROE_ATTRIBUTION_COMPONENT_CATALOG,
     WORKING_CAPITAL_COMPONENT_CATALOG,
 )
-from ..engine.semantic_map import ResolvedComponent
+from modeler.engine.semantic_map import ResolvedComponent
 from .acquisition_cash import AcquisitionCashSeries
 from .cash_rollforward import CashRollforwardSeries
 from .inventory_analysis import InventoryAnalysisSeries

@@ -111,7 +111,7 @@ def reconcile_to_supporting() -> Path:
 
 def build_workbooks(standardized_json: Path) -> tuple[Path, Path]:
     from core.data.standardized_io import standardized_from_payload
-    from core.trainer.workbook import build_training_workbook
+    from legacy.trainer.derive import build_training_workbook
 
     payload = json.loads(standardized_json.read_text(encoding="utf-8"))
     fin = standardized_from_payload(payload)

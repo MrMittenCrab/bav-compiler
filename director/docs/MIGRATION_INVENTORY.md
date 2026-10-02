@@ -1107,6 +1107,17 @@ layer.
 Trainer”. Explicit `-o` JSON still derives a Trainer; that dual path is a
 Director CLI compatibility decision, not a new feature.
 
+**Step 10.7 actual ownership.** Workbook construction lives in
+`modeler/workbook.py` and `modeler/build_bav.py`. Catalog, semantic map and
+embed live under `modeler/engine/`. Director owns `BUILD_MODULES` policy in
+`director/build_contract.py`; Modeler binds writers and executes it in
+`modeler/engine/build_contract.py`. Overview opening lives in
+`composer/workbook_opening.py`. Sidecar I/O and Check-context embed live in
+`modeler/semantic_io.py` and `modeler/check_context.py`. Trainer derive,
+blanking, scoring and chrome live under `legacy/trainer/`. Retained
+`core/engine/*` and `core/trainer/*` modules are delegation-only façades.
+Normal company build/check/publish does not import Legacy or `core.trainer`.
+
 ---
 
 ## 11. Director ownership, STYLE.md, DRIVER.md
@@ -1234,7 +1245,7 @@ Subsequent reviewed steps execute this order. This step does not execute it.
 3. Split `revenue_driver.py`, `revenue_strategy_synthesis.py` and `reported_margin.py` per §7.0–7.1 and §7.4 (observations / identity validity / verdicts / wording). Then split `drivers.py` / `selection.py` per §5. Apply the management-emphasis removal in §9. Deduplicate reconstruction helpers. Assessment concatenation stays first-name-wins; façades may not choose judgments.
 4. Move remaining Modeler calculation modules, data payload, ingestion reconcile/standardize, engine workbook, `build_bav_workbook`, semantic I/O, check-context embed.
 5. Move Interpreter judgment functions and classification/normalization rationales / strategy inference.
-6. Move Composer `style.py`, `document.py`, `publish.py`, Drivers prose/plots, Overview opening/navigation. **Step 10.6:** `style.py`, `document.py` and `publish.py` now live under `composer/research/`. Drivers prose/plots already live there from 10.5. Overview opening/navigation remains subsequent.
+6. Move Composer `style.py`, `document.py`, `publish.py`, Drivers prose/plots, Overview opening/navigation. **Step 10.6:** `style.py`, `document.py` and `publish.py` now live under `composer/research/`. Drivers prose/plots already live there from 10.5. **Step 10.7:** Overview opening/navigation lives in `composer/workbook_opening.py`.
 7. Move Director CLI / `current_build` / `project_companies.json` / build-contract policy. Keep `python -m bav` and company name interfaces. Director `build_company` sequences Modeler → Interpreter → Composer before workbook write.
 8. Relocate Legacy (Trainer remainder, skills, automation, retired scripts, HK demo, historical docs/verifiers).
 9. Delete Remove items in place. Update imports, CLI routes, package docstrings, tests, README, `docs/FAST_RETAILING_BENCHMARK.md` stale paths, `source_manifest.json` if PDFs are restored.

@@ -221,9 +221,9 @@ def test_missing_build_errors(tmp_path, monkeypatch, capsys):
 
 def test_progressive_incomplete_parent(monkeypatch, tmp_path):
     from dataclasses import replace
-    from core.engine import build_contract
+    from modeler.engine import build_contract
     from core.current_build import resolve_company, prepare_company_input
-    from core.engine.reference_model import ReferenceModelBuilder
+    from modeler.workbook import ReferenceModelBuilder
     company = resolve_company('LULU')
     fin = prepare_company_input(company, tmp_path)
     monkeypatch.setattr(build_contract, 'BUILD_MODULES', tuple(
@@ -325,9 +325,9 @@ def test_build_preserves_protected_evidence(tmp_path, monkeypatch):
 
 def test_disabled_module_is_not_reported_as_missing_source(monkeypatch):
     from dataclasses import replace
-    from core.engine import build_contract
+    from modeler.engine import build_contract
     from core.build_status import status_rows, INACTIVE
-    from core.engine.semantic_map import SemanticMap
+    from modeler.engine.semantic_map import SemanticMap
     monkeypatch.setattr(build_contract, 'BUILD_MODULES', tuple(
         replace(m, status='deferred', current_ready=False) if m.id == 'operating_kpi' else m
         for m in build_contract.BUILD_MODULES))

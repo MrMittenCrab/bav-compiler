@@ -10614,4 +10614,90 @@ This export repair does not establish Session 10 acceptance.
 
 None.
 
+---
+
+# RESULT.md — Step 10.7 Invert Engine and Trainer ownership
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)  
+**Step:** 10.7 — Invert Engine and Trainer ownership  
+**Work:** `4ea4f5cca6b144b2b4361a06e030107f`  
+**Plan:** `3ffdc544eb0f4dbabfe4e33a855a521e`  
+**Finding:** Invert Engine and Trainer ownership
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change.
+
+## Baseline B
+
+Authenticated from populated `IMPLEMENT_BASE_SHA`. Fail-closed was not required.
+
+| Record | Value | Result |
+|---|---|---|
+| `.git/autocycle/resume-state` `IMPLEMENT_BASE_SHA` | `813d0e022408fc8c687316c3e383e3b210f8d305` | Used as B |
+| `STATE_BRANCH` / `.git/HEAD` / branch tip | `checkpoint/20260913-183303` / same SHA | HEAD == B at start |
+| `implementation-baseline.json` `head` | same SHA | Bound |
+| `work-state` allocated `10.7` | `source` = B, `work_id` = `4ea4f5cca6b144b2b4361a06e030107f`, `status` = `opened` | Bound |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | `step_id` 10.7, same `work_id` | Bound |
+| Predecessor review SHA-256 | `70ee9928e3667b73430dab12a703d45b9cbc18b64e6dd1a87d7aa9c16765be48` | Bound |
+| `.git/autocycle/latest-implementation` | leftover `f75d9a08…` (Step 10.6.1) | Ignored: `IMPLEMENT_BASE_SHA` populated |
+
+Compared destinations with Git blobs at B via `git show B:path`.
+
+## Path mappings
+
+| B path | Destination | Continuity |
+|---|---|---|
+| `core/engine/component_catalog.py` | `modeler/engine/component_catalog.py` | Unchanged move. 333047 bytes, SHA-256 `2cc178daa7b7…` identical to B |
+| `core/engine/semantic_map.py` | `modeler/engine/semantic_map.py` | Unchanged move. 9463 bytes, SHA-256 `e277e5bb0c2f…` identical to B |
+| `core/engine/map_embed.py` | `modeler/engine/map_embed.py` | Unchanged move. 1986 bytes, SHA-256 `1712dd8456b9…` identical to B |
+| `core/engine/reference_model.py` | `modeler/workbook.py` | Import retarget only. B 505763 bytes `a2e81d971c20…`; current 505936 bytes `8ff80566331a…`. Relative `..data` / `..model` / `.catalog|map|contract` / `..trainer.check_context` became `core.*` / `modeler.engine.*` / `modeler.check_context` |
+| `core/engine/build_contract.py` `BUILD_MODULES` policy | `director/build_contract.py` | Policy table: ids, statuses, depends_on, writer identities, `forecast` deferred |
+| `core/engine/build_contract.py` prepare/writer execution | `modeler/engine/build_contract.py` | Same eligibility, ordering, required-input and verify behavior; binds Director policy |
+| `core/trainer/workbook.py` `build_bav_workbook` / `finalize_bav` | `modeler/build_bav.py` | BAV construction does not instantiate a Legacy Trainer generator |
+| `core/trainer/workbook.py` `_add_bav_opening` | `composer/workbook_opening.py` | Overview prose, navigation, fallback; consumes §7.1 fields |
+| `core/trainer/semantic_io.py` | `modeler/semantic_io.py` | Sidecar I/O plus `group_components_by_family` used by `list` without Trainer |
+| `core/trainer/check_context.py` | `modeler/check_context.py` | Import retarget only. B 29181 bytes `dd44e2bf95da…`; current 29193 bytes `e9ccbcb5df9b…` |
+| `core/trainer/checker.py`, practice blanking, chrome, `derive` | `legacy/trainer/` | Optional Trainer overlay. `xlsx_fill_patch.py` byte-identical (8559, `9ec6c2c87399…`) |
+| `core/engine/*`, `core/trainer/*` | retained façades | Delegation-only; implementation solely in Director / Modeler / Composer / Legacy |
+
+Callers updated to canonical owners: `core/current_build.py`, `core/__main__.py` (Legacy loaded only for explicit `-o` derive or Trainer `--workbook` / existing Trainer file), `core/build_status.py`, `composer/overview.py`, `core/model/historical_expected.py`, release/audit scripts.
+
+## Interface and behavior
+
+- Public `bav` commands, company aliases, signatures, return types and output contracts are unchanged.
+- Company `build` / `check` / `publish` do not import Legacy or `core.trainer`.
+- Explicit JSON `bav build … -o …` still derives a Trainer through `legacy/trainer/derive.py`, consuming Modeler construction.
+- Deferred forecasting remains gated default off.
+- Supported `core.engine` / `core.trainer` public imports remain identity-equal to canonical callables.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| B authentication (resume-state, baseline JSON, work-state 10.7, branch, HEAD==B) | B = `813d0e02…`; HEAD == B at start; fail-closed not required |
+| B blob vs destinations | catalog / semantic_map / map_embed / xlsx_fill_patch byte-identical; construction/check-context import-only semantic moves |
+| Canonical + façade identity / both import orders (`test_engine_trainer_ownership`) | **5 passed** inside listed suite |
+| Company build/check/publish with Legacy and `core.trainer` blocked | subprocess rc 0; those modules absent from `sys.modules`; no Trainer file |
+| Explicit JSON `-o` derive + `check --workbook` Trainer | rc 0; writes `Example_BAV.xlsx` and `Example_BAV_Trainer.xlsx` |
+| Listed pytest including ownership, live-formula (`test_reference_integrity`) and opening (`test_learner_ready_presentation`) | **581 passed**, 5 warnings (pre-existing Swig importlib), 222.10s |
+| `python -m bav build/check/publish` Lululemon and FastRetailing | rc 0 each. No `*_BAV_Trainer.xlsx`. Canonical `*_BAV.xlsx` / `.docx` / `.pdf`. Placeholders remain 0-byte `e3b0c442…` |
+| Sidecars vs pre-rebuild | component_map / assumptions / rowmap / build_status SHA-256 identical for both companies |
+| Workbook formulas / deps / opening | Lulu 861 and FR 577 components; embedded map == sidecar; formulas match map (KPI source facts populated); 0 yellow; no Trainer sheet; Overview has no exercise framing |
+| xlsx SHA vs pre-rebuild | Lulu `f88e0c32…` (229740) → `9ff4e52e…` (229739); FR `099f99bf…` (137902) → `84119ba2…` (137905). Zip packaging only; maps/formulas unchanged |
+| `git diff --check` | rc 0 |
+| Native Office | **Not run** — semantic maps, rowmaps and formula identities unchanged; opening content/structure preserved. SESSION native-verify condition was not newly met |
+
+## Preservation
+
+Canonical inputs, source evidence, accounting signs, fiscal distinctions, precision, admission/comparison independence, residual qualifications, fail-closed controls, optional Trainer derivation and zero-byte research placeholders were not redesigned. Attribution amounts, locators, counterfactual scope, `supported_as_attribution`, `not independently verified` and `outside the accounting bridge` remain. Completed Driver handoffs and independent eligibility were not edited. `TARGET.md`, `SESSION.md` and `IMPLEMENTATION.md` were not modified.
+
+## Remaining toward Completion
+
+Remaining calculation/data relocations, unrelated Legacy/removal work and final repository-wide migration verification remain subsequent work. Inventory §16 behavior defects were not repaired. No Trainer expansion, report redesign or second-phase features.
+
+This inversion does not establish Session 10 acceptance.
+
+## Required plan change
+
+None.
+
 

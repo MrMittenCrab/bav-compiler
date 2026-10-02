@@ -59,7 +59,7 @@ def extension(**changes):
 
 
 def register(monkeypatch, module):
-    from core.engine import build_contract
+    from modeler.engine import build_contract
     monkeypatch.setattr(build_contract, "BUILD_MODULES", build_contract.BUILD_MODULES + (module,))
 
 

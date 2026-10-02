@@ -10,7 +10,7 @@ from extractor.data.historical_strategy import (
     HistoricalStrategyDisclosure,
     disclosure_locator,
 )
-from core.engine.component_catalog import (
+from modeler.engine.component_catalog import (
     COMPARABLE_SALES_SHEET_NAME,
     GEOGRAPHIC_SHEET_NAME,
     REVENUE_DRIVER_SHEET_NAME,

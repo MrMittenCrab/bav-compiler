@@ -13,8 +13,9 @@ from datetime import date
 from pathlib import Path
 
 from extractor.data.interface import DocumentManifest, DocumentType
+from modeler.engine.component_catalog import COMPONENT_CATALOG
+from modeler.semantic_io import bav_path_for, load_semantic_map, resolve_pair_paths
 from .data.standardized_io import standardized_from_payload, standardized_to_payload
-from .engine.component_catalog import COMPONENT_CATALOG
 from .ingestion.filing_cli import load_and_validate_extracted_dir
 from .ingestion.filing_reconciler import reconcile_filings
 from .ingestion.filing_standardizer import (
@@ -24,9 +25,6 @@ from .ingestion.filing_standardizer import (
     standardize_reconciled,
 )
 from .ingestion.manual_hk import HKManualDocumentAdapter
-from .trainer.checker import check_workbook
-from .trainer.semantic_io import bav_path_for, load_semantic_map, resolve_pair_paths
-from .trainer.workbook import build_training_workbook
 
 
 def _serialize_line_items(items) -> list[dict]:
@@ -192,6 +190,7 @@ def cmd_build(args: argparse.Namespace) -> int:
             if not isinstance(assumptions, dict):
                 raise ValueError("assumptions must be a JSON object")
 
+        from legacy.trainer.derive import build_training_workbook
         trainer_path, bav_path = build_training_workbook(data, out, assumptions)
     except (OSError, ValueError) as exc:
         print(f"error: build failed: {exc}", file=sys.stderr)
@@ -210,6 +209,7 @@ def cmd_check(args: argparse.Namespace) -> int:
     if args.company:
         return check_company_output(args.company)
     workbook = Path(args.workbook)
+    from legacy.trainer.checker import check_workbook
     summary = check_workbook(workbook)
     print(
         f"Checked {summary.total} practice cells: "
@@ -352,7 +352,7 @@ def cmd_publish(args: argparse.Namespace) -> int:
 
 
 def cmd_list(args: argparse.Namespace) -> int:
-    from .trainer.workbook import group_components_by_family
+    from modeler.semantic_io import group_components_by_family
 
     from .current_build import current_workbook
     if args.company and args.workbook:

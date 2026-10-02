@@ -2167,13 +2167,12 @@ def test_explicit_pair_verification_does_not_generate(tmp_path: Path, monkeypatc
         raise AssertionError("build_training_workbook must not run for explicit pairs")
 
     monkeypatch.setattr(
-        "core.trainer.workbook.build_training_workbook",
+        "legacy.trainer.derive.build_training_workbook",
         boom,
     )
-    # Also guard the local import path used inside run_audit.
-    import core.trainer.workbook as wb_mod
+    import legacy.trainer.derive as derive_mod
 
-    monkeypatch.setattr(wb_mod, "build_training_workbook", boom)
+    monkeypatch.setattr(derive_mod, "build_training_workbook", boom)
 
     result = audit_mod.run_audit(
         standardized_json=RELEASE_STD,
