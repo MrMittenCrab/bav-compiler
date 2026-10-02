@@ -1,38 +1,45 @@
-# Step 10.4.1 — Director-owned historical-strategy interpretation
-
-AUTOCYCLE_PLAN: {"finding_key": "Split Driver assessment calculations, judgments and wording", "kind": "work", "minor": 1, "objective": "Director-owned historical-strategy interpretation", "plan_id": "2b3133c3ba5e4c4caae9c727c827e416", "predecessor_review_sha256": "b032a459ef13d5eb8abc3d0bc9bee0b921ee523c24556e945321e0b81e99cfc0", "step_id": "10.4.1", "work_id": "b0acea18798147eb824094bee2a60f09"}
+# Step 10.5 — Split Driver research responsibilities and correct emphasis eligibility
+AUTOCYCLE_PLAN: {"finding_key": "Split Driver research responsibilities and correct emphasis eligibility", "kind": "work", "objective": "Split Driver research responsibilities and correct emphasis eligibility", "plan_id": "d39ef10d44b34d40b7b2d9a35dc3cb63", "predecessor_review_sha256": "b8a4fec20aab39a4a9a784aa06cef2d4bf476d2ae95ab97c11ee030bcd6b0aae", "step_id": "10.5", "work_id": "116fc09cee884ccea734dfb368f42fa2"}
 
 ## Completion
 
-Revenue-driver analysis, reported-margin assessments and historical-strategy synthesis execute through their inventory-defined Modeler, Interpreter and Composer owners, preserving existing numerical results, judgments, evidence qualifications and rendered behavior through thin orchestration.
+Driver research executes through inventory-defined Modeler calculations, Interpreter judgments and Composer publication decisions under thin Director orchestration; management emphasis alone never establishes driver eligibility, and numerical support, provenance and evidence qualifications remain intact.
 
 ## Bounded work
 
-Repair the historical-strategy handoff in `director/driver_assessment.py` and `composer/overview.py`, following `director/docs/MIGRATION_INVENTORY.md` §7.1.
+Split `core/research/drivers.py` and `core/research/selection.py` according to `director/docs/MIGRATION_INVENTORY.md` §§5–6 and 9.
 
-- Authenticate implementation baseline B from populated `IMPLEMENT_BASE_SHA`, otherwise normal baseline records and branch, ancestry and attempt/checkpoint bindings. Fail closed if unavailable; use historical Git blobs for comparisons.
-- Have `complete_historical_strategy_synthesis` obtain completed revenue-driver analysis when needed, invoke `interpret_historical_strategy`, then pass the completed `HistoricalStrategyJudgment` and analysis to Composer.
-- Make Composer require completed judgments explicitly. Remove its interpretation invocation and any fallback that computes judgments or revenue analysis. Retain Interpreter-owned judgment types and constants where composition needs them.
-- Keep applicability and empty-test failures consistent with existing entry-point behavior, including validation order and messages.
-- Update affected callers and tests. Preserve the delegating `core/model/revenue_strategy_synthesis.py` façade, research consumers and workbook-opening behavior through Director.
-- Preserve all synthesis fields, wording, source locators, qualifications, counterexamples, deferred-SPSF handling, theme order, navigation and fallback text. Keep judgment decisions in Interpreter and wording in Composer.
-- Retain the completed revenue and margin splits, numeric consumer boundaries, assessment ordering and first-name-wins deduplication. Update only narrowly affected documentation.
+- Authenticate implementation baseline B through resume-state or normal baseline records, branch, ancestry and attempt/checkpoint bindings. Fail closed if unavailable; compare against historical Git blobs.
+- Move CFO classification to `modeler/research/cfo.py`, numerical assembly to `modeler/research/drivers_view.py`, geographic conditions to `modeler/research/geo_conditions.py` and mechanical eligibility to `modeler/research/eligibility.py`.
+- Make Modeler assembly return numerical observations without invoking selection, interpretation, Composer or Director. Obtain completed assessments through Director and supply them explicitly where needed; preserve first-name-wins assessment assembly.
+- Move question judgments, claim classifications, mechanisms, alternatives, uncertainty, calendar limitations and economic eligibility gates to `interpreter/selection.py`. Preserve existing thresholds and independently evaluated geographic conditions.
+- Move Driver wording, Markdown, figures and publication helpers to `composer/research/drivers.py`; place publication constants in `composer/research/selection_roles.py` and role/order selection in `composer/research/selection.py`.
+- Separate mixed question builders by field ownership in inventory §6. Composer owns claim wording, display formatting, publication reasons and exhibit questions; Interpreter must not infer judgments from Composer prose or publication roles.
+- Reuse `DriversView`, `ResearchClaim`, `ResearchQuestion`, `ResearchSelection` and `SelectionDecision`; keep their contracts thin and avoid a new reasoning schema. Locate shared records so their imports do not pull downstream implementation into Modeler.
+- Add thin orchestration in `director/research.py`: obtain calculations and completed assessments, assemble the view, invoke Interpreter, invoke Composer selection, then attach the completed selection with `replace(view, selection=…)`.
+- Require completed selection at Composer rendering and figure-selection boundaries. Remove fallback interpretation from rendering helpers; route existing public convenience calls through Director.
+- Preserve margin → geography → footprint → cash ordering, independent eligibility gates, figure deduplication, report headings, appendix structure and source navigation.
+- Stop assigning main-body eligibility merely because management attribution or comparable-sales observations exist. Keep attribution claims, amounts, locators, counterfactual scope, `supported_as_attribution`, `not independently verified` and `outside the accounting bridge`.
+- Retain the attribution appendix table regardless of principal selection. Include attributed margin prose only beside an independently selected margin finding; attribution must not independently create a principal or figure. Comparable-sales observations remain auditable without automatic promotion.
+- Consolidate duplicate reconstruction and component-direction helpers under their inventory-defined owners. Remove only the dead Driver symbols identified in §5.1 after confirming no callers.
+- Update affected build, publication, verification and test imports. Any retained `core/research` façades must delegate without calculations, judgments or wording. Update the inventory and narrowly affected documentation to reflect actual ownership.
 
 ## Verification
 
-- Add focused regressions proving Director invokes historical-strategy interpretation before composition, passes its completed judgment unchanged, and avoids recomputing supplied analysis.
-- Verify Composer can render supplied judgments without invoking Interpreter or Modeler computations; cover both supplied-analysis and omitted-analysis orchestration paths.
-- Compare complete synthesis records and rendered output against authenticated baseline behavior, including supported, mixed, contradicted, insufficient, counterexample and deferred-evidence cases represented by existing fixtures.
-- Retain checks that Modeler does not import Interpreter or Composer, Interpreter does not import Composer or parse its prose, and numeric workbook consumers do not invoke assessment wording.
-- Run `/opt/anaconda3/bin/python -m pytest -q` on `core/tests/test_revenue_driver.py`, `core/tests/test_reported_margin.py`, `core/tests/test_research_drivers.py`, `core/tests/test_current_build.py`, `core/tests/test_build_contract.py`, `core/tests/test_build_cli.py`, `core/tests/test_publication.py`, `core/tests/test_lululemon_benchmark.py`, `core/tests/test_fast_retailing_benchmark.py`, `core/tests/test_trainer.py` and `core/tests/test_learner_ready_presentation.py`.
-- Verify `python -m bav --help` and `git diff --check`.
-- Apply SESSION native-verification requirements if workbook formulas/dependencies or presentation change; use Office Bridge and record unavailable verification explicitly.
-- Append the repaired responsibility handoff, measured verification and remaining migration scope to `RESULT.md`. Preserve historical records.
+- Add focused handoff tests proving Modeler assembly does not select arguments, Director sequences interpretation before publication selection, and Composer consumes completed judgments without recomputing them.
+- Test qualitative and quantified attribution with missing, zero and nonzero margin movement: evidence survives, emphasis alone cannot promote eligibility, and accompanying prose requires independently selected margin evidence.
+- Test comparable-sales presence without independent driver support, and independence of valid geographic/store/margin evidence from management disclosure presence.
+- Compare numerical fields, judgments, qualifications, Markdown and figure selection with authenticated baseline behavior across Lululemon, Fast Retailing and existing missing/zero, partial-reconstruction, geographic-offset, calendar and cash fixtures. Isolate intentional emphasis-related differences.
+- Preserve regression coverage while splitting research tests by responsibility. Check import boundaries, reconstruction gates, CFO classification, source locators, residuals, assessment ordering and zero-byte placeholders.
+- Run `/opt/anaconda3/bin/python -m pytest -q` on the affected research tests and `core/tests/test_revenue_driver.py`, `core/tests/test_reported_margin.py`, `core/tests/test_current_build.py`, `core/tests/test_build_contract.py`, `core/tests/test_build_cli.py`, `core/tests/test_publication.py`, `core/tests/test_lululemon_benchmark.py`, `core/tests/test_fast_retailing_benchmark.py`, `core/tests/test_trainer.py` and `core/tests/test_learner_ready_presentation.py`.
+- Verify `/opt/anaconda3/bin/python -m bav --help` and `git diff --check`.
+- Apply SESSION native-verification requirements when presentation or workbook formulas/dependencies change. Use Office Bridge; record unavailable verification explicitly.
+- Append actual ownership changes, intentional behavioral differences, measured verification and remaining migration scope to `RESULT.md`.
 
 ## Limits and remaining scope
 
-Preserve canonical inputs, source evidence, accounting signs, fiscal distinctions, precision, admission/comparison independence, residual qualifications, fail-closed controls, optional Trainer behavior and zero-byte research placeholders. Preserve ownership, recovery, protected-document and unrelated-dirty-work safeguards.
+Preserve canonical inputs, source evidence, accounting signs, fiscal distinctions, precision, admission/comparison independence, fail-closed controls, optional Trainer behavior and ownership/recovery safeguards. Protect unrelated dirty work and protected documents.
 
-The broader `drivers.py`/`selection.py` split, management-emphasis eligibility correction, remaining component relocation, Trainer inversion, justified removals and final representative build/check/publication verification remain subsequent work. Do not repair inventory §16 behavior defects or implement second-phase features.
+Remaining component relocation, Trainer inversion, broader removals and final representative build/check/publication verification remain subsequent work. Do not repair inventory §16 behavior defects, redesign reports or implement second-phase features.
 
 Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
