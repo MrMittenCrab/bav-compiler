@@ -1,41 +1,38 @@
-# Step 9.1.1 — Repair accounting signs and complete shared publication acceptance
+# Step 9.1.2 — Complete preserved publication verification
 
-AUTOCYCLE_PLAN: {"finding_key": "Generalized Driver publication for Lululemon and Fast Retailing", "kind": "work", "minor": 1, "objective": "Repair accounting signs and complete shared publication acceptance", "plan_id": "352a058048554890a3d77058812de0ec", "step_id": "9.1.1", "work_id": "362810cf9ddb42ba820dff960656a5cb"}
+AUTOCYCLE_PLAN: {"evidence_routes": [{"commands": [["python3", "/Users/lizhiguo/.autocycle/native_office.py", "verify", "excel", "build/output/fast_retailing/FastRetailing_BAV.xlsx", "python3", "scripts/verify_cached_workbook.py", "{document}", "--original", "build/output/fast_retailing/FastRetailing_BAV.xlsx", "--references", "docs/native-excel-fast-retailing-signed-expense-references.json"]], "fact": "Whether the changed Fast Retailing workbook recalculates correctly in native Excel and preserves independently verified saved values."}, {"fact": "Whether Fast Retailing's secondary main-body paragraph is readable in native Word; retained captures do not display it, and the controller rejected supplementary observation for missing checkpoint artifact bindings.", "requests": [{"app": "word", "bounds": [40, 40, 1320, 1000], "end": 900, "source": "build/output/fast_retailing/FastRetailing_BAV.docx", "source_sha256": "4af68ec70c3f4a11ddbcde8b249637100c7a94cf4689d0b80dd629bb01d39c44", "start": 900, "zoom": 100}, {"app": "word", "bounds": [40, 40, 1320, 1000], "end": 1200, "source": "build/output/fast_retailing/FastRetailing_BAV.docx", "source_sha256": "4af68ec70c3f4a11ddbcde8b249637100c7a94cf4689d0b80dd629bb01d39c44", "start": 1200, "zoom": 100}]}], "finding_key": "Generalized Driver publication for Lululemon and Fast Retailing", "kind": "work", "minor": 2, "objective": "Complete preserved publication verification", "plan_id": "342ccad7e9d8445aaa242d24c7a40007", "predecessor_review_sha256": "cb4bea1ee2e27aadf7a1e9ee72d2dba1689ab8c4aab709a573d741acae37cc28", "step_id": "9.1.2", "work_id": "362810cf9ddb42ba820dff960656a5cb"}
 
 ## Completion
 
 The generalized Driver path produces a materially more readable, conclusion-first Lululemon Drivers report and, immediately after Lululemon acceptance, an evidence-selected Fast Retailing Drivers report, with canonical Markdown/Word/PDF, optional claim-driven figures, auditable appendices, passing build/check/publication and focused regressions, preserved analytical boundaries and documented readability acceptance for both companies.
 
-## Bounded repair
+## Bounded continuation
 
-- Authenticate the implementation baseline from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`, otherwise the normal bound ownership records; verify branch, ancestry and attempt binding.
-- Preserve the completed company-agnostic DRIVER.md authority, shared publication path and explicit headline/principal/secondary/appendix roles. STYLE.md remains the presentation authority.
-- Correct expense-sign handling in `core/model/reported_margin.py` and affected consumers. Derive analytical expenses from supported source conventions without changing reported values or provenance; do not apply blanket absolute values that erase genuine reversals or operating gains.
-- Apply consistent signs to component levels, expense changes, operating-profit reconstruction and margin contributions. Inspect dependent workbook formulas and Notes for the same defect; repair affected surfaces through existing analytical and semantic paths.
-- Independently recompute both companies’ historical bridges from source facts. Preserve unavailable components and expose remaining residuals rather than forcing reconciliation.
-- Correct CFO component selection in `core/research/drivers.py`: use supported operating identities and statement context, excluding total cash changes, cash balances, investing/financing flows and overlapping aggregates. A `change_in_` substring alone cannot establish operating classification.
-- Reproduce the reviewed Fast Retailing arithmetic: excluding the −590,599 million total-cash change from the previously selected −656,249 million component changes gives −65,650 million and a −5,253 million CFO remainder. Treat these as regression evidence for the reviewed component set, not a complete CFO bridge; justify any further classification changes from sources.
-- Gate reconstruction claims throughout selection reasons, headline, principal prose, appendix, captions and figures on available components and computed level/change residuals using explicit precision-appropriate tolerances. Unknown or material residuals require qualified partial explanation.
-- Derive gross-margin and SG&A direction statements from their actual contributions. Reported margin direction alone cannot establish component directions, explanatory coverage or economic causation.
-- Retain material findings when supported, but revise their role or wording when evidence cannot support exact reconstruction. Keep residuals and consequential uncertainty visible in the main body.
+- Authenticate the implementation baseline from populated `IMPLEMENT_BASE_SHA`, otherwise normal ownership records; verify branch, ancestry and attempt binding. Preserve the repairs checkpointed at `d6b05d5e9a7755db3d8cff939f00a845c9f384d6`.
+- Verify preserved canonical outputs against the recorded hashes and dependencies before carrying forward build/check/publication, regression, quantitative, reproducibility, figure, PDF and native Office evidence. Retain Lululemon-before-FastRetailing acceptance ordering; do not repeat completed publication work without a changed dependency or demonstrated defect.
+- Preserve analytical expense signs, reported source links, reconstruction qualifications and contribution directions. Preserve Fast Retailing’s reviewed CFO component sum −JPY 65,650 million and signed remainder −JPY 5,253 million, total-cash exclusion and incomplete-bridge qualification.
+- Keep this attempt focused on prospective artifact binding, native Excel saved-cache verification and missing Word coverage. Do not redesign analytical or publication paths.
 
-## Verification and publication
+## Excel saved-cache verification
 
-- Add focused regressions for positive-presented and negative-signed expenses, supported reversals/gains, missing components, nonzero residuals and component directions inconsistent with aggregate margin direction.
-- Test CFO selection against the real Fast Retailing cash lines, total-cash exclusion, overlapping totals and valid operating adjustments. Independently verify the resulting signed remainders for both companies.
-- Exercise reconstruction gates with incomplete and contradictory evidence across headline, selection, prose and figure captions; preserve zero-figure and absent-optional-family behavior.
-- Run `test_reported_margin.py`, `test_research_drivers.py`, `test_publication.py`, affected build tests and both company regressions. Include affected workbook and optional Trainer checks when shared analytical outputs change.
-- Regenerate Lululemon through canonical build/check/publish, verify its quantitative claims and complete readability acceptance, then immediately repeat the sequence for FastRetailing. Use the shared production path without issuer-specific branches.
-- Verify every selected quantitative claim, plotted contribution and appendix bridge against independent source arithmetic, with correct units, fiscal periods and source locators.
-- Compare distinct saved publication runs using the existing substantive Word/PDF reproducibility checks; timestamp differences alone neither establish nor defeat reproducibility.
-- Inspect both main bodies without appendices, all generated figures, complete PDFs and complete native Word content. Use Office Bridge with ordinary artifact bindings and overlapping views where needed; first-page captures alone do not establish complete readability.
-- Compare regenerated workbooks semantically with the authenticated baseline. Changed formulas or dependencies require native recalculation and independent saved-cache verification; changed workbook presentation requires native readability inspection. Carry forward evidence only after demonstrating applicability.
+- Create `docs/native-excel-fast-retailing-signed-expense-references.json` using the existing verifier schema: current `source_sha256`, affected `sheets`, and independently derived `cells` with source citations.
+- Cover every formula on `ALT DuPont`, including B114:F114 and C121:F121, and any other affected downstream sheets identified from dependencies. Derive expectations from canonical source facts and independent arithmetic, never from saved caches or production-model results.
+- Execute the listed Office Bridge verification command after the reference file is complete. Require native recalculation, save and close, followed by independent verification of saved values, unchanged formulas/literals/topology and error-free transitive dependencies.
+- Retain the immutable saved copy, verifier output and native receipt with source, copy and reference hashes. Blank caches, a successful ordinary check or a recalculation request alone do not establish acceptance.
+- Keep the canonical workbook unchanged during copy verification. Any subsequent workbook change invalidates the corresponding verification and requires a newly bound check.
 
-## Preservation and reporting
+## Word coverage
 
-- Preserve concise, distinct principal explanations, separate secondary signals, optional claim-driven figures and auditable historical appendices. Retain selection/demotion reasons, rejected comparisons, source qualifications and unresolved mechanisms.
-- Preserve Lululemon’s attribution, comparable-sales, productivity and geographic boundaries. Preserve its signed unexplained CFO remainder unless source-grounded correction demonstrates a change.
-- Preserve upstream evidence, unrelated analytical outputs, optional Trainer behavior, zero-byte reserved research modules, immutable snapshots, historical receipts and ownership/recovery safeguards.
-- Append measured results to RESULT.md, correcting the prior acceptance assertions without rewriting historical records: source-sign treatment, selected/excluded CFO components, before/after bridges and residuals, claim-gate behavior, both hierarchies, evidence allocation, command outcomes, artifact bindings and complete readability coverage.
-- Distinguish fresh verification from applicable retained evidence and technical acceptance from pending human editorial sign-off. Record any remaining acceptance requirement explicitly.
-- Do not reopen accepted migration work or redesign unrelated ingestion, workbook architecture, forecasting, valuation or M&A. Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
+- Use the two listed character-position captures to inspect the entire secondary heading and cash-conversion paragraph, with overlap through the transition to Appendix. Inspect rendered pixels and bound receipts; document XML and page labels alone are insufficient.
+- Confirm the native paragraph visibly retains CFO 651,521 → 580,618, net income 393,605 → 459,153, the signed −5,253 remainder and its qualification.
+- Reconcile these captures with applicable retained Lululemon pages 1–14 and Fast Retailing pages 1–7. Record actual visible coverage, including page bottoms; preserve any remaining gap explicitly.
+- Treat the prior missing paragraph as a coverage gap unless native evidence demonstrates a product defect. Native navigation and captures use Office Bridge and existing ownership/access safeguards.
+
+## Prospective bindings and reporting
+
+- Before the new checkpoint, explicitly declare verified generated outputs through the existing implementation-result `checkpoint_artifacts` mechanism, bound to this attempt and Plan HEAD. Include both canonical XLSX/DOCX/PDF files, Drivers Markdown, referenced figures and supporting generated artifacts relied upon for acceptance, using repository-relative paths and measured SHA-256 values.
+- Do not retrofit the previous checkpoint, fabricate controller receipts or substitute a prose hash table for structured declarations.
+- Append measured results to RESULT.md: preserved-output applicability, independent reference coverage, native saved-cache outcome, complete visible Word coverage, prospective declarations and remaining requirements. Correct prior complete-coverage assertions without rewriting historical records.
+- Preserve shared DRIVER.md/STYLE.md authorities, Lululemon analytical boundaries and signed CFO remainder, upstream evidence, unrelated outputs, optional Trainer behavior, zero-byte reserved modules, immutable snapshots and historical receipts.
+- Carry forward applicable completed checks; rerun affected checks only when changes or evidence invalidate them. Unavailable legacy Office baselines provide no comparison evidence. Human editorial sign-off remains separately pending and is not required for technical completion.
+- Preserve ownership, recovery, protected-document and unrelated-dirty-work safeguards. Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
