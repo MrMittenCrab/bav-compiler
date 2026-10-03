@@ -1,3 +1,89 @@
+# RESULT.md — Step 12.1 Verify Debater benchmark sources and controlled runtime
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 12.1 — Verify Debater benchmark sources and controlled runtime
+**Work:** `e35d5703ccc14627a150a29b9e900502`
+**Plan:** `0f48c3009f7e451e8b3d0420830a6e86`
+**Finding:** Verify Debater benchmark sources and controlled runtime
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. No AutoCycle edits, crawler, debate CLI, argument export, or Debater publications. This record does not claim parent Completion, Session acceptance, or end-to-end benchmark success.
+
+TARGET SHA-256 `9bfc5e439e5776cf3d1d89fd33363febe716a6744ad7d256942a24709ff3e77b` (60817).
+SESSION SHA-256 `614f2e081b472ae75ef13e78b34120311181327c8f6a534bd3cfd35621344b8a` (4472).
+IMPLEMENTATION SHA-256 `e4c890229a14cd0f8425472638261bb6dea896cf39542a7f563eae24360404c5` (7974).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `55a33e966…` was ignored. Git CLI was blocked here; HEAD/branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `12.1` source | `e4632a6782be2c1de705ed838bc95a26d6b0e909` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD |
+| Bound running attempt | `7f42b6ae42124565820eb095ac49a90e`, `plan_sha` = B, phase `running`, `checkpoint_sha` absent |
+| `admitted_review` predecessor | `review_sha256` `c693de448a9471be93cb4c975e6d8a2314aab8f6e8e201e4fd9e8b3e63b27540`; `reviewed_head` `97d58c0a9928c4ee6e0de3ab93eb7587b544beb6` |
+| `latest-implementation` leftover HEAD | `55a33e966b652e96200dea81ab2c1e26f78765f0` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Fail-closed | Not required |
+
+## Specification
+
+`bav/director/docs/DEBATER.md` stores the complete replacement brief (sections 1–16, including the illustrative tree). SHA-256 `27d6615addee99fd43ea5f5aa39d57daeeb7490809e47ccc2736c0979a883503` (61460). It supersedes `bav-debater-v1-revised.md`, `bav-debater-v1-implementation.md` and earlier briefs. Earlier requirements were not combined.
+
+## Sources and conversion
+
+Registered `build/input/lululemon/source/` and `build/input/fast_retailing/source/` already contained the nine annual-report/CFS PDFs. All SHA-256 values match the recorded company baselines. Bounded Developer discovery found no extra company PDFs and **no independently supplied filing Markdown**.
+
+Inspected six candidates from contents. Selected corpus: LULU FY2025 AR + Fast Retailing CFS2025. Staged-add candidate left in canonical source: `LULU_FY2024_Annual_Report.pdf` (`9268fd53…`). Snapshot: `build/input/research_snapshots/2026-10-04-debater-asia-benchmark/manifest.json`.
+
+`marker_single` (`marker-pdf` 2.0.0) `--mode fast --disable_ocr` with `HF_HUB_OFFLINE=1`. Two conversions, 35.01 s real, both exit 0. Originals copied, not moved.
+
+| Check | Result |
+|---|---|
+| FR Note 22 Greater China definition | Original PDF physical p17 matches Markdown; Greater China = Mainland China, Hong Kong, Taiwan |
+| FR Note 22 FY2025 Greater China 650,232 / 19.1 | Numbers match original; Markdown merged the row label |
+| FR Note 6 D Japan/PRC/Overseas FY2025 | In original PDF physical p10 (1,366,172 / 513,040 / 1,521,325); **absent from Markdown** |
+| LULU 10-K strategy text-layer | Garbled in pypdf and marker; OCR not used |
+| Direct Markdown intake | No independently supplied filing Markdown |
+
+Japan and Greater China remain separate issuer definitions. Lululemon reports China Mainland / Rest of World / Japan store counts, not Greater China. Fast Retailing PRC ≠ Greater China. Modeler has no Fast Retailing geographic sidecar and no Lululemon Japan revenue series.
+
+## Runtime probes (synthetic only; 2 calls)
+
+Cursor `agent -p --output-format json --sandbox enabled --trust` against a deny-all workspace: shell, write, `/etc/hosts` and `TARGET.md` **ran**. Envelope parsed (`is_error=false`, 21216 ms). Token returned. Model field absent. `--force` not used. **Cursor company-data route stopped.**
+
+Codex `codex exec --sandbox read-only --json --ephemeral`: write denied; `uname`, `/etc/hosts`, `TARGET.md` and `curl` **ran** (curl DNS-failed). JSONL parsed. **Not an automatic replacement.**
+
+Company corpus was not used as prompt context. A one-time enforceable-permission choice is required before transmission.
+
+## Commands / inspections run
+
+| Command / inspection | Measured result |
+|---|---|
+| `.git/HEAD` + ref | `checkpoint/20260913-183303` @ `e4632a6782be2c1de705ed838bc95a26d6b0e909` |
+| Bounded Developer PDF/MD discovery | 9 registered PDFs; 0 extra filings; 0 supplied Markdown |
+| pypdf identity of 6 PDFs | Issuers/types/periods confirmed; hashes match baselines |
+| `marker_single --help` + `pip show marker-pdf` | 2.0.0; `--mode fast`; `--disable_ocr`; `--llm_service` unused |
+| FR + LULU `marker_single` conversions | exit 0; 16.41 s / 18.60 s |
+| `agent --version` / `about` / `models` / `status` | 2026.09.18-9a7762b / about 2026.10.01-e373342; logged in; default list includes `auto` |
+| `codex --version` / `login status` | 0.157.1; ChatGPT login |
+| Cursor synthetic probe | Permissions not enforced (see above) |
+| Codex synthetic probe | Write blocked; shell/unrelated reads/network tool not |
+| Re-hash accepted financials / assumptions | Unchanged vs this attempt’s pre-copy hashes |
+| `debate` in `cli.py` | Absent |
+
+Focused company rebuilds were not run: no integration point used by build/check/publish was repaired.
+
+## Preservation and plan changes
+
+Accepted financial inputs, conflicts, and neutral assumptions unchanged. Company outputs not rebuilt. `TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md` hashes match the implementation baseline.
+
+Required plan change: none. The missing enforceable provider-permission choice is a recorded Step 15 boundary, not a plan rewrite.
+
+## Remaining toward Completion
+
+Ordinary `python -m bav debate` intake/approvals, source-preparation adapter in Extractor, Planner/Reviewer loop, durable budgets, JSON/Markdown export, `--add`/resume, adversarial checks, and the real benchmark remain outstanding. Prerequisite verification alone does not satisfy the Session 12 Endpoint.
+
 # RESULT.md — Step 11.1.1 Isolate nested assumption payloads
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
