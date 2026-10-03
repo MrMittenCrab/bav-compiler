@@ -11580,3 +11580,97 @@ This binding repair does not establish parent Completion or Session 10 acceptanc
 ## Required plan change
 
 None.
+
+---
+
+# RESULT.md — Step 10.9.4 Finish lifecycle-aware baseline authentication regression coverage
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.9.4 — Finish lifecycle-aware baseline authentication regression coverage
+**Work:** `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`
+**Plan:** `3c98231171454b838b1fb791241dc6a1`
+**Finding:** Relocate data contracts and ingestion responsibilities
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections, including prior 10.9.4 admission-bundle and binding-repair records, were not rewritten. No commit / push / sync / checkpoint / branch change. Controller files under `.git/autocycle` were read-only.
+
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `2678ca41f3b79f67837338788695e5648e318d35f736233a6f8c85c1d93e0e1a` (8342).
+
+This bounded repair replaces live implementation-only assertions and copied running-attempt fixtures so the authentication regression is strict for the authenticated lifecycle during implementation and at the exact recorded checkpoint. It does not close parent Completion (remaining relocation/decomposition still open) and does not establish Session 10 acceptance. Earlier pre-checkpoint passes of the predecessor binding repair do not establish checkpoint-state success.
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state` and authenticated as a Git commit. `implementation-baseline.json` head matched B. Leftover `latest-implementation` HEAD was not substituted for B. Live bindings were read only; isolated fixtures were constructed from copied controller record shapes and did not inherit the live phase.
+
+| Binding source | Value |
+|---|---|
+| `resume-state` `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD | `cbb51348ecd017a886dd06a2ce9a80fa158e2cb2` |
+| Branch | `checkpoint/20260913-183303` |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` work / plan | work `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`, plan `3c98231171454b838b1fb791241dc6a1`, step `10.9.4` |
+| `work-state` `work.id` | `59ab4fdc9ec144ffb2c2b3f0bb8adaeb` |
+| `work-state` allocated `10.9.4` | source = B, work_id = `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`, status `opened` |
+| Current implementation attempt | `dd1cb77e156647d188c9566813025299` (phase `running`, plan_sha = B, `checkpoint_sha` absent) |
+| Live authentication state | implementation at B (`HEAD == B`) after nonempty matching work and attempt bindings |
+| `latest-implementation` leftover HEAD | `8fa5a182c1d672522bf4ac24f14c0345bf9405f3` (ignored: `IMPLEMENT_BASE_SHA` populated and authenticated) |
+
+Historical reviewed attempt `afa6820bb22e4c8da5b7fcc1a3a3c26b` remains a separately labeled comparator: checkpoint `fe04b6ceaec34f825e6c56c2351508ed7fc79078` to B `418f7dc23a52c925d88f9a76ab32cfc33b70e204`, plan `57858697f3f94db58c9e344d7023d3bf`. That tuple is not live authorization for this attempt.
+
+Live caller evidence is labeled separately from fixture evidence. Live assertions now independently derive the authenticated lifecycle from controller + Git (implementation: `HEAD == B` and the matching running attempt; checkpoint: `HEAD` equals that same attempt’s recorded checkpoint, parent/ancestry equals B, matching work/attempt/baseline/branch). Merely accepting either state string is insufficient. Isolated implementation and checkpoint fixtures select the bound attempt by identity and set plan, allocation, work, attempt, phase, baseline, checkpoint and Git state explicitly.
+
+## Lifecycle coverage
+
+| Evidence class | Path | Result |
+|---|---|---|
+| Live caller vs actual controller bindings | `_authenticate_current_repository_baseline()` | `implementation`; HEAD = B `cbb51348…`; attempt `dd1cb77e…`; work `59ab4fdc…`; recorded checkpoint empty; independently derived expectations matched |
+| Fixture implementation (record-reading caller) | isolated records for current plan/attempt, phase `running`, HEAD = B | `implementation`; HEAD = B; attempt `dd1cb77e…`; recorded checkpoint empty |
+| Fixture checkpoint (record-reading caller) | isolated historical comparator records, phase `checkpointed`, HEAD = recorded checkpoint | `checkpoint`; HEAD = `fe04b6ce…`; attempt `afa6820…`; parent = historical B `418f7dc…` |
+| Helper coverage | `_authorize_head_against_baseline` | both valid states retained; does not replace caller-path coverage |
+
+## Rejection evidence
+
+Negative cases started from the valid isolated fixtures above. Observed ownership was mutated independently of expected ownership. An unrelated malformed lifecycle was not used to satisfy a rejection.
+
+| Case | Implementation fixture | Checkpoint fixture |
+|---|---|---|
+| Missing expected or observed work ID | `unavailable_ownership_binding` | `unavailable_ownership_binding` |
+| Missing expected or observed attempt ID | `unavailable_ownership_binding` | `unavailable_ownership_binding` |
+| Mismatched observed work ID / allocated work ID | `mismatched_attempt` | `mismatched_attempt` |
+| Independently mutated observed attempt ID | `mismatched_attempt` | `mismatched_attempt` |
+| Allocated source ≠ B | `mismatched_baseline` | `mismatched_baseline` |
+| Observed attempt baseline ≠ B | n/a at `HEAD == B` (running lookup requires plan_sha = B) | `mismatched_baseline` |
+| Recorded-checkpoint parent ≠ B | n/a | `unauthorized_checkpoint` |
+| Branch `main` | `inconsistent_branch` | `inconsistent_branch` |
+| Unrecorded direct child of historical B | `unauthorized_checkpoint` (from valid implementation fixture; HEAD moved to `fe04b6ce…`, checkpoint cleared) | — |
+| Child with checkpoint belonging to old B `d260153b` / `06a71841` | `unauthorized_checkpoint` | — |
+| Different child of the correct historical B when exact checkpoint `fe04b6ce…` is recorded | — | `unauthorized_checkpoint` (HEAD mutated to current B; recorded checkpoint retained) |
+
+Production loader repairs in `modeler/ingestion/normalization_candidate_admission_io.py` were preserved (SHA-256 `eb34b14cae6f53c6b8e3d9390d17d3bb9a3eb6561d98c6ed4014c016a5823e4f`). Admission evidence integration in `core/ingestion/normalization_candidate_admission.py` was unchanged (SHA-256 `903ed5233bc679433c47d76fc7ffa3e03656cc3a785652d9d2812ef6399893a2`).
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_normalization_candidate_admission.py` | **31 passed** in 5.91s. Prior analytical, persistence, and production-loader cases preserved. No skip / xfail / deselect |
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_data_ingestion_ownership.py core/tests/test_normalization.py core/tests/test_filing_json.py` | **135 passed** in 10.16s |
+| Isolated current-versus-B execution vs pre-relocation `eb65dc6`, authenticated historical B `95efb965`, and current B `cbb51348` | Retained by `test_b_and_current_isolated_agreement`; analytical/admission-gate assertions unchanged. Historical persist names remain empty on `eb65dc6` / `95efb965`. Current B retains repaired persistence |
+| `git diff --check` | rc 0 |
+| Enrichment-sidecar | Not re-run. Prior Step 10.9 failure `test_ordinary_prepare_writes_resolution_and_keeps_revenue_per_store` remains visible; the broader suite is not claimed fully passing |
+
+Changed tracked file: `core/tests/test_normalization_candidate_admission.py` SHA-256 `0770a1d5350adf442ccd15e030e95ed922d155ddc9bb9c4c888dbaa6491c80e5` (120215).
+
+These implementation-state results do not by themselves establish success after the authenticated checkpoint; the isolated checkpoint fixture and lifecycle-strict live assertions are the coverage intended for that later state.
+
+## Preservation
+
+Completed Modeler/Director relocation, compatibility imports, public `bav` interfaces, source/extracted/reconciled inputs and ordinary documentary provenance were not rewritten. Fingerprint, treatment, authorization, once-only conversion, independent-authorization and production-loader rejection gates were not weakened. Ownership/recovery safeguards and protected documents were not disturbed.
+
+## Remaining toward Completion
+
+Classification/normalization interpretation splits, broader normalization-candidate separation, enrichment/Legacy decomposition, remaining orchestration relocation, unrelated removals, test ownership migration and final repository-wide verification remain subsequent scope. The enrichment-sidecar defect was not repaired.
+
+This lifecycle-fixture repair does not establish parent Completion or Session 10 acceptance.
+
+## Required plan change
+
+None.
