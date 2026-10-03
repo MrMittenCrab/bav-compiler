@@ -6,15 +6,15 @@ The analytical scope is **non-financial** operating companies. Hong Kong company
 
 ## Architecture
 
-BAV Compiler has five active components. Visible packages exist; this Session is a structural migration, so ownership and locations are only partly relocated.
+BAV Compiler has five active components. Implementation lives under `director/`, `extractor/`, `modeler/`, `interpreter/`, and `composer/`. Retained `core` modules are compatibility façades for public `bav` and historical imports.
 
-- **Director** — architecture, orchestration, contracts, and high-level specifications under `director/docs/`, including `director/docs/STYLE.md` and `director/docs/DRIVER.md`.
+- **Director** — architecture, orchestration, contracts, company CLI routing, and high-level specifications under `director/docs/`, including `director/docs/STYLE.md` and `director/docs/DRIVER.md`.
 - **Extractor** — source-faithful filing JSON contracts and loaders. This repository does not extract statements from PDF.
-- **Modeler** — reproducible calculations, workbook construction, and mechanical validity. Revenue-driver observations, reported-margin series, and identity validity live under `modeler/`; most other implementation still lives under `core/` pending later relocation.
-- **Interpreter** — judgments about economic meaning. Revenue-driver verdicts, reported-margin claim typology, and historical-strategy selection live under `interpreter/`. Broader `drivers.py` / `selection.py` splits remain subsequent work.
-- **Composer** — publication, argument structure, and figure presentation. Research styling, Word/PDF generation, publication verification, Driver wording, and Overview opening live under `composer/`.
+- **Modeler** — reproducible calculations, workbook construction, mechanical validity, revenue-driver observations, reported-margin series, identity validity, and Driver numerical assembly.
+- **Interpreter** — judgments about economic meaning, including revenue-driver verdicts, reported-margin claim typology, classification/normalization rationale ownership, and Driver selection gates.
+- **Composer** — publication, argument structure, figure presentation, research styling, Word/PDF generation, Driver wording, and Overview opening.
 
-**Legacy** holds useful prior functionality outside the active architecture, including optional Trainer derivation. Active BAV build and publication must not depend on Legacy as a hidden implementation layer.
+**Legacy** holds useful prior functionality outside the active architecture, including optional Trainer derivation, historical HK/Excel ingest, coverage-skill assets, and SHA-bound verifiers. Active BAV build and publication must not depend on it as a hidden implementation layer.
 
 `director/docs/STYLE.md` is the single authority for human-facing presentation and language. Do not copy that specification here.
 
@@ -169,7 +169,7 @@ No automatic HKEX/SEC scraping in this product.
 
 Next:
 
-- Complete the structural migration: remaining component relocation, the broader Drivers/selection split, Trainer inversion, justified removals, and representative Lululemon / Fast Retailing build, check, and publication verification.
+- Final representative Session verification of the migrated architecture (Lululemon / Fast Retailing build, check, and publication). This README does not claim that Session verification is complete.
 
 Later (deferred product capabilities):
 

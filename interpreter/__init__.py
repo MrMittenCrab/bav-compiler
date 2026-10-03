@@ -1,1 +1,1 @@
-"""Interpreter package root (judgment modules relocate in later steps)."""
+"""Interpreter package root — economic judgments, verdicts, and selection gates."""

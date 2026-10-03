@@ -1,8 +1,8 @@
-"""BAV Excel Trainer core — Hong Kong edition.
+"""Compatibility package for BAV Compiler.
 
-Application core for data ingestion, reference-model building, and training
-workbook generation. Adapter-based so HKEX/SEC/SGX sources can be added later
-without changing the trainer or BAV engine layers.
+Canonical implementation lives under director, extractor, modeler, interpreter,
+composer, and legacy. This package preserves historical `core` imports and the
+`python -m core` alias. The public interface remains `python -m bav`.
 """
 
 __version__ = "0.1.0"

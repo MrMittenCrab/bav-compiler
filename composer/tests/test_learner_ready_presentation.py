@@ -1,0 +1,400 @@
+"""Step 9I.1 — learner-ready BAV presentation (style / schedule wording)."""
+
+from __future__ import annotations
+
+import json
+
+import re
+
+import shutil
+
+from pathlib import Path
+
+import pytest
+
+from openpyxl import load_workbook
+
+from openpyxl.utils import get_column_letter
+
+from extractor.data.interface import DocumentManifest, DocumentType
+
+from modeler.workbook import JUDGMENT_SHEET, NORMALIZATION_JUDGMENT_SHEET
+
+from legacy.ingestion.manual_hk import HKManualDocumentAdapter
+
+from modeler.tests.test_per_share import DEMO_ASSUMPTIONS, DEMO_JSON
+
+from legacy.trainer.checker import check_workbook
+
+from modeler.semantic_io import load_semantic_map, parse_cell_ref
+
+from modeler.build_bav import JUDGMENT_RESPONSE_COLS, _judgment_case_rows
+
+from modeler.semantic_io import group_components_by_family
+
+from legacy.trainer.derive import build_training_workbook
+
+ROOT = Path(__file__).resolve().parents[2]
+
+ALLOWED_FILLS = {"FFFFFF", "FFFF00"}
+
+WHITE_RGBS = {"", "FFFFFF"}
+
+FORBIDDEN_README_TERMS = (
+    "bavgems",
+    "bav pipeline",
+    "gemini",
+    "gemini gems",
+    "legacy/",
+    "coverage/",
+    "sentinel",
+    "edgar pipeline",
+    "/bav-pipeline",
+    "/bav-update",
+    "/bav-news",
+    "/bav-brief",
+    "claude code plugin",
+    "hint",
+    "reveal",
+)
+
+_BAV_EXERCISE_PATTERNS = tuple(
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        r"\btrainer\b",
+        r"answer key",
+        r"\bexercise\b",
+        r"\bpractice",
+        r"formula check",
+        r"\bungraded\b",
+        r"\blearner\b",
+    )
+)
+
+def _normalize_rgb(color) -> str:
+    if color is None:
+        return ""
+    rgb = getattr(color, "rgb", None)
+    if not rgb or not isinstance(rgb, str):
+        return ""
+    return str(rgb).upper().lstrip("0")[-6:] if rgb else ""
+
+def _fill_rgb_from_fill(fill) -> str:
+    if not fill or fill.fill_type in (None, "none"):
+        return ""
+    for candidate in (
+        getattr(fill, "fgColor", None),
+        getattr(fill, "start_color", None),
+        getattr(fill, "bgColor", None),
+        getattr(fill, "end_color", None),
+    ):
+        rgb = _normalize_rgb(candidate)
+        if rgb:
+            return rgb
+    return ""
+
+def _fill_rgb(cell) -> str:
+    return _fill_rgb_from_fill(getattr(cell, "fill", None))
+
+def _rgb_is_yellow(rgb: str) -> bool:
+    from legacy.scripts.audit_fast_retailing_benchmark import (
+        _rgb_is_yellow as classify_yellow,
+    )
+
+    return classify_yellow(rgb)
+
+def _font_color_is_black(font) -> bool:
+    color = font.color
+    if color is None or color.type is None:
+        return True
+    if color.type == "rgb" and color.rgb:
+        return str(color.rgb).upper().endswith("000000")
+    if color.type == "theme":
+        # Default theme index 1 is typically black/dark text in Excel.
+        return color.theme in (0, 1)
+    return False
+
+def _cell_participates(cell) -> bool:
+    return cell.value is not None or cell.comment is not None or cell.has_style
+
+def _judgment_response_keys(wb) -> set[tuple[str, str]]:
+    keys: set[tuple[str, str]] = set()
+    for sheet in (JUDGMENT_SHEET, NORMALIZATION_JUDGMENT_SHEET):
+        if sheet not in wb.sheetnames:
+            continue
+        ws = wb[sheet]
+        for row in _judgment_case_rows(ws):
+            for col in JUDGMENT_RESPONSE_COLS:
+                keys.add((sheet, f"{get_column_letter(col)}{row}"))
+    return keys
+
+def _iter_conditional_fills(ws):
+    cf = ws.conditional_formatting
+    rules_map = getattr(cf, "_cf_rules", None)
+    if isinstance(rules_map, dict):
+        for _sqref, rules in rules_map.items():
+            for rule in rules:
+                dxf = getattr(rule, "dxf", None)
+                fill = getattr(dxf, "fill", None) if dxf is not None else None
+                if fill is not None:
+                    yield fill
+        return
+    try:
+        for cf_obj in cf:
+            rules = (
+                getattr(cf_obj, "cfRule", None)
+                or getattr(cf_obj, "rules", None)
+                or ()
+            )
+            for rule in rules:
+                dxf = getattr(rule, "dxf", None)
+                fill = getattr(dxf, "fill", None) if dxf is not None else None
+                if fill is not None:
+                    yield fill
+    except TypeError:
+        return
+
+def _assert_no_yellow_conditional_formatting(wb) -> None:
+    for ws in wb.worksheets:
+        for fill in _iter_conditional_fills(ws):
+            rgb = _fill_rgb_from_fill(fill)
+            assert not _rgb_is_yellow(rgb), (
+                f"{ws.title} conditional formatting uses yellow fill {rgb!r}"
+            )
+
+def _assert_answer_key_no_yellow(path: Path) -> None:
+    from legacy.scripts.audit_fast_retailing_benchmark import (
+        _cell_has_yellow,
+        _cell_is_white_or_none,
+        _verify_answer_key_no_yellow,
+    )
+
+    wb = load_workbook(path, data_only=False)
+    try:
+        _verify_answer_key_no_yellow(wb)
+        for ws in wb.worksheets:
+            max_row = ws.max_row or 1
+            max_col = ws.max_column or 1
+            for row in ws.iter_rows(min_row=1, max_row=max_row, min_col=1, max_col=max_col):
+                for cell in row:
+                    assert not _cell_has_yellow(cell), (
+                        f"{ws.title}!{cell.coordinate} has yellow fill"
+                    )
+                    if ws.sheet_state == "visible" and _cell_participates(cell):
+                        assert _cell_is_white_or_none(cell), (
+                            f"{ws.title}!{cell.coordinate} expected white/no-fill"
+                        )
+    finally:
+        wb.close()
+
+def _assert_fresh_visible_style(
+    path: Path,
+    *,
+    practice_cells: set[tuple[str, str]] | None = None,
+    role: str,
+) -> None:
+    if role not in {"trainer", "answer_key"}:
+        raise ValueError(f"unsupported workbook role {role!r}")
+    wb = load_workbook(path, data_only=False)
+    practice_cells = practice_cells or set()
+    learner_editable = set(practice_cells)
+    if role == "trainer":
+        learner_editable |= _judgment_response_keys(wb)
+    _assert_no_yellow_conditional_formatting(wb)
+    for ws in wb.worksheets:
+        if ws.sheet_state != "visible":
+            continue
+        max_row = ws.max_row or 1
+        max_col = ws.max_column or 1
+        for row in ws.iter_rows(min_row=1, max_row=max_row, min_col=1, max_col=max_col):
+            for cell in row:
+                if not _cell_participates(cell):
+                    continue
+                font = cell.font
+                assert font.name == "Aptos Narrow"
+                assert font.size == 11
+                assert font.bold is False
+                assert font.italic is False
+                assert font.underline in (None, "none")
+                assert _font_color_is_black(font)
+
+                for side in (
+                    cell.border.left,
+                    cell.border.right,
+                    cell.border.top,
+                    cell.border.bottom,
+                    cell.border.diagonal,
+                ):
+                    style = None if side is None else side.style
+                    assert style is None
+
+                fill = _fill_rgb(cell)
+                key = (ws.title, cell.coordinate)
+                if role == "answer_key":
+                    assert fill in WHITE_RGBS, (
+                        f"{ws.title}!{cell.coordinate} expected white/no-fill, got {fill!r}"
+                    )
+                    assert not _rgb_is_yellow(fill)
+                    continue
+                if key in learner_editable:
+                    assert fill == "FFFF00", (
+                        f"{ws.title}!{cell.coordinate} expected learner yellow, got {fill!r}"
+                    )
+                else:
+                    assert fill in WHITE_RGBS, (
+                        f"{ws.title}!{cell.coordinate} expected white/no-fill, got {fill!r}"
+                    )
+                    if fill:
+                        assert fill in ALLOWED_FILLS
+    wb.close()
+
+def _build_canonical(tmp_path):
+    data = HKManualDocumentAdapter().ingest(
+        [DocumentManifest(path=str(DEMO_JSON), doc_type=DocumentType.OTHER)]
+    )
+    assumptions = json.loads(DEMO_ASSUMPTIONS.read_text(encoding="utf-8"))
+    return build_training_workbook(
+        data,
+        tmp_path / "DEMO_HK_Trainer.xlsx",
+        assumptions,
+    )
+
+def _practice_cell_keys(answer: Path) -> set[tuple[str, str]]:
+    smap = load_semantic_map(answer)
+    return {(comp.tab, comp.cell) for comp in smap.all_ordered()}
+
+def _visible_bav_text_hits(path: Path) -> list[tuple[str, str, str]]:
+    wb = load_workbook(path, data_only=False)
+    hits: list[tuple[str, str, str]] = []
+    try:
+        for ws in wb.worksheets:
+            if ws.title.startswith("_") or ws.sheet_state != "visible":
+                continue
+            max_row = ws.max_row or 1
+            max_col = ws.max_column or 1
+            for row in ws.iter_rows(min_row=1, max_row=max_row, min_col=1, max_col=max_col):
+                for cell in row:
+                    texts = []
+                    if isinstance(cell.value, str) and cell.value.strip():
+                        texts.append(cell.value)
+                    comment = cell.comment.text if cell.comment is not None else ""
+                    if comment.strip():
+                        texts.append(comment)
+                    for text in texts:
+                        for pattern in _BAV_EXERCISE_PATTERNS:
+                            if pattern.search(text):
+                                hits.append((ws.title, cell.coordinate, text))
+                                break
+    finally:
+        wb.close()
+    return hits
+
+def assert_bav_has_no_exercise_framing(path: Path) -> None:
+    hits = _visible_bav_text_hits(path)
+    assert hits == [], (
+        "BAV still has Trainer/exercise/practice wording: "
+        + "; ".join(f"{sheet}!{coord}" for sheet, coord, _text in hits[:8])
+    )
+
+def test_fresh_visible_workbook_uses_minimal_white_yellow_style(tmp_path):
+    trainer, answer = _build_canonical(tmp_path)
+    practice = _practice_cell_keys(answer)
+    _assert_fresh_visible_style(trainer, practice_cells=practice, role="trainer")
+    _assert_fresh_visible_style(answer, practice_cells=practice, role="answer_key")
+    _assert_answer_key_no_yellow(answer)
+
+    smap = load_semantic_map(answer)
+    assert len(group_components_by_family(smap)) == 78
+    assert len(smap.all_ordered()) == 332
+    summary = check_workbook(trainer)
+    assert (summary.correct, summary.incorrect, summary.blank) == (0, 0, 332)
+
+def test_check_colors_are_functional_exception_not_base_style(tmp_path):
+    trainer, answer = _build_canonical(tmp_path)
+    smap = load_semantic_map(answer)
+    comps = [c for c in smap.all_ordered() if isinstance(c.expected_value, (int, float))]
+    assert len(comps) >= 2
+    filled, blank = comps[0], comps[1]
+
+    wb = load_workbook(trainer, data_only=False)
+    row, col = parse_cell_ref(filled.cell)
+    wb[filled.tab].cell(row=row, column=col).value = filled.formula
+    wb.save(trainer)
+    wb.close()
+
+    summary = check_workbook(trainer)
+    assert summary.correct >= 1
+    assert summary.blank >= 1
+
+    wb = load_workbook(trainer, data_only=False)
+    assert _fill_rgb(wb[filled.tab].cell(row, col)) == "C8E6C9"
+    blank_row, blank_col = parse_cell_ref(blank.cell)
+    assert wb[blank.tab].cell(blank_row, blank_col).value is None
+    assert _fill_rgb(wb[blank.tab].cell(blank_row, blank_col)) == "FFFF00"
+
+    # Non-practice visible cells remain white (sample a known label cell).
+    label = wb[filled.tab].cell(row=row, column=1)
+    if label.value is not None:
+        assert _fill_rgb(label) in {"", "FFFFFF"}
+
+    font = wb[filled.tab].cell(row, col).font
+    assert font.name == "Aptos Narrow"
+    assert font.size == 11
+    assert font.bold is False
+    for side in (
+        wb[filled.tab].cell(row, col).border.left,
+        wb[filled.tab].cell(row, col).border.right,
+        wb[filled.tab].cell(row, col).border.top,
+        wb[filled.tab].cell(row, col).border.bottom,
+    ):
+        style = None if side is None else side.style
+        assert style is None
+    wb.close()
+
+def test_catalog_notes_have_no_exercise_framing():
+    from core.engine import component_catalog as catalog_mod
+    from modeler.engine.component_catalog import ComponentFamily
+
+    families: list[ComponentFamily] = []
+    for name in dir(catalog_mod):
+        obj = getattr(catalog_mod, name)
+        if isinstance(obj, ComponentFamily):
+            families.append(obj)
+        elif (
+            isinstance(obj, tuple)
+            and obj
+            and all(isinstance(item, ComponentFamily) for item in obj)
+        ):
+            families.extend(obj)
+    assert families
+    hits = []
+    for family in families:
+        for text in (family.short_hint, *(family.hints or ())):
+            if not text:
+                continue
+            for pattern in _BAV_EXERCISE_PATTERNS:
+                if pattern.search(text):
+                    hits.append(f"{family.id}: {text}")
+                    break
+    assert hits == [], "catalog Notes still have exercise framing: " + "; ".join(hits[:8])
+
+def test_canonical_bav_schedules_have_professional_wording(tmp_path):
+    from modeler.tests.test_per_share import _share_enabled_demo
+
+    _, answer = _build_canonical(tmp_path)
+    assert_bav_has_no_exercise_framing(answer)
+
+    _trainer, share_bav = build_training_workbook(
+        _share_enabled_demo(),
+        tmp_path / "SHARE_BAV.xlsx",
+    )
+    assert_bav_has_no_exercise_framing(share_bav)
+    wb = load_workbook(share_bav, data_only=False)
+    try:
+        assert "Per Share Analysis" in wb.sheetnames
+        a2 = str(wb["Per Share Analysis"]["A2"].value)
+        assert "diluted" in a2.lower()
+        assert "share counts are supplied source inputs" in a2.lower()
+        assert "Trainer" not in wb.sheetnames
+    finally:
+        wb.close()

@@ -210,7 +210,7 @@ façades. Canonical implementations do not import those façades or Legacy.
 
 | Current files | Disposition | Callers | Verification |
 |---|---|---|---|
-| `classification.py`, `financial_math.py`, `line_resolver.py`, `period_axis.py`, `ratio_values.py`, `source_values.py`, `source_availability.py`, `historical_expected.py` | Modeler | engine, tests | matching `core/tests/test_*.py` |
+| `classification.py`, `financial_math.py`, `line_resolver.py`, `period_axis.py`, `ratio_values.py`, `source_values.py`, `source_availability.py`, `historical_expected.py` | Modeler | engine, tests | matching `modeler/tests/test_*.py` (Step 10.15; historical Git path was `core/tests/test_*.py`) |
 | `normalization.py` series arithmetic; `normalized_per_share.py` | Modeler | builder, checker | `test_normalization.py`, `test_normalized_per_share.py` |
 | `revenue_per_store.py`, `geographic_segment.py`, `operating_kpi.py`, `operating_kpi_relationships.py`, `management_kpi.py` | Modeler | research assemble, workbook | corresponding tests + `test_research_drivers.py` series |
 | `earnings_quality.py`, `earnings_quality_change.py`, `working_capital.py`, `profitability_drivers.py`, `profitability_change.py`, `roe_attribution.py`, `per_share.py`, `per_share_attribution.py`, `inventory_analysis.py`, `cash_rollforward.py`, `capex.py`, `fixed_asset.py`, `lease_liability.py`, `lease_rou.py`, `lease_repayment.py`, `deferred_tax.py`, `goodwill_intangibles.py`, `acquisition_cash.py`, `share_repurchase.py`, `ownership_attribution.py` | Modeler | engine, benchmarks | matching tests; Lulu/FR benchmarks |
@@ -231,8 +231,11 @@ Mixed inside otherwise Modeler files:
 
 ### 4.5 Tests (inherited owners)
 
-Tests are not a sixth component. Destination = owner’s `tests/` after the
-implementation move.
+Tests are not a sixth component. **Step 10.15 actual:** remaining
+homogeneous and split suites now live under the owner’s `tests/`.
+`test_normalization_candidate_admission.py` and
+`normalization_candidate_isolated_driver.py` remain at `core/tests/` as
+already decided. Shared fixture bytes stay at `core/tests/fixtures/`.
 
 | Group | Owner |
 |---|---|
@@ -242,7 +245,7 @@ implementation move.
 | `test_management_kpi_admission.py` admit/bind cases | Modeler |
 | `test_management_kpi_{enrichment,identity,reconciliation,history}.py` | Extractor/Modeler/Director enrich; Modeler identity/reconcile/history |
 | `test_operating_kpi_facts.py`, `test_geographic_segment_facts.py` load/round-trip | Extractor load + Modeler admit |
-| `test_normalization_candidate_admission.py` | Modeler construction/persistence, Director handoff, Interpreter qualifications (tests remain at `core/tests`) |
+| `test_normalization_candidate_admission.py` | Modeler construction/persistence, Director handoff, Interpreter qualifications (remain at `core/tests`; Step 10.15 preserved) |
 | `test_filing_reconciler.py`, `test_validators.py`, `test_issuer_fiscal.py`, `test_line_identity.py`, `test_line_resolver.py`, `test_classification.py`, `test_share_basis.py`, `test_historical_segment.py`, `test_source_availability.py`, `test_normalization.py` | Modeler |
 | `test_reported_margin.py` series / signs / residuals / availability / catalog / workbook formulas | Modeler (`modeler/tests/test_reported_margin.py`) |
 | `test_reported_margin.py` assessment kind/established, mix unestablished, episodic-versus-recurring, contradiction class | Interpreter (`interpreter/tests/test_reported_margin.py`) |
@@ -255,7 +258,10 @@ implementation move.
 | `test_lululemon_benchmark.py` / `test_fast_retailing_benchmark.py` `load_extracted_filing` setup | Extractor import; assertions stay Modeler |
 | `test_build_contract.py`, `test_reference_integrity.py`, `test_historical_v1_exit_gate.py`, `test_cross_company_robustness.py` | Modeler |
 | `test_build_cli.py`, `test_current_build.py` | Director |
-| `test_research_drivers.py` | split with §5 (Modeler / Interpreter / Composer) |
+| `test_research_drivers.py` style / fonts / figures / wording | Composer (`composer/tests/test_research_drivers.py`) |
+| `test_research_drivers.py` calendar / compsales / offset / CFO numerical | Modeler (`modeler/tests/test_research_drivers.py`) |
+| `test_research_drivers.py` roles-follow-evidence | Interpreter (`interpreter/tests/test_research_drivers.py`) |
+| `test_research_drivers.py` README / company handoff / reconstruction gates | Director (`director/tests/test_research_drivers.py`) |
 | `test_publication.py` | Composer |
 | `test_learner_ready_presentation.py` style / schedule wording / no-exercise-framing | Composer (`composer/tests/test_learner_ready_presentation.py`) |
 | `test_learner_ready_presentation.py` `test_root_readme_is_practical_trainer_guide` | Director (`director/tests/test_readme.py`) |
@@ -264,9 +270,14 @@ implementation move.
 | `test_lululemon_benchmark.py`, `test_fast_retailing_benchmark.py` fixture-policy assertions | Director |
 | `test_lululemon_benchmark.py`, `test_fast_retailing_benchmark.py` numerical / schedule assertions | Modeler |
 | `test_cached_workbook_verifier.py`, `test_reference_workbook_audit.py` | Legacy |
-| Fixtures `operating_kpis/lululemon_company_operated_stores.json` | Extractor-shaped fact handoff (referenced by `project_companies.json`) |
-| Fixtures `ordinary_reconcile/lululemon/*` | Modeler protected reconcile snapshot |
-| Fixtures `strategy/lululemon_management_disclosures.json` | Extractor-shaped attributed evidence |
+| Fixtures `operating_kpis/lululemon_company_operated_stores.json` | stay `core/tests/fixtures/operating_kpis/` (Step 10.15 retained; referenced by `director/project_companies.json`; Extractor-shaped fact handoff) |
+| Fixtures `ordinary_reconcile/lululemon/*` | stay `core/tests/fixtures/ordinary_reconcile/` (Step 10.15 retained; Modeler protected reconcile snapshot) |
+| Fixtures `strategy/lululemon_management_disclosures.json` | stay `core/tests/fixtures/strategy/` (Step 10.15 retained; referenced by `director/project_companies.json`; Extractor-shaped attributed evidence) |
+| `cross_company_fixtures.py` | `modeler/tests/cross_company_fixtures.py` (Step 10.15) | Modeler helper |
+| Ownership / façade suites `test_{data_ingestion,engine_trainer,modeler_calculation}_ownership.py` | `director/tests/` (Step 10.15) | Compatibility-import, façade identity, patchability |
+| `test_research_handoff.py` | `director/tests/test_research_handoff.py` (Step 10.15) | Cross-component orchestration |
+| `test_research_emphasis.py` | `interpreter/tests/test_research_emphasis.py` (Step 10.15) | Emphasis is not automatic driver status |
+| `test_drivers_numeric.py` | `modeler/tests/test_drivers_numeric.py` (Step 10.15) | Intensity growth / reconstruction assembly |
 
 ### 4.6 Scripts
 
@@ -304,7 +315,7 @@ No AWS/GCP/S3/Terraform.
 |---|---|---|---|---|
 | `TARGET.md`, `SESSION.md`, `IMPLEMENTATION.md` | stay root | Director (protected) | Controller-facing; do not move | Cursor read-only |
 | `RESULT.md` | stay root | Director (record) | Implementation evidence log | append-only |
-| `README.md` | stay root; update STYLE/DRIVER paths and BAV Compiler identity | Director | Operator + architecture | `test_learner_ready_presentation.py`, `test_research_drivers.py` |
+| `README.md` | stay root; STYLE/DRIVER paths and BAV Compiler identity (Step 10.15 actual) | Director | Operator + architecture | `director/tests/test_readme.py`, `{director,composer}/tests/test_research_drivers.py` |
 | `STYLE.md` | `director/docs/STYLE.md` | Director | Single presentation authority | §11 |
 | `DRIVER.md` | `director/docs/DRIVER.md` | Director | Company-agnostic Driver spec | §11 |
 | `docs/build-contract.md` | `director/docs/build-contract.md` | Director | `BUILD_MODULES` policy | `test_build_contract.py` |
@@ -1280,9 +1291,12 @@ Protected locations (do not move): `TARGET.md`, `SESSION.md`,
 Do not rewrite historical SHA tables in `RESULT.md`. TARGET / SESSION /
 IMPLEMENTATION already name the destinations and must not be edited by Cursor.
 
-`README.md` is still titled “BAV — Hong Kong Edition” and
-`test_learner_ready_presentation.py` asserts that heading. Updating the
-product face to BAV Compiler must change the test in the same step.
+**Step 10.15 actual.** `README.md` is titled “BAV Compiler”. Director
+`director/tests/test_readme.py` (`test_root_readme_is_practical_trainer_guide`)
+asserts that heading. STYLE/DRIVER test references now live under
+`director/tests/test_research_drivers.py` and the Composer/Modeler/Interpreter
+Drivers splits; they already use `director/docs/STYLE.md` and
+`director/docs/DRIVER.md`. Historical Git comparator paths above are unchanged.
 
 ---
 
@@ -1379,8 +1393,8 @@ Subsequent reviewed steps execute this order. This step does not execute it.
 6. Move Composer `style.py`, `document.py`, `publish.py`, Drivers prose/plots, Overview opening/navigation. **Step 10.6:** `style.py`, `document.py` and `publish.py` now live under `composer/research/`. Drivers prose/plots already live there from 10.5. **Step 10.7:** Overview opening/navigation lives in `composer/workbook_opening.py`.
 7. Move Director CLI / `current_build` / `project_companies.json` / build-contract policy. Keep `python -m bav` and company name interfaces. Director `build_company` sequences Modeler → Interpreter → Composer before workbook write. **Step 10.12:** CLI, company configuration and orchestration now live under `director/`; mechanical `build_status` lives under `modeler/`; `python -m core` remains a compatibility alias.
 8. Relocate Legacy (Trainer remainder, skills, automation, retired scripts, HK demo, historical docs/verifiers). **Step 10.7/10.11:** Trainer overlay and HK/Excel ingest already live under `legacy/trainer/` and `legacy/ingestion/`. **Step 10.13:** remaining coverage automation, skills, plugin, retired scripts, historical verifiers/docs and HK/GOOGL example assets now live under their assigned `legacy/` categories.
-9. Delete Remove items in place. Update imports, CLI routes, package docstrings, tests, README, `docs/FAST_RETAILING_BENCHMARK.md` stale paths, `source_manifest.json` if PDFs are restored. **Step 10.14:** designated Remove items above were deleted in place. Broader branding/alignment and remaining stale-path rewrites stay later work.
-10. Verify §15. Stop. No second-phase features.
+9. Delete Remove items in place. Update imports, CLI routes, package docstrings, tests, README, `docs/FAST_RETAILING_BENCHMARK.md` stale paths, `source_manifest.json` if PDFs are restored. **Step 10.14:** designated Remove items above were deleted in place. **Step 10.15:** remaining tests now live under owner `tests/`; current README, package descriptions, benchmark guidance and executable references describe five active components plus Legacy. `source_manifest.json` restore-and-bind stays later work if PDFs are restored.
+10. Verify §15. **Step 10.15 remaining:** final representative Session verification of the migrated architecture. Stop. No second-phase features. This inventory does not claim Session completion.
 
 ### Affected surfaces (must be updated in the executing steps)
 
@@ -1390,7 +1404,7 @@ Subsequent reviewed steps execute this order. This step does not execute it.
 | CLI routes | Same public commands; bodies follow new owners |
 | Package metadata | `core/__init__.py` / `bav/__init__.py` branding → BAV Compiler; no `pyproject.toml` exists |
 | Build/publish | `build/input/<slug>/` and `build/output/<slug>/` stay canonical |
-| Tests | Path updates for STYLE/DRIVER; split `test_research_drivers.py` with the modules |
+| Tests | **Step 10.15:** owner `tests/` destinations in §4.5; STYLE/DRIVER paths already updated; `test_research_drivers.py` split across Director / Modeler / Interpreter / Composer |
 | Docs | README, DRIVER↔STYLE links, FR benchmark paths |
 
 Preserve public `bav` and canonical company input/output interfaces.
@@ -1401,15 +1415,16 @@ Preserve public `bav` and canonical company input/output interfaces.
 
 This inventory step does not rebuild, publish, or run native Office.
 
-**Existing pytest (apply after moves):**
+**Existing pytest (apply after moves). Step 10.15 current destinations:**
 
-- `core/tests/test_research_drivers.py` — Drivers split, CFO, reconstruction, headings, STYLE/DRIVER paths
-- `core/tests/test_publication.py`, `test_current_build.py`, `test_build_cli.py`, `test_build_contract.py`
-- `core/tests/test_reported_margin.py`, `test_revenue_driver.py` — after the §7.0 / §7.4 split, keep residual, missing-versus-zero, sign, fiscal, provenance, kind/flag and current wording assertions; do not treat collection assembly as a second producer
-- Filing / KPI / geo admission and reconcile suites
-- Analytical family suites listed in §4.5
-- `test_lululemon_benchmark.py`, `test_fast_retailing_benchmark.py`
-- `test_trainer.py`, `test_learner_ready_presentation.py` for optional Trainer
+- `{director,modeler,interpreter,composer}/tests/test_research_drivers.py` — Drivers split, CFO, reconstruction, headings, STYLE/DRIVER paths
+- `composer/tests/test_publication.py`, `director/tests/test_current_build.py`, `director/tests/test_build_cli.py`, `modeler/tests/test_build_contract.py`
+- `{modeler,interpreter,composer}/tests/test_reported_margin.py`, `director/tests/test_reported_margin_handoff.py`, `{modeler,interpreter,composer,director}/tests/test_revenue_driver.py` — after the §7.0 / §7.4 split, keep residual, missing-versus-zero, sign, fiscal, provenance, kind/flag and current wording assertions; do not treat collection assembly as a second producer
+- Filing / KPI / geo admission and reconcile suites under Extractor / Director / Modeler `tests/`
+- Analytical family suites listed in §4.5 under `modeler/tests/`
+- `director/tests/test_*_benchmark_policy.py`, `modeler/tests/test_*_benchmark.py`
+- `legacy/tests/test_trainer.py`, `{composer,legacy}/tests/test_learner_ready_presentation.py`, `director/tests/test_readme.py` for optional Trainer / README identity
+- Stay at `core/tests/`: `test_normalization_candidate_admission.py`
 
 **Representative company paths**
 
@@ -1464,7 +1479,7 @@ Do not expand this inventory correction into runtime repairs.
 10. **`_append_traced_spsf_occurrences`** can write KPI rows from PDF regexes into working copies. Off the canonical `extracted/` / `build` path. Legacy binder, not a reason to build Extractor.
 11. **Three “validator” names.** `schema.validate_standardized` = Director unused contract; `data.validators` = Modeler checksums; `filing_validator.bind_source_file` = Extractor; `validate_operating_kpi_fact` = Modeler admission. Shared name only.
 12. **Source PDFs are absent locally and not tracked at B.** Canonical destination is `build/input/<company>/source/`. `source_manifest.json` still cites `benchmark/fast_retailing/source/`. Restore-and-bind is later work; do not invent PDFs.
-13. **`README.md` “BAV — Hong Kong Edition”** is asserted by `test_root_readme_is_practical_trainer_guide`. Product-face rename must update that Director test together.
+13. **`README.md` “BAV — Hong Kong Edition”** — **Step 10.15 actual:** root README is titled “BAV Compiler”; Director `test_readme.py` asserts that heading. Historical RESULT records that mention the old title were not rewritten.
 14. **`latest-implementation` leftover** names `312cb8a…`. Ignored because `IMPLEMENT_BASE_SHA` is populated.
 
 Resolved in this correction (no longer ownership blockers):

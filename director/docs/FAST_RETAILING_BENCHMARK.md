@@ -2,7 +2,7 @@
 
 ## Role
 
-Fast Retailing Co., Ltd. is the canonical **real-company historical benchmark** for Step 9. It is used to test whether the Trainer works on audited disclosures from an actual HK-listed non-financial company rather than only on the illustrative DEMO and synthetic robustness fixtures.
+Fast Retailing Co., Ltd. is the canonical **real-company historical benchmark** for Step 9. BAV Compiler uses it to verify company build, check, and optional Trainer derivation against audited disclosures from an actual HK-listed non-financial company rather than only on the illustrative DEMO and synthetic robustness fixtures.
 
 The synthetic DEMO and services/retail/manufacturer fixtures remain necessary for unit tests and deliberately constructed edge cases. They are not replaced by this benchmark.
 

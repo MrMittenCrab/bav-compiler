@@ -1,1 +1,1 @@
-"""Modeler package root — workbook construction, mechanical build status and checking."""
+"""Modeler package root — calculations, workbook construction, and mechanical validity."""

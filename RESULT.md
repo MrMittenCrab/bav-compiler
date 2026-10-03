@@ -1,3 +1,101 @@
+# RESULT.md — Step 10.15 Align tests and current documentation with canonical ownership
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.15 — Align tests and current documentation with canonical ownership
+**Work:** `97863636032d4cc68fa5872fcc3f895d`
+**Plan:** `739d224b4bfb41dd89fdfef8787451cd`
+**Finding:** Align tests and current documentation with canonical ownership
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. Controller files under `.git/autocycle` were read-only except as inspected. Protected fixture bytes and `director/project_companies.json` fixture paths were not rewritten. No test-infrastructure, production-algorithm, workbook or publication-presentation redesign. AutoCycle patches were not applied. Documentation does not claim Session completion.
+
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `e45725f207ce472c29f4fe0fbdc8a03fbc5f7b0bc96157b3eb5512dd57de83f7` (5100).
+
+This bounded attempt relocates remaining tests to owner `tests/` and aligns current documentation, branding and executable references. It does not close parent Completion and does not establish Session 10 acceptance.
+
+## Baseline authentication
+
+Continuation execution baseline resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state` and authenticated as a Git commit. `implementation-baseline.json` head matched that SHA. Leftover `latest-implementation` HEAD was not substituted.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / `10.15` allocated source | `550321b8e684af18704e3189e594593a7d87fcf8` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD (`git rev-parse HEAD` = `550321b8…`); identity ancestor |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` work / plan | work `97863636032d4cc68fa5872fcc3f895d`, plan `739d224b4bfb41dd89fdfef8787451cd`, step `10.15` |
+| `work-state` allocated `10.15` | source = B, work_id = `97863636032d4cc68fa5872fcc3f895d`, status `opened` |
+| `admitted_review` predecessor | `review_sha256` `e9ee6c54f0cf3700cb47bd483ab6f5fc2a2147e1403842fe0264c93c9553a82c` |
+| `latest-implementation` leftover HEAD | `c2ca80d108351a0c4babe168885858636fc30987` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Fail-closed | Not required |
+
+Admission `WORK_ID` in `core/tests/test_normalization_candidate_admission.py` was rebound from the prior work `01a325c7ed794dcbbcc0167a74c9d572` to this live work `97863636032d4cc68fa5872fcc3f895d`. Historical reviewed attempt/checkpoint/B/plan comparators were not changed.
+
+## Test ownership
+
+Homogeneous suites were `git mv` from `core/tests/` to the owning component `tests/`. Mixed modules were split by asserted responsibility. Orchestration / cross-component cases live under Director. Same-basename splits use empty owner `tests/__init__.py` so pytest prepends distinct packages. Shared fixture bytes stay at `core/tests/fixtures/`. `test_normalization_candidate_admission.py` and `normalization_candidate_isolated_driver.py` remain at `core/tests/`. Isolated ERA=`b` still imports historical `core.data` / `core.ingestion` modules from materialized COMPARISON_B. Behavior tests use canonical owners; ownership / public-CLI / façade-identity coverage retains `core.*` and `core.__main__`.
+
+| Former `core/tests/` module | Step 10.15 destinations |
+|---|---|
+| Analytical family `test_{earnings_quality*,working_capital,profitability_*,roe_attribution,per_share*,normalized_per_share,fixed_asset,lease_*,deferred_tax,goodwill_intangibles,capex,inventory_analysis,acquisition_cash,cash_rollforward,share_repurchase,ownership_attribution,operating_forecast,classification,normalization,line_*,share_basis,source_availability,historical_segment,validators,filing_reconciler,issuer_fiscal,build_contract,reference_integrity,historical_v1_exit_gate,cross_company_robustness,operating_kpi_*,management_kpi_{identity,history,reconciliation,analysis},revenue_per_store,geographic_segment_{analysis,workbook},drivers_numeric}.py` | `modeler/tests/` |
+| `test_filing_json.py` | `extractor/tests/` |
+| `test_build_cli.py`, `test_filing_cli.py`, `test_current_build.py`, ownership suites, `test_research_handoff.py` | `director/tests/` |
+| `test_publication.py` | `composer/tests/` |
+| `test_trainer.py`, `test_cached_workbook_verifier.py`, `test_reference_workbook_audit.py` | `legacy/tests/` |
+| `test_research_emphasis.py` | `interpreter/tests/` |
+| `test_reported_margin.py` | `modeler/` series; `interpreter/` kind/established; `composer/` wording; `director/tests/test_reported_margin_handoff.py` |
+| `test_revenue_driver.py` | `modeler/` catalog/numeric; `interpreter/` verdicts; `composer/` wording; `director/` orchestration |
+| `test_research_drivers.py` | Composer style/figures; Modeler numerical/CFO; Interpreter roles; Director README/handoff |
+| `test_management_kpi_admission.py`, `test_operating_kpi_facts.py`, `test_geographic_segment_facts.py`, `test_management_kpi_enrichment.py` | Extractor / Director / Modeler splits |
+| `test_lululemon_benchmark.py`, `test_fast_retailing_benchmark.py` | Director `*_benchmark_policy.py` + Modeler numerical |
+| `test_learner_ready_presentation.py` | Composer style/wording; Director `test_readme.py`; Legacy committed pair |
+| `test_normalization_candidate_admission.py` | stay `core/tests/` |
+
+Retained shared fixtures (bytes match B):
+
+| Path | SHA-256 / size |
+|---|---|
+| `core/tests/fixtures/operating_kpis/lululemon_company_operated_stores.json` | `7a7fca2965ea89bfc897a444676ecd0879bc120cd1ae24cb74270cae19c6ff3d` (3125) |
+| `core/tests/fixtures/strategy/lululemon_management_disclosures.json` | `50911486aa73593e1494cc509099f06057b698fa4530ea0f176e7e2e02b007b9` (5954) |
+| `core/tests/fixtures/ordinary_reconcile/lululemon/standardized.json` | `a3568c29e883c8ba…` (25011) |
+| `core/tests/fixtures/ordinary_reconcile/lululemon/provenance.json` | `6799371215e02c88…` (699438) |
+| `core/tests/fixtures/ordinary_reconcile/lululemon/conflicts.json` | `d8a33012f6ea7312…` (4718) |
+| `core/tests/fixtures/ordinary_reconcile/lululemon_assumptions.json` | `73fbb33f222a9788…` (69) |
+
+`director/project_companies.json` still references the operating-KPI and strategy fixture paths above.
+
+## Current documentation
+
+- `README.md` architecture now describes five active components plus retained Legacy. Planned names final representative Session verification and does not claim Session completion. Heading is `# BAV Compiler`; Director `test_readme.py` asserts it.
+- Package one-liners: `core` compatibility façade; `bav`, `director`, `extractor`, `modeler`, `interpreter`, `composer` describe current owners. Public `python -m bav` and `requirements-trainer.txt` are unchanged.
+- `director/docs/FAST_RETAILING_BENCHMARK.md` Role now names BAV Compiler / optional Trainer. Historical Step 9 phase records and canonical `build/input/fast_retailing/source/` paths remain.
+- `director/docs/MIGRATION_INVENTORY.md` §§4.5, 11, 14–15 record actual test destinations and remaining Session verification. Historical RESULT records and archived docs were not rewritten.
+
+## Collection mapping
+
+`/opt/anaconda3/bin/python -m pytest --collect-only -q` on `core/tests` at start: **3548** nodeids / **72** files (`/tmp/bav-10.15-collect-before.txt`).
+
+After relocation, same interpreter on `director/tests extractor/tests modeler/tests interpreter/tests composer/tests legacy/tests core/tests`: **3548** nodeids / **93** files (`/tmp/bav-10.15-collect-after.txt`). Function-name multiset: **0 missing, 0 extra**. Pre-existing duplicate names across analytical families remain **33**. Bare-repo collect also sees `legacy/autocycle-fixes/test_cycle_stop.py` (not an owner suite; excluded from the comparison trees).
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| Resume / baseline / work-state / HEAD / ancestry | B = `550321b8…` authenticated as above |
+| Fixture bytes vs `git show B:path` | all six retained fixtures match |
+| `/opt/anaconda3/bin/python -m pytest --collect-only -q` owner `tests/` + remaining `core/tests` | **3548 collected**, 0 errors |
+| `/opt/anaconda3/bin/python -m pytest -q` relocated + ownership + CLI + build-contract + reference-integrity + publication + Trainer + Drivers/revenue/margin splits + admission/facts/enrichment + benchmarks + classification/normalization/cross-company | **1570 passed**, 5 pre-existing Swig importlib warnings, 339.52s. No skip / xfail / deselect |
+| Representative Lululemon/FR build/check/publish | **Reused** prior comparison: production algorithms, workbook architecture and publication presentation were not edited |
+| Native Office | **Not run** — no workbook formula/dependency or presentation change |
+| `git diff --check` | rc 0 |
+| `git diff --stat` vs B | 80 files, +484 / −16397 (tracked moves, splits, import/path edits, README/inventory/package docs) |
+
+## Remaining toward Completion
+
+Final representative Session verification of the migrated architecture (Lululemon / Fast Retailing build, check, and publication) remains subsequent scope. This record does not certify a prospective next ID and does not claim Session completion.
+
+`source_manifest.json` restore-and-bind remains later work if source PDFs are restored. Inventory §16 behavior defects 1–12 are unchanged product/runtime items, not unfinished test ownership.
+
 # RESULT.md — Step 10.14 Execute inventory-designated Remove dispositions
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
