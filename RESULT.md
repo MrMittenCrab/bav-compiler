@@ -1,3 +1,222 @@
+# RESULT.md — Step 10.16 Verify representative company behavior and migration acceptance
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.16 — Verify representative company behavior and migration acceptance
+**Work:** `cda6950237df44bfb093c96a57625e6a`
+**Plan:** `fb9a605f00a6445e8d2fa4a6bd6f11fa`
+**Finding:** Verify representative company behavior and migration acceptance
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. Controller files under `.git/autocycle` were read-only except as inspected. Production algorithms, workbook architecture and publication presentation were not edited. No second-phase features, new verification infrastructure or unrelated cleanup. AutoCycle patches were not applied. This record does not claim Session completion.
+
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `cd71f77a6d597f1769248436190320213d3eaf4620edae637d697612c406e4c3` (5507).
+
+This bounded attempt verifies representative Lululemon and Fast Retailing build/check/publication under canonical ownership and records an evidence-backed disposition for every Session acceptance bullet. It does not close parent Completion and does not establish Session 10 acceptance.
+
+## Baseline authentication
+
+Continuation execution baseline resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state` and authenticated as a Git commit. `implementation-baseline.json` head matched that SHA. Leftover `latest-implementation` HEAD was not substituted. No migration-specific baseline was selected.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / `10.16` allocated source | `749fdc3231b70ecd172342a6738f1f86827504f1` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD (`git rev-parse HEAD` = `749fdc3…`); identity ancestor. Working tree was clean vs B before this attempt |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` work / plan | work `cda6950237df44bfb093c96a57625e6a`, plan `fb9a605f00a6445e8d2fa4a6bd6f11fa`, step `10.16` |
+| `work-state` allocated `10.16` | source = B, work_id = `cda6950237df44bfb093c96a57625e6a`, status `opened` |
+| Bound running attempt | `3e8a159ace964511ab40b93c942d0297`, `plan_sha` = B, phase `running` |
+| `admitted_review` predecessor | `review_sha256` `c08e261a6d3ed4fea18d4d80222b098f9c8cbdfb5bd983c729054a982caa6464`; `reviewed_head` `195300af33de276414a9769fdb576bd0b3234eac` (Step 10.15.1 checkpoint) |
+| `latest-implementation` leftover HEAD | `5a3b9e39b504518fb06d449ca2afd4925bac7709` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Fail-closed | Not required |
+
+B vs 10.15.1 checkpoint `195300af…`: only `IMPLEMENTATION.md` (+30 / −24). Production code and owner test trees are identical to the reviewed 3548-test checkpoint.
+
+## Historical blobs, destinations and provenance
+
+B already contains the five active component roots plus `legacy/` and public `bav/`. Generation and routing blobs at B are byte-identical to the 10.15.1 checkpoint and to the 10.12.1 continuation `9fba2a7da3006c0f86ae52ba1fcc0fa7cbbaaa9a` (last paired representative comparison). Working-tree files matched those B blobs (clean tree).
+
+| Path at B | SHA-256 | Bytes | Continuity |
+|---|---|---|---|
+| `director/cli.py` | `72d8552f694e7bd2fdf1021b3b8197d2f5827b49688e0dee43eaab459247f052` | 19985 | Identical to 10.12.1 current and to comparator-B `core/__main__.py` |
+| `director/current_build.py` | `1f52211745f9136a054dfb4bf8377e6270c2a6fb7d93dd4dc73c54be500be5ea` | 13295 | Identical to 10.12.1 current; comparator-B `core/current_build.py` differed only by the two lazy-import retargets already compared |
+| `director/project_companies.json` | `c0b177607784fb1e9dd1221cecb89c81eb476bd1180b082466428b84b012d6a3` | 549 | Identical across B / 10.15.1 / 10.12.1 / comparator-B `core/project_companies.json` |
+| `modeler/build_status.py` | `d189eb28964d5a2763fced644a272491bc5e48226fe222fd50d4753c60143f48` | 4733 | Identical; relocated from `core/build_status.py` |
+| `modeler/workbook.py` | `d58cbb3c9cd842d1684f8b12ce40ee7a943f735707633008c091d4240958158a` | 505837 | Identical across those commits |
+| `modeler/build_bav.py` | `fc7118f2b9ecebab0fc532ab1a419e7a13f92a4498b084c6cc9c7f97f3601d57` | 5695 | Identical to 10.12.1 current |
+| `composer/research/publish.py` | `eb24120a04cae7c1f001953414525213612ccf31acb4b5115a2b2fcf757393fd` | 3302 | Identical across those commits |
+| `composer/research/document.py` | `9e84393d46d019f52f72ad0cc75aa4305f3030e32702c9cffc226b71db2633a3` | 52712 | Identical to 10.12.1 current |
+| `composer/research/drivers.py` | `a185ee0cbe47b0ab3a2e08efc2e2622c638fd7558dafe087ca4d0b4aba54aad6` | 64805 | Identical across those commits |
+| `bav/__main__.py` | `52fd9e714dd9f2b115447a5181f2be9325a27847d31d0d4d1ac412a5400af2f8` | 136 | Director route (`from director.cli import main`) |
+| `director/docs/STYLE.md` | `4360b24bb849370a0fa48f21aa7cc83b8bf6b35c2ad9bac7e10de2829a107fc6` | 1645 | Director-owned; identical across those commits |
+| `extractor/README.md` | `f898dbeda4d6fcb4166e86f7ff4b4837efe2fba63b033591766b767776de9c63` | 256 | Source-faithful boundary; no PDF extractor |
+
+Canonical company inputs remain at `build/input/{lululemon,fast_retailing}/`. Source PDFs and reconciled `standardized.json` hashes match the 10.12.1 recorded copies. Those inputs are non-Git working evidence at their canonical destinations; this step did not relocate or delete them. `build/output/` is reproducible generated state.
+
+## Evidence-reuse justification
+
+| Evidence | Applicability | Use |
+|---|---|---|
+| Step 10.12.1 representative comparison (`RESULT.md` 10.12.1) | Generation-critical files above are byte-identical to 10.12.1 current. That comparison already found semantic identity vs comparator B except volatile archive/document metadata | Reused as the applicable recorded representative baseline for Markdown/figures/supporting JSON hashes and for the identified volatile-metadata class |
+| Reviewed 3548-test regression (Step 10.15.1) | B vs 10.15.1 checkpoint changes only `IMPLEMENTATION.md`. This step did not edit tests or production code | Reused; not rerun. Later verification is not treated as proof that the 10.15.1 gate ran |
+| 10.12.1 native Office | That step did not run native Office | Not reused; not claimed |
+
+Authenticated B equals HEAD, so a disposable `git archive` of B would regenerate the same code already executed here. Comparator-B `2d272b7f…` was not rematerialized; that would substitute a migration-specific baseline.
+
+## Company commands
+
+Interpreter: `/opt/anaconda3/bin/python` **3.13.9**. Commands ran from the repository root and wrote canonical `build/output/<slug>/`. Inputs were hashed before and after (44 files); all unchanged. No `*Trainer*` under either output tree. Raw command records: `/tmp/bav-10.16-logs/commands.json`.
+
+| Command | rc | s | Measured stdout / notes |
+|---|---|---|---|
+| `python -m bav build Lululemon` | 0 | 1.114 | `Built Lululemon` / `Output: …/build/output/lululemon/` / `BAV: Lululemon_BAV.xlsx`. Active: Condensed Financials, ALT DuPont, Earnings Quality, Working Capital Analysis, Per Share Analysis, Geographic Segment Analysis, Store Count Analysis, Comparable Sales Analysis, Sales per Square Foot Analysis, Revenue per Store Analysis, Revenue Driver Analysis. Unavailable empty. stderr empty |
+| `python -m bav check Lululemon` | 0 | 0.335 | `Checked Lululemon output: …/build/output/lululemon/Lululemon_BAV.xlsx`. stderr empty |
+| `python -m bav publish Lululemon` | 0 | 1.349 | `Published Lululemon_BAV.docx and Lululemon_BAV.pdf` with canonical Word/PDF paths. Existing `fitz` deprecation warning on stdout |
+| `python -m bav build FastRetailing` | 0 | 0.738 | `Built FastRetailing` / `Output: …/build/output/fast_retailing/` / `BAV: FastRetailing_BAV.xlsx`. Active: Condensed Financials, ALT DuPont, Earnings Quality, Working Capital Analysis, Per Share Analysis, Ownership Attribution. Unavailable families report `Source unavailable / not admitted` (same diagnostic class as 10.12.1). stderr empty |
+| `python -m bav check FastRetailing` | 0 | 0.286 | `Checked FastRetailing output: …/build/output/fast_retailing/FastRetailing_BAV.xlsx`. stderr empty |
+| `python -m bav publish FastRetailing` | 0 | 0.699 | `Published FastRetailing_BAV.docx and FastRetailing_BAV.pdf` with canonical Word/PDF paths. Existing `fitz` deprecation warning on stdout |
+
+Builds consumed canonical upstream `build/input/<slug>/` and wrote only under lowercase `build/output/{lululemon,fast_retailing}/`. Check validated the generated company outputs without path arguments and without requiring Trainer. Publish called `composer.research.document.publish_company_documents` and did not rebuild analysis or require Trainer.
+
+## Output inventories and recorded comparison
+
+Relative inventories match 10.12.1. Supporting JSON, nonempty Drivers Markdown, referenced figures and zero-byte Forecast/Valuation/Overview placeholders are **byte-identical** to the 10.12.1 recorded hashes. Pre-run generated copies were snapshotted under `/tmp/bav-10.16-prior/` for semantic binary comparison only.
+
+### Lululemon (`build/output/lululemon/`)
+
+| Relative path | Status vs 10.12.1 recorded | SHA-256 | Bytes |
+|---|---|---|---|
+| `figures/drivers/geography.png` | identical | `ad378702a11001103090b3e504af349cbf1725a31d99d4da30e44e5de4788044` | 66785 |
+| `figures/drivers/margin.png` | identical | `cfb2773f0fba25668cc20185f77d3ed019d320442b8535addef227f036d656d2` | 63338 |
+| `research/Lululemon_Drivers.md` | identical nonempty | `3fea615d44b083c6dfa7aef77d11285d3d7ec8cd86ac7aa35f55984e6f6b3ed8` | 21884 |
+| `research/Lululemon_Forecast.md` | identical zero-byte | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `research/Lululemon_Overview.md` | identical zero-byte | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `research/Lululemon_Valuation.md` | identical zero-byte | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `supporting/assumptions.json` | identical | `73fbb33f222a978828042ebde1fbbc3cd285c40efda6be5217c2cfbae1fda21a` | 69 |
+| `supporting/build_status.json` | identical | `4f6ed92633dc228f977c10426401f2606bbb328ba3e06b4cc30d46a6c295f6e9` | 2695 |
+| `supporting/component_map.json` | identical | `ff8266d44e5e6d981ff2d2c6c00ed171abe3a32f991cf8ae59fadb91e796107c` | 1202071 |
+| `supporting/rowmap.json` | identical | `afc670e79e949bd605d3a9d7155bce558edca3f7673b9d1c6567ea15fa958745` | 169892 |
+| `Lululemon_BAV.xlsx` | file hash differs (volatile metadata) | `089ee7b14f578c6c7ad364d9e9fdbe7a20cfc77cf8801b11643c0c65b3eda065` | 229736 |
+| `Lululemon_BAV.docx` | file hash differs (archive timestamps) | `974b070250aaaca4997c7aa6ab4d552dee6c991863dda95db9326fb0cdb87a13` | 163187 |
+| `Lululemon_BAV.pdf` | file hash differs (PDF metadata) | `d448ec9eda48af2b339f9c2c9695efd3e4a709dc134c85df5a3bc5d8fb290df3` | 168974 |
+
+Drivers references `../figures/drivers/margin.png` and `../figures/drivers/geography.png`; both files exist. Placeholders are empty bytes with no headings or TODOs.
+
+### FastRetailing (`build/output/fast_retailing/`)
+
+| Relative path | Status vs 10.12.1 recorded | SHA-256 | Bytes |
+|---|---|---|---|
+| `figures/drivers/margin.png` | identical | `2bcfef6c40ea3c8641c6375ce61fa082170bda62014dd902245f9f72911f5f46` | 56418 |
+| `research/FastRetailing_Drivers.md` | identical nonempty | `5b3aca6c933fe2686ceddd9efd622003af933664fd3cfb2284649e44f020cc6d` | 10320 |
+| `research/FastRetailing_Forecast.md` | identical zero-byte | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `research/FastRetailing_Overview.md` | identical zero-byte | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `research/FastRetailing_Valuation.md` | identical zero-byte | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `supporting/assumptions.json` | identical | `73fbb33f222a978828042ebde1fbbc3cd285c40efda6be5217c2cfbae1fda21a` | 69 |
+| `supporting/build_status.json` | identical | `6366dcfb1348e110be9fd7835bc1e2588b3277da4359b6df42b17e552638cf4b` | 3046 |
+| `supporting/component_map.json` | identical | `22ec286b66b77939ab92d9ea2372d5975684f16833bdadf39723e6a048746e4a` | 644555 |
+| `supporting/rowmap.json` | identical | `5e81fbc8f0f498f97831bf53ad73a04f3fce97d9bbad36ac531fdbcae27e2923` | 94533 |
+| `FastRetailing_BAV.xlsx` | file hash differs (volatile metadata) | `dc8e147a8f1817198c2304af4935d493854b29f1fb4017df8551654a840689eb` | 137904 |
+| `FastRetailing_BAV.docx` | file hash differs (archive timestamps) | `4f6d5c0aa6566f1932865a2994c30d78a956de9d5e56f254439f30c5d51030c4` | 94759 |
+| `FastRetailing_BAV.pdf` | file hash differs (PDF metadata) | `baae75ae19da0eb3124ac66ede6dcd09c87ba4451001955f6e929589bb586de3` | 82178 |
+
+Drivers reference `../figures/drivers/margin.png`; the file exists. Fast Retailing does not publish a geography figure (company-specific; not a defect). Placeholders are empty bytes.
+
+## XLSX comparison
+
+Finite ZIP + openpyxl inspection of every member against the pre-run snapshot (same generation code). Not a new verifier framework. Compare log: `/tmp/bav-10.16-logs/compare.json`.
+
+| Workbook | Members | Inventory | Archive timestamps | Payload diffs | Formulas/values | Styles | Sheets / defined names |
+|---|---|---|---|---|---|---|---|
+| Lululemon | 62 | set-equal | 62 members (current 19:14:40 vs prior 02:55:50) | `docProps/core.xml` only | 0 | 0 | equal |
+| FastRetailing | 45 | set-equal | 45 members (current 19:14:42 vs prior 02:55:56) | `docProps/core.xml` only | 0 | 0 | equal |
+
+Inspected `docProps/core.xml`: `creator=openpyxl` unchanged; `created`/`modified` are demonstrated volatile timestamps (Lululemon current `2026-10-03T11:14:40Z` vs prior `2026-10-02T18:55:51Z`; FastRetailing current `2026-10-03T11:14:42Z`/`11:14:43Z` vs prior `2026-10-02T18:55:56Z`/`18:55:57Z`). Workbook formulas, cached/stored values, styles, relationships and embedded provenance payloads were otherwise identical. FastRetailing XLSX size 137904 vs 10.12.1 recorded 137902 is zip/timestamp encoding, not an analytical difference. No formula, dependency, value, provenance or presentation XLSX difference.
+
+## Publication comparison
+
+Invocations reused `_word_member_diffs`, `_publication_diff` and `_pdf_documents_equal` from `composer/tests/test_publication.py` on current vs pre-run pairs.
+
+| Pair | `_word_member_diffs` | Word non-metadata members | `_pdf_documents_equal` | PDF layout features | Metadata |
+|---|---|---|---|---|---|
+| Lululemon DOCX/PDF | `[]` | `[]` | True | `[]` | PDF `creationDate`, `modDate`, `id`; Word core/app fields empty |
+| FastRetailing DOCX/PDF | `[]` | `[]` | True | `[]` | PDF `creationDate`, `modDate`, `id`; Word core/app fields empty |
+
+DOCX ZIP inventories matched; Lululemon 27/27 and FastRetailing 26/26 members differ only in archive timestamps (zero decompressed payload diffs). Content and layout are equal. PDF file hashes differ only in recorded volatile metadata fields. Those metadata/timestamp differences were identified and not ignored.
+
+## Required suites and regression reuse
+
+`/opt/anaconda3/bin/python -m pytest -q` on the six required files:
+
+`director/tests/test_current_build.py` `director/tests/test_build_cli.py` `director/tests/test_engine_trainer_ownership.py` `modeler/tests/test_build_contract.py` `composer/tests/test_publication.py` `legacy/tests/test_trainer.py`
+
+**179 passed**, 5 pre-existing Swig importlib warnings, 58.00s. No skip / xfail / deselect. Those suites cover public aliases, lowercase slugs, atomic failure preservation, explicit JSON/Excel routes, optional Trainer derivation/checking, ordinary company-route independence from Legacy, build contract and publication.
+
+Reviewed 3548-test result from Step 10.15.1 (`python -m pytest director/tests extractor/tests modeler/tests interpreter/tests composer/tests legacy/tests core/tests -q`: **3548 passed**, 419.83s) remains applicable: only `IMPLEMENTATION.md` changed since that checkpoint, and this step did not edit those trees. The full suite was not rerun. This later verification is not represented as proof that the 10.15.1 gate ran.
+
+## Native Office applicability
+
+Native recalculation / saved-cache and readability inspection were **not run**. Workbook formulas/dependencies and publication presentation did not change (0 formula/value/style diffs; Markdown/figures/JSON byte-identical to 10.12.1; Word payloads identical; PDF content/layout equal). Volatile archive/document metadata is identified above. No historical native receipt is treated as current proof. Office Bridge was not required. This is not a claim that an earlier native gate ran.
+
+## Session acceptance dispositions
+
+Assessed against `director/docs/MIGRATION_INVENTORY.md`, canonical implementation at B and this verification. Review adjudicates Session closure.
+
+| SESSION bullet | Disposition | Evidence |
+|---|---|---|
+| Complete responsibility inventory; mixed Driver/research decomposed | **Verified in inventory; this step confirms destinations remain current** | Inventory §§4–12 assign every meaningful responsibility one disposition by kind of decision. Driver split is §§5–7 / 7.0–7.4. Visible roots `director/` `extractor/` `modeler/` `interpreter/` `composer/` `legacy/` exist at B |
+| Director owns governance/orchestration/contracts/specs; STYLE.md relocated with references | **Verified** | CLI/company routing in `director/`; `director/docs/STYLE.md` and `DRIVER.md`; README and `director/tests/test_readme.py` / Drivers tests use those paths |
+| Extractor source-faithful boundary; Modeler calculations/workbook; Interpreter meaning; Composer expression | **Verified** | `extractor/README.md` states no PDF extraction. `cmd_build` company path uses Director → Modeler/Composer. Publish is Composer. Ownership suites passed |
+| Management emphasis is evidence, not automatic driver status; qualifications survive | **Verified (preserved behavior)** | Regenerated `Lululemon_Drivers.md` is byte-identical to 10.12.1 and still records management attribution as attributed/unresolved, not an independent principal driver. Inventory lists `interpreter/tests/test_research_emphasis.py` for the gate. Motivated reasoning was not added |
+| Legacy categories; active code independent of Legacy; obsolete Remove material gone | **Verified** | Inventory §§4.11 / 13 plus Steps 10.13–10.14 records. `test_company_routes_reject_legacy_ingestion` and `test_company_build_does_not_load_trainer_or_legacy` passed. Company outputs contain no Trainer |
+| Imports, paths, metadata, tests, docs, CLI, build/publish match ownership; branded BAV Compiler | **Verified** | `python -m bav` → Director. Canonical lowercase output paths produced. README heading `# BAV Compiler`. Tests live under owner `tests/` (10.15 / 10.15.1) |
+| Relevant tests and representative builds/checks/publications pass; optional Trainer survives; RESULT records splits/removals/verification/ambiguities | **Verified in this step** | Six required suites 179 passed; six company commands rc 0; optional Trainer remains the explicit JSON `-o` / `--workbook` route (`test_explicit_json_build_derives_trainer`, `legacy/tests/test_trainer.py`). This RESULT records the verification. Historical splits/removals remain in earlier RESULT sections |
+| No second-phase features; stop after verified migration | **Verified for this attempt** | No forecasting, valuation, Extractor, reasoning loop, stance modes, Trainer expansion or ontology work. Stop after this verification record |
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| Resume / baseline / work-state / HEAD / ancestry | B = `749fdc3…` authenticated as above |
+| Historical B blobs vs destinations / 10.12.1 / 10.15.1 | Generation/routing files identical to 10.12.1 current and 10.15.1 checkpoint |
+| Six company commands | All rc 0; canonical lowercase outputs; inputs immutable; no Trainer |
+| Inventories / JSON / Markdown / figures / placeholders | Identical to 10.12.1 recorded hashes |
+| XLSX ZIP + openpyxl formula/value/style scan | Only `docProps/core.xml` created/modified + archive timestamps |
+| `_word_member_diffs` / `_publication_diff` / `_pdf_documents_equal` | Content/layout equal; PDF metadata dates/id only |
+| Required six pytest files | **179 passed**, 5 Swig warnings, 58.00s |
+| 3548-test regression | **Reused** Step 10.15.1; dependencies still apply |
+| Native Office | **Not run** — no formula/dependency or presentation change |
+| `git diff --stat` vs B before company commands | empty (clean) |
+| `git diff --check` after documentation/RESULT updates | rc 0 |
+| Tracked diff vs B after this attempt | `RESULT.md`, `README.md`, `director/docs/MIGRATION_INVENTORY.md` only |
+
+## Preservation
+
+Source PDFs, extracted JSON, reconciled standardized/provenance/conflicts, accounting signs, issuer fiscal distinctions, precision, reconciliations, provenance payloads, residual qualifications, admission/comparison independence, fail-closed company resolution, default-off normalization admission and zero-byte research placeholders remain. Ownership/recovery, protected-document and unrelated-dirty-work safeguards were not altered. Git remains the historical authority for tracked files. No obsolete paths, duplicate legacy copies or migration receipts were created. Missing source PDFs were not invented.
+
+## Documentation updates supported by these results
+
+`director/docs/MIGRATION_INVENTORY.md` §14.10 and root `README.md` Planned now record that Step 10.16 executed representative verification. Neither file claims Session completion.
+
+## Remaining toward Completion
+
+Session 10 acceptance remains for Review. Inventory §16 deferred behavior items are unchanged and are not treated as unfinished ownership. `source_manifest.json` restore-and-bind stays later work if that obsolete citation is repaired; local canonical source PDFs already exist and were not disturbed.
+
+This bounded representative verification does not establish parent Completion or Session 10 acceptance.
+
+## Unresolved defects
+
+None observed in representative company behavior. Identified binary differences are archive timestamps and demonstrated volatile document metadata (`xlsx` `created`/`modified`; PDF `creationDate`/`modDate`/`id`).
+
+## Unresolved architectural ambiguities (deferred; not this step)
+
+Inventory §16 behavior items remain deferred: `_latest_index` vs `_latest_growth_index`, `_margin_is_material` as a non-zero test, attribution-without-question publication, disclosure-gated reconstructions, unused overlap helpers, empty `DriversView.margin_explanation`, assessments not affecting selection, unused `validate_standardized`, `cmd_build -o` Trainer compatibility, Legacy PDF regex binder, shared “validator” names, and Fast Retailing `source_manifest.json` still citing obsolete `benchmark/fast_retailing/source/`. Those are not demonstrated migration defects and were not redesigned here.
+
+## Required plan change
+
+None.
+
+---
+
 # RESULT.md — Step 10.15.1 Finish normalization-admission test ownership and executable references
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

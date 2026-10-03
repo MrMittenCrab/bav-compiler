@@ -167,9 +167,9 @@ No automatic HKEX/SEC scraping in this product.
 
 ## Planned
 
-Next:
+Session verification:
 
-- Final representative Session verification of the migrated architecture (Lululemon / Fast Retailing build, check, and publication). This README does not claim that Session verification is complete.
+- Step 10.16 executed representative Lululemon / Fast Retailing build, check, and publication under canonical ownership. Session criterion dispositions are in RESULT.md. This README does not claim Session completion.
 
 Later (deferred product capabilities):
 

@@ -1412,8 +1412,10 @@ Subsequent reviewed steps execute this order. This step does not execute it.
 9. Delete Remove items in place. Update imports, CLI routes, package docstrings, tests, README, `docs/FAST_RETAILING_BENCHMARK.md` stale paths, `source_manifest.json` if PDFs are restored. **Step 10.14:** designated Remove items above were deleted in place. **Step 10.15:** remaining tests now live under owner `tests/`; current README, package descriptions, benchmark guidance and executable references describe five active components plus Legacy. `source_manifest.json` restore-and-bind stays later work if PDFs are restored.
 10. Verify §15. **Step 10.15.1 actual:** admission tests and the isolated
     driver now live under owner `tests/` / Director test support as in §4.5.
-    **Remaining:** final representative Session verification of the migrated
-    architecture. Stop. No second-phase features. This inventory does not
+    **Step 10.16 actual:** representative Lululemon / Fast Retailing
+    `build` / `check` / `publish` ran under canonical ownership; the six
+    required suites passed; SESSION criterion dispositions are in
+    `RESULT.md`. Stop. No second-phase features. This inventory does not
     claim Session completion.
 
 ### Affected surfaces (must be updated in the executing steps)
@@ -1458,9 +1460,10 @@ python -m bav check FastRetailing
 python -m bav publish FastRetailing
 ```
 
-Local snapshot now: both companies have nonempty `*_Drivers.md`, zero-byte
-Forecast/Valuation/Overview, Word/PDF, workbook, supporting JSON. **No Trainer
-under `build/output/`**. Optional Trainer remains
+**Step 10.16 actual:** both companies were rebuilt, checked and published
+from the working repository. Nonempty `*_Drivers.md`, zero-byte
+Forecast/Valuation/Overview, Word/PDF, workbook and supporting JSON were
+regenerated. **No Trainer under `build/output/`**. Optional Trainer remains
 `python -m bav build <json> -o …` and `check` only if a Trainer file exists.
 
 **Native Office is change-dependent.** Do not treat historical receipts as
