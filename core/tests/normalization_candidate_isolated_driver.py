@@ -14,11 +14,13 @@ from pathlib import Path
 
 ERA = sys.argv[1]
 if ERA == "load_bundle":
-    from core.ingestion.normalization_candidate_admission import (
-        AdmissionProvenanceError,
+    from director.ingestion.normalization_candidate_admission import (
         load_admitted_normalization_candidate,
     )
     from modeler.data.line_identity import line_identity
+    from modeler.ingestion.normalization_candidate_admission_io import (
+        AdmissionProvenanceError,
+    )
 elif ERA == "b":
     from core.data.line_identity import line_identity
     from core.data.standardized_io import standardized_from_payload, standardized_to_payload
@@ -45,7 +47,7 @@ elif ERA == "b":
     from modeler.financial_math import AnchorMetrics, HistoricalSeries
     from modeler.period_axis import canonical_fiscal_periods
     from modeler.ratio_values import UNDEFINED_RATIO
-else:
+elif ERA == "authenticated_b":
     from modeler.data.line_identity import line_identity
     from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
     from modeler.ingestion.filing_standardizer import reconciliation_provenance_payload
@@ -61,6 +63,36 @@ else:
         TreatmentRecord,
         construct_provisional_candidate,
         run_normalization_candidate_handoff,
+    )
+    from core.model.normalization import (
+        SUPPORTED_NORMALIZATION_SCOPE,
+        compute_normalization_series,
+        normalization_cases,
+        resolve_income_statement_selector,
+    )
+    from modeler.financial_math import AnchorMetrics, HistoricalSeries
+    from modeler.period_axis import canonical_fiscal_periods
+    from modeler.ratio_values import UNDEFINED_RATIO
+else:
+    from director.data.normalization_candidate import (
+        AUTHORIZATION_SYNTHETIC,
+        AdoptionRecord,
+        TreatmentRecord,
+    )
+    from director.ingestion.normalization_candidate_admission import (
+        run_normalization_candidate_handoff,
+    )
+    from modeler.data.line_identity import line_identity
+    from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
+    from modeler.ingestion.filing_standardizer import reconciliation_provenance_payload
+    from modeler.ingestion.normalization_candidate_admission import (
+        ANALYTICAL_CONCEPT,
+        ANALYTICAL_LABEL,
+        ANALYTICAL_SELECTOR,
+        AUTHORIZED_IS_IDENTITIES,
+        CF_AUDIT_IDENTITIES,
+        LEDGER_PERIODS,
+        construct_provisional_candidate,
     )
     from core.model.normalization import (
         SUPPORTED_NORMALIZATION_SCOPE,

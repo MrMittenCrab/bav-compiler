@@ -33,7 +33,9 @@ INGEST_MOVED = (
 )
 DATA_MOVED_SET = frozenset(DATA_MOVED)
 INGEST_MOVED_SET = frozenset(INGEST_MOVED)
-DIRECTOR_INGEST = frozenset({"filing_cli", "note_handoff", "filing_validator"})
+DIRECTOR_INGEST = frozenset(
+    {"filing_cli", "note_handoff", "filing_validator", "normalization_candidate_admission"}
+)
 PRIVATE_EXPORTS = {
     "reconciler": ("_merge_line_items",),
     "management_kpi_reconciliation": ("_select_ordinary_group",),
@@ -63,6 +65,14 @@ REPRESENTATIVE = (
     ("director.ingestion.filing_cli", "load_and_validate_extracted_dir", ROOT / "director/ingestion/filing_cli.py"),
     ("director.ingestion.note_handoff", "augment_extracted_filings", ROOT / "director/ingestion/note_handoff.py"),
     ("director.ingestion.filing_validator", "validate_extracted_filing", ROOT / "director/ingestion/filing_validator.py"),
+    ("director.data.normalization_candidate", "AdoptionRecord", ROOT / "director/data/normalization_candidate.py"),
+    ("director.data.normalization_candidate", "TreatmentRecord", ROOT / "director/data/normalization_candidate.py"),
+    ("modeler.ingestion.normalization_candidate_admission", "construct_provisional_candidate", ROOT / "modeler/ingestion/normalization_candidate_admission.py"),
+    ("modeler.ingestion.normalization_candidate_admission", "evaluate_adoption", ROOT / "modeler/ingestion/normalization_candidate_admission.py"),
+    ("director.ingestion.normalization_candidate_admission", "run_normalization_candidate_handoff", ROOT / "director/ingestion/normalization_candidate_admission.py"),
+    ("director.ingestion.normalization_candidate_admission", "save_admitted_normalization_candidate", ROOT / "director/ingestion/normalization_candidate_admission.py"),
+    ("director.ingestion.normalization_candidate_admission", "load_admitted_normalization_candidate", ROOT / "director/ingestion/normalization_candidate_admission.py"),
+    ("interpreter.normalization", "grouping_established_as_source_fact", ROOT / "interpreter/normalization.py"),
 )
 FACADE_PAIRS = (
     ("modeler.data.interface", "core.data.interface", "StandardizedFinancials"),
@@ -88,6 +98,15 @@ FACADE_PAIRS = (
     ("director.ingestion.note_handoff", "core.ingestion.note_handoff", "augment_extracted_filings"),
     ("director.ingestion.filing_validator", "core.ingestion.filing_validator", "validate_extracted_filing"),
     ("modeler.ingestion.filing_validator", "core.ingestion.filing_validator", "operating_kpi_admission_issues"),
+    ("director.data.normalization_candidate", "core.ingestion.normalization_candidate_admission", "AdoptionRecord"),
+    ("director.data.normalization_candidate", "core.ingestion.normalization_candidate_admission", "TreatmentRecord"),
+    ("modeler.ingestion.normalization_candidate_admission", "core.ingestion.normalization_candidate_admission", "construct_provisional_candidate"),
+    ("modeler.ingestion.normalization_candidate_admission", "core.ingestion.normalization_candidate_admission", "evaluate_adoption"),
+    ("modeler.ingestion.normalization_candidate_admission", "core.ingestion.normalization_candidate_admission", "evaluate_treatment"),
+    ("director.ingestion.normalization_candidate_admission", "core.ingestion.normalization_candidate_admission", "run_normalization_candidate_handoff"),
+    ("director.ingestion.normalization_candidate_admission", "core.ingestion.normalization_candidate_admission", "save_admitted_normalization_candidate"),
+    ("director.ingestion.normalization_candidate_admission", "core.ingestion.normalization_candidate_admission", "load_admitted_normalization_candidate"),
+    ("director.ingestion.normalization_candidate_admission", "core.ingestion.normalization_candidate_admission", "HandoffResult"),
 )
 
 
@@ -180,6 +199,8 @@ def test_compatibility_exports_are_identity_equal():
             continue
         if facade_name == "core.data.interface":
             continue
+        if facade_name == "core.ingestion.normalization_candidate_admission":
+            continue
         for public in _public_names(canonical):
             assert getattr(facade, public) is getattr(canonical, public)
         stem = canonical_name.rsplit(".", 1)[-1]
@@ -194,6 +215,8 @@ def test_facade_and_canonical_import_orders():
         ("modeler.ingestion.reconciler", "core.ingestion.reconciler", "reconcile_financials"),
         ("director.ingestion.filing_validator", "core.ingestion.filing_validator", "validate_extracted_filing"),
         ("modeler.ingestion.filing_validator", "core.ingestion.filing_validator", "operating_kpi_admission_issues"),
+        ("director.ingestion.normalization_candidate_admission", "core.ingestion.normalization_candidate_admission", "run_normalization_candidate_handoff"),
+        ("modeler.ingestion.normalization_candidate_admission", "core.ingestion.normalization_candidate_admission", "construct_provisional_candidate"),
     )
     orders = (
         "import {facade} as facade\nimport {canonical} as canonical\n",
@@ -233,12 +256,17 @@ def test_canonical_modules_do_not_import_own_facades():
         ROOT / "director/ingestion/filing_cli.py",
         ROOT / "director/ingestion/note_handoff.py",
         ROOT / "director/ingestion/filing_validator.py",
+        ROOT / "director/data/normalization_candidate.py",
+        ROOT / "modeler/ingestion/normalization_candidate_admission.py",
+        ROOT / "director/ingestion/normalization_candidate_admission.py",
+        ROOT / "interpreter/normalization.py",
     ]
     forbidden_data = {f"core.data.{name}" for name in DATA_MOVED} | {"core.data.schema"}
     forbidden_ingest = {f"core.ingestion.{name}" for name in INGEST_MOVED} | {
         "core.ingestion.filing_cli",
         "core.ingestion.note_handoff",
         "core.ingestion.filing_validator",
+        "core.ingestion.normalization_candidate_admission",
     }
     for path in destinations:
         tree = ast.parse(path.read_text())
@@ -254,13 +282,71 @@ def test_canonical_modules_do_not_import_own_facades():
 
 
 def test_transitional_ingestion_modules_remain_in_core():
-    from core.ingestion import management_kpi_enrichment, normalization_candidate_admission
+    from core.ingestion import management_kpi_enrichment
 
     assert Path(management_kpi_enrichment.__file__).resolve() == (
         ROOT / "core/ingestion/management_kpi_enrichment.py"
     ).resolve()
-    assert Path(normalization_candidate_admission.__file__).resolve() == (
-        ROOT / "core/ingestion/normalization_candidate_admission.py"
+
+
+def test_normalization_candidate_canonical_ownership():
+    from director.data.normalization_candidate import (
+        AdoptionRecord as canonical_adoption,
+        TreatmentRecord as canonical_treatment,
+    )
+    from director.ingestion.normalization_candidate_admission import (
+        HandoffResult as canonical_handoff,
+        load_admitted_normalization_candidate as canonical_load,
+        run_normalization_candidate_handoff as canonical_run,
+        save_admitted_normalization_candidate as canonical_save,
+    )
+    from interpreter.normalization import grouping_established_as_source_fact
+    from modeler.ingestion.normalization_candidate_admission import (
+        construct_provisional_candidate as canonical_construct,
+        evaluate_adoption as canonical_evaluate_adoption,
+        evaluate_treatment as canonical_evaluate_treatment,
+    )
+    from modeler.ingestion.normalization_candidate_admission_io import (
+        AdmissionProvenanceError as canonical_error,
+    )
+    from core.ingestion.normalization_candidate_admission import (
+        AdmissionProvenanceError as facade_error,
+        AdoptionRecord as facade_adoption,
+        TreatmentRecord as facade_treatment,
+        HandoffResult as facade_handoff,
+        construct_provisional_candidate as facade_construct,
+        evaluate_adoption as facade_evaluate_adoption,
+        evaluate_treatment as facade_evaluate_treatment,
+        load_admitted_normalization_candidate as facade_load,
+        run_normalization_candidate_handoff as facade_run,
+        save_admitted_normalization_candidate as facade_save,
+        _insert_constructed_line as facade_insert,
+    )
+    from modeler.ingestion.normalization_candidate_admission import (
+        _insert_constructed_line as canonical_insert,
+    )
+
+    assert canonical_adoption is facade_adoption
+    assert canonical_treatment is facade_treatment
+    assert canonical_handoff is facade_handoff
+    assert canonical_construct is facade_construct
+    assert canonical_evaluate_adoption is facade_evaluate_adoption
+    assert canonical_evaluate_treatment is facade_evaluate_treatment
+    assert canonical_run is facade_run
+    assert canonical_save is facade_save
+    assert canonical_load is facade_load
+    assert canonical_error is facade_error
+    assert canonical_insert is facade_insert
+    assert grouping_established_as_source_fact() is False
+    assert grouping_established_as_source_fact("independently_supplied") is False
+    assert Path(canonical_construct.__code__.co_filename).resolve() == (
+        ROOT / "modeler/ingestion/normalization_candidate_admission.py"
+    ).resolve()
+    assert Path(canonical_run.__code__.co_filename).resolve() == (
+        ROOT / "director/ingestion/normalization_candidate_admission.py"
+    ).resolve()
+    assert Path(grouping_established_as_source_fact.__code__.co_filename).resolve() == (
+        ROOT / "interpreter/normalization.py"
     ).resolve()
 
 
@@ -279,6 +365,10 @@ def test_relocated_implementations_do_not_import_legacy():
         ROOT / "director/ingestion/filing_cli.py",
         ROOT / "director/ingestion/note_handoff.py",
         ROOT / "director/ingestion/filing_validator.py",
+        ROOT / "director/data/normalization_candidate.py",
+        ROOT / "modeler/ingestion/normalization_candidate_admission.py",
+        ROOT / "director/ingestion/normalization_candidate_admission.py",
+        ROOT / "interpreter/normalization.py",
     ]
     blocked = []
     for file in paths:

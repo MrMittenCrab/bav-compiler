@@ -22,24 +22,28 @@ from extractor.data.filing_validator import source_row_identity
 from modeler.data.historical_segments import SEGMENT_BRIDGE_TOLERANCE
 from modeler.data.line_identity import line_identity
 from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
-from core.ingestion.normalization_candidate_admission import (
-    ANALYTICAL_CONCEPT,
-    ANALYTICAL_LABEL,
-    ANALYTICAL_SELECTOR,
-    AUTHORIZED_IS_IDENTITIES,
+from director.data.normalization_candidate import (
     AUTHORIZATION_INDEPENDENT,
     AUTHORIZATION_SYNTHETIC,
-    CF_AUDIT_IDENTITIES,
-    LEDGER_PERIODS,
-    SIGN_TRANSFORMATION,
-    AdmissionProvenanceError,
     AdoptionRecord,
     TreatmentRecord,
-    construct_provisional_candidate,
+)
+from director.ingestion.normalization_candidate_admission import (
     load_admitted_normalization_candidate,
     run_normalization_candidate_handoff,
     save_admitted_normalization_candidate,
 )
+from modeler.ingestion.normalization_candidate_admission import (
+    ANALYTICAL_CONCEPT,
+    ANALYTICAL_LABEL,
+    ANALYTICAL_SELECTOR,
+    AUTHORIZED_IS_IDENTITIES,
+    CF_AUDIT_IDENTITIES,
+    LEDGER_PERIODS,
+    SIGN_TRANSFORMATION,
+    construct_provisional_candidate,
+)
+from modeler.ingestion.normalization_candidate_admission_io import AdmissionProvenanceError
 from modeler.financial_math import AnchorMetrics, HistoricalSeries
 from core.model.normalization import (
     SUPPORTED_NORMALIZATION_SCOPE,

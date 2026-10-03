@@ -172,8 +172,9 @@ dependencies remain on `core.model.judgment` / `core.model.normalization`.
 **Step 10.9:** data contracts and assigned ingestion modules now live under
 `modeler/data/`, `modeler/ingestion/`, `director/data/` and `director/ingestion/` with thin
 `core.data` / `core.ingestion` façades. Transitional dependencies remain on
-`core.ingestion.management_kpi_enrichment` and
-`core.ingestion.normalization_candidate_admission`.
+`core.ingestion.management_kpi_enrichment`. **Step 10.9.5:** normalization-candidate
+admission now executes from Modeler, Director and Interpreter owners, with a thin
+`core.ingestion.normalization_candidate_admission` compatibility façade.
 
 | Current files | Disposition | Callers | Verification |
 |---|---|---|---|
@@ -209,7 +210,7 @@ implementation move.
 | `test_management_kpi_admission.py` admit/bind cases | Modeler |
 | `test_management_kpi_{enrichment,identity,reconciliation,history}.py` | Legacy enrich; Modeler identity/reconcile/history |
 | `test_operating_kpi_facts.py`, `test_geographic_segment_facts.py` load/round-trip | Extractor load + Modeler admit |
-| `test_normalization_candidate_admission.py` | Modeler (provisional) |
+| `test_normalization_candidate_admission.py` | Modeler construction/persistence, Director handoff, Interpreter qualifications (tests remain at `core/tests`) |
 | `test_filing_reconciler.py`, `test_validators.py`, `test_issuer_fiscal.py`, `test_line_identity.py`, `test_line_resolver.py`, `test_classification.py`, `test_share_basis.py`, `test_historical_segment.py`, `test_source_availability.py`, `test_normalization.py` | Modeler |
 | `test_reported_margin.py` series / signs / residuals / availability / catalog / workbook formulas | Modeler (`modeler/tests/test_reported_margin.py`) |
 | `test_reported_margin.py` assessment kind/established, mix unestablished, episodic-versus-recurring, contradiction class | Interpreter (`interpreter/tests/test_reported_margin.py`) |
@@ -766,8 +767,10 @@ catalog sheet-name constants; it does not invoke Interpreter. Director
 | `management_kpi.py` admit/bind | Modeler `modeler/ingestion/management_kpi.py` | Content-aware admission of already-parsed KPI documents | `test_management_kpi_admission.py` admit |
 | `management_kpi_identity.py`, `management_kpi_reconciliation.py`, `management_kpi_history.py` | Modeler | Identity, conflict, history derivation | matching tests |
 | `operating_kpi.py` / `geographic_segment.py` selection | Modeler | Restated-vs-prior / Q4-2023 identity | fact tests |
-| `normalization_candidate_admission.py` case/series admission | Modeler `modeler/ingestion/normalization_candidate_admission.py` | Opt-in; not default reconcile | `test_normalization_candidate_admission.py` |
-| `normalization_candidate_admission.py` human treatment judgments | Interpreter `interpreter/normalization.py` | Human treatments are not facts | same tests |
+| `normalization_candidate_admission.py` provisional construction, series admission, mechanical adoption/treatment validation, line insertion, configuration, persistence | Modeler `modeler/ingestion/normalization_candidate_admission.py` plus `normalization_candidate_admission_io.py` | Opt-in; not default reconcile | `test_normalization_candidate_admission.py` |
+| `normalization_candidate_admission.py` adoption, treatment and handoff contracts | Director `director/data/normalization_candidate.py` | One definition per type; façade preserves identity | same tests |
+| `normalization_candidate_admission.py` handoff sequencing and save/load coordination | Director `director/ingestion/normalization_candidate_admission.py` | Delegates calculation and persistence to Modeler | same tests |
+| `normalization_candidate_admission.py` human treatment/grouping qualifications | Interpreter `interpreter/normalization.py` | Supplied judgments; mechanical validation does not choose them or establish them as source facts | same tests |
 | `share_basis.py` | Modeler | Restatement-factor resolution | `test_share_basis.py` |
 
 **Step 10.9 actual ownership.** Assigned admission/reconciliation modules now
@@ -778,8 +781,15 @@ execute from `modeler/ingestion/<basename>.py`. Documentary binding remains in
 orchestration lives in `director/ingestion/filing_validator.py` and preserves
 the original issue order (source bind → statement identities → per-fact page +
 KPI admission → current-period missing).
-`management_kpi_enrichment.py` and `normalization_candidate_admission.py` stay
-at `core/ingestion/` as deferred mixed modules.
+`management_kpi_enrichment.py` stays at `core/ingestion/` as a deferred mixed
+module. **Step 10.9.5 actual ownership.** Normalization-candidate admission now
+executes from `modeler/ingestion/normalization_candidate_admission.py` (construction,
+mechanical validation, persistence), `director/data/normalization_candidate.py`
+(adoption/treatment contracts), `director/ingestion/normalization_candidate_admission.py`
+(handoff sequencing and save/load coordination) and `interpreter/normalization.py`
+(supplied-decision qualifications). The retained `core.ingestion` module is a
+delegation-only compatibility façade. Canonical owners do not import that façade
+or Legacy.
 
 ### 7.3 Ingestion I/O — `load_extracted_filing` owner
 
@@ -851,13 +861,15 @@ Remaining ingestion rows:
 **Step 10.9 actual destinations.** `filing_cli.py` and `note_handoff.py` now
 execute from `director/ingestion/`. Assigned reconcile/standardize/admit modules
 execute from `modeler/ingestion/`. `excel_import.py`, `manual_hk.py`,
-`future_adapters.py`, `management_kpi_enrichment.py` and
-`normalization_candidate_admission.py` remain at `core/ingestion/` (Legacy /
-Remove / deferred mixed). Thin `core.ingestion` façades retain package
-`__all__` and explicit private imports (`reconciler._merge_line_items`,
-`management_kpi_reconciliation._select_ordinary_group`). Active admission still
-depends on `core.ingestion.management_kpi_enrichment`; enrichment is not moved
-into Legacy in this step.
+`future_adapters.py` and `management_kpi_enrichment.py` remain at
+`core/ingestion/` (Remove / deferred mixed). Thin `core.ingestion` façades retain
+package `__all__` and explicit private imports (`reconciler._merge_line_items`,
+`management_kpi_reconciliation._select_ordinary_group`, and the split
+normalization-candidate private helpers). Active KPI admission still depends on
+`core.ingestion.management_kpi_enrichment`; enrichment is not moved into Legacy
+in this step. **Step 10.9.5:** `normalization_candidate_admission.py` is no longer
+a deferred mixed module at `core/ingestion/`; that path is now the compatibility
+façade over the Modeler / Director / Interpreter owners above.
 
 Raw source provenance belongs to Extractor. Analytical transformations and
 calculation provenance belong to Modeler.
@@ -1290,7 +1302,7 @@ Subsequent reviewed steps execute this order. This step does not execute it.
 1. Create visible roots `director/`, `extractor/`, `modeler/`, `interpreter/`, `composer/`; keep `legacy/`. Add `extractor/README.md`. Move Extractor contract + `filing_json` loaders + `classify_extracted_payload` + management-KPI parse + provenance bind per §7.3 / §12.
 2. Move `STYLE.md` and `DRIVER.md` to `director/docs/` and apply §11 reference updates, including README identity if that step touches README. Protected planning docs stay.
 3. Split `revenue_driver.py`, `revenue_strategy_synthesis.py` and `reported_margin.py` per §7.0–7.1 and §7.4 (observations / identity validity / verdicts / wording). Then split `drivers.py` / `selection.py` per §5. Apply the management-emphasis removal in §9. Deduplicate reconstruction helpers. Assessment concatenation stays first-name-wins; façades may not choose judgments.
-4. Move remaining Modeler calculation modules, data payload, ingestion reconcile/standardize, engine workbook, `build_bav_workbook`, semantic I/O, check-context embed. **Step 10.8:** homogeneous calculation modules now live under `modeler/` with thin `core.model` façades; `judgment.py` and `normalization.py` stay pending Interpreter splits. Engine/Trainer inversion is already done in 10.7. **Step 10.9:** assigned data contracts and ingestion admit/reconcile/CLI helpers now live under `modeler/data/`, `modeler/ingestion/`, `director/data/schema.py` and `director/ingestion/`; enrichment and normalization-candidate admission remain transitional at `core/ingestion/`.
+4. Move remaining Modeler calculation modules, data payload, ingestion reconcile/standardize, engine workbook, `build_bav_workbook`, semantic I/O, check-context embed. **Step 10.8:** homogeneous calculation modules now live under `modeler/` with thin `core.model` façades; `judgment.py` and `normalization.py` stay pending Interpreter splits. Engine/Trainer inversion is already done in 10.7. **Step 10.9:** assigned data contracts and ingestion admit/reconcile/CLI helpers now live under `modeler/data/`, `modeler/ingestion/`, `director/data/schema.py` and `director/ingestion/`. **Step 10.9.5:** normalization-candidate admission is split to Modeler construction/persistence, Director contracts/orchestration and Interpreter qualifications; enrichment remains transitional at `core/ingestion/`.
 5. Move Interpreter judgment functions and classification/normalization rationales / strategy inference.
 6. Move Composer `style.py`, `document.py`, `publish.py`, Drivers prose/plots, Overview opening/navigation. **Step 10.6:** `style.py`, `document.py` and `publish.py` now live under `composer/research/`. Drivers prose/plots already live there from 10.5. **Step 10.7:** Overview opening/navigation lives in `composer/workbook_opening.py`.
 7. Move Director CLI / `current_build` / `project_companies.json` / build-contract policy. Keep `python -m bav` and company name interfaces. Director `build_company` sequences Modeler → Interpreter → Composer before workbook write.

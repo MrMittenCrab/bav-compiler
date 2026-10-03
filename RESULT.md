@@ -11674,3 +11674,94 @@ This lifecycle-fixture repair does not establish parent Completion or Session 10
 ## Required plan change
 
 None.
+
+---
+
+# RESULT.md — Step 10.9.5 Split normalization-candidate ownership
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.9.5 — Split normalization-candidate ownership
+**Work:** `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`
+**Plan:** `97df6f3e6a8d433081dde0b05a4492d9`
+**Finding:** Relocate data contracts and ingestion responsibilities
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. Controller files under `.git/autocycle` were read-only.
+
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `02db0015f4696fffa819fa77f6419b7f137123cb9c71470172e204b34e8fe3c9` (7840).
+
+This bounded split decomposes `core/ingestion/normalization_candidate_admission.py` by responsibility. It does not close parent Completion (remaining relocation/decomposition still open) and does not establish Session 10 acceptance.
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state` and authenticated as a Git commit. `implementation-baseline.json` head matched B. Leftover `latest-implementation` HEAD was not substituted for B.
+
+| Binding source | Value |
+|---|---|
+| `resume-state` `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD | `a6dea5230cdd82b3df70657773ede7c62d9b09c1` |
+| Branch | `checkpoint/20260913-183303` |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` work / plan | work `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`, plan `97df6f3e6a8d433081dde0b05a4492d9`, step `10.9.5` |
+| `work-state` allocated `10.9.5` | source = B, work_id = `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`, status `opened` |
+| Current implementation attempt | `d0349a6915b34e13bbaaeef0e035f7d7` (phase `running`, plan_sha = B, `checkpoint_sha` absent) |
+| Live authentication state | implementation at B (`HEAD == B`) after nonempty matching work and attempt bindings |
+| Retained pre-relocation comparator | `eb65dc63845b940162c48e39ae9af7598d2a3078` |
+| Historical 10.9.2 authenticated B | `95efb965cd896e462814459b843d9a992358c7a9` |
+| `latest-implementation` leftover HEAD | `cbb51348ecd017a886dd06a2ce9a80fa158e2cb2` (ignored: `IMPLEMENT_BASE_SHA` populated and authenticated) |
+| Fail-closed | Not required |
+
+Historical tuples remain separately bound comparators and do not authorize this live attempt. Lifecycle authentication was not extended.
+
+## Ownership split
+
+| Responsibility | Destination | Notes |
+|---|---|---|
+| Adoption / treatment contracts, authorization kinds | `director/data/normalization_candidate.py` | One definition per type |
+| Handoff sequencing, `HandoffResult`, save/load coordination | `director/ingestion/normalization_candidate_admission.py` | Same signatures, defaults, gates and failure reasons |
+| Provisional construction, mechanical adoption/treatment validation, line insertion, configuration, persist helper | `modeler/ingestion/normalization_candidate_admission.py` | Calculation-specific `PeriodConstruction`, `GateFailure`, `ConstructionResult` |
+| Admission persistence and recovered-evidence validation | `modeler/ingestion/normalization_candidate_admission_io.py` | Unchanged SHA-256 `eb34b14cae6f53c6b8e3d9390d17d3bb9a3eb6561d98c6ed4014c016a5823e4f` (30298) |
+| Supplied grouping/treatment qualifications | `interpreter/normalization.py` | `grouping_established_as_source_fact` is always false, including independent authorization; no interpretation engine |
+| Compatibility façade, including required private helpers | `core/ingestion/normalization_candidate_admission.py` | Object identity preserved; canonical owners do not import it or Legacy |
+
+B blob `core/ingestion/normalization_candidate_admission.py` SHA-256 `903ed5233bc679433c47d76fc7ffa3e03656cc3a785652d9d2812ef6399893a2` (34466). Current façade is delegation-only (1640). Semantic construction, gates and persistence match authenticated B through isolated current-versus-B comparison.
+
+Active callers use canonical owners. Isolated B comparators and `_admission_persist_names` retain deliberate `core.ingestion` imports. Fresh-process load uses Director `load_admitted_normalization_candidate`.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| B authentication (resume-state, baseline JSON, work-state 10.9.5, branch, HEAD==B, attempt `d0349a69…`) | B = `a6dea5230cdd82b3df70657773ede7c62d9b09c1`; HEAD == B; fail-closed not required |
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_normalization_candidate_admission.py core/tests/test_data_ingestion_ownership.py core/tests/test_normalization.py core/tests/test_filing_json.py` | **167 passed** in 14.63s (31 + 8 + 36 + 92). No skip / xfail / deselect |
+| Isolated current-versus-B vs pre-relocation `eb65dc6`, authenticated historical B `95efb965`, and current B `a6dea523` | Retained by `test_b_and_current_isolated_agreement`; analytical/admission-gate JSON equal. Historical persist names remain empty on `eb65dc6` / `95efb965`. Current B and live current recover the repaired persistence path |
+| Canonical vs façade identity | `AdoptionRecord`, `TreatmentRecord`, `HandoffResult`, construct/evaluate/run/save/load and `_insert_constructed_line` are identity-equal; destinations do not import the façade or Legacy |
+| Fresh-process load | Canonical Director loader; synthetic and independently authorized round trips recover all 11 observations’ original periods, hashes, rows, locators, face amounts, exact transformation and analytical values |
+| `git diff --check` | rc 0 |
+| Enrichment-sidecar | Not re-run. Prior Step 10.9 failure `test_ordinary_prepare_writes_resolution_and_keeps_revenue_per_store` remains visible; the broader suite is not claimed fully passing |
+
+Covered gates remain: absent/provisional/stale/contradictory adoption; missing/conflicting treatment; invalid source binding; missing periods; overlapping conflicts; unauthorized membership; cash-flow substitution; Studio/component exclusion; duplicate use; absent/repeated sign conversion; ambiguous selectors; repeated-admission rejection; default-off ordinary outputs; synthetic vs real-company authorization; unresolved after-tax treatment; reassigned/missing periods; false transformation metadata; provisional adoption; empty treatment; synthetic real-company acceptance; altered source hashes.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `director/data/normalization_candidate.py` | `655be01fae5afe300b53936bf17e5060626a6d0cbd4ce991768f63aba9b9eacf` | 1207 |
+| `director/ingestion/normalization_candidate_admission.py` | `fc0ca954f3fc9b515ecba6c0a26b7ae0b5efe02fa870b97bbc4ee5dff9b917a7` | 10292 |
+| `modeler/ingestion/normalization_candidate_admission.py` | `54acb97daee506d5928e61400ba6d4f0c265020ace83581aa64e3f6d355d7cad` | 26024 |
+| `modeler/ingestion/normalization_candidate_admission_io.py` | `eb34b14cae6f53c6b8e3d9390d17d3bb9a3eb6561d98c6ed4014c016a5823e4f` | 30298 |
+| `interpreter/normalization.py` | `c5125cfb12878318208e066fb8c43e05ad1f4ff1a1cf01b39553f07481d83a32` | 559 |
+| `core/ingestion/normalization_candidate_admission.py` | `63db2c7c50feb062bdf40d07e82283346a397f449041c4b09e2160634ba9279d` | 1640 |
+
+## Preservation
+
+Completed Modeler data and ingestion ownership, Director schema and orchestration ownership, Extractor documentary types/binding and historical-strategy contracts, issue ordering, compatibility façades and inventory mappings remain. Public `bav` commands, aliases, lazy loading, optional Trainer independence, dormant forecasting, accounting signs, fiscal distinctions, precision, reconciliations, provenance, residual qualifications and admission/comparison independence were not rewritten. Canonical source and extracted/reconciled inputs were not rewritten. Fingerprint recomputation, source file/hash/row/period/amount/currency/scale/locator bindings, adopted-status, required-decision, contradiction, membership, analytical identity/scope, treatment/configuration, tax and authorization gates, exact negative-face transformation, face/analytical agreement and once-only conversion remain. Admission stays default-off and outside ordinary reconciliation. Independent authorization does not establish grouping as source fact.
+
+## Remaining toward Completion
+
+Broader classification/normalization interpretation splits, enrichment/Legacy decomposition, remaining ingestion orchestration, unrelated removals, test ownership migration and final repository-wide verification remain unfinished. The enrichment-sidecar failure `test_ordinary_prepare_writes_resolution_and_keeps_revenue_per_store` remains visible and was not repaired.
+
+This bounded ownership split does not establish parent Completion or Session 10 acceptance.
+
+## Required plan change
+
+None.
