@@ -1,5 +1,5 @@
-# Step 10.9.4 — Bind baseline authentication to the actual controller attempt
-AUTOCYCLE_PLAN: {"finding_key": "Relocate data contracts and ingestion responsibilities", "kind": "work", "objective": "Bind baseline authentication to the actual controller attempt", "plan_id": "ab9f733870294d859da0cf0481edebcf", "predecessor_review_sha256": "279e8aedba489f630f86d4f4b097bb3f0174ac149d93cf263f9172f355e97b28", "step_id": "10.9.4", "work_id": "59ab4fdc9ec144ffb2c2b3f0bb8adaeb"}
+# Step 10.9.4 — Finish lifecycle-aware baseline authentication regression coverage
+AUTOCYCLE_PLAN: {"finding_key": "Relocate data contracts and ingestion responsibilities", "kind": "work", "objective": "Finish lifecycle-aware baseline authentication regression coverage", "plan_id": "3c98231171454b838b1fb791241dc6a1", "predecessor_review_sha256": "4f9ef1735102065b4d6f299aa2060b15b5accd53b9936a45e8bf0cb5b1597850", "step_id": "10.9.4", "work_id": "59ab4fdc9ec144ffb2c2b3f0bb8adaeb"}
 
 ## Completion
 
@@ -7,28 +7,28 @@ The data contracts, admission/reconciliation implementations and ingestion orche
 
 ## Bounded work
 
-Finish the current attempt’s baseline authentication repair in `core/tests/test_normalization_candidate_admission.py`. Preserve the completed production loader repairs in `modeler/ingestion/normalization_candidate_admission_io.py`.
+Finish the current authentication repair in `core/tests/test_normalization_candidate_admission.py`: correct lifecycle-dependent live assertions and copied controller fixtures so the regression succeeds during implementation and at the exact authenticated checkpoint. Preserve the completed authentication and production-loader repairs.
 
-- Resolve B from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`; otherwise use authenticated implementation-baseline, bound attempt and latest-implementation records. A SHA’s presence alone does not authenticate it. Fail closed when required ownership or baseline evidence is unavailable or inconsistent.
-- Read the actual branch’s work and implementation attempt from existing controller records. Bind work identity, attempt identity, attempt plan/baseline SHA and checkpoint SHA to the repository state. Remove the caller’s use of identical hardcoded `WORK_ID` values as proof of ownership and supply actual attempt identities.
-- Require nonempty, matching work and attempt bindings before authorizing either implementation-at-B or checkpoint execution. `HEAD == B` must not bypass ownership validation.
-- Authorize checkpoint execution only when HEAD equals the checkpoint recorded for that same work and attempt, the attempt’s baseline equals B, and Git confirms the required branch and parent/ancestry relationship.
-- Remove the direct-child fallback. Reject an unrecorded direct child of B even when the recorded checkpoint is absent or belongs to another baseline. A stale admitted review cannot substitute for the current attempt’s checkpoint binding.
-- Keep historical reviewed checkpoints and comparators separate from current authorization. The reviewed attempt `afa6820bb22e4c8da5b7fcc1a3a3c26b` binds checkpoint `fe04b6ceaec34f825e6c56c2351508ed7fc79078` to B `418f7dc23a52c925d88f9a76ab32cfc33b70e204`; do not hardcode this tuple as authorization for future attempts.
-- Use controller evidence read-only. Do not edit `.git/autocycle`, substitute HEAD as B, fabricate missing bindings or introduce recovery infrastructure.
+- Replace the live implementation-only assertion and its dependent HEAD/checkpoint assertions with strict assertions for the authenticated lifecycle. Implementation requires HEAD equal to B and the matching running attempt; checkpoint requires HEAD equal to that same attempt’s recorded checkpoint, with matching baseline, branch and Git parent/ancestry bindings. Merely accepting either state string is insufficient.
+- Derive isolated implementation and checkpoint fixtures from existing controller record shapes. Set each fixture’s plan, allocation, work, attempt, phase, baseline, checkpoint and Git state consistently; do not inherit whichever lifecycle happens to be live.
+- Repair every copied fixture that searches for a running attempt or changes only `git_head`. Select the bound attempt by identity and construct the intended lifecycle explicitly inside isolated records.
+- Exercise `_authenticate_current_repository_baseline` through its record-reading and caller path for both valid states. Keep helper coverage; it does not replace caller-path coverage.
+- Start negative cases from valid isolated fixtures, mutate observed ownership independently of expected ownership, and retain specific rejection assertions. Do not let an unrelated malformed lifecycle satisfy a rejection test.
+- Resolve B from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`; otherwise use authenticated implementation-baseline, bound attempt and latest-implementation records. Fail closed when required evidence is missing or inconsistent.
+- Require nonempty matching work and attempt identities, plan/baseline bindings and branch ownership even at `HEAD == B`. Preserve exact recorded-checkpoint authorization; never restore direct-child or stale-review authorization.
+- Read controller evidence only. Fixture changes must remain isolated; do not edit `.git/autocycle`, substitute HEAD as B, fabricate live bindings or introduce recovery infrastructure. Keep historical comparator tuples separate from live authorization.
 
 ## Verification
 
-- Cover valid bound implementation-at-B and exact recorded checkpoint states.
-- Reject absent and mismatched work IDs, attempt IDs, baseline bindings, checkpoint bindings and branches. Exercise missing identities on either side, including at `HEAD == B`.
-- Reproduce both direct-child bypasses: no recorded checkpoint, and a recorded checkpoint belonging to old B. Also reject a different child of the correct B when an exact checkpoint is recorded.
-- Exercise `_authenticate_current_repository_baseline` through its record-reading and caller path using isolated fixtures derived from existing controller record shapes; helper-only tests are insufficient. Mutate actual observed ownership independently from expected ownership without modifying controller files.
-- Retain isolated current-versus-B execution from historical Git blobs and analytical/admission-gate assertions. Preserve separately bound historical comparators, including pre-relocation `eb65dc63845b940162c48e39ae9af7598d2a3078`; allow only intended validation/persistence differences.
+- Cover missing expected and observed work/attempt identities, mismatched identities, baseline/checkpoint bindings and branches in both lifecycle fixtures where applicable.
+- Retain rejection of an unrecorded direct child, a child with a checkpoint belonging to an old B, and a different child of the correct B when an exact checkpoint is recorded.
+- Verify the live caller against actual controller bindings. Demonstrate both lifecycle paths with deterministic fixtures regardless of the live phase; label fixture evidence separately from live execution.
+- Retain isolated current-versus-B execution using historical Git blobs and analytical/admission-gate assertions, including separately bound pre-relocation comparator `eb65dc63845b940162c48e39ae9af7598d2a3078`. Allow only intended validation/persistence differences.
 - Preserve fresh-process production-loader rejection of reassigned or missing periods, false transformation metadata, provisional adoption, empty treatment, synthetic real-company acceptance and altered source hashes.
-- Retain synthetic and independently authorized round trips with all 11 observations’ original periods, hashes, rows, locators, face amounts, exact transformation and analytical values; retain input immutability and repeated-admission rejection.
+- Retain synthetic and independently authorized round trips with all 11 observations’ original periods, hashes, rows, locators, face amounts, exact transformation and analytical values; preserve input immutability and repeated-admission rejection.
 - Run `/opt/anaconda3/bin/python -m pytest -q core/tests/test_normalization_candidate_admission.py`.
-- Run `/opt/anaconda3/bin/python -m pytest -q core/tests/test_data_ingestion_ownership.py core/tests/test_normalization.py core/tests/test_filing_json.py` and `git diff --check`. Do not skip, deselect, xfail or weaken existing gates.
-- Append measured results, actual binding sources and rejection evidence to `RESULT.md`. Preserve historical records; distinguish this repair from parent Completion and Session acceptance.
+- Run `/opt/anaconda3/bin/python -m pytest -q core/tests/test_data_ingestion_ownership.py core/tests/test_normalization.py core/tests/test_filing_json.py` and `git diff --check`. Do not skip, deselect, xfail or weaken gates.
+- Append measured results, actual binding sources, lifecycle coverage and rejection evidence to `RESULT.md`. Preserve historical records. Earlier pre-checkpoint passes do not establish checkpoint-state success; distinguish this repair from parent Completion and Session acceptance.
 
 ## Preserved behavior and remaining scope
 
