@@ -1,39 +1,45 @@
-# Step 10.15.1 — Finish normalization-admission test ownership and executable references
-
-AUTOCYCLE_PLAN: {"finding_key": "Align tests and current documentation with canonical ownership", "kind": "work", "minor": 1, "objective": "Finish normalization-admission test ownership and executable references", "plan_id": "684fda603868472a89ce50dad49aa1d1", "predecessor_review_sha256": "bab919f4f81ed0e500546901b7d0617ccb3e480f00a6612ab15aaed4cd4df1ed", "step_id": "10.15.1", "work_id": "97863636032d4cc68fa5872fcc3f895d"}
+# Step 10.16 — Verify representative company behavior and migration acceptance
+AUTOCYCLE_PLAN: {"finding_key": "Verify representative company behavior and migration acceptance", "kind": "work", "objective": "Verify representative company behavior and migration acceptance", "plan_id": "fb9a605f00a6445e8d2fa4a6bd6f11fa", "predecessor_review_sha256": "c08e261a6d3ed4fea18d4d80222b098f9c8cbdfb5bd983c729054a982caa6464", "step_id": "10.16", "work_id": "cda6950237df44bfb093c96a57625e6a"}
 
 ## Completion
 
-Remaining tests reside under their canonical component owners with preserved coverage and working discovery, and current repository documentation, branding and executable references accurately describe the migrated architecture and supported interfaces.
+Representative Lululemon and Fast Retailing builds, checks and publications pass under canonical ownership with preserved useful behavior, and every Session migration acceptance criterion has an evidence-backed disposition in RESULT.md.
 
 ## Bounded work
 
-- Split `core/tests/test_normalization_candidate_admission.py` by asserted responsibility: construction, mechanical validation and persistence under `modeler/tests/`; handoff, cross-component integration, protected-artifact and baseline-authentication coverage under `director/tests/`; independently asserted interpretation qualifications under `interpreter/tests/`.
-- Relocate `core/tests/normalization_candidate_isolated_driver.py` to Director’s test support and update its callers. Keep historical comparator imports valid for their materialized Git versions; use canonical imports for current behavior.
-- Replace the behavior import from `core.model.normalization` with `modeler.normalization`. Preserve deliberate compatibility-import, façade-identity, patchability, public CLI and historical-baseline assertions.
-- Share necessary fixture/helper code without importing collected test functions into another suite. Preserve test names, parameterization, assertions, negative cases, subprocess behavior and repository-root resolution.
-- Keep protected fixture bytes and externally referenced fixture locations stable, including `core/tests/fixtures/` consumers in `director/project_companies.json`.
-- Correct `director/docs/build-contract.md`: focused checks target `modeler/tests/test_build_contract.py`; regression discovery includes `director/tests extractor/tests modeler/tests interpreter/tests composer/tests legacy/tests core/tests`.
-- Update `director/docs/MIGRATION_INVENTORY.md` §§4.5, 11 and 14–15 with actual admission-test and helper destinations, removing the active decision to retain mixed admission tests under Core.
-- Check active documentation and executable references for other paths invalidated by completed relocation; repair direct stale references. Preserve completed ownership splits, branding updates, archived documentation and historical Git comparator paths.
+- Authenticate execution baseline B from populated `IMPLEMENT_BASE_SHA`, otherwise through normal baseline and bound-attempt mechanisms. Verify branch, ancestry and checkpoint bindings; fail closed if authentication is unavailable.
+- Inspect historical Git blobs at B, current canonical destinations and provenance continuity before evaluating current behavior. Reuse completed migration evidence only where its dependencies remain applicable.
+- Run the following supported commands with the project interpreter, preserving their outputs and exit statuses:
+  - `python -m bav build Lululemon`
+  - `python -m bav check Lululemon`
+  - `python -m bav publish Lululemon`
+  - `python -m bav build FastRetailing`
+  - `python -m bav check FastRetailing`
+  - `python -m bav publish FastRetailing`
+- Verify canonical lowercase output paths, workbook and supporting artifacts, nonempty Drivers Markdown, referenced figures, Word/PDF publication and zero-byte Forecast/Valuation/Overview placeholders.
+- Establish that builds preserve canonical upstream inputs, checks validate the generated company outputs, and standalone publication preserves workbook and analytical inputs without requiring Trainer.
+- Compare current results with applicable recorded representative evidence. Where regeneration is needed, materialize authenticated B through Git and use equivalent inputs in disposable locations; do not substitute a migration-specific baseline.
+- Compare workbook formulas, dependencies, values, provenance and presentation semantically. Identify volatile archive/document metadata explicitly rather than demanding generated binary identity or ignoring unexplained differences.
+- Verify public aliases, explicit JSON/Excel routes, atomic failure preservation, optional Trainer derivation/checking and ordinary company-route independence from Legacy using existing regression coverage.
+- Assess each SESSION acceptance bullet against `director/docs/MIGRATION_INVENTORY.md`, canonical implementation and applicable verification: complete responsibility dispositions, mixed Driver decomposition, component boundaries, evidence qualifications, Legacy independence, removals, references, branding and preserved behavior.
+- Record demonstrated migration defects and unresolved architectural ambiguities for Review. Keep deferred behavior issues separate; do not redesign production behavior during this verification step.
 
-## Preservation
+## Verification
 
-Authenticate execution baseline B from populated `IMPLEMENT_BASE_SHA`, otherwise through the normal baseline and bound-attempt mechanisms. Verify branch, ancestry and checkpoint bindings; fail closed if authentication is unavailable.
+- Run `director/tests/test_current_build.py`, `director/tests/test_build_cli.py`, `director/tests/test_engine_trainer_ownership.py`, `modeler/tests/test_build_contract.py`, `composer/tests/test_publication.py` and `legacy/tests/test_trainer.py` with the project interpreter.
+- Reuse the reviewed 3548-test regression result only after checking dependency applicability; rerun affected existing suites when current evidence or changes invalidate reuse.
+- Changed workbook formulas/dependencies require native recalculation and independent saved-cache verification. Changed presentation requires relevant readability inspection. Native Office work must use Office Bridge and existing access controls.
+- Bind any reused native evidence to its actual artifact and dependencies. Later verification must not be represented as proof that an earlier gate ran.
+- Use permitted temporary/cache locations. Record access or tooling failures separately from product failures without weakening checks or claiming unavailable evidence.
 
-Compare moved or split content against Git blobs at B, preserving provenance and semantic coverage without duplicate legacy copies or migration receipts. Preserve live authentication guards and historical comparator bindings when moving their tests.
+## Preservation and recording
 
-Preserve public interfaces, explicit JSON/Excel routes, optional Trainer behavior, source immutability, accounting signs, fiscal distinctions, precision, reconciliations, residual qualifications, admission/comparison independence, fail-closed gates and zero-byte research placeholders. Normalization admission remains default-off.
+Preserve source evidence, accounting signs, fiscal distinctions, precision, reconciliations, provenance, residual qualifications, admission/comparison independence, fail-closed controls and default-off normalization admission. Preserve ownership/recovery, provider retry, human adoption, interruption, candidate validation, protected-document, unrelated-dirty-work and Review-cache safeguards.
 
-Do not redesign production algorithms, workbook architecture or publication presentation, activate deferred features, introduce test infrastructure, or modify controller authentication machinery. Preserve ownership/recovery, provider retry, human adoption, interruption, candidate validation, protected-document, unrelated-dirty-work and Review-cache safeguards.
+Git supplies tracked historical preservation; do not recreate obsolete paths, duplicate legacy copies or migration receipts. Do not invent missing source PDFs or revive stale exact-artifact requirements. Protect irreplaceable non-Git evidence through canonical continuity before any removal.
 
-## Verification and recording
+Append measured commands, artifact paths and hashes, comparison results, evidence-reuse justifications, native verification applicability and criterion-by-criterion Session assessment to `RESULT.md`. Preserve historical records and distinguish verified acceptance from unresolved requirements.
 
-- Collect the seven test trees before and after the split using the project interpreter. Map relocated node IDs and parameterized cases; establish no missing or newly duplicated coverage rather than relying on equal counts alone.
-- Run all split admission suites and isolated historical/current comparisons, plus affected normalization, ingestion ownership, compatibility, CLI, build-contract and reference-integrity regressions. Rerun publication and optional Trainer regressions where shared helpers or discovery changes affect them.
-- Execute the corrected documented focused and regression commands. Use permitted writable temporary/cache locations when needed; record infrastructure failures separately from product failures without weakening assertions or adding skips.
-- Check active documentation paths, canonical imports, helper references and fixture consumers. Run `git diff --check` and inspect the diff against authenticated B.
-- Reuse prior representative build/check/publication evidence only while dependencies remain applicable. Apply SESSION’s Office Bridge requirements if workbook formulas/dependencies or presentation change.
-- Append ownership mappings, measured collection and regression results, remaining failures and subsequent representative Session verification scope to `RESULT.md`. Preserve historical records; do not claim Session completion or certify a prospective next ID.
+Update current verification status in `director/docs/MIGRATION_INVENTORY.md` and `README.md` only as supported by results. Do not introduce second-phase features, new verification infrastructure or unrelated cleanup.
 
 Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
