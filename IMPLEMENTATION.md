@@ -1,5 +1,6 @@
-# Step 10.9 — Relocate data contracts and ingestion responsibilities
-AUTOCYCLE_PLAN: {"finding_key": "Relocate data contracts and ingestion responsibilities", "kind": "work", "objective": "Relocate data contracts and ingestion responsibilities", "plan_id": "0168b23846f641e185ae9fa4b4ef625f", "predecessor_review_sha256": "ac8fde580a8ce4845fb4f2f9d1f440221a9a8b15122edc0fe92ec24dd4419ee0", "step_id": "10.9", "work_id": "59ab4fdc9ec144ffb2c2b3f0bb8adaeb"}
+# Step 10.9.1 — Relocate data contracts and ingestion responsibilities — normalization-candidate verification repair
+
+AUTOCYCLE_PLAN: {"evidence_routes": [{"commands": [["/opt/anaconda3/bin/python", "-m", "pytest", "-q", "core/tests/test_normalization_candidate_admission.py"], ["/opt/anaconda3/bin/python", "-m", "pytest", "-q", "core/tests/test_data_ingestion_ownership.py", "core/tests/test_normalization.py", "core/tests/test_filing_json.py"]], "fact": "Normalization-candidate admission, rejection, standardized round-trip and provenance compatibility under the relocated canonical dependencies lacks completed behavioral verification."}], "finding_key": "Relocate data contracts and ingestion responsibilities", "kind": "work", "minor": 1, "objective": "Relocate data contracts and ingestion responsibilities — normalization-candidate verification repair", "plan_id": "ec5ab3a7c0864203ae074b8100804557", "predecessor_review_sha256": "405ddfe1feeed94af3212b7c533edee4ef84abcc762dfef030b65151254c3eef", "step_id": "10.9.1", "work_id": "59ab4fdc9ec144ffb2c2b3f0bb8adaeb"}
 
 ## Completion
 
@@ -7,41 +8,39 @@ The data contracts, admission/reconciliation implementations and ingestion orche
 
 ## Bounded work
 
-- Authenticate implementation baseline B from populated `IMPLEMENT_BASE_SHA`, otherwise normal baseline and attempt/checkpoint records; verify branch, ancestry and ownership bindings. Fail closed if authentication is unavailable.
-- Follow inventory §§4.3 and 7.2–7.3, preserving completed Extractor ownership and existing symbol names.
-- Relocate these `core/data/` modules to `modeler/data/`, preserving basenames: `interface.py`, `validators.py`, `standardized_io.py`, `line_identity.py`, `issuer_fiscal.py`, `historical_operating_kpis.py`, `historical_segments.py`.
-- Keep documentary types and historical-strategy contracts in `extractor/data/`. Preserve their existing compatibility exports from `core.data.interface`; update Extractor’s type-only references to canonical Modeler types.
-- Relocate `core/data/schema.py`, including `StatementKind` and `validate_standardized`, to `director/data/schema.py`; retain the existing contract despite its lack of runtime callers.
-- Relocate these `core/ingestion/` modules to `modeler/ingestion/`, preserving basenames: `base.py`, `reconciler.py`, `filing_reconciler.py`, `filing_standardizer.py`, `management_kpi.py`, `management_kpi_identity.py`, `management_kpi_reconciliation.py`, `management_kpi_history.py`, `operating_kpi.py`, `geographic_segment.py`, `share_basis.py`.
-- Relocate `filing_cli.py` and `note_handoff.py` to `director/ingestion/`.
-- Finish the existing `filing_validator.py` separation: documentary binding stays in Extractor; `operating_kpi_admission_issues` and its per-fact helper move to `modeler/ingestion/filing_validator.py`; combined `validate_extracted_filing` orchestration moves to `director/ingestion/filing_validator.py`. Preserve issue ordering, duplicate detection, source hashes and report types.
-- Retain thin compatibility façades and package exports under `core.data` and `core.ingestion`, including existing explicit private imports and `__all__` contracts. Preserve canonical object identity without duplicating implementations or adding a compatibility framework.
-- Update affected runtime consumers, lazy imports, scripts and tests to canonical owners. Update Extractor’s existing lazy metric-mapping reference without redesigning that dependency.
-- Preserve transitional dependencies on `core.ingestion.management_kpi_enrichment` and `core.ingestion.normalization_candidate_admission`. Their mixed responsibilities are deferred; do not relocate enrichment wholesale into Legacy while active admission depends on it.
-- Limit changes to relocation, the specified validator separation and necessary imports/path adjustments. Compare destinations and moved definitions with historical Git blobs at B.
-- Update directly affected documentation and `director/docs/MIGRATION_INVENTORY.md`, recording actual destinations and remaining transitional dependencies.
+Repair the normalization-candidate test fixtures and complete behavioral verification against authenticated B without repeating completed relocation.
+
+- Authenticate the continuation baseline through populated `IMPLEMENT_BASE_SHA`, otherwise normal baseline, branch, ancestry and attempt/checkpoint bindings; fail closed if unavailable. Retain `eb65dc63845b940162c48e39ae9af7598d2a3078` as the authenticated pre-relocation comparison B for checkpoint `38f5774170c577aa10eb5f03c4cbe99ed7cff789`.
+- Replace the historical `/tmp` qualification/prototype dependency in `core/tests/test_normalization_candidate_admission.py` with reproducible repository fixtures or deterministic pytest fixture construction. Use B Git blobs where available and verified canonical source/extracted evidence with normal path continuity otherwise.
+- Derive observations from source rows, preserving identities, fiscal periods, values, currency, units, source hashes and physical/printed-page provenance. Keep expected analytical results independently specified; never generate expected results from the implementation under test. Mark synthetic adoption/treatment records explicitly as test authorization.
+- Replace obsolete temporary-artifact hash assertions with checks of reproducible input binding and immutability. Missing historical temporary scripts and payloads require no reconstruction. Preserve every behavioral scenario previously prevented from executing; do not skip, deselect, xfail or weaken those checks.
+- Exercise the same reproducible cases against B and current canonical dependencies in isolated processes. Use historical Git code directly and only necessary test import/path adaptations; keep B production code unchanged. Compare admission decisions, rejection gates/reasons, signed series, selector behavior, standardized export/reload and source/transformation provenance.
+- Extend the existing test module where needed to assert provenance survives round-trip, including observation fingerprints, source hashes, locators, row identities and sign transformation. Preserve input immutability and rejection of repeated admission.
+- Limit edits to this test module and directly necessary test fixtures/helpers. If verification demonstrates a production defect, record the concrete mismatch for Review rather than expanding into architectural changes.
 
 ## Verification
 
-- Add focused ownership and compatibility regressions covering canonical definitions, retained exports/private imports, object identity and both import orders in fresh subprocesses.
-- Verify canonical implementations do not route through their own façades and normal company build/check/publish retains its independence from Legacy.
-- Run affected filing JSON/CLI/reconciliation, standardized round-trip, validators, issuer-fiscal, line-identity, share-basis, geographic/operating-KPI and management-KPI admission/identity/reconciliation/history regressions with `/opt/anaconda3/bin/python -m pytest -q`.
-- Include validator issue-order/source-binding coverage, normalization-candidate compatibility, affected Driver and calculation tests, build/current-build/CLI contracts, Engine/Trainer compatibility and both company benchmarks.
-- Compare B-derived and relocated admission, reconciliation, standardized payloads and provenance using existing fixtures, including rejection paths and deferred disagreements.
-- Run `python -m bav` build/check/publish for Lululemon and FastRetailing. Verify canonical outputs, optional Trainer separation and zero-byte research placeholders.
-- Compare representative analytical outputs, workbook formulas/dependencies and publication content with B-derived behavior. Reuse earlier evidence only where dependencies remain applicable.
-- Apply SESSION native verification when formulas/dependencies or presentation change, using Office Bridge.
-- Record the reviewed pre-existing enrichment-sidecar failure separately; do not suppress it, claim a fully passing suite or expand this relocation into its repair.
-- Run `git diff --check`. Append measured verification, relocation/split mappings, differences from B and remaining scope to `RESULT.md`.
+Normalization-candidate admission, rejection, standardized round-trip and provenance compatibility under the relocated canonical dependencies lacks completed behavioral verification.
 
-## Constraints and remaining scope
+Criterion: IMPLEMENTATION.md explicitly requires normalization-candidate compatibility and B-derived admission/rejection comparisons to establish preserved analytical behavior.
 
-Preserve signatures, return types, company aliases, public commands, lazy loading, fail-closed behavior, optional JSON dual-output Trainer derivation, all restored compatibility exports and dormant/default-off forecasting.
+- Run both command lists in `evidence_routes`. All twenty formerly blocked cases must execute their checks successfully alongside the two previously passing tests.
+- Cover absent/provisional/stale/contradictory adoption, missing or conflicting treatment, invalid source binding, missing periods, overlapping conflicts, unauthorized membership, cash-flow substitution, Studio/component exclusion, duplicate use, absent/repeated sign conversion and ambiguous selectors.
+- Verify synthetic admission remains distinct from real-company acceptance, default admission remains disabled, recurring/non-recurring pretax consequences agree with B, and unresolved after-tax treatment remains unresolved.
+- Reuse the reviewed ownership, relocation, affected-regression and company build/check/publish evidence only while its dependencies remain unchanged. Preserve outstanding B-derived comparisons; prior setup errors and filtered passes do not satisfy them.
+- Run `git diff --check`; record checkpoint whitespace advisories separately without unrelated cleanup.
+- Append exact commands, executed case counts, fixture derivation/bindings, B/current comparisons and remaining limitations to `RESULT.md`. Keep the separate enrichment-sidecar failure visible; do not claim the broader suite fully passes.
 
-Preserve canonical source evidence and paths, accounting signs, fiscal distinctions, precision, reconciliations, source and transformation provenance, admission/comparison independence, residual qualifications, filenames and sidecars. Do not rewrite local extracted/reconciled inputs for relocation verification.
+## Preserved relocation and constraints
 
-Preserve completed Driver handoffs, first-name-wins assessments, CFO classification, attribution amounts and locators, counterfactual scope, `supported_as_attribution`, `not independently verified` and `outside the accounting bridge`. Attribution appendices remain independent of principal selection; accompanying margin prose requires independently selected margin evidence.
+Completed Modeler data ownership covers `interface`, `validators`, `standardized_io`, `line_identity`, `issuer_fiscal`, `historical_operating_kpis` and `historical_segments`; Director retains `data/schema`. Documentary types and historical-strategy contracts remain in Extractor.
 
-Classification/normalization interpretation splits, normalization-candidate separation, enrichment/Legacy decomposition, remaining Director CLI/company orchestration relocation, unrelated removals, test ownership migration and final repository-wide verification remain subsequent work. Do not repair unrelated inventory §16 defects, redesign algorithms or reports, expand Trainer or implement second-phase features.
+Completed Modeler ingestion ownership covers `base`, `reconciler`, `filing_reconciler`, `filing_standardizer`, `management_kpi`, `management_kpi_identity`, `management_kpi_reconciliation`, `management_kpi_history`, `operating_kpi`, `geographic_segment`, `share_basis` and KPI validator admission. Director owns `filing_cli`, `note_handoff` and combined validation; Extractor retains documentary binding. Preserve issue ordering, façades, private exports, object identity and inventory mappings.
 
-Preserve ownership/recovery safeguards, protected documents and unrelated dirty work. Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
+Preserve signatures, public commands, aliases, lazy loading, optional Trainer independence, dormant forecasting, accounting signs, fiscal distinctions, precision, reconciliations, source/transformation provenance, residual qualifications and admission/comparison independence. Do not rewrite canonical source or extracted/reconciled inputs.
+
+Preserve completed Driver handoffs, first-name-wins assessments, CFO classification, attribution amounts/locators, counterfactual scope, `supported_as_attribution`, `not independently verified` and `outside the accounting bridge`. Attribution appendices remain independent of principal selection; margin prose requires independently selected margin evidence.
+
+Classification/normalization interpretation splits, normalization-candidate separation, enrichment/Legacy decomposition, remaining orchestration relocation, unrelated removals, test ownership migration and final repository-wide verification remain subsequent scope. Do not repair the enrichment-sidecar defect, redesign algorithms/reports, expand Trainer or implement second-phase features.
+
+Preserve ownership/recovery safeguards, protected documents, unrelated dirty work and zero-byte research placeholders. SESSION native verification remains binding if formulas/dependencies or presentation change, through Office Bridge. Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
