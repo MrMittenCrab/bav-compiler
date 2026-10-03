@@ -1,3 +1,201 @@
+# RESULT.md — Step 10.12.1 Compare representative company outputs against B
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.12.1 — Compare representative company outputs against B
+**Work:** `889f7a7b0342467caa4faf6315b52b88`
+**Plan:** `38e6f227c15b488eb6a3c8d4ff3e1793`
+**Finding:** Relocate CLI and company orchestration
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. Controller files under `.git/autocycle` were read-only. Working-repository canonical `build/output/` and `build/input/` were not written.
+
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `18ebe949b21aa8ede40ce73a96c994b7981c7cf64822f316b5dba55f744df79e` (6165).
+
+This bounded attempt materializes reviewed comparator B and the current candidate into disposable directories and compares representative Lululemon / FastRetailing build/check/publication artifacts. It does not close parent Completion and does not establish Session 10 acceptance.
+
+## Baseline authentication
+
+Continuation execution baseline resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state` and authenticated as a Git commit. `implementation-baseline.json` head matched that SHA. Leftover `latest-implementation` HEAD was not substituted for either the continuation baseline or comparator B.
+
+Reviewed-attempt comparator B is preserved separately from the continuation baseline.
+
+| Binding source | Value |
+|---|---|
+| Continuation `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / `10.12.1` allocated source | `9fba2a7da3006c0f86ae52ba1fcc0fa7cbbaaa9a` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B `2d272b7f…` → checkpoint `d3629419…` (`commit: Step 10.12`) → continuation `9fba2a7…` (fast-forward) |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` work / plan | work `889f7a7b0342467caa4faf6315b52b88`, plan `38e6f227c15b488eb6a3c8d4ff3e1793`, step `10.12.1` |
+| `work-state` allocated `10.12.1` | source = continuation baseline, work_id = `889f7a7b0342467caa4faf6315b52b88`, status `opened` |
+| Current implementation attempt | `5d03663b61594464bc4a9070428240e3` (phase `running`, plan_sha = continuation baseline, `checkpoint_sha` null) |
+| Reviewed-attempt comparator B | `2d272b7fdb4c0ab8bcabbcd50ef1efc357d181b3` |
+| Bound reviewed attempt | `1aeed994c57844349b2e9c09e53ab487` (phase `checkpointed`, plan_sha = B) |
+| Bound checkpoint | `d3629419e6120ce815841bf1a37f65f06c092152` (`admitted_review.reviewed_head`; predecessor_review_sha256 `3a5d8de4…`) |
+| `latest-implementation` leftover HEAD | `2d272b7fdb4c0ab8bcabbcd50ef1efc357d181b3` (ignored as continuation baseline; retained only as the reviewed comparator) |
+| Fail-closed | Not required |
+
+Historical tuples remain separately bound comparators and do not authorize substituting a new B.
+
+B historical blobs were inspected before current destinations:
+
+| Path at B | SHA-256 | Bytes | Current destination |
+|---|---|---|---|
+| `core/__main__.py` | `72d8552f694e7bd2fdf1021b3b8197d2f5827b49688e0dee43eaab459247f052` | 19985 | `director/cli.py` identical |
+| `core/current_build.py` | `71dc0cdbdb57ba5c743d411d5dcbb32716bbbf9bf0cd9136089a53543160d605` | 13285 | `director/current_build.py` `1f522117…` (13295); only the two lazy-import retargets |
+| `core/build_status.py` | `d189eb28964d5a2763fced644a272491bc5e48226fe222fd50d4753c60143f48` | 4733 | `modeler/build_status.py` identical |
+| `core/project_companies.json` | `c0b177607784fb1e9dd1221cecb89c81eb476bd1180b082466428b84b012d6a3` | 549 | `director/project_companies.json` identical |
+| `bav/__main__.py` | `3c002493a17cbd1833deade5d6013a59fe711e2289a55763eb5762df9b9d35f4` | 137 | `bav/__main__.py` `52fd9e71…` (136); Director route |
+
+B lacks `director/cli.py`, `director/current_build.py`, `director/project_companies.json` and `modeler/build_status.py`.
+
+## Isolated materialization
+
+`git archive` of B and of current HEAD into disposable `/tmp/bav-10.12.1-B` (425 files) and `/tmp/bav-10.12.1-current` (428 files). Working repository, canonical outputs and `.git/autocycle` were not used as generation roots.
+
+Identical copies of canonical company inputs and referenced fixtures were supplied to both trees, then re-hashed:
+
+| Source | Files | Notes |
+|---|---|---|
+| `build/input/lululemon` | 28 | source PDFs, extracted JSON, reconciled model, evidence copies |
+| `build/input/fast_retailing` | 23 | source PDFs, extracted JSON, reconciled model, evidence extracts |
+| `core/tests/fixtures/operating_kpis/lululemon_company_operated_stores.json` | 1 | SHA-256 `7a7fca2965ea89bfc897a444676ecd0879bc120cd1ae24cb74270cae19c6ff3d` (3125) |
+| `core/tests/fixtures/strategy/lululemon_management_disclosures.json` | 1 | SHA-256 `50911486aa73593e1494cc509099f06057b698fa4530ea0f176e7e2e02b007b9` (5954) |
+
+Copy inventories matched both isolated trees. After generation, repository inputs/fixtures and isolated copies were unchanged. Canonical `build/output/` (26 files) was unchanged from the pre-run snapshot.
+
+Canonical source PDFs (working-tree bytes, copied identically):
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `build/input/lululemon/source/LULU_FY2022_Annual_Report.pdf` | `b344d1e7a710259fa06f88773dee0b3827334820ce2b881fe6b95ca2ae275e4e` | 4913067 |
+| `build/input/lululemon/source/LULU_FY2023_Annual_Report.pdf` | `cd47ea251d608d06a3e58b5d782f2d41d5a231a994d2f7993267a430cb13c0f1` | 5848446 |
+| `build/input/lululemon/source/LULU_FY2024_Annual_Report.pdf` | `9268fd530db162babdd1ec4363cf388ebce57125d83b7e097aba6f98ba0ca7ec` | 5953217 |
+| `build/input/lululemon/source/LULU_FY2025_Annual_Report.pdf` | `82e00f900cc912a7d79596409594156b7779c3a193783ea8fecf87bc013c71cc` | 6590658 |
+| `build/input/lululemon/reconciled/standardized.json` | `ff557205dbea166d477dcbfd90fdaf430eb6ccafbb67ce47ed02da16c4e6938f` | 66982 |
+| `build/input/fast_retailing/source/Fastretailing_CFS2021.pdf` | `06b50e0ffbd9504953f0401613d7238fe1c66f95a280d134938570458da74798` | 635210 |
+| `build/input/fast_retailing/source/Fastretailing_CFS2022.pdf` | `9fb8d620d22bd0c679342a14ede59916207c08c6577ae96290aaa9e567593baa` | 1529815 |
+| `build/input/fast_retailing/source/Fastretailing_CFS2023.pdf` | `2fe7a85584ed77323d2ce87b3d81dacfbb5907ac7eed878bae7c1985f00116b6` | 1260313 |
+| `build/input/fast_retailing/source/Fastretailing_CFS2024.pdf` | `72f484268962546e84efc817f00c95ab993cbf8d2c7d532b5ef0e3a2cf26d1de` | 1059695 |
+| `build/input/fast_retailing/source/Fastretailing_CFS2025.pdf` | `25a85db811fbb1c6c94af50f1ac5b1fa9ffea794753a143685dcf5191d06147f` | 868396 |
+| `build/input/fast_retailing/reconciled/standardized.json` | `5a1d445c8f5013ef4045fb7f9725c6c234d4f814b04cad95856df4e5e2ff92e1` | 30952 |
+
+Same interpreter for both executions: `/opt/anaconda3/bin/python` **3.13.9**.
+
+## Company commands
+
+Each command ran from the isolated repository root. Exit codes were 0; stderr empty. Raw stdout differed only by temporary root (`/private/tmp/bav-10.12.1-B` vs `/private/tmp/bav-10.12.1-current`); temp-normalized stdout was identical.
+
+| Tree | Command | rc | s | Generated location |
+|---|---|---|---|---|
+| B | `python -m bav build Lululemon` | 0 | 1.244 | `/tmp/bav-10.12.1-B/build/output/lululemon/` |
+| B | `python -m bav check Lululemon` | 0 | 0.289 | checked `…/Lululemon_BAV.xlsx` |
+| B | `python -m bav publish Lululemon` | 0 | 1.268 | `Lululemon_BAV.docx` / `.pdf` |
+| B | `python -m bav build FastRetailing` | 0 | 0.736 | `/tmp/bav-10.12.1-B/build/output/fast_retailing/` |
+| B | `python -m bav check FastRetailing` | 0 | 0.326 | checked `…/FastRetailing_BAV.xlsx` |
+| B | `python -m bav publish FastRetailing` | 0 | 0.714 | `FastRetailing_BAV.docx` / `.pdf` |
+| current | same six commands | 0 | 1.136 / 0.300 / 0.836 / 0.778 / 0.295 / 0.659 | `/tmp/bav-10.12.1-current/build/output/<slug>/` |
+
+Check diagnostics (temp-normalized): `Checked Lululemon output: <TMP>/build/output/lululemon/Lululemon_BAV.xlsx` and `Checked FastRetailing output: <TMP>/build/output/fast_retailing/FastRetailing_BAV.xlsx`. Build status lists and FastRetailing unavailable-module diagnostics matched after the same temp-root substitution. Publish emitted the existing `fitz` deprecation warning on both trees.
+
+## Output inventories
+
+Relative inventories were identical for both companies. Supporting JSON, Drivers Markdown, figures and zero-byte Forecast/Valuation/Overview placeholders were byte-identical.
+
+### Lululemon (`build/output/lululemon/`)
+
+| Relative path | Status | SHA-256 (shared unless noted) | Bytes |
+|---|---|---|---|
+| `figures/drivers/geography.png` | identical | `ad378702a110…` | 66785 |
+| `figures/drivers/margin.png` | identical | `cfb2773f0fba…` | 63338 |
+| `research/Lululemon_Drivers.md` | identical | `3fea615d44b0…` | 21884 |
+| `research/Lululemon_Forecast.md` | identical zero-byte | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | 0 |
+| `research/Lululemon_Overview.md` | identical zero-byte | `e3b0c44298fc…` | 0 |
+| `research/Lululemon_Valuation.md` | identical zero-byte | `e3b0c44298fc…` | 0 |
+| `supporting/assumptions.json` | identical JSON | `73fbb33f222a…` | 69 |
+| `supporting/build_status.json` | identical JSON | `4f6ed92633dc…` | 2695 |
+| `supporting/component_map.json` | identical JSON | `ff8266d44e5e…` | 1202071 |
+| `supporting/rowmap.json` | identical JSON | `afc670e79e94…` | 169892 |
+| `Lululemon_BAV.xlsx` | file hash differs | B `3f27be4e23a98f7bcc6dd01ebbe5437d2ded3d24398a21e4f986dd675840a01b` / current `13f69885f7dda3a4656cb2c27bb31da3e3fb117d2fda793a2272a0848882255e` | 229736 |
+| `Lululemon_BAV.docx` | file hash differs | B `2b57311614049a239550f40a633281ff95a5a0795f95fcba763007012441c88e` / current `b8d44cdaa0689cf25e42e550b3e3b63c28b15991ff8bfef669f215d322aa8f61` | 163187 |
+| `Lululemon_BAV.pdf` | file hash differs | B `bb487efaed8fbc13639a5d2653e8856d142755493f4cde5755e06c3628f4ca12` / current `5977d6fac67594f7aa100dc223b79ad0c45955a85fb0c3a980661cb09cdb7f0f` | 168974 |
+
+### FastRetailing (`build/output/fast_retailing/`)
+
+| Relative path | Status | SHA-256 (shared unless noted) | Bytes |
+|---|---|---|---|
+| `figures/drivers/margin.png` | identical | `2bcfef6c40ea…` | 56418 |
+| `research/FastRetailing_Drivers.md` | identical | `5b3aca6c933f…` | 10320 |
+| `research/FastRetailing_Forecast.md` | identical zero-byte | `e3b0c44298fc…` | 0 |
+| `research/FastRetailing_Overview.md` | identical zero-byte | `e3b0c44298fc…` | 0 |
+| `research/FastRetailing_Valuation.md` | identical zero-byte | `e3b0c44298fc…` | 0 |
+| `supporting/assumptions.json` | identical JSON | `73fbb33f222a…` | 69 |
+| `supporting/build_status.json` | identical JSON | `6366dcfb1348…` | 3046 |
+| `supporting/component_map.json` | identical JSON | `22ec286b66b7…` | 644555 |
+| `supporting/rowmap.json` | identical JSON | `5e81fbc8f0f4…` | 94533 |
+| `FastRetailing_BAV.xlsx` | file hash differs | B `c97646eaeefda7af08ae8aa6fe1f58a11ad47b0dc30cde4d5aa25547b8e69461` / current `9a5f9df01c1fbf415cd3f08794692f2b5742a4d4482ddc207420d8c0d3c53d04` | 137902 |
+| `FastRetailing_BAV.docx` | file hash differs | B `a1de3da7406e6e5dac30f8653b1be07ed509db48364eb3217783f748f02d524e` / current `e1b33d3cdbec9dacddb4a93cebab62f087bf9ab0acf5c1b64b895f32d6fd7256` | 94759 |
+| `FastRetailing_BAV.pdf` | file hash differs | B `cc38df12265e47a4aa2e65d39d01977ba11353a19b94d8d9c74a21eb0cc06090` / current `3dc47a205dc2403e43a7cd00ad34064b6b4f46be29304399ad379b94b55c4fe3` | 82178 |
+
+## XLSX comparison
+
+Finite ZIP + openpyxl inspection of every member (not a new verifier framework).
+
+| Workbook | Members | Inventory | Archive timestamps | Payload diffs | Formulas/values | Styles | Sheets / defined names |
+|---|---|---|---|---|---|---|---|
+| Lululemon | 62 | set-equal | 62 members (B 17:34:22 vs current 17:34:26) | `docProps/core.xml` only | 0 | 0 | equal |
+| FastRetailing | 45 | set-equal | 45 members (B 17:34:24 vs current 17:34:28) | `docProps/core.xml` only | 0 | 0 | equal |
+
+Inspected `docProps/core.xml`: `creator=openpyxl` unchanged; `created`/`modified` are demonstrated volatile timestamps (Lululemon B `2026-10-03T09:34:22Z` vs current `2026-10-03T09:34:26Z`; FastRetailing B `2026-10-03T09:34:24Z` vs current `2026-10-03T09:34:28Z`). Workbook formulas, cached/stored values, styles, relationships and embedded provenance payloads were otherwise identical. No analytical or presentation XLSX difference.
+
+## Publication comparison
+
+Invocations reused `_word_member_diffs`, `_publication_diff` and `_pdf_documents_equal` from `core/tests/test_publication.py` on the isolated generated pairs (`/tmp/bav-10.12.1-compare.py`).
+
+| Pair | `_word_member_diffs` | Word non-metadata members | `_pdf_documents_equal` | PDF layout features | Metadata |
+|---|---|---|---|---|---|
+| Lululemon DOCX/PDF | `[]` | `[]` | True | `[]` | PDF `creationDate`, `modDate`, `id`; Word core/app fields empty |
+| FastRetailing DOCX/PDF | `[]` | `[]` | True | `[]` | PDF `creationDate`, `modDate`, `id`; Word core/app fields empty |
+
+DOCX ZIP inventories matched; Lululemon 27/27 and FastRetailing 26/26 members differ only in archive timestamps (zero decompressed payload diffs). Content and layout are equal. PDF file hashes differ only in recorded volatile metadata fields; content, geometry, text layout, images, drawings and renders match. Those metadata/timestamp differences were not discarded without identification.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| Continuation vs reviewed comparator bindings | Continuation `9fba2a7…`; comparator B `2d272b7f…` / attempt `1aeed994…` / checkpoint `d3629419…` |
+| Historical B blob inspect vs destinations | CLI / company JSON / build_status byte-identical; current_build only the two lazy-import retargets |
+| Isolated `git archive` + identical input/fixture copies | Copy match; inputs immutable after generation; canonical outputs untouched |
+| Six company commands on B and on current | All rc 0; stdout equal after explicit temp-root substitution |
+| Inventories / JSON / Markdown / figures / placeholders | Identical for both companies |
+| XLSX ZIP + openpyxl formula/value/style scan | Only `docProps/core.xml` created/modified + archive timestamps |
+| `_word_member_diffs` / `_publication_diff` / `_pdf_documents_equal` | Content/layout equal; PDF metadata dates/id only |
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_current_build.py core/tests/test_publication.py` | **57 passed** in 33.79s. No skip / xfail / deselect. 5 pre-existing Swig importlib warnings |
+| Prior 616-test parent suite (Step 10.12) | Retained; no demonstrated relocation defect, so not rerun |
+| `git diff --check` | rc 0 |
+| `git diff --check 9fba2a7da3006c0f86ae52ba1fcc0fa7cbbaaa9a` | rc 0 |
+
+Workbook formulas, presentation and canonical source/extracted/reconciled inputs were not rewritten. Office Bridge was not required.
+
+## Preservation
+
+Completed relocation, compatibility façades, canonical callers and ownership documentation were retained and not edited. CLI contracts, aliases, patchable configuration, explicit JSON/Excel routes, optional Trainer behavior and ordinary execution’s independence from Legacy remain. Source immutability, strict standardized preparation, protected outputs, staged verification, sidecars, atomic replacement, failure rollback, provenance, residual qualifications, dormant forecasting and zero-byte research placeholders remain. Admission remains default-off.
+
+## Remaining toward Completion
+
+Broader Legacy migration, Remove dispositions, repository-wide test relocation and final Session verification remain unfinished. No algorithm/report redesign, new Extractor, reasoning engine, Trainer expansion or second-phase features.
+
+This bounded representative comparison does not establish parent Completion or Session 10 acceptance.
+
+## Unresolved defects
+
+None observed in this paired comparison. Identified differences are archive timestamps and demonstrated volatile document metadata (`xlsx` `created`/`modified`; PDF `creationDate`/`modDate`/`id`).
+
+## Required plan change
+
+None.
+
+---
+
 # RESULT.md — Step 10.12 Relocate CLI and company orchestration
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
