@@ -26,6 +26,7 @@ from core.ingestion.normalization_candidate_admission import (
     ANALYTICAL_LABEL,
     ANALYTICAL_SELECTOR,
     AUTHORIZED_IS_IDENTITIES,
+    AUTHORIZATION_INDEPENDENT,
     AUTHORIZATION_SYNTHETIC,
     CF_AUDIT_IDENTITIES,
     LEDGER_PERIODS,
@@ -55,7 +56,9 @@ AUTHENTICATED_B = "95efb965cd896e462814459b843d9a992358c7a9"
 REVIEWED_CHECKPOINT_1091 = "1a82323aac1309141f480e550277ffb2f56b35ca"
 REVIEWED_BASELINE_1091 = "250d57178d4b32b3b12a13ba9a08677789d59183"
 REVIEWED_CHECKPOINT_1092 = "7cf143f53036afcb981fb4118b830e73b4fa58b6"
-IMPLEMENT_BASE_SHA = "a7e50356d5129066bad5a90ba8f54d801243f926"
+REVIEWED_CHECKPOINT_1093 = "02d1f58e55a1823896f71e3090fd236d3448008c"
+REVIEWED_PARENT_1093 = "a7e50356d5129066bad5a90ba8f54d801243f926"
+IMPLEMENT_BASE_SHA = "d260153bbda7014d7069c2247f80db75890f61f9"
 REQUIRED_PROVENANCE_FIELDS = (
     "observation_fingerprints",
     "source_hashes",
@@ -325,6 +328,26 @@ def _synthetic_adoption(construction, company: str = "LULU") -> AdoptionRecord:
         analytical_scope=SUPPORTED_NORMALIZATION_SCOPE,
         decision_status="adopted",
         authorization_kind=AUTHORIZATION_SYNTHETIC,
+    )
+
+
+def _independent_adoption(construction, company: str = "LULU") -> AdoptionRecord:
+    return AdoptionRecord(
+        company=company,
+        axis=tuple(construction.axis),
+        member_identities=tuple(construction.member_identities),
+        analytical_concept=ANALYTICAL_CONCEPT,
+        analytical_label=ANALYTICAL_LABEL,
+        source_evidence_fingerprints=tuple(construction.used_fingerprints),
+        mapping_decision="adopt_three_is_identities_as_one_analytical_aggregate",
+        decision_authority="independently_supplied_authority",
+        rationale=(
+            "Independently supplied grouping decision; not a Lululemon accounting "
+            "judgment and not established by overlapping amounts or suggested_concept"
+        ),
+        analytical_scope=SUPPORTED_NORMALIZATION_SCOPE,
+        decision_status="adopted",
+        authorization_kind=AUTHORIZATION_INDEPENDENT,
     )
 
 
@@ -1223,6 +1246,9 @@ def test_b_and_current_isolated_agreement(retained):
     assert reviewed_parent == REVIEWED_BASELINE_1091
     reviewed_1092_parent = _git_out(["git", "rev-parse", f"{REVIEWED_CHECKPOINT_1092}^"])
     assert reviewed_1092_parent == AUTHENTICATED_B
+    reviewed_1093_parent = _git_out(["git", "rev-parse", f"{REVIEWED_CHECKPOINT_1093}^"])
+    assert reviewed_1093_parent == REVIEWED_PARENT_1093
+    assert _git_out(["git", "rev-parse", "HEAD"]) == IMPLEMENT_BASE_SHA
     casebook = {
         "observations": retained["observations"],
         "live_payload": retained["live_payload"],
@@ -1238,10 +1264,13 @@ def test_b_and_current_isolated_agreement(retained):
         root = Path(tmp)
         pre_tree = root / "pre"
         auth_tree = root / "auth"
+        implement_tree = root / "implement_b"
         pre_tree.mkdir()
         auth_tree.mkdir()
+        implement_tree.mkdir()
         _materialize_git_tree(pre_tree, COMPARISON_B)
         _materialize_git_tree(auth_tree, AUTHENTICATED_B)
+        _materialize_git_tree(implement_tree, IMPLEMENT_BASE_SHA)
         pre_admission = (pre_tree / "core/ingestion/normalization_candidate_admission.py").read_bytes()
         assert pre_admission == subprocess.check_output(
             ["git", "show", f"{COMPARISON_B}:core/ingestion/normalization_candidate_admission.py"],
@@ -1252,8 +1281,16 @@ def test_b_and_current_isolated_agreement(retained):
             ["git", "show", f"{AUTHENTICATED_B}:core/ingestion/normalization_candidate_admission.py"],
             cwd=ROOT,
         )
+        implement_admission = (
+            implement_tree / "core/ingestion/normalization_candidate_admission.py"
+        ).read_bytes()
+        assert implement_admission == subprocess.check_output(
+            ["git", "show", f"{IMPLEMENT_BASE_SHA}:core/ingestion/normalization_candidate_admission.py"],
+            cwd=ROOT,
+        )
         baseline = _run_isolated_compare("b", pre_tree, casebook)
         authenticated = _run_isolated_compare("authenticated_b", auth_tree, casebook)
+        implement_b = _run_isolated_compare("authenticated_b", implement_tree, casebook)
     current_gates = {
         key: value
         for key, value in current.items()
@@ -1269,8 +1306,14 @@ def test_b_and_current_isolated_agreement(retained):
         for key, value in authenticated.items()
         if key not in {"persistence", "repaired_persistence"}
     }
+    implement_b_gates = {
+        key: value
+        for key, value in implement_b.items()
+        if key not in {"persistence", "repaired_persistence"}
+    }
     assert current_gates == baseline_gates
     assert current_gates == authenticated_gates
+    assert current_gates == implement_b_gates
     assert current["construction"]["face_series"] == list(EXPECTED_FACE)
     assert current["construction"]["analytical_series"] == list(EXPECTED_ANALYTICAL)
     assert current["absent_adoption"]["blocked_reason"] == "absent_adoption"
@@ -1299,6 +1342,8 @@ def test_b_and_current_isolated_agreement(retained):
     assert authenticated["persistence"]["contract"]["limitation"] == "no_admission_provenance_persist_reload"
     assert baseline["repaired_persistence"]["available"] is False
     assert authenticated["repaired_persistence"]["available"] is False
+    assert implement_b["repaired_persistence"]["available"] is True
+    assert implement_b["repaired_persistence"]["recovered_values"] == list(EXPECTED_ANALYTICAL)
     repaired = current["repaired_persistence"]
     assert repaired["available"] is True
     assert repaired["recovered_values"] == list(EXPECTED_ANALYTICAL)
@@ -1333,12 +1378,12 @@ def _admit(retained):
     return result
 
 
-def _run_fresh_load(standardized_path: Path, admission_path: Path) -> dict:
+def _run_fresh_load_process(standardized_path: Path, admission_path: Path):
     driver = ROOT / "core" / "tests" / "normalization_candidate_isolated_driver.py"
     env = os.environ.copy()
     env["PYTHONPATH"] = str(ROOT)
     env["PYTHONNOUSERSITE"] = "1"
-    result = subprocess.run(
+    return subprocess.run(
         [sys.executable, str(driver), "load_bundle"],
         cwd=str(ROOT),
         input=json.dumps(
@@ -1353,9 +1398,22 @@ def _run_fresh_load(standardized_path: Path, admission_path: Path) -> dict:
         env=env,
         check=False,
     )
+
+
+def _run_fresh_load(standardized_path: Path, admission_path: Path) -> dict:
+    result = _run_fresh_load_process(standardized_path, admission_path)
     if result.returncode != 0:
         pytest.fail(f"fresh load failed: {result.stderr or result.stdout}")
     return json.loads(result.stdout)
+
+
+def _run_fresh_load_rejection(standardized_path: Path, admission_path: Path) -> dict:
+    result = _run_fresh_load_process(standardized_path, admission_path)
+    if result.returncode == 0:
+        pytest.fail(f"fresh load unexpectedly succeeded: {result.stdout}")
+    payload = json.loads(result.stdout)
+    assert payload.get("rejected") is True
+    return payload
 
 
 def test_production_admission_bundle_save_load_fresh_process(retained):
@@ -1557,3 +1615,170 @@ def test_admission_bundle_rejects_mismatched_missing_and_blocked(retained):
     ordinary = standardized_from_payload(copy.deepcopy(retained["ordinary_payload"]), strict=True)
     assert not any(item.concept == ANALYTICAL_CONCEPT for item in ordinary.income_statement)
     assert _snapshot_obs(retained["observations"]) == retained["obs_snapshot"]
+
+
+def _persist_admitted(retained, admitted, root: Path) -> tuple[Path, Path]:
+    std_path = root / "standardized.json"
+    adm_path = root / "normalization_candidate_admission.json"
+    save_admitted_normalization_candidate(
+        admitted, standardized_path=std_path, admission_path=adm_path
+    )
+    return std_path, adm_path
+
+
+def _write_mutated_bundle(root: Path, payload: dict, name: str) -> Path:
+    path = root / name
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def test_production_loader_rejects_four_demonstrated_bypasses(retained):
+    admitted = _admit(retained)
+    original_obs = _snapshot_obs(retained["observations"])
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        std_path, adm_path = _persist_admitted(retained, admitted, root)
+        valid = json.loads(adm_path.read_text(encoding="utf-8"))
+
+        provisional = copy.deepcopy(valid)
+        provisional["adoption"]["decision_status"] = "provisional"
+        provisional_path = _write_mutated_bundle(root, provisional, "provisional.json")
+        with pytest.raises(AdmissionProvenanceError, match="blocked_or_provisional_handoff"):
+            load_admitted_normalization_candidate(std_path, provisional_path)
+        rejected = _run_fresh_load_rejection(std_path, provisional_path)
+        assert rejected["reason"] == "blocked_or_provisional_handoff"
+
+        empty_treatment = copy.deepcopy(valid)
+        empty_treatment["treatment"] = {}
+        empty_path = _write_mutated_bundle(root, empty_treatment, "empty_treatment.json")
+        with pytest.raises(AdmissionProvenanceError, match="missing_admission_evidence"):
+            load_admitted_normalization_candidate(std_path, empty_path)
+        rejected = _run_fresh_load_rejection(std_path, empty_path)
+        assert rejected["reason"] == "missing_admission_evidence"
+
+        synthetic_as_real = copy.deepcopy(valid)
+        synthetic_as_real["real_company_acceptance"] = True
+        synthetic_path = _write_mutated_bundle(root, synthetic_as_real, "synthetic_as_real.json")
+        with pytest.raises(AdmissionProvenanceError, match="inconsistent_admission_binding"):
+            load_admitted_normalization_candidate(std_path, synthetic_path)
+        rejected = _run_fresh_load_rejection(std_path, synthetic_path)
+        assert rejected["reason"] == "inconsistent_admission_binding"
+
+        changed_hash = copy.deepcopy(valid)
+        changed_hash["observations"][0]["source_hash"] = "0" * 64
+        hash_path = _write_mutated_bundle(root, changed_hash, "changed_source_hash.json")
+        with pytest.raises(AdmissionProvenanceError, match="inconsistent_admission_binding"):
+            load_admitted_normalization_candidate(std_path, hash_path)
+        rejected = _run_fresh_load_rejection(std_path, hash_path)
+        assert rejected["reason"] == "inconsistent_admission_binding"
+
+        recovered = _run_fresh_load(std_path, adm_path)
+        assert recovered["real_company_acceptance"] is False
+        assert recovered["authorization_kind"] == AUTHORIZATION_SYNTHETIC
+    assert _snapshot_obs(retained["observations"]) == original_obs
+    assert retained["live_std_bytes"] == (LIVE_DIR / "standardized.json").read_bytes()
+
+
+def test_admission_bundle_rejects_authorization_treatment_and_fingerprint_disagreement(retained):
+    admitted = _admit(retained)
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        std_path, adm_path = _persist_admitted(retained, admitted, root)
+        valid = json.loads(adm_path.read_text(encoding="utf-8"))
+
+        auth_mismatch = copy.deepcopy(valid)
+        auth_mismatch["authorization_kind"] = AUTHORIZATION_INDEPENDENT
+        auth_path = _write_mutated_bundle(root, auth_mismatch, "auth_mismatch.json")
+        with pytest.raises(AdmissionProvenanceError, match="inconsistent_admission_binding"):
+            load_admitted_normalization_candidate(std_path, auth_path)
+        assert _run_fresh_load_rejection(std_path, auth_path)["reason"] == (
+            "inconsistent_admission_binding"
+        )
+
+        config_mismatch = copy.deepcopy(valid)
+        config_mismatch["candidate_configuration"]["referenceTreatment"] = "Recurring"
+        config_path = _write_mutated_bundle(root, config_mismatch, "config_mismatch.json")
+        with pytest.raises(AdmissionProvenanceError, match="inconsistent_admission_binding"):
+            load_admitted_normalization_candidate(std_path, config_path)
+        assert _run_fresh_load_rejection(std_path, config_path)["reason"] == (
+            "inconsistent_admission_binding"
+        )
+
+        fingerprint_mismatch = copy.deepcopy(valid)
+        fingerprint_mismatch["observations"][0]["reported_amount"] = 1
+        fp_path = _write_mutated_bundle(root, fingerprint_mismatch, "fingerprint_mismatch.json")
+        with pytest.raises(AdmissionProvenanceError, match="inconsistent_admission_binding"):
+            load_admitted_normalization_candidate(std_path, fp_path)
+        assert _run_fresh_load_rejection(std_path, fp_path)["reason"] == (
+            "inconsistent_admission_binding"
+        )
+        stale_inputs = copy.deepcopy(valid)
+        stale_inputs["observations"][0]["fingerprint_inputs"]["value"] = 1
+        stale_inputs_path = _write_mutated_bundle(root, stale_inputs, "stale_inputs.json")
+        with pytest.raises(AdmissionProvenanceError, match="stale_admission_evidence"):
+            load_admitted_normalization_candidate(std_path, stale_inputs_path)
+        assert _run_fresh_load_rejection(std_path, stale_inputs_path)["reason"] == (
+            "stale_admission_evidence"
+        )
+
+        missing_inputs = copy.deepcopy(valid)
+        for item in missing_inputs["observations"]:
+            item.pop("fingerprint_inputs", None)
+        missing_path = _write_mutated_bundle(root, missing_inputs, "missing_inputs.json")
+        with pytest.raises(AdmissionProvenanceError, match="stale_admission_evidence"):
+            load_admitted_normalization_candidate(std_path, missing_path)
+        assert _run_fresh_load_rejection(std_path, missing_path)["reason"] == (
+            "stale_admission_evidence"
+        )
+
+        old_schema = copy.deepcopy(valid)
+        old_schema["schema"] = "normalization_candidate_admission/v1"
+        old_path = _write_mutated_bundle(root, old_schema, "old_schema.json")
+        with pytest.raises(AdmissionProvenanceError, match="stale_admission_evidence"):
+            load_admitted_normalization_candidate(std_path, old_path)
+        assert _run_fresh_load_rejection(std_path, old_path)["reason"] == (
+            "stale_admission_evidence"
+        )
+
+
+def test_independent_authorization_bundle_save_load_fresh_process(retained):
+    construction = construct_provisional_candidate(
+        retained["observations"],
+        bound_source_hashes=BOUND_SOURCE_SHA256,
+        page_lookup=retained["page_lookup"],
+    )
+    financials = copy.deepcopy(retained["live"])
+    original = standardized_to_payload(financials)
+    admitted = run_normalization_candidate_handoff(
+        retained["observations"],
+        financials,
+        bound_source_hashes=BOUND_SOURCE_SHA256,
+        page_lookup=retained["page_lookup"],
+        adoption=_independent_adoption(construction),
+        treatment=_synthetic_treatment(),
+    )
+    assert standardized_to_payload(financials) == original
+    assert admitted.production_admitted is True
+    assert admitted.authorization_kind == AUTHORIZATION_INDEPENDENT
+    assert admitted.real_company_acceptance is True
+    assert admitted.mapping_status == "independently_supplied_decision"
+    assert admitted.grouping_is_accepted_source_fact is False
+    expected = _independent_observation_evidence(
+        retained["observations"], retained["page_lookup"]
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        std_path, adm_path = _persist_admitted(retained, admitted, Path(tmp))
+        recovered = _run_fresh_load(std_path, adm_path)
+        bundle = load_admitted_normalization_candidate(std_path, adm_path)
+    assert recovered["authorization_kind"] == AUTHORIZATION_INDEPENDENT
+    assert recovered["real_company_acceptance"] is True
+    assert recovered["mapping_status"] == "independently_supplied_decision"
+    assert recovered["grouping_is_accepted_source_fact"] is False
+    assert recovered["values"] == list(EXPECTED_ANALYTICAL)
+    assert recovered["face_values"] == list(EXPECTED_FACE)
+    assert recovered["observations"] == expected
+    assert bundle.authorization_kind == AUTHORIZATION_INDEPENDENT
+    assert bundle.real_company_acceptance is True
+    assert bundle.grouping_is_accepted_source_fact is False
+    assert _snapshot_obs(retained["observations"]) == retained["obs_snapshot"]
+    assert retained["live_std_bytes"] == (LIVE_DIR / "standardized.json").read_bytes()

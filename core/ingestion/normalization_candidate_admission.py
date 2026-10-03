@@ -24,6 +24,7 @@ from modeler.ingestion.normalization_candidate_admission_io import (
     ObservationEvidence,
     build_admission_provenance_payload,
     load_admitted_bundle,
+    observation_evidence_from_inputs,
     save_admitted_bundle,
 )
 from ..model.normalization import (
@@ -218,20 +219,7 @@ def _locator_state(obs: Mapping[str, Any]) -> tuple[int | None, Any, str]:
 
 
 def _observation_evidence(obs: Mapping[str, Any], period: str, fingerprint: str) -> ObservationEvidence:
-    physical, printed, printed_status = _locator_state(obs)
-    return ObservationEvidence(
-        fingerprint=fingerprint,
-        source_file=str(obs.get("source_file") or ""),
-        source_hash=str(obs.get("source_sha256_declared") or ""),
-        row_identity=str(obs.get("row_identity") or ""),
-        physical_page=physical,
-        printed_page=printed,
-        printed_page_status=printed_status,
-        period=period,
-        reported_amount=_face_amount(obs["value"]),
-        currency=str(obs.get("currency") or ""),
-        unit_scale=str(obs.get("unit_scale") or ""),
-    )
+    return observation_evidence_from_inputs(obs, period=period, fingerprint=fingerprint)
 
 
 def _adoption_payload(adoption: AdoptionRecord) -> dict[str, Any]:

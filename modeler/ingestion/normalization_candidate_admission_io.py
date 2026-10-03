@@ -6,6 +6,7 @@ Does not extend standardized_io or ordinary documentary reconciliation provenanc
 
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from datetime import date
@@ -17,9 +18,24 @@ from modeler.data.line_identity import line_identity
 from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
 
 ARTIFACT_KIND = "normalization_candidate_admission"
-ARTIFACT_SCHEMA = "normalization_candidate_admission/v1"
+ARTIFACT_SCHEMA = "normalization_candidate_admission/v2"
+PRIOR_ARTIFACT_SCHEMAS = frozenset({"normalization_candidate_admission/v1"})
 STATEMENT = "income_statement"
 SIGN_CONVERSION_ONCE = 1
+AUTHORIZATION_SYNTHETIC = "synthetic"
+AUTHORIZATION_INDEPENDENT = "independently_supplied"
+SUPPORTED_NORMALIZATION_SCOPE = "operating_pretax_effective_tax"
+NORMALIZATION_TREATMENTS = ("Recurring", "Non-recurring")
+ANALYTICAL_CONCEPT = "analytical_is_impairment_restructuring_aggregate"
+ANALYTICAL_LABEL = "Impairment and restructuring costs (provisional analytical aggregate)"
+ANALYTICAL_SELECTOR = f"concept:{ANALYTICAL_CONCEPT}"
+_TECHNICAL_EQUIVALENCE_MARKERS = (
+    "matching concept",
+    "same suggested_concept",
+    "agreeing amounts",
+    "agreeing overlapping",
+    "boolean approval",
+)
 
 
 class AdmissionProvenanceError(ValueError):
@@ -46,6 +62,7 @@ class ObservationEvidence:
     reported_amount: int
     currency: str
     unit_scale: str
+    fingerprint_inputs: dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -75,6 +92,12 @@ class AdmittedNormalizationBundle:
     real_company_acceptance: bool
 
 
+def observation_fingerprint(obs: Mapping[str, Any]) -> str:
+    """Hash the full original observation. Do not substitute a projected subset."""
+    payload = json.dumps(dict(obs), sort_keys=True, default=str)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 def observation_evidence_payload(item: ObservationEvidence) -> dict[str, Any]:
     return {
         "fingerprint": item.fingerprint,
@@ -88,28 +111,119 @@ def observation_evidence_payload(item: ObservationEvidence) -> dict[str, Any]:
         "reported_amount": int(item.reported_amount),
         "currency": item.currency,
         "unit_scale": item.unit_scale,
+        "fingerprint_inputs": dict(item.fingerprint_inputs),
     }
+
+
+def _locator_state(obs: Mapping[str, Any]) -> tuple[int | None, Any, str]:
+    raw_physical = obs.get("physical_page", obs.get("pdf_page"))
+    if raw_physical is None or raw_physical == "":
+        physical = None
+    else:
+        physical = int(raw_physical)
+        if physical == 0:
+            physical = None
+    printed = obs.get("printed_page")
+    status = obs.get("printed_page_status")
+    if isinstance(status, str) and status.strip():
+        printed_status = status.strip()
+    elif printed is not None:
+        printed_status = "resolved"
+    elif physical is None:
+        printed_status = "unavailable"
+    else:
+        printed_status = "unresolved"
+    return physical, printed, printed_status
+
+
+def _face_amount(value: object) -> int:
+    return int(value)
+
+
+def observation_evidence_from_inputs(
+    obs: Mapping[str, Any],
+    *,
+    period: str,
+    fingerprint: str,
+) -> ObservationEvidence:
+    """Project stored evidence from original fingerprint inputs. Never invent locators."""
+    if not isinstance(obs, Mapping) or not obs:
+        raise AdmissionProvenanceError("missing_admission_evidence")
+    physical, printed, printed_status = _locator_state(obs)
+    try:
+        reported_amount = _face_amount(obs["value"])
+    except (KeyError, TypeError, ValueError) as exc:
+        raise AdmissionProvenanceError("missing_admission_evidence") from exc
+    return ObservationEvidence(
+        fingerprint=fingerprint,
+        source_file=str(obs.get("source_file") or ""),
+        source_hash=str(obs.get("source_sha256_declared") or ""),
+        row_identity=str(obs.get("row_identity") or ""),
+        physical_page=physical,
+        printed_page=printed,
+        printed_page_status=printed_status,
+        period=period,
+        reported_amount=reported_amount,
+        currency=str(obs.get("currency") or ""),
+        unit_scale=str(obs.get("unit_scale") or ""),
+        fingerprint_inputs=dict(obs),
+    )
 
 
 def observation_evidence_from_payload(payload: Mapping[str, Any]) -> ObservationEvidence:
     if not isinstance(payload, Mapping):
         raise AdmissionProvenanceError("missing_admission_evidence")
+    inputs = payload.get("fingerprint_inputs")
+    if not isinstance(inputs, Mapping) or not inputs:
+        raise AdmissionProvenanceError("stale_admission_evidence")
+    stored_fingerprint = str(payload.get("fingerprint") or "")
+    recomputed = observation_fingerprint(inputs)
+    if not stored_fingerprint or recomputed != stored_fingerprint:
+        raise AdmissionProvenanceError(
+            "stale_admission_evidence",
+            fingerprint=stored_fingerprint,
+            recomputed=recomputed,
+        )
+    period = str(payload.get("period") or inputs.get("period") or "")
+    if not period:
+        raise AdmissionProvenanceError("mismatched_period_binding")
+    projected = observation_evidence_from_inputs(
+        inputs, period=period, fingerprint=stored_fingerprint
+    )
     physical = payload.get("physical_page")
     if physical is not None:
         physical = int(physical)
-    return ObservationEvidence(
-        fingerprint=str(payload.get("fingerprint") or ""),
+    stored = ObservationEvidence(
+        fingerprint=stored_fingerprint,
         source_file=str(payload.get("source_file") or ""),
         source_hash=str(payload.get("source_hash") or ""),
         row_identity=str(payload.get("row_identity") or ""),
         physical_page=physical,
         printed_page=payload.get("printed_page"),
         printed_page_status=str(payload.get("printed_page_status") or ""),
-        period=str(payload.get("period") or ""),
+        period=period,
         reported_amount=int(payload.get("reported_amount")),
         currency=str(payload.get("currency") or ""),
         unit_scale=str(payload.get("unit_scale") or ""),
+        fingerprint_inputs=dict(inputs),
     )
+    if (
+        stored.source_file != projected.source_file
+        or stored.source_hash != projected.source_hash
+        or stored.row_identity != projected.row_identity
+        or stored.physical_page != projected.physical_page
+        or stored.printed_page != projected.printed_page
+        or stored.printed_page_status != projected.printed_page_status
+        or stored.period != projected.period
+        or stored.reported_amount != projected.reported_amount
+        or stored.currency != projected.currency
+        or stored.unit_scale != projected.unit_scale
+    ):
+        raise AdmissionProvenanceError(
+            "inconsistent_admission_binding",
+            fingerprint=stored_fingerprint,
+        )
+    return stored
 
 
 def build_admission_provenance_payload(
@@ -207,6 +321,163 @@ def _line_amount(line: LineItem, period: str) -> int:
     return int(amount)
 
 
+def _blank(value: object) -> bool:
+    return value is None or (isinstance(value, str) and not value.strip())
+
+
+def _cites_technical_equivalence(*parts: object) -> bool:
+    blob = " ".join(str(part or "") for part in parts).casefold()
+    return any(marker in blob for marker in _TECHNICAL_EQUIVALENCE_MARKERS)
+
+
+def _as_text_tuple(value: object, reason: str) -> tuple[str, ...]:
+    if not isinstance(value, list) or not value:
+        raise AdmissionProvenanceError(reason)
+    items = tuple(str(item) for item in value)
+    if any(_blank(item) for item in items):
+        raise AdmissionProvenanceError(reason)
+    return items
+
+
+def _validate_recovered_adoption(
+    adoption: Mapping[str, Any],
+    *,
+    company: str,
+    concept: str,
+    label: str,
+    fiscal_periods: Sequence[str],
+    fingerprints: Sequence[str],
+    observations: Sequence[ObservationEvidence],
+) -> None:
+    required = (
+        adoption.get("company"),
+        adoption.get("mapping_decision"),
+        adoption.get("decision_authority"),
+        adoption.get("rationale"),
+        adoption.get("decision_status"),
+        adoption.get("authorization_kind"),
+        adoption.get("analytical_scope"),
+    )
+    if any(_blank(item) for item in required):
+        raise AdmissionProvenanceError("missing_admission_evidence")
+    axis = _as_text_tuple(adoption.get("axis"), "mismatched_period_binding")
+    members = _as_text_tuple(adoption.get("member_identities"), "mismatched_line_binding")
+    if not adoption.get("source_evidence_fingerprints"):
+        raise AdmissionProvenanceError("stale_admission_evidence")
+    status = str(adoption.get("decision_status") or "")
+    if status.casefold() == "provisional" or status.casefold() != "adopted":
+        raise AdmissionProvenanceError("blocked_or_provisional_handoff")
+    if adoption.get("approved") is not None:
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+    if adoption.get("equivalent_by_concept") or adoption.get("equivalent_by_agreeing_amounts"):
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+    if _cites_technical_equivalence(adoption.get("mapping_decision"), adoption.get("rationale")):
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+    if "provisional" in str(adoption.get("mapping_decision") or "").casefold():
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+    if str(adoption.get("company") or "") != company:
+        raise AdmissionProvenanceError("mismatched_company_binding")
+    if axis != tuple(fiscal_periods):
+        raise AdmissionProvenanceError("mismatched_period_binding")
+    observed_rows = {item.row_identity for item in observations}
+    if not observed_rows or not observed_rows.issubset(set(members)):
+        raise AdmissionProvenanceError("mismatched_line_binding")
+    if str(adoption.get("analytical_concept") or "") != concept:
+        raise AdmissionProvenanceError("mismatched_line_binding")
+    if str(adoption.get("analytical_label") or "") != label:
+        raise AdmissionProvenanceError("mismatched_line_binding")
+    if concept != ANALYTICAL_CONCEPT or label != ANALYTICAL_LABEL:
+        raise AdmissionProvenanceError("mismatched_line_binding")
+    if str(adoption.get("analytical_scope") or "") != SUPPORTED_NORMALIZATION_SCOPE:
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+    if set(str(item) for item in adoption.get("source_evidence_fingerprints") or []) != set(
+        fingerprints
+    ):
+        raise AdmissionProvenanceError("stale_admission_evidence")
+    kind = str(adoption.get("authorization_kind") or "")
+    if kind not in {AUTHORIZATION_SYNTHETIC, AUTHORIZATION_INDEPENDENT}:
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+
+
+def _validate_recovered_treatment(
+    treatment: Mapping[str, Any],
+    adoption: Mapping[str, Any],
+    *,
+    configuration: Mapping[str, Any],
+    after_tax_available: bool,
+    tax_disposition: object,
+    concept: str,
+) -> None:
+    if not treatment:
+        raise AdmissionProvenanceError("missing_admission_evidence")
+    if _blank(treatment.get("rationale")):
+        raise AdmissionProvenanceError("missing_admission_evidence")
+    if _blank(treatment.get("consequence_note")):
+        raise AdmissionProvenanceError("missing_admission_evidence")
+    if _blank(treatment.get("scope")) or _blank(treatment.get("reference_treatment")):
+        raise AdmissionProvenanceError("missing_admission_evidence")
+    if _blank(treatment.get("aggregate_or_component")) or _blank(treatment.get("cogs_boundary")):
+        raise AdmissionProvenanceError("missing_admission_evidence")
+    if _blank(treatment.get("topic")):
+        raise AdmissionProvenanceError("missing_admission_evidence")
+    if str(treatment.get("scope") or "") != SUPPORTED_NORMALIZATION_SCOPE:
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+    if str(treatment.get("scope") or "") != str(adoption.get("analytical_scope") or ""):
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+    if str(treatment.get("reference_treatment") or "") not in NORMALIZATION_TREATMENTS:
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+    if str(treatment.get("aggregate_or_component") or "") != "aggregate":
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+    if str(treatment.get("cogs_boundary") or "") != "exclude_studio_cogs":
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+    expected_configuration = {
+        "selector": ANALYTICAL_SELECTOR if concept == ANALYTICAL_CONCEPT else f"concept:{concept}",
+        "referenceTreatment": str(treatment.get("reference_treatment") or ""),
+        "scope": str(treatment.get("scope") or ""),
+        "topic": str(treatment.get("topic") or ""),
+        "referenceRationale": str(treatment.get("rationale") or ""),
+        "consequenceNote": str(treatment.get("consequence_note") or ""),
+    }
+    recovered_configuration = {str(key): str(value) for key, value in configuration.items()}
+    if recovered_configuration != expected_configuration:
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+    deductibility = treatment.get("deductibility")
+    etr_disposition = treatment.get("etr_disposition")
+    tax_resolved = (
+        not _blank(deductibility)
+        and not _blank(etr_disposition)
+        and str(deductibility).casefold() != "unresolved"
+        and str(etr_disposition).casefold() != "unresolved"
+    )
+    expected_after_tax = tax_resolved and etr_disposition == "operating_etr"
+    if bool(after_tax_available) != expected_after_tax:
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+    if tax_disposition != etr_disposition:
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+
+
+def _validate_recovered_authorization(
+    adoption: Mapping[str, Any],
+    *,
+    authorization_kind: str,
+    mapping_status: str,
+    real_company_acceptance: bool,
+) -> None:
+    adopted_kind = str(adoption.get("authorization_kind") or "")
+    if adopted_kind != authorization_kind:
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+    if authorization_kind not in {AUTHORIZATION_SYNTHETIC, AUTHORIZATION_INDEPENDENT}:
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+    if authorization_kind == AUTHORIZATION_SYNTHETIC:
+        if real_company_acceptance:
+            raise AdmissionProvenanceError("inconsistent_admission_binding")
+        if mapping_status != "synthetic_test_authorization":
+            raise AdmissionProvenanceError("inconsistent_admission_binding")
+        return
+    if mapping_status != "independently_supplied_decision":
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+
+
 def _select_analytical_line(
     financials: StandardizedFinancials,
     concept: str,
@@ -255,7 +526,9 @@ def load_admitted_bundle(
     except json.JSONDecodeError as exc:
         raise AdmissionProvenanceError("missing_admission_evidence") from exc
     artifact = _require_mapping(artifact, "missing_admission_evidence")
-    if artifact.get("kind") != ARTIFACT_KIND or artifact.get("schema") != ARTIFACT_SCHEMA:
+    if artifact.get("kind") != ARTIFACT_KIND:
+        raise AdmissionProvenanceError("stale_admission_evidence")
+    if artifact.get("schema") in PRIOR_ARTIFACT_SCHEMAS or artifact.get("schema") != ARTIFACT_SCHEMA:
         raise AdmissionProvenanceError("stale_admission_evidence")
     if artifact.get("production_admitted") is not True:
         raise AdmissionProvenanceError("blocked_or_provisional_handoff")
@@ -363,6 +636,32 @@ def load_admitted_bundle(
     )
     if artifact.get("grouping_is_accepted_source_fact") is True:
         raise AdmissionProvenanceError("blocked_or_provisional_handoff")
+    after_tax_available = bool(artifact.get("after_tax_available"))
+    tax_disposition = artifact.get("tax_disposition")
+    real_company_acceptance = bool(artifact.get("real_company_acceptance"))
+    _validate_recovered_adoption(
+        adoption,
+        company=company,
+        concept=concept,
+        label=label,
+        fiscal_periods=fiscal_periods,
+        fingerprints=fingerprints,
+        observations=observations,
+    )
+    _validate_recovered_treatment(
+        treatment,
+        adoption,
+        configuration=configuration,
+        after_tax_available=after_tax_available,
+        tax_disposition=tax_disposition,
+        concept=concept,
+    )
+    _validate_recovered_authorization(
+        adoption,
+        authorization_kind=authorization_kind,
+        mapping_status=mapping_status,
+        real_company_acceptance=real_company_acceptance,
+    )
     return AdmittedNormalizationBundle(
         financials=financials,
         analytical_line=line,
@@ -381,8 +680,8 @@ def load_admitted_bundle(
         mapping_status=mapping_status,
         grouping_is_accepted_source_fact=False,
         authorization_kind=authorization_kind,
-        after_tax_available=bool(artifact.get("after_tax_available")),
-        tax_disposition=artifact.get("tax_disposition"),
+        after_tax_available=after_tax_available,
+        tax_disposition=tax_disposition,
         note_tax_effects_attributed=bool(artifact.get("note_tax_effects_attributed")),
-        real_company_acceptance=bool(artifact.get("real_company_acceptance")),
+        real_company_acceptance=real_company_acceptance,
     )

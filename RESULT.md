@@ -11296,3 +11296,102 @@ This persistence repair does not establish parent Completion or Session 10 accep
 
 None.
 
+---
+
+# RESULT.md — Step 10.9.4 Relocate data contracts and ingestion responsibilities — admission-bundle validation repair
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.9.4 — Relocate data contracts and ingestion responsibilities — admission-bundle validation repair
+**Work:** `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`
+**Plan:** `87e752e51a824eb18dd099110324ab5b`
+**Finding:** Relocate data contracts and ingestion responsibilities
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change.
+
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `819a13a739990e8016715b772b55fe7f94361b2558f54a768a507b61fe806ce8` (7992).
+
+This repair is a production admission-bundle validation gate. It does not close parent Completion (remaining relocation/decomposition still open) and does not establish Session 10 acceptance.
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`.
+
+| Binding | Value |
+|---|---|
+| `resume-state` `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / HEAD / `implementation-baseline.json` head | `d260153bbda7014d7069c2247f80db75890f61f9` |
+| Branch | `checkpoint/20260913-183303` |
+| Reviewed checkpoint | `02d1f58e55a1823896f71e3090fd236d3448008c` |
+| Reviewed-checkpoint parent / authenticated 10.9.3 parent B | `a7e50356d5129066bad5a90ba8f54d801243f926` |
+| Retained pre-relocation comparator | `eb65dc63845b940162c48e39ae9af7598d2a3078` |
+| `latest-implementation` leftover HEAD | `a7e50356d5129066bad5a90ba8f54d801243f926` (ignored: `IMPLEMENT_BASE_SHA` populated) |
+| Fail-closed | Not required; populated `IMPLEMENT_BASE_SHA`, branch ref, `.git/logs/HEAD` ancestry and reviewed-checkpoint parent all authenticated |
+
+`.git/logs/HEAD` ancestry: `eb65dc6` → `38f5774` (Step 10.9) → `250d571` (merge) → `1a82323` (Step 10.9.1) → `95efb965` (merge) → `7cf143f5` (Step 10.9.2) → `a7e50356` (merge) → `02d1f58e` (Step 10.9.3) → `d260153b` (current HEAD).
+
+## Validation repair
+
+Production loader `load_admitted_bundle` now re-applies admission gates to persisted artifacts. Schema is `normalization_candidate_admission/v2`. Older `v1` evidence without original fingerprint inputs is rejected as `stale_admission_evidence`; missing inputs are not fabricated.
+
+| Gate | Recovered check |
+|---|---|
+| Adoption | Required decisions, `decision_status=adopted`, contradiction checks, company, fiscal axis, membership, analytical identity/scope, evidence fingerprints |
+| Treatment | Complete admissible decisions; configuration, tax disposition and after-tax availability must agree; unresolved tax is not resolved |
+| Authorization | Adoption kind must agree with bundle metadata; synthetic cannot set `real_company_acceptance=true`; independent authorization remains admissible |
+| Fingerprints | Each observation persists original fingerprint inputs; fingerprint is recomputed from those inputs; stored source file/hash, row, period, amount, currency, scale and locators must match that projection |
+
+Evidence capture in `construct_provisional_candidate` now stores the original attached observation as `fingerprint_inputs`. Model-only `standardized_io` and documentary reconciliation provenance were not changed.
+
+## Bypass rejection evidence
+
+Independent mutations of a valid production-saved bundle, each failing through `load_admitted_normalization_candidate` and a fresh process that received only persisted paths:
+
+| Mutation | Production-loader reason |
+|---|---|
+| `adoption.decision_status=provisional` | `blocked_or_provisional_handoff` |
+| empty `treatment` | `missing_admission_evidence` |
+| synthetic authorization with `real_company_acceptance=true` | `inconsistent_admission_binding` |
+| observation `source_hash` altered, fingerprints unchanged | `inconsistent_admission_binding` |
+
+Focused disagreements also rejected: adoption/bundle authorization mismatch, treatment/configuration mismatch, and stored amount vs fingerprint-input projection (`inconsistent_admission_binding`). Missing fingerprint inputs, mutated fingerprint inputs, and `v1` schema remain `stale_admission_evidence`. Existing missing/stale evidence, ambiguous linkage and company/line/period/value cases were preserved.
+
+## Successful recovered linkage
+
+Synthetic and independently supplied authorization records both saved and reloaded in a fresh process from persisted paths only.
+
+| Field | Synthetic | Independent |
+|---|---|---|
+| `authorization_kind` | `synthetic` | `independently_supplied` |
+| `real_company_acceptance` | `False` | `True` (independently supplied; not grouping-as-fact) |
+| `grouping_is_accepted_source_fact` | `False` | `False` |
+| Analytical values | `(0, -407913, -74501, 0, 0)` | same |
+| Face / transformation / once-only | `(0, 407913, 74501, 0, 0)`; `analytical_amount = -reported_face_expense`; `sign_conversions_applied == 1` | same |
+| Observations | 11 source-derived fingerprints; FY2025/FY2026 `printed_page_status=unresolved` with `printed_page=None` | same recovered projection |
+
+Input observations and live standardized bytes were unchanged. Repeated admission after reload remains `repeated_admission`. After-tax treatment stays unresolved. Admission remains default-off.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_normalization_candidate_admission.py` | **29 passed** in 4.76s. All **26** prior cases preserved (including standardized-only omission). Three added repair tests. No skip / xfail / deselect |
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_data_ingestion_ownership.py core/tests/test_normalization.py core/tests/test_filing_json.py` | **135 passed** in 10.11s |
+| Isolated compare vs pre-relocation `eb65dc6`, 10.9.2 parent `95efb965`, and authenticated B `d260153b` | Analytical and admission-gate JSON equal. Historical persist names remain empty on `eb65dc6` / `95efb965` and still report `no_admission_provenance_persist_reload`. Authenticated B `d260153b` already has repaired persistence; current adds v2 fingerprint-input validation. Successful recovered values still match |
+| `git diff --check` | rc 0 |
+| Enrichment-sidecar | Not re-run. Prior Step 10.9 failure `test_ordinary_prepare_writes_resolution_and_keeps_revenue_per_store` remains visible; the broader suite is not claimed fully passing |
+
+## Preservation
+
+Completed Modeler/Director relocation, compatibility imports, public `bav` interfaces, source/extracted/reconciled inputs and ordinary documentary provenance were not rewritten. `standardized_io.py` remains model-only. Admission stays at `core/ingestion/normalization_candidate_admission.py` with IO validation in `modeler/ingestion/normalization_candidate_admission_io.py`. Ownership/recovery safeguards and protected documents were not disturbed.
+
+## Remaining toward Completion
+
+Classification/normalization interpretation splits, broader normalization-candidate separation, enrichment/Legacy decomposition, remaining orchestration relocation, unrelated removals, test ownership migration and final repository-wide verification remain subsequent scope. The enrichment-sidecar defect was not repaired.
+
+This validation repair does not establish parent Completion or Session 10 acceptance.
+
+## Required plan change
+
+None.
+

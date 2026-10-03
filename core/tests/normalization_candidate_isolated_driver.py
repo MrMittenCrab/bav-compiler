@@ -15,6 +15,7 @@ from pathlib import Path
 ERA = sys.argv[1]
 if ERA == "load_bundle":
     from core.ingestion.normalization_candidate_admission import (
+        AdmissionProvenanceError,
         load_admitted_normalization_candidate,
     )
     from modeler.data.line_identity import line_identity
@@ -416,9 +417,18 @@ def _repaired_persistence_case(admitted, book) -> dict:
 
 
 def _load_bundle_main(book: dict) -> None:
-    bundle = load_admitted_normalization_candidate(
-        book["standardized_path"], book["admission_path"]
-    )
+    try:
+        bundle = load_admitted_normalization_candidate(
+            book["standardized_path"], book["admission_path"]
+        )
+    except AdmissionProvenanceError as exc:
+        json.dump(
+            {"rejected": True, "reason": exc.reason, "detail": exc.detail},
+            sys.stdout,
+            sort_keys=True,
+            default=str,
+        )
+        raise SystemExit(2) from exc
     dates = [date.fromisoformat(period) for period in book["ledger_periods"]]
     json.dump(
         {
