@@ -171,10 +171,12 @@ Interpreter splits. Completed `revenue_driver.py`, `reported_margin.py` and
 dependencies remain on `core.model.judgment` / `core.model.normalization`.
 **Step 10.9:** data contracts and assigned ingestion modules now live under
 `modeler/data/`, `modeler/ingestion/`, `director/data/` and `director/ingestion/` with thin
-`core.data` / `core.ingestion` façades. Transitional dependencies remain on
-`core.ingestion.management_kpi_enrichment`. **Step 10.9.5:** normalization-candidate
+`core.data` / `core.ingestion` façades. **Step 10.9.5:** normalization-candidate
 admission now executes from Modeler, Director and Interpreter owners, with a thin
 `core.ingestion.normalization_candidate_admission` compatibility façade.
+**Step 10.9.6:** management-KPI enrichment now executes from Extractor, Modeler
+and Director owners, with a thin `core.ingestion.management_kpi_enrichment`
+compatibility façade.
 
 | Current files | Disposition | Callers | Verification |
 |---|---|---|---|
@@ -208,7 +210,7 @@ implementation move.
 | `test_filing_cli.py` | Director (route) calling Extractor load + Modeler validate/admit |
 | `test_management_kpi_admission.py` `load_extracted_json_object` / `classify_extracted_payload` / `load_extracted_filing` schema cases | Extractor |
 | `test_management_kpi_admission.py` admit/bind cases | Modeler |
-| `test_management_kpi_{enrichment,identity,reconciliation,history}.py` | Legacy enrich; Modeler identity/reconcile/history |
+| `test_management_kpi_{enrichment,identity,reconciliation,history}.py` | Extractor/Modeler/Director enrich; Modeler identity/reconcile/history |
 | `test_operating_kpi_facts.py`, `test_geographic_segment_facts.py` load/round-trip | Extractor load + Modeler admit |
 | `test_normalization_candidate_admission.py` | Modeler construction/persistence, Director handoff, Interpreter qualifications (tests remain at `core/tests`) |
 | `test_filing_reconciler.py`, `test_validators.py`, `test_issuer_fiscal.py`, `test_line_identity.py`, `test_line_resolver.py`, `test_classification.py`, `test_share_basis.py`, `test_historical_segment.py`, `test_source_availability.py`, `test_normalization.py` | Modeler |
@@ -781,8 +783,7 @@ execute from `modeler/ingestion/<basename>.py`. Documentary binding remains in
 orchestration lives in `director/ingestion/filing_validator.py` and preserves
 the original issue order (source bind → statement identities → per-fact page +
 KPI admission → current-period missing).
-`management_kpi_enrichment.py` stays at `core/ingestion/` as a deferred mixed
-module. **Step 10.9.5 actual ownership.** Normalization-candidate admission now
+**Step 10.9.5 actual ownership.** Normalization-candidate admission now
 executes from `modeler/ingestion/normalization_candidate_admission.py` (construction,
 mechanical validation, persistence), `director/data/normalization_candidate.py`
 (adoption/treatment contracts), `director/ingestion/normalization_candidate_admission.py`
@@ -790,6 +791,17 @@ mechanical validation, persistence), `director/data/normalization_candidate.py`
 (supplied-decision qualifications). The retained `core.ingestion` module is a
 delegation-only compatibility façade. Canonical owners do not import that façade
 or Legacy.
+**Step 10.9.6 actual ownership.** Management-KPI enrichment now executes from
+`extractor/ingestion/management_kpi_enrichment.py` (PDF inspection, decoding,
+passage extraction, documentary records, printed/physical page binding),
+`modeler/ingestion/management_kpi_enrichment.py` (definition-equivalence,
+analytical payload transformation, `build_group_decisions`) and
+`director/ingestion/management_kpi_enrichment.py` (working-copy traversal,
+protected-path checks, sequencing, sidecar persistence). The retained
+`core.ingestion.management_kpi_enrichment` module is a delegation-only
+compatibility façade. Canonical owners do not import that façade or Legacy.
+Ordinary `prepare_company_input` loads accepted standardized data and does not
+run enrichment.
 
 ### 7.3 Ingestion I/O — `load_extracted_filing` owner
 
@@ -856,20 +868,25 @@ Remaining ingestion rows:
 | `excel_import.py`, `manual_hk.py` | `legacy/ingestion/` | Legacy | Transcribed Excel/JSON adapters | ingest / demo tests |
 | `future_adapters.py` `HKEXAdapter`, `SECAdapter`, `SGXAdapter` | delete in place | Remove | `NotImplementedError`; TARGET forbids HKEX scrape; no production import | `rg` definition + `README-HK-TRAINER.md` mention only |
 | `base.py` / `reconciler.py` | `modeler/ingestion/` | Modeler | Shared checksum reconcile | build refuse-on-fail |
-| `management_kpi_enrichment.py` `inspect_source_pdf`, `enrich_management_working_copies` | `legacy/ingestion/management_kpi_enrichment.py` | Legacy | Working-copy PDF page bind; not Extractor product; company build does not call enrich | `test_management_kpi_enrichment.py` |
+| `management_kpi_enrichment.py` `inspect_source_pdf`, decoding, passage extraction, documentary records, printed/physical page binding | `extractor/ingestion/management_kpi_enrichment.py` | Extractor | Source-faithful PDF inspection of already-bound filings; not a new extractor | `test_management_kpi_enrichment.py` |
+| `management_kpi_enrichment.py` `assess_definition_equivalence`, `enrich_management_payload`, `build_group_decisions` | `modeler/ingestion/management_kpi_enrichment.py` | Modeler | Deterministic comparison checks and analytical enrichment; consumes Extractor evidence | same tests |
+| `management_kpi_enrichment.py` `enrich_management_working_copies`, `PAGE_RESOLUTION_NAME` | `director/ingestion/management_kpi_enrichment.py` | Director | Directory traversal, protected-path checks, sequencing, sidecar persistence | same tests |
 
 **Step 10.9 actual destinations.** `filing_cli.py` and `note_handoff.py` now
 execute from `director/ingestion/`. Assigned reconcile/standardize/admit modules
-execute from `modeler/ingestion/`. `excel_import.py`, `manual_hk.py`,
-`future_adapters.py` and `management_kpi_enrichment.py` remain at
-`core/ingestion/` (Remove / deferred mixed). Thin `core.ingestion` façades retain
-package `__all__` and explicit private imports (`reconciler._merge_line_items`,
-`management_kpi_reconciliation._select_ordinary_group`, and the split
-normalization-candidate private helpers). Active KPI admission still depends on
-`core.ingestion.management_kpi_enrichment`; enrichment is not moved into Legacy
-in this step. **Step 10.9.5:** `normalization_candidate_admission.py` is no longer
-a deferred mixed module at `core/ingestion/`; that path is now the compatibility
-façade over the Modeler / Director / Interpreter owners above.
+execute from `modeler/ingestion/`. `excel_import.py`, `manual_hk.py` and
+`future_adapters.py` remain at `core/ingestion/` (Remove / deferred mixed). Thin
+`core.ingestion` façades retain package `__all__` and explicit private imports
+(`reconciler._merge_line_items`, `management_kpi_reconciliation._select_ordinary_group`,
+and the split normalization-candidate and enrichment private helpers).
+**Step 10.9.5:** `normalization_candidate_admission.py` is no longer a deferred
+mixed module at `core/ingestion/`; that path is now the compatibility façade over
+the Modeler / Director / Interpreter owners above.
+**Step 10.9.6:** `management_kpi_enrichment.py` is no longer a deferred mixed
+module or Legacy assignment at `core/ingestion/`; that path is now the
+compatibility façade over the Extractor / Modeler / Director owners above.
+Active KPI admission imports Extractor page-binding and Modeler
+`build_group_decisions` / definition-equivalence directly.
 
 Raw source provenance belongs to Extractor. Analytical transformations and
 calculation provenance belong to Modeler.
@@ -1237,9 +1254,10 @@ Company `python -m bav build` reads `reconciled/standardized.json` through
 Modeler `standardized_from_payload`. It does not call `load_extracted_filing`.
 `validate-source` / `reconcile` Director routes call Extractor loaders.
 
-Closest PDF-touching code remains Legacy
-`inspect_source_pdf` / `enrich_management_working_copies`. That is not a
-reason to build a new Extractor.
+**Step 10.9.6:** closest PDF-touching code is Extractor
+`inspect_source_pdf` (source-faithful page/passage inspection of already-bound
+filings) sequenced by Director `enrich_management_working_copies`. That is not
+a new statement extractor and does not authorize scrapers.
 
 Create later with the Extractor move:
 

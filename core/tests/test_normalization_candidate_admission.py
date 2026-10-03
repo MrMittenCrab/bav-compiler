@@ -1445,7 +1445,7 @@ def _admission_persist_names() -> list[str]:
 
 def _materialize_git_tree(dest: Path, sha: str) -> None:
     archive = subprocess.check_output(
-        ["git", "archive", sha, "core", "modeler", "extractor", "director"],
+        ["git", "archive", sha, "core", "modeler", "extractor", "director", "interpreter"],
         cwd=ROOT,
     )
     with tarfile.open(fileobj=io.BytesIO(archive), mode="r:") as tar:

@@ -461,7 +461,7 @@ def _comparison_window_label(observation: Any) -> str:
 def evidenced_conflicts(
     self_ev: Mapping[str, str], peer_ev: Mapping[str, str]
 ) -> tuple[str, ...]:
-    from core.ingestion.management_kpi_enrichment import (
+    from modeler.ingestion.management_kpi_enrichment import (
         DEFINITION_EQUIVALENT,
         assess_definition_equivalence,
     )
@@ -766,7 +766,7 @@ def assess_reported_observations(
                 comparability = COMPARABILITY_UNRESOLVED
             else:
                 comparability = COMPARABILITY_COMPARABLE
-        from core.ingestion.management_kpi_enrichment import assess_definition_equivalence
+        from modeler.ingestion.management_kpi_enrichment import assess_definition_equivalence
 
         equivalence_statuses = []
         if status == STATUS_SUPPORTED:

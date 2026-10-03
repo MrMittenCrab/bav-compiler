@@ -34,7 +34,13 @@ INGEST_MOVED = (
 DATA_MOVED_SET = frozenset(DATA_MOVED)
 INGEST_MOVED_SET = frozenset(INGEST_MOVED)
 DIRECTOR_INGEST = frozenset(
-    {"filing_cli", "note_handoff", "filing_validator", "normalization_candidate_admission"}
+    {
+        "filing_cli",
+        "note_handoff",
+        "filing_validator",
+        "normalization_candidate_admission",
+        "management_kpi_enrichment",
+    }
 )
 PRIVATE_EXPORTS = {
     "reconciler": ("_merge_line_items",),
@@ -73,6 +79,10 @@ REPRESENTATIVE = (
     ("director.ingestion.normalization_candidate_admission", "save_admitted_normalization_candidate", ROOT / "director/ingestion/normalization_candidate_admission.py"),
     ("director.ingestion.normalization_candidate_admission", "load_admitted_normalization_candidate", ROOT / "director/ingestion/normalization_candidate_admission.py"),
     ("interpreter.normalization", "grouping_established_as_source_fact", ROOT / "interpreter/normalization.py"),
+    ("extractor.ingestion.management_kpi_enrichment", "inspect_source_pdf", ROOT / "extractor/ingestion/management_kpi_enrichment.py"),
+    ("modeler.ingestion.management_kpi_enrichment", "assess_definition_equivalence", ROOT / "modeler/ingestion/management_kpi_enrichment.py"),
+    ("modeler.ingestion.management_kpi_enrichment", "build_group_decisions", ROOT / "modeler/ingestion/management_kpi_enrichment.py"),
+    ("director.ingestion.management_kpi_enrichment", "enrich_management_working_copies", ROOT / "director/ingestion/management_kpi_enrichment.py"),
 )
 FACADE_PAIRS = (
     ("modeler.data.interface", "core.data.interface", "StandardizedFinancials"),
@@ -107,6 +117,10 @@ FACADE_PAIRS = (
     ("director.ingestion.normalization_candidate_admission", "core.ingestion.normalization_candidate_admission", "save_admitted_normalization_candidate"),
     ("director.ingestion.normalization_candidate_admission", "core.ingestion.normalization_candidate_admission", "load_admitted_normalization_candidate"),
     ("director.ingestion.normalization_candidate_admission", "core.ingestion.normalization_candidate_admission", "HandoffResult"),
+    ("extractor.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "inspect_source_pdf"),
+    ("modeler.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "assess_definition_equivalence"),
+    ("modeler.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "build_group_decisions"),
+    ("director.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "enrich_management_working_copies"),
 )
 
 
@@ -201,6 +215,8 @@ def test_compatibility_exports_are_identity_equal():
             continue
         if facade_name == "core.ingestion.normalization_candidate_admission":
             continue
+        if facade_name == "core.ingestion.management_kpi_enrichment":
+            continue
         for public in _public_names(canonical):
             assert getattr(facade, public) is getattr(canonical, public)
         stem = canonical_name.rsplit(".", 1)[-1]
@@ -217,6 +233,9 @@ def test_facade_and_canonical_import_orders():
         ("modeler.ingestion.filing_validator", "core.ingestion.filing_validator", "operating_kpi_admission_issues"),
         ("director.ingestion.normalization_candidate_admission", "core.ingestion.normalization_candidate_admission", "run_normalization_candidate_handoff"),
         ("modeler.ingestion.normalization_candidate_admission", "core.ingestion.normalization_candidate_admission", "construct_provisional_candidate"),
+        ("director.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "enrich_management_working_copies"),
+        ("extractor.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "inspect_source_pdf"),
+        ("modeler.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "build_group_decisions"),
     )
     orders = (
         "import {facade} as facade\nimport {canonical} as canonical\n",
@@ -260,6 +279,9 @@ def test_canonical_modules_do_not_import_own_facades():
         ROOT / "modeler/ingestion/normalization_candidate_admission.py",
         ROOT / "director/ingestion/normalization_candidate_admission.py",
         ROOT / "interpreter/normalization.py",
+        ROOT / "extractor/ingestion/management_kpi_enrichment.py",
+        ROOT / "modeler/ingestion/management_kpi_enrichment.py",
+        ROOT / "director/ingestion/management_kpi_enrichment.py",
     ]
     forbidden_data = {f"core.data.{name}" for name in DATA_MOVED} | {"core.data.schema"}
     forbidden_ingest = {f"core.ingestion.{name}" for name in INGEST_MOVED} | {
@@ -267,6 +289,7 @@ def test_canonical_modules_do_not_import_own_facades():
         "core.ingestion.note_handoff",
         "core.ingestion.filing_validator",
         "core.ingestion.normalization_candidate_admission",
+        "core.ingestion.management_kpi_enrichment",
     }
     for path in destinations:
         tree = ast.parse(path.read_text())
@@ -281,11 +304,66 @@ def test_canonical_modules_do_not_import_own_facades():
                 assert module not in forbidden_ingest, f"{path} imports {module}"
 
 
-def test_transitional_ingestion_modules_remain_in_core():
-    from core.ingestion import management_kpi_enrichment
+def test_management_kpi_enrichment_canonical_ownership():
+    from director.ingestion.management_kpi_enrichment import (
+        PAGE_RESOLUTION_NAME as canonical_page,
+        enrich_management_working_copies as canonical_enrich,
+    )
+    from extractor.ingestion.management_kpi_enrichment import (
+        CalendarYearEvidence as canonical_calendar,
+        SourceInspection as canonical_inspection,
+        _metric_exclusion_evidence as canonical_exclusion,
+        _metric_excludes_53rd_week as canonical_excludes,
+        definition_features as canonical_features,
+        inspect_source_pdf as canonical_inspect,
+        validate_physical_page_binding as canonical_validate,
+    )
+    from modeler.ingestion.management_kpi_enrichment import (
+        DEFINITION_EQUIVALENT as canonical_equivalent,
+        assess_definition_equivalence as canonical_assess,
+        build_group_decisions as canonical_decisions,
+        enrich_management_payload as canonical_payload,
+    )
+    from core.ingestion.management_kpi_enrichment import (
+        PAGE_RESOLUTION_NAME as facade_page,
+        CalendarYearEvidence as facade_calendar,
+        DEFINITION_EQUIVALENT as facade_equivalent,
+        SourceInspection as facade_inspection,
+        _metric_exclusion_evidence as facade_exclusion,
+        _metric_excludes_53rd_week as facade_excludes,
+        assess_definition_equivalence as facade_assess,
+        build_group_decisions as facade_decisions,
+        definition_features as facade_features,
+        enrich_management_payload as facade_payload,
+        enrich_management_working_copies as facade_enrich,
+        inspect_source_pdf as facade_inspect,
+        validate_physical_page_binding as facade_validate,
+    )
 
-    assert Path(management_kpi_enrichment.__file__).resolve() == (
-        ROOT / "core/ingestion/management_kpi_enrichment.py"
+    assert canonical_inspect is facade_inspect
+    assert canonical_validate is facade_validate
+    assert canonical_features is facade_features
+    assert canonical_calendar is facade_calendar
+    assert canonical_inspection is facade_inspection
+    assert canonical_exclusion is facade_exclusion
+    assert canonical_excludes is facade_excludes
+    assert canonical_assess is facade_assess
+    assert canonical_equivalent is facade_equivalent
+    assert canonical_decisions is facade_decisions
+    assert canonical_payload is facade_payload
+    assert canonical_enrich is facade_enrich
+    assert canonical_page is facade_page
+    assert Path(canonical_inspect.__code__.co_filename).resolve() == (
+        ROOT / "extractor/ingestion/management_kpi_enrichment.py"
+    ).resolve()
+    assert Path(canonical_assess.__code__.co_filename).resolve() == (
+        ROOT / "modeler/ingestion/management_kpi_enrichment.py"
+    ).resolve()
+    assert Path(canonical_decisions.__code__.co_filename).resolve() == (
+        ROOT / "modeler/ingestion/management_kpi_enrichment.py"
+    ).resolve()
+    assert Path(canonical_enrich.__code__.co_filename).resolve() == (
+        ROOT / "director/ingestion/management_kpi_enrichment.py"
     ).resolve()
 
 
@@ -369,6 +447,9 @@ def test_relocated_implementations_do_not_import_legacy():
         ROOT / "modeler/ingestion/normalization_candidate_admission.py",
         ROOT / "director/ingestion/normalization_candidate_admission.py",
         ROOT / "interpreter/normalization.py",
+        ROOT / "extractor/ingestion/management_kpi_enrichment.py",
+        ROOT / "modeler/ingestion/management_kpi_enrichment.py",
+        ROOT / "director/ingestion/management_kpi_enrichment.py",
     ]
     blocked = []
     for file in paths:

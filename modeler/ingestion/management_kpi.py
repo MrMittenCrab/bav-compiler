@@ -275,7 +275,7 @@ def _presentation_source_binding(
     inspection = _inspection_for(bound)
     if inspection is None:
         return "", ""
-    from core.ingestion.management_kpi_enrichment import (
+    from extractor.ingestion.management_kpi_enrichment import (
         format_physical_page_mapping,
         page_reference_from_printed,
         validate_physical_page_binding,
@@ -300,7 +300,7 @@ def _inspection_for(bound: BoundManagementDocument) -> Any | None:
     cached = _PDF_INSPECTION_CACHE.get(cache_key)
     if cached is not None:
         return cached
-    from core.ingestion.management_kpi_enrichment import inspect_source_pdf
+    from extractor.ingestion.management_kpi_enrichment import inspect_source_pdf
 
     inspection = inspect_source_pdf(pdf)
     _PDF_INSPECTION_CACHE[cache_key] = inspection
@@ -320,13 +320,13 @@ def _supporting_evidence_binding(
     claimed = supporting.get("physical_pages") or []
     printed = supporting.get("printed_pages") or []
     if not printed:
-        from core.ingestion.management_kpi_enrichment import printed_pages_from_reference
+        from extractor.ingestion.management_kpi_enrichment import printed_pages_from_reference
 
         printed = list(printed_pages_from_reference(printed_source.page_reference))
     inspection = _inspection_for(bound)
     if inspection is None:
         return pairs, ""
-    from core.ingestion.management_kpi_enrichment import (
+    from extractor.ingestion.management_kpi_enrichment import (
         format_physical_page_mapping,
         validate_physical_page_binding,
     )
@@ -1163,7 +1163,7 @@ def admit_management_documents(
         )
     )
     diagnostics.extend(_revision_target_diagnostics(ordered))
-    from core.ingestion.management_kpi_enrichment import build_group_decisions
+    from modeler.ingestion.management_kpi_enrichment import build_group_decisions
     from .management_kpi_identity import assess_reported_observations
     from .management_kpi_reconciliation import (
         SELECTION_DEFERRED,

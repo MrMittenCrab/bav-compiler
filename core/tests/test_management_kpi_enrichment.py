@@ -259,30 +259,12 @@ def test_definition_and_calendar_are_not_collapsed_across_identities(tmp_path: P
 def test_ordinary_prepare_writes_resolution_and_keeps_revenue_per_store(tmp_path: Path):
     company = resolve_company("Lululemon")
     staged = tmp_path / "staged"
+    before = _bytes_by_name(EXTRACTED)
     fin = prepare_company_input(company, staged)
-    resolution = staged / "supporting" / "management_kpi_page_resolution.json"
-    assert resolution.is_file()
-    sidecar = json.loads(resolution.read_text())
-    fy2024 = next(
-        item
-        for item in sidecar["documents"]
-        if item["extraction_document"] == "LULU_FY2024_management_kpis.json"
-    )
-    assert fy2024["fiscal_year_end"] == "2025-02-02"
-    assert fy2024["printed_to_physical"]["34"] == 40
-    protected = EXTRACTED / "LULU_FY2024_management_kpis.json"
-    working = staged / "supporting" / "extracted" / "LULU_FY2024_management_kpis.json"
-    assert _sha(protected) != _sha(working)
-    original_comp = next(
-        item
-        for item in json.loads(protected.read_text())["reported_kpis"]
-        if item["metric_id"] == "comparable_sales_growth"
-    )
-    assert original_comp["period"] == "FY2024"
-    admission = json.loads(
-        (staged / "supporting" / "management_kpi_admission.json").read_text()
-    )
-    assert admission["reconciliation"]["selected_count"] > 0
+    assert _bytes_by_name(EXTRACTED) == before
+    assert not (staged / "supporting" / "management_kpi_page_resolution.json").exists()
+    assert not (staged / "supporting" / "extracted").exists()
+    assert not (staged / "supporting" / "management_kpi_admission.json").exists()
     assert fin.historical_operating_kpis is not None
     assert fin.historical_operating_kpis.management_observations
     stores = {
@@ -296,6 +278,50 @@ def test_ordinary_prepare_writes_resolution_and_keeps_revenue_per_store(tmp_path
     for period, revenue in REVENUE_ANCHORS.items():
         expected = revenue / INDEPENDENT_STORE_TOTALS[period]
         assert series.period_end_revenue_per_store[period] == pytest.approx(expected)
+
+
+def test_director_working_copy_enrichment_writes_resolution_and_admits(tmp_path: Path):
+    from director.ingestion.management_kpi_enrichment import (
+        enrich_management_working_copies as director_enrich,
+    )
+
+    dest = _copy_extracted(tmp_path / "supporting" / "extracted")
+    protected = EXTRACTED / "LULU_FY2024_management_kpis.json"
+    sidecar = director_enrich(dest, SOURCE)
+    resolution = Path(sidecar["resolution_path"])
+    assert resolution.is_file()
+    payload = json.loads(resolution.read_text())
+    fy2024 = next(
+        item
+        for item in payload["documents"]
+        if item["extraction_document"] == "LULU_FY2024_management_kpis.json"
+    )
+    assert fy2024["fiscal_year_end"] == "2025-02-02"
+    assert fy2024["printed_to_physical"]["34"] == 40
+    working = dest / "LULU_FY2024_management_kpis.json"
+    assert _sha(protected) != _sha(working)
+    original_comp = next(
+        item
+        for item in json.loads(protected.read_text())["reported_kpis"]
+        if item["metric_id"] == "comparable_sales_growth"
+    )
+    assert original_comp["period"] == "FY2024"
+    admission = reconciliation_management_admission_payload(
+        reconcile_filings(
+            load_and_validate_extracted_dir(dest, source_root=SOURCE),
+            admit_periods=ADMIT_2022,
+        )
+    )
+    assert admission["reconciliation"]["selected_count"] > 0
+
+
+def test_repeated_working_copy_enrichment_is_stable(tmp_path: Path):
+    dest = _copy_extracted(tmp_path / "repeat")
+    first = enrich_management_working_copies(dest, SOURCE)
+    second = enrich_management_working_copies(dest, SOURCE)
+    assert second["written"] == first["written"]
+    assert second["documents"] == first["documents"]
+    assert Path(second["resolution_path"]) == Path(first["resolution_path"])
 
 
 def _enriched_admission(tmp_path: Path) -> dict:

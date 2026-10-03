@@ -1,3 +1,103 @@
+# RESULT.md — Step 10.9.6 Decompose management-KPI enrichment ownership
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.9.6 — Decompose management-KPI enrichment ownership
+**Work:** `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`
+**Plan:** `cba07f8dbe9b432293a6def32e655add`
+**Finding:** Relocate data contracts and ingestion responsibilities
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. Controller files under `.git/autocycle` were read-only.
+
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `9325429156cb87818bda595e624773f041a950bf5f8f3761ff86eb1cd5624505` (8395).
+
+This bounded split decomposes `core/ingestion/management_kpi_enrichment.py` by responsibility and corrects the enrichment-sidecar regression contract. It does not close parent Completion (remaining relocation/decomposition still open) and does not establish Session 10 acceptance.
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state` and authenticated as a Git commit. `implementation-baseline.json` head matched B. Leftover `latest-implementation` HEAD was not substituted for B.
+
+| Binding source | Value |
+|---|---|
+| `resume-state` `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD | `da53beb625d195794b947b98718a42f70a07bb53` |
+| Branch | `checkpoint/20260913-183303` |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` work / plan | work `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`, plan `cba07f8dbe9b432293a6def32e655add`, step `10.9.6` |
+| `work-state` allocated `10.9.6` | source = B, work_id = `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`, status `opened` |
+| Current implementation attempt | `f3b31328af7a4742a47b0e1f6455c8c5` (phase `running`, plan_sha = B, `checkpoint_sha` absent) |
+| Live authentication state | implementation at B (`HEAD == B`) after nonempty matching work and attempt bindings |
+| Retained pre-relocation comparator | `eb65dc63845b940162c48e39ae9af7598d2a3078` |
+| Historical 10.9.2 authenticated B | `95efb965cd896e462814459b843d9a992358c7a9` |
+| `latest-implementation` leftover HEAD | `a6dea5230cdd82b3df70657773ede7c62d9b09c1` (ignored: `IMPLEMENT_BASE_SHA` populated and authenticated) |
+| Fail-closed | Not required |
+
+Historical tuples remain separately bound comparators and do not authorize this live attempt.
+
+## Ownership split
+
+| Responsibility | Destination | Notes |
+|---|---|---|
+| PDF inspection, decoding, passage extraction, documentary evidence records, printed/physical page binding, source-faithful definition features | `extractor/ingestion/management_kpi_enrichment.py` | Existing inspection relocated; not a new extractor |
+| Definition-equivalence, `enrich_management_payload`, `build_group_decisions` and mechanical failure mappings | `modeler/ingestion/management_kpi_enrichment.py` | Consumes Extractor evidence; no PDF parse or sidecar I/O |
+| `enrich_management_working_copies`, `PAGE_RESOLUTION_NAME`, protected-path checks, sequencing, sidecar persistence | `director/ingestion/management_kpi_enrichment.py` | Same signature, defaults, sidecar schema, ordering and failure behavior |
+| Compatibility façade, including required private helpers | `core/ingestion/management_kpi_enrichment.py` | Object identity preserved; canonical owners do not import it or Legacy |
+
+B blob `core/ingestion/management_kpi_enrichment.py` SHA-256 `4ebe031097e4898300b89e0adba92d41034a92ec5b39fc90bd67b164ac776b9e` (87549). Current façade is delegation-only (1214). Documentary inspection, analytical transformations and sidecar orchestration match authenticated B through relocated functions (dataclass decorators restored after the mechanical split).
+
+Active callers in `modeler/ingestion/management_kpi.py` and `management_kpi_identity.py` use Extractor page-binding / inspection and Modeler definition-equivalence / `build_group_decisions`. Isolated B comparators retain deliberate `core.ingestion` imports.
+
+`director/docs/MIGRATION_INVENTORY.md` now records responsibility-level destinations and no longer assigns enrichment as a blanket Legacy / deferred-core module.
+
+## Sidecar regression diagnosis
+
+`test_ordinary_prepare_writes_resolution_and_keeps_revenue_per_store` expected ordinary `prepare_company_input` to write `management_kpi_page_resolution.json`, a working-copy extract, and `management_kpi_admission.json`. Authenticated B and current `core/current_build.py:prepare_company_input` load accepted `reconciled/standardized.json` and `del staged`. TARGET’s canonical company-build input is that standardized file; ordinary preparation does not traverse staging or enrich extracts.
+
+This was a stale test contract, not a missing implicit build-time enrichment. Ordinary preparation was preserved. Sidecar, FY2024 `2025-02-02`, printed-page 34 → physical-page 40, protected-input preservation and `selected_count > 0` assertions now run through Director `enrich_management_working_copies` followed by existing `load_and_validate_extracted_dir` / `reconcile_filings` / admission payload. Ordinary prepare still covers management observations, independent store totals and revenue-per-store anchors, and asserts it does not regenerate upstream working copies or sidecars. Implicit build-time enrichment was not restored.
+
+Isolated current-versus-B normalization compare required `interpreter` in `_materialize_git_tree` because current B already contains the 10.9.5 façade that imports `interpreter.normalization`. Historical trees at `eb65dc6` and `95efb965` also contain `interpreter/`.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| B authentication (resume-state, baseline JSON, work-state 10.9.6, branch, HEAD==B, attempt `f3b31328…`) | B = `da53beb625d195794b947b98718a42f70a07bb53`; HEAD == B; fail-closed not required |
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_management_kpi_enrichment.py core/tests/test_management_kpi_reconciliation.py core/tests/test_normalization_candidate_admission.py core/tests/test_data_ingestion_ownership.py core/tests/test_normalization.py core/tests/test_filing_json.py core/tests/test_research_drivers.py` | **463 passed** in 96.64s. No skip / xfail / deselect |
+| Isolated current-versus-B vs pre-relocation `eb65dc6`, authenticated historical B `95efb965`, and current B `da53beb` | Retained by `test_b_and_current_isolated_agreement`; analytical/admission-gate JSON equal after materializing `interpreter` |
+| Canonical vs façade identity | `inspect_source_pdf`, `assess_definition_equivalence`, `build_group_decisions`, `enrich_management_working_copies`, `enrich_management_payload`, private exclusion helpers and documentary types are identity-equal; destinations do not import the façade or Legacy |
+| Fresh-process imports | Both canonical-then-façade and façade-then-canonical orders pass for Director enrich, Extractor inspect and Modeler `build_group_decisions` |
+| Protected-directory rejection, unsupported page bindings, complete passage attribution, repeated working-copy enrichment | Exercised; repeated enrich writes identical `documents` / `written` |
+| Ordinary prepare | Management observations, independent store totals and revenue-per-store anchors retained; no sidecar or working-copy regeneration |
+| Director enrich → validate → reconcile → admit | FY2024 date `2025-02-02`; printed 34 → physical 40; protected extract unchanged (`period` remains `FY2024`); `selected_count > 0` |
+| `git diff --check` | rc 0 |
+
+Covered gates remain: protected-path refusal; PDF-consumed bindings; rejection of unsupported and extract-asserted pages; FY2022 calendar from FY2023 p.33; shifted windows not inferred; definition equivalence vs genuine differences; SPSF level vs comparison; metric-specific exclusions; complete passage attribution; pair/peer independence; isolated synthetic and independently authorized normalization round trips for all 11 observations.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `extractor/ingestion/management_kpi_enrichment.py` | `cc084fb6fa859784c19c398a5bd400b81aefef8f910dfe85fe35af44e8cb962d` | 46495 |
+| `modeler/ingestion/management_kpi_enrichment.py` | `2bc447ee71aa39c3df3e8ddb7ed05e5ec1d6790cca3e6772b5fea04edecf2d9f` | 39149 |
+| `director/ingestion/management_kpi_enrichment.py` | `71f0e471ddfb1b2c5f7668056663d0c0623f0c98f906e901ba0fbb1361ca90f4` | 3678 |
+| `core/ingestion/management_kpi_enrichment.py` | `585a0cd6719d44393644d00d706ca81cbaaab33a194fe144ad8ad8f731ffe8c8` | 1214 |
+| `extractor/ingestion/__init__.py` | `85ae9db25c4dc7aa9b12a359ba62aeadbbba6a67e419a7aac1c25c605a0eee9a` | 67 |
+
+## Preservation
+
+Completed Modeler data and ingestion ownership, Director schema and orchestration ownership, Extractor documentary types/binding, normalization-candidate owners, issue ordering, compatibility façades and inventory mappings remain. Public `bav` commands, aliases, lazy loading, optional Trainer independence, dormant forecasting, accounting signs, fiscal distinctions, precision, reconciliations, provenance, residual qualifications and admission/comparison independence were not rewritten. Canonical source and extracted/reconciled inputs were not rewritten. Ordinary company build still loads standardized-only input. Admission remains default-off and outside ordinary reconciliation.
+
+## Remaining toward Completion
+
+Broader classification/normalization interpretation splits, remaining ingestion and Legacy decomposition, unrelated removals, test ownership migration and final repository-wide verification remain unfinished. No CLI expansion, general provenance framework, algorithm/report redesign, Trainer expansion or second-phase features.
+
+This bounded ownership split and sidecar-contract correction do not establish parent Completion or Session 10 acceptance.
+
+## Required plan change
+
+None.
+
+---
+
 # RESULT.md — Step 4.1.2 Repair centralized Drivers figure spacing
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)  
