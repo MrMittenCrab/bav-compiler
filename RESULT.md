@@ -11046,3 +11046,78 @@ This relocation does not establish Session 10 acceptance.
 
 None.
 
+
+# RESULT.md — Step 10.9.1 Relocate data contracts and ingestion responsibilities — normalization-candidate verification repair
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)  
+**Step:** 10.9.1 — Relocate data contracts and ingestion responsibilities — normalization-candidate verification repair  
+**Work:** `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`  
+**Plan:** `ec5ab3a7c0864203ae074b8100804557`  
+**Finding:** Relocate data contracts and ingestion responsibilities
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. Production admission/relocation code was not edited.
+
+## Baseline authentication
+
+| Binding | Value |
+|---|---|
+| `resume-state` `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / HEAD | `250d57178d4b32b3b12a13ba9a08677789d59183` |
+| Branch | `checkpoint/20260913-183303` |
+| Reviewed checkpoint | `38f5774170c577aa10eb5f03c4cbe99ed7cff789` |
+| Checkpoint parent / retained pre-relocation comparison B | `eb65dc63845b940162c48e39ae9af7598d2a3078` |
+| `latest-implementation` HEAD | `eb65dc63845b940162c48e39ae9af7598d2a3078` |
+| Fail-closed | Not required; populated `IMPLEMENT_BASE_SHA`, branch ref, ancestry and checkpoint parent all authenticated |
+
+Admission module B→current is import-only (`core.data` → `modeler.data` for `interface` / `line_identity`). B production bytes were materialized via `git archive` and left unchanged in the isolated tree.
+
+## Fixture derivation / bindings
+
+Replaced `/tmp/bav_norm_qualify_9M2411166` and `/tmp/bav_norm_admit_9M2411167`. Historical temporary scripts/payloads were not reconstructed.
+
+Observations are derived from the four extracted Lululemon filings using Extractor `load_extracted_filing` + `source_row_identity`. Authorized IS and CF identities are included (24 rows). Axis IS observations in `LEDGER_PERIODS`: **11**. Excluded FY2022 comparative `2021-01-31`: **1**. Identities, periods, values, USD/thousands, declared source hashes and physical pages come from extracted source rows. Source PDF SHA-256 matches `BOUND_SOURCE_SHA256` and filing `source_sha256`.
+
+Independently specified expected series (not taken from admission output): face `(0, 407913, 74501, 0, 0)`; analytical `(0, -407913, -74501, 0, 0)`; non-recurring pretax `(0, 407913, 74501, 0, 0)`; recurring pretax all zeros. Synthetic adoption/treatment remain labeled `SYNTHETIC` / `AUTHORIZATION_SYNTHETIC`.
+
+Printed pages independently specified from bound PDF inspection where the last-line heuristic resolved: FY2022 p50→46, p53→49; FY2023 p56→50, p59→53. FY2024/FY2025 statement pages did not resolve a printed page; those locators keep physical pages only.
+
+Repository input bindings (immutability checked during tests):
+
+| Path | SHA-256 | Role |
+|---|---|---|
+| `build/input/lululemon/evidence/prior-live/standardized.json` | `6c9aad59b04a5995742c68e08f1a704953796fc9fad97a036b08aeeab59051e5` | live financials (historical live digest) |
+| `build/input/lululemon/evidence/prior-live/provenance.json` | `5067c1d04aa93c18062fe7eb90558a86394283b7d9fe45899761f71cfb615951` | live provenance |
+| `build/input/lululemon/evidence/prior-live/conflicts.json` | `d8a33012f6ea73126ac4e2ece3613e7011c11cb2b581745d8c3563e3c2e978e0` | live conflicts |
+| `core/tests/fixtures/ordinary_reconcile/lululemon/standardized.json` | `a3568c29e883c8ba57af23da7b4286641a3c5f929af311e2e9593c5f63ea2287` | ordinary standardized (path continuity; not the missing `/tmp` default digest `b9d8354c…`) |
+
+Canonical `build/input/lululemon/reconciled/standardized.json` is used only to show default admission still off and `ANALYTICAL_CONCEPT` absent. It contains a later-audited `impairment_and_restructuring` line, so ordinary-selector absence is asserted on prior-live and the ordinary fixture only.
+
+## B / current isolated comparison
+
+Same derived observations and live/ordinary payloads were executed against B Git production code and current canonical dependencies in separate processes (`core/tests/normalization_candidate_isolated_driver.py`). Compared: construction series/fingerprints/locators, absent adoption, ten rejection probes, ambiguous selector, provisional/contradictory adoption, mismatched/stale adoption, treatment gates, synthetic admission export/reload, pretax recurring/non-recurring, repeated admission, ordinary selector/default-off behavior. JSON results were identical.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_normalization_candidate_admission.py` | **23 passed** in 2.23s (1 Python 3.14 tar extract warning). All **20** formerly blocked cases executed their checks; the **2** previously passing tests still pass; plus 1 new isolated B/current comparison |
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_data_ingestion_ownership.py core/tests/test_normalization.py core/tests/test_filing_json.py` | **135 passed** in 10.42s |
+| Collected candidate cases | 23 (10 parametrized rejection probes + 13 other tests). No skip / xfail / deselect |
+| `git diff --check` | rc 0. Prior checkpoint whitespace advisories were not cleaned |
+| Enrichment-sidecar | Not re-run. Production dependencies unchanged. Prior Step 10.9 failure `test_ordinary_prepare_writes_resolution_and_keeps_revenue_per_store` remains visible; the broader suite is not claimed fully passing |
+
+Covered gates: absent/provisional/stale/contradictory adoption; missing/conflicting treatment; invalid source binding; missing periods; overlapping conflicts; unauthorized membership; cash-flow substitution; Studio/component exclusion; duplicate use; absent/repeated sign conversion; ambiguous selectors. Synthetic admission remains distinct from real-company acceptance; default admission remains disabled; pretax consequences agree with B; after-tax treatment stays unresolved.
+
+## Preservation
+
+Completed Modeler/Director relocation, compatibility imports, public `bav` interfaces, source/extracted/reconciled inputs and production admission code were not rewritten. Ownership/recovery safeguards and protected documents were not disturbed.
+
+## Remaining toward Completion
+
+Classification/normalization interpretation splits, normalization-candidate separation, enrichment/Legacy decomposition, remaining orchestration relocation, unrelated removals, test ownership migration and final repository-wide verification remain subsequent scope. The enrichment-sidecar defect was not repaired. FY2024/FY2025 printed-page resolution remains source-unresolved. Missing `/tmp` qualification scripts and the historical default digest `b9d8354c…` were not reconstructed.
+
+This verification repair does not establish Session 10 acceptance.
+
+## Required plan change
+
+None.
+

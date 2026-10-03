@@ -4,13 +4,20 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import io
 import json
+import os
 import subprocess
+import sys
+import tarfile
+import tempfile
 from datetime import date
 from pathlib import Path
 
 import pytest
 
+from extractor.data.filing_json import load_extracted_filing
+from extractor.data.filing_validator import source_row_identity
 from modeler.data.historical_segments import SEGMENT_BRIDGE_TOLERANCE
 from modeler.data.line_identity import line_identity
 from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
@@ -22,10 +29,10 @@ from core.ingestion.normalization_candidate_admission import (
     AUTHORIZATION_SYNTHETIC,
     CF_AUDIT_IDENTITIES,
     LEDGER_PERIODS,
+    SIGN_TRANSFORMATION,
     AdoptionRecord,
     TreatmentRecord,
     construct_provisional_candidate,
-    printed_page_lookup_from_evidence,
     run_normalization_candidate_handoff,
 )
 from modeler.financial_math import AnchorMetrics, HistoricalSeries
@@ -39,32 +46,51 @@ from modeler.period_axis import canonical_fiscal_periods
 from modeler.ratio_values import UNDEFINED_RATIO
 
 ROOT = Path(__file__).resolve().parents[2]
-QUALIFY = Path("/tmp/bav_norm_qualify_9M2411166")
-ADMIT_PROTO = Path("/tmp/bav_norm_admit_9M2411167")
+COMPARISON_B = "eb65dc63845b940162c48e39ae9af7598d2a3078"
+REVIEWED_CHECKPOINT = "38f5774170c577aa10eb5f03c4cbe99ed7cff789"
 LIVE_DIR = ROOT / "build" / "input" / "lululemon" / "evidence" / "prior-live"
+EXTRACTED_DIR = ROOT / "build" / "input" / "lululemon" / "extracted"
+SOURCE_DIR = ROOT / "build" / "input" / "lululemon" / "source"
+RECONCILED_STD = ROOT / "build" / "input" / "lululemon" / "reconciled" / "standardized.json"
+ORDINARY_DIR = ROOT / "core" / "tests" / "fixtures" / "ordinary_reconcile" / "lululemon"
+ORDINARY_STD = ORDINARY_DIR / "standardized.json"
 ASSUMPTIONS = ROOT / "core" / "tests" / "fixtures" / "ordinary_reconcile" / "lululemon_assumptions.json"
-
-RETAINED = {
-    "evidence.json": "fb9a13378756600a0087e6a6785ed38ad06a587b8d76182cf6c41d1c129f6960",
-    "qualify_source_to_selector.py": "3d7a02f7027db5a18da4dd7701fada9d6dd4c66592b5f0b54aefa6bf9c41f8d2",
-    "signed_arithmetic_check.py": "cab57b5d973477ebe8d069096cc1fd314fa9faf74b2b938b74af1961bd5eaa43",
-    "signed_arithmetic_check.json": "a870a856e1959e370dca979d11e85c665f9ce76dc03d1420de5407daac608699",
-    "extracted_observations.json": "d74a6f1588a0b1397eaa79dd24c02e3454c46643e7e3b18105a46adbc9129880",
-}
-RETAINED_PROTO = {
-    "admit_candidate_contract.py": "db884002cc088bb631944e2804f693509b7e0019f53befccf82b34e15d775621",
-    "admit_candidate_contract.json": "1c1a897cf96abf411a9d42f0aef91fd491262ada9e4c6d6f6593a8bef870b1ff",
-    "isolated_standardized.json": "8f9e4adaf0dfba00fdead7e05b7860ce96dd990e65a67dd2136da578ae4159bd",
-}
+EXTRACTED_FILINGS = (
+    EXTRACTED_DIR / "LULU_FY2022.json",
+    EXTRACTED_DIR / "LULU_FY2023.json",
+    EXTRACTED_DIR / "LULU_FY2024.json",
+    EXTRACTED_DIR / "LULU_FY2025.json",
+)
 RETAINED_LIVE_STD = "6c9aad59b04a5995742c68e08f1a704953796fc9fad97a036b08aeeab59051e5"
 RETAINED_LIVE_PROV = "5067c1d04aa93c18062fe7eb90558a86394283b7d9fe45899761f71cfb615951"
 RETAINED_LIVE_CONFLICTS = "d8a33012f6ea73126ac4e2ece3613e7011c11cb2b581745d8c3563e3c2e978e0"
-RETAINED_DEFAULT_STD = "b9d8354cbeb04edad2aba1df332ef46d49a61c2c8d9eea35cf209d4491bf1cfa"
+ORDINARY_STD_SHA256 = "a3568c29e883c8ba57af23da7b4286641a3c5f929af311e2e9593c5f63ea2287"
 EXPECTED_FACE = (0, 407913, 74501, 0, 0)
 EXPECTED_ANALYTICAL = (0, -407913, -74501, 0, 0)
 EXPECTED_NONRECURRING_PRETAX = (0, 407913, 74501, 0, 0)
 EXPECTED_RECURRING_PRETAX = (0, 0, 0, 0, 0)
 NOTE_TAX_EFFECTS = (28171, 26085)
+# Independently specified from extracted source.page and bound PDF printed-page inspection.
+EXPECTED_PHYSICAL_PAGES = {
+    "2022-01-30": (50, 56),
+    "2023-01-29": (50, 51, 56),
+    "2024-01-28": (51, 56),
+    "2025-02-02": (51,),
+    "2026-02-01": (51,),
+}
+EXPECTED_PRINTED_PAGES = {
+    "2022-01-30": (46, 50),
+    "2023-01-29": (46, 50),
+    "2024-01-28": (50,),
+    "2025-02-02": (),
+    "2026-02-01": (),
+}
+RESOLVED_PRINTED_PAGES = {
+    ("LULU_FY2022_Annual_Report.pdf", 50): 46,
+    ("LULU_FY2022_Annual_Report.pdf", 53): 49,
+    ("LULU_FY2023_Annual_Report.pdf", 56): 50,
+    ("LULU_FY2023_Annual_Report.pdf", 59): 53,
+}
 BOUND_SOURCE_SHA256 = {
     "LULU_FY2022_Annual_Report.pdf": "b344d1e7a710259fa06f88773dee0b3827334820ce2b881fe6b95ca2ae275e4e",
     "LULU_FY2023_Annual_Report.pdf": "cd47ea251d608d06a3e58b5d782f2d41d5a231a994d2f7993267a430cb13c0f1",
@@ -165,42 +191,93 @@ def _snapshot_obs(observations: list[dict]) -> str:
     return json.dumps(observations, sort_keys=True, default=str)
 
 
-def _require_retained_evidence() -> None:
-    missing = [name for name in RETAINED if not (QUALIFY / name).is_file()]
-    missing.extend(name for name in RETAINED_PROTO if not (ADMIT_PROTO / name).is_file())
-    if missing:
-        pytest.fail(f"retained qualification/prototype evidence missing: {missing}")
-    mismatches = []
-    for name, expected in RETAINED.items():
-        actual = _sha256(QUALIFY / name)
-        if actual != expected:
-            mismatches.append((name, actual, expected))
-    for name, expected in RETAINED_PROTO.items():
-        actual = _sha256(ADMIT_PROTO / name)
-        if actual != expected:
-            mismatches.append((name, actual, expected))
-    if mismatches:
-        pytest.fail(f"retained evidence hash mismatch: {mismatches}")
+def _locator_attached(obs: dict, page_lookup: dict) -> dict:
+    """Independently attach physical/printed locators from the bound page lookup."""
+    row = dict(obs)
+    info = page_lookup.get((str(obs.get("source_file") or ""), int(obs.get("pdf_page") or 0)), {})
+    row["physical_page"] = obs.get("pdf_page")
+    row["printed_page"] = info.get("printed_page")
+    row["printed_page_status"] = info.get("printed_status")
+    return row
+
+
+def _independent_fingerprint(obs: dict) -> str:
+    payload = json.dumps(dict(obs), sort_keys=True, default=str)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _page_lookup() -> dict[tuple[str, int], dict[str, object]]:
+    return {
+        key: {"printed_page": printed, "printed_status": "resolved"}
+        for key, printed in RESOLVED_PRINTED_PAGES.items()
+    }
+
+
+def _derive_observations_from_extracted() -> list[dict]:
+    """Build observations from extracted statement rows; not from admission output."""
+    authorized = set(AUTHORIZED_IS_IDENTITIES) | set(CF_AUDIT_IDENTITIES)
+    observations: list[dict] = []
+    for path in EXTRACTED_FILINGS:
+        filing = load_extracted_filing(path)
+        source_file = filing.filing.source_file
+        declared = filing.filing.source_sha256
+        if declared != BOUND_SOURCE_SHA256[source_file]:
+            pytest.fail(
+                f"extracted source hash unbound: {path.name} {declared} "
+                f"!= {BOUND_SOURCE_SHA256[source_file]}"
+            )
+        if _sha256(SOURCE_DIR / source_file) != declared:
+            pytest.fail(f"source PDF hash mismatch: {source_file}")
+        for statement, rows in (
+            ("income_statement", filing.income_statement),
+            ("cash_flow", filing.cash_flow),
+        ):
+            for row in rows:
+                ident = source_row_identity(statement, row)
+                if ident not in authorized:
+                    continue
+                for period, cell in row.values.items():
+                    observations.append(
+                        {
+                            "currency": filing.filing.currency,
+                            "kind": "statement",
+                            "label": row.label,
+                            "pdf_page": row.source.page,
+                            "period": period.isoformat(),
+                            "presentation_role": str(cell.presentation_role),
+                            "row_identity": ident,
+                            "section": row.section,
+                            "source_file": source_file,
+                            "source_sha256_declared": declared,
+                            "statement": statement,
+                            "suggested_concept": row.suggested_concept,
+                            "unit_scale": filing.filing.unit_scale,
+                            "value": cell.value,
+                        }
+                    )
+    return observations
 
 
 @pytest.fixture(scope="module")
 def retained():
-    _require_retained_evidence()
-    observations = _load_json(QUALIFY / "extracted_observations.json")
-    evidence = _load_json(QUALIFY / "evidence.json")
-    live_payload = _load_json(LIVE_DIR / "standardized.json")
-    admit_payload = _load_json(QUALIFY / "ordinary_reconcile_admit_2022" / "standardized.json")
-    default_payload = _load_json(QUALIFY / "ordinary_reconcile" / "standardized.json")
+    observations = _derive_observations_from_extracted()
+    live_bytes = (LIVE_DIR / "standardized.json").read_bytes()
+    ordinary_bytes = ORDINARY_STD.read_bytes()
+    reconciled_bytes = RECONCILED_STD.read_bytes()
+    live_payload = json.loads(live_bytes.decode("utf-8"))
+    ordinary_payload = json.loads(ordinary_bytes.decode("utf-8"))
+    reconciled_payload = json.loads(reconciled_bytes.decode("utf-8"))
     return {
         "observations": observations,
-        "evidence": evidence,
-        "page_lookup": printed_page_lookup_from_evidence(evidence),
+        "page_lookup": _page_lookup(),
         "live_payload": live_payload,
-        "admit_payload": admit_payload,
-        "default_payload": default_payload,
+        "ordinary_payload": ordinary_payload,
+        "reconciled_payload": reconciled_payload,
         "live": standardized_from_payload(copy.deepcopy(live_payload), strict=True),
         "obs_snapshot": _snapshot_obs(observations),
-        "live_std_bytes": (LIVE_DIR / "standardized.json").read_bytes(),
+        "live_std_bytes": live_bytes,
+        "ordinary_std_bytes": ordinary_bytes,
+        "reconciled_std_bytes": reconciled_bytes,
     }
 
 
@@ -306,11 +383,22 @@ def test_authenticated_retained_evidence_and_eleven_observations(retained):
         and obs.get("row_identity") in AUTHORIZED_IS_IDENTITIES
     ]
     assert len(excluded) == 1
+    assert excluded[0]["value"] == 0
+    assert excluded[0]["source_file"] == "LULU_FY2022_Annual_Report.pdf"
     assert _sha256(LIVE_DIR / "standardized.json") == RETAINED_LIVE_STD
-    assert _sha256(QUALIFY / "ordinary_reconcile_admit_2022" / "standardized.json") == RETAINED_LIVE_STD
-    assert _sha256(QUALIFY / "ordinary_reconcile" / "standardized.json") == RETAINED_DEFAULT_STD
     assert _sha256(LIVE_DIR / "provenance.json") == RETAINED_LIVE_PROV
     assert _sha256(LIVE_DIR / "conflicts.json") == RETAINED_LIVE_CONFLICTS
+    assert _sha256(ORDINARY_STD) == ORDINARY_STD_SHA256
+    assert retained["live_std_bytes"] == (LIVE_DIR / "standardized.json").read_bytes()
+    assert retained["ordinary_std_bytes"] == ORDINARY_STD.read_bytes()
+    assert retained["reconciled_std_bytes"] == RECONCILED_STD.read_bytes()
+    assert _snapshot_obs(retained["observations"]) == retained["obs_snapshot"]
+    for obs in retained["observations"]:
+        assert obs["currency"] == "USD"
+        assert obs["unit_scale"] == "thousands"
+        assert obs["source_sha256_declared"] == BOUND_SOURCE_SHA256[obs["source_file"]]
+        assert obs["row_identity"]
+        assert obs["period"]
 
 
 def test_provisional_construction_from_observations_not_hand_entered(retained):
@@ -329,15 +417,36 @@ def test_provisional_construction_from_observations_not_hand_entered(retained):
     assert construction.line.concept == ANALYTICAL_CONCEPT
     assert construction.line.label == ANALYTICAL_LABEL
     assert sum(row.n_is_observations for row in construction.periods) == 11
+    assert _snapshot_obs(retained["observations"]) == retained["obs_snapshot"]
+    used: set[str] = set()
     for row in construction.periods:
         assert row.face_retained_unchanged is True
         assert row.zero_filled is False
         assert row.missing is False
+        assert row.transformation == SIGN_TRANSFORMATION
         assert row.transformation == "analytical_amount = -reported_face_expense"
         assert row.sign_conversions_applied == 1
         assert row.grouping_is_accepted_source_fact is False
         assert row.studio_cogs_included is False
         assert set(row.row_identities) <= set(AUTHORIZED_IS_IDENTITIES)
+        assert row.physical_pages == EXPECTED_PHYSICAL_PAGES[row.period]
+        assert row.printed_pages == EXPECTED_PRINTED_PAGES[row.period]
+        assert row.source_hashes
+        assert set(row.source_hashes) <= set(BOUND_SOURCE_SHA256.values())
+        members = [
+            obs
+            for obs in retained["observations"]
+            if obs.get("period") == row.period
+            and obs.get("row_identity") in AUTHORIZED_IS_IDENTITIES
+        ]
+        expected_fps = tuple(
+            _independent_fingerprint(_locator_attached(obs, retained["page_lookup"]))
+            for obs in members
+        )
+        assert set(row.observation_fingerprints) == set(expected_fps)
+        assert not used.intersection(row.observation_fingerprints)
+        used.update(row.observation_fingerprints)
+    assert len(used) == 11
 
 
 def test_real_lululemon_path_blocks_production_without_adoption(retained):
@@ -732,6 +841,27 @@ def test_synthetic_admission_export_reload_and_hypothetical_pretax(retained):
     assert ident.key() == (
         f"concept={ANALYTICAL_CONCEPT}|label={ANALYTICAL_LABEL.casefold()}"
     )
+    assert _snapshot_obs(retained["observations"]) == retained["obs_snapshot"]
+    assert retained["live_std_bytes"] == (LIVE_DIR / "standardized.json").read_bytes()
+    for row in result.periods:
+        assert row.transformation == SIGN_TRANSFORMATION
+        assert row.source_hashes
+        assert set(row.source_hashes) <= set(BOUND_SOURCE_SHA256.values())
+        assert row.physical_pages == EXPECTED_PHYSICAL_PAGES[row.period]
+        assert row.printed_pages == EXPECTED_PRINTED_PAGES[row.period]
+        assert set(row.row_identities) <= set(AUTHORIZED_IS_IDENTITIES)
+        assert row.observation_fingerprints
+        members = [
+            obs
+            for obs in retained["observations"]
+            if obs.get("period") == row.period
+            and obs.get("row_identity") in AUTHORIZED_IS_IDENTITIES
+        ]
+        expected_fps = {
+            _independent_fingerprint(_locator_attached(obs, retained["page_lookup"]))
+            for obs in members
+        }
+        assert set(row.observation_fingerprints) == expected_fps
     for selector in ORDINARY_SELECTORS:
         with pytest.raises(ValueError, match="matched no income-statement line"):
             resolve_income_statement_selector(reloaded, selector)
@@ -797,19 +927,24 @@ def test_repeated_admission_rejected_and_inputs_unchanged(retained):
 
 def test_ordinary_outputs_and_selectors_unchanged(retained):
     live = standardized_from_payload(copy.deepcopy(retained["live_payload"]), strict=True)
-    admit = standardized_from_payload(copy.deepcopy(retained["admit_payload"]), strict=True)
-    default = standardized_from_payload(copy.deepcopy(retained["default_payload"]), strict=True)
-    for std in (live, admit, default):
+    ordinary = standardized_from_payload(copy.deepcopy(retained["ordinary_payload"]), strict=True)
+    reconciled = standardized_from_payload(copy.deepcopy(retained["reconciled_payload"]), strict=True)
+    for std in (live, ordinary):
         for selector in ORDINARY_SELECTORS + (ANALYTICAL_SELECTOR,):
             with pytest.raises(ValueError, match="matched no income-statement line"):
                 resolve_income_statement_selector(std, selector)
+    for std in (live, ordinary, reconciled):
         assert (
             normalization_cases(std, canonical_fiscal_periods(std), {"normalizationCandidates": []})
             == ()
         )
         assert not any(item.concept == ANALYTICAL_CONCEPT for item in std.income_statement)
+    with pytest.raises(ValueError, match="matched no income-statement line"):
+        resolve_income_statement_selector(reconciled, ANALYTICAL_SELECTOR)
     assert _sha256(LIVE_DIR / "standardized.json") == RETAINED_LIVE_STD
     assert retained["live_std_bytes"] == (LIVE_DIR / "standardized.json").read_bytes()
+    assert retained["ordinary_std_bytes"] == ORDINARY_STD.read_bytes()
+    assert retained["reconciled_std_bytes"] == RECONCILED_STD.read_bytes()
     assert json.loads(ASSUMPTIONS.read_text(encoding="utf-8")).get("normalizationCandidates") == []
 
 
@@ -841,3 +976,75 @@ def test_protected_artifacts_and_eight_extracts_unchanged():
         assert wt == at, (old, new)
         extract_matches += 1
     assert extract_matches == 8
+
+
+def _page_lookup_rows(page_lookup: dict) -> list[list[object]]:
+    return [
+        [source, page, info["printed_page"]]
+        for (source, page), info in sorted(page_lookup.items())
+    ]
+
+
+def _materialize_b_tree(dest: Path) -> None:
+    archive = subprocess.check_output(
+        ["git", "archive", COMPARISON_B, "core", "modeler", "extractor", "director"],
+        cwd=ROOT,
+    )
+    with tarfile.open(fileobj=io.BytesIO(archive), mode="r:") as tar:
+        tar.extractall(dest, filter="data")
+
+
+def _run_isolated_compare(era: str, tree: Path, casebook: dict) -> dict:
+    driver = ROOT / "core" / "tests" / "normalization_candidate_isolated_driver.py"
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(tree)
+    env["PYTHONNOUSERSITE"] = "1"
+    result = subprocess.run(
+        [sys.executable, str(driver), era],
+        cwd=str(tree),
+        input=json.dumps(casebook),
+        capture_output=True,
+        text=True,
+        env=env,
+        check=False,
+    )
+    if result.returncode != 0:
+        pytest.fail(f"isolated {era} compare failed: {result.stderr or result.stdout}")
+    return json.loads(result.stdout)
+
+
+def test_b_and_current_isolated_agreement(retained):
+    parent = _git_out(["git", "rev-parse", f"{REVIEWED_CHECKPOINT}^"])
+    assert parent == COMPARISON_B
+    casebook = {
+        "observations": retained["observations"],
+        "live_payload": retained["live_payload"],
+        "ordinary_payload": retained["ordinary_payload"],
+        "bound_source_hashes": BOUND_SOURCE_SHA256,
+        "page_lookup": _page_lookup_rows(retained["page_lookup"]),
+        "ordinary_selectors": list(ORDINARY_SELECTORS),
+    }
+    current = _run_isolated_compare("current", ROOT, casebook)
+    with tempfile.TemporaryDirectory() as tmp:
+        b_tree = Path(tmp)
+        _materialize_b_tree(b_tree)
+        admission = (b_tree / "core/ingestion/normalization_candidate_admission.py").read_bytes()
+        assert admission == subprocess.check_output(
+            ["git", "show", f"{COMPARISON_B}:core/ingestion/normalization_candidate_admission.py"],
+            cwd=ROOT,
+        )
+        baseline = _run_isolated_compare("b", b_tree, casebook)
+    assert current == baseline
+    assert current["construction"]["face_series"] == list(EXPECTED_FACE)
+    assert current["construction"]["analytical_series"] == list(EXPECTED_ANALYTICAL)
+    assert current["absent_adoption"]["blocked_reason"] == "absent_adoption"
+    assert current["absent_adoption"]["production_admitted"] is False
+    assert current["synthetic_admission"]["production_admitted"] is True
+    assert current["synthetic_admission"]["real_company_acceptance"] is False
+    assert current["synthetic_admission"]["pretax"]["nonrecurring"] == list(EXPECTED_NONRECURRING_PRETAX)
+    assert current["synthetic_admission"]["pretax"]["recurring"] == list(EXPECTED_RECURRING_PRETAX)
+    assert current["repeated_admission"]["blocked_reason"] == "repeated_admission"
+    assert current["ordinary_outputs"]["live"]["has_analytical"] is False
+    assert current["ordinary_outputs"]["ordinary"]["empty_candidates"] is True
+    assert _snapshot_obs(retained["observations"]) == retained["obs_snapshot"]
+    assert retained["live_std_bytes"] == (LIVE_DIR / "standardized.json").read_bytes()
