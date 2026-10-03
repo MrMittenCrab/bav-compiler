@@ -31,7 +31,7 @@ from modeler.period_axis import canonical_fiscal_periods
 from modeler.working_capital import compute_working_capital_series
 
 ROOT = Path(__file__).resolve().parents[2]
-DEMO_JSON = ROOT / "example" / "DEMO_HK_Standardized.json"
+DEMO_JSON = ROOT / "legacy" / "example" / "DEMO_HK_Standardized.json"
 FR_STD = ROOT / "build" / "input" / "fast_retailing" / "reconciled" / "standardized.json"
 
 

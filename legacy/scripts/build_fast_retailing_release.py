@@ -13,7 +13,7 @@ import shutil
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -141,7 +141,7 @@ source-grounded filings through the production pipeline.
 From the repository root:
 
 ```text
-python scripts/build_fast_retailing_release.py
+python legacy/scripts/build_fast_retailing_release.py
 ```
 
 ## Workbooks
@@ -195,7 +195,7 @@ def write_availability(standardized_json: Path) -> Path:
 
 
 def verify_release(trainer: Path, answer: Path) -> None:
-    from scripts.audit_fast_retailing_benchmark import run_audit
+    from legacy.scripts.audit_fast_retailing_benchmark import run_audit
 
     result = run_audit(
         standardized_json=SUPPORTING / "standardized.json",

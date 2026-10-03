@@ -102,14 +102,14 @@ python -m core validate-source path/to/extracted --source-root path/to/source
 python -m core reconcile path/to/extracted --source-root path/to/source -o path/to/reconciled
 
 # Or load an already-standardized JSON / Excel export:
-python -m core ingest example/DEMO_HK_Standardized.json -o /tmp/demo_std.json
+python -m core ingest legacy/example/DEMO_HK_Standardized.json -o /tmp/demo_std.json
 ```
 
 ### 2. Build the BAV, optionally with a Trainer
 
 ```bash
-python -m core build example/DEMO_HK_Standardized.json \
-  -a example/DEMO_HK_Assumptions.json \
+python -m core build legacy/example/DEMO_HK_Standardized.json \
+  -a legacy/example/DEMO_HK_Assumptions.json \
   -o training/DEMO_HK_BAV.xlsx
 ```
 
@@ -176,8 +176,8 @@ Step 9I.1 — learner-ready presentation
 - root README is a practical trainer guide (no pipeline/lineage narrative)
 
 Step 9J.1 — GOOGL historical reference audit
-- read-only audit of `example/GOOGL_Demo_Integrated_Financials.xlsx`
-- historical gap matrix + prioritized Step 9 queue in `docs/GOOGL_HISTORICAL_REFERENCE.md`
+- read-only audit of `legacy/example/GOOGL_Demo_Integrated_Financials.xlsx`
+- historical gap matrix + prioritized Step 9 queue in `legacy/docs/GOOGL_HISTORICAL_REFERENCE.md`
 - next candidate after audit was PP&E / D&A asset-intensity diagnostics (Priority A)
 - no new formula families or practice counts in that checkpoint
 

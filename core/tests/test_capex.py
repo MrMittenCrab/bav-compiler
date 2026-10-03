@@ -47,7 +47,7 @@ from core.trainer.workbook import build_training_workbook, group_components_by_f
 
 ROOT = Path(__file__).resolve().parents[2]
 STD_JSON = ROOT / "build" / "input" / "fast_retailing" / "reconciled" / "standardized.json"
-DEMO_JSON = ROOT / "example" / "DEMO_HK_Standardized.json"
+DEMO_JSON = ROOT / "legacy" / "example" / "DEMO_HK_Standardized.json"
 
 P1 = date(2024, 12, 31)
 P2 = date(2025, 12, 31)

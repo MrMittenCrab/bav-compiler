@@ -15,7 +15,7 @@ import tempfile
 from datetime import date
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -138,7 +138,7 @@ and excluded from practice and Check. No interest amounts were invented.
 From the repository root:
 
 ```text
-python scripts/build_lululemon_release.py
+python legacy/scripts/build_lululemon_release.py
 ```
 
 ## Workbooks

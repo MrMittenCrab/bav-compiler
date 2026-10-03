@@ -87,7 +87,7 @@ def _fill_rgb(cell) -> str:
 
 
 def _rgb_is_yellow(rgb: str) -> bool:
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _rgb_is_yellow as classify_yellow,
     )
 
@@ -159,7 +159,7 @@ def _assert_no_yellow_conditional_formatting(wb) -> None:
 
 
 def _assert_answer_key_no_yellow(path: Path) -> None:
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _cell_has_yellow,
         _cell_is_white_or_none,
         _verify_answer_key_no_yellow,
@@ -356,8 +356,8 @@ def test_check_colors_are_functional_exception_not_base_style(tmp_path):
 
 
 def test_committed_canonical_pair_matches_minimal_style_contract(tmp_path):
-    committed_trainer = ROOT / "example" / "DEMO_HK_Trainer.xlsx"
-    committed_answer = ROOT / "example" / "DEMO_HK_Answer_Key.xlsx"
+    committed_trainer = ROOT / "legacy" / "example" / "DEMO_HK_Trainer.xlsx"
+    committed_answer = ROOT / "legacy" / "example" / "DEMO_HK_Answer_Key.xlsx"
     committed_smap = load_semantic_map(committed_answer)
     assert len(group_components_by_family(committed_smap)) == 78
     assert len(committed_smap.all_ordered()) == 332

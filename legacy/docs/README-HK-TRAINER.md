@@ -122,6 +122,6 @@ v1 does **not** scrape HKEX automatically. Supply documents manually:
 | Excel export | Tabs: Income Statement, Balance Sheet, Cash Flow |
 | Bloomberg / Wind | Export to Excel; pass file to `ingest` |
 
-JSON schema matches `example/DEMO_HK_Standardized.json`. Sign conventions: revenue positive, expenses negative. When exporting via `python -m bav ingest ... -o ...`, each statement row includes `concept` (empty string when absent) so concept-aware identity survives reload.
+JSON schema matches `legacy/example/DEMO_HK_Standardized.json`. Sign conventions: revenue positive, expenses negative. When exporting via `python -m bav ingest ... -o ...`, each statement row includes `concept` (empty string when absent) so concept-aware identity survives reload.
 
 Optional historical configuration (e.g. `classificationOverrides`) can be passed with `-a/--assumptions`.

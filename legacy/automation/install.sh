@@ -1,10 +1,10 @@
 #!/bin/bash
 # Install the BAV sentinel as a daily launchd agent (7:00 AM). Idempotent.
-# Usage: bash automation/install.sh        Uninstall: launchctl bootout gui/$(id -u)/com.bav.sentinel
+# Usage: bash legacy/automation/install.sh        Uninstall: launchctl bootout gui/$(id -u)/com.bav.sentinel
 set -euo pipefail
 TOOLS="$(cd "$(dirname "$0")" && pwd)"
 # Vault (research) repo: first arg, or BAV_REPO, or the tool repo itself
-REPO="${1:-${BAV_REPO:-$(cd "$TOOLS/.." && pwd)}}"
+REPO="${1:-${BAV_REPO:-$(cd "$TOOLS/../.." && pwd)}}"
 SECID="${BAV_SEC_IDENTITY:-Set Your Name you@example.com}"
 PY="$(command -v python3)"
 CLAUDE_BIN="$(command -v claude || true)"

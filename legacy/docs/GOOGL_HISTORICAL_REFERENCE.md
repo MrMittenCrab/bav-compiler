@@ -1,8 +1,9 @@
 # GOOGL Historical Reference
 
-Internal development reference for Step 9 historical convergence. Evidence is limited to what was inspected in `example/GOOGL_Demo_Integrated_Financials.xlsx` and the current canonical Trainer/Answer Key. Gaps are not filled from general knowledge.
+Internal development reference for Step 9 historical convergence. Evidence is limited to what was inspected in `legacy/example/GOOGL_Demo_Integrated_Financials.xlsx` and the current canonical Trainer/Answer Key. Gaps are not filled from general knowledge.
 
-Audit tool: `scripts/audit_reference_workbook.py`  
+Audit tool: `legacy/scripts/audit_reference_workbook.py`
+
 GOOGL SHA-256 (pre/post inspection): `81faf2882d0df07ecf5def45695431c1935b4f7a94c1e017367596a063063896`  
 
 **Coverage refresh (Step 9N.4):** Exit-gate reconciliation. No remaining concrete high-value historical gap with available source facts; documented deferrals preserved. Lease-repayment module (9N.3) retained. Fast Retailing `expected_specs=491` with `lease_repayment_specs=10`. Exit gate **PASS** — Step 9 complete; next stage is Step 10 driver-based forecasting (not implemented here). See `RESULT.md`.

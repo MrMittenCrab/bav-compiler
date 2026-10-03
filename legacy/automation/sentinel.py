@@ -9,8 +9,8 @@ next pass. State writes are atomic; a corrupt state file quarantines + notifies
 instead of killing every future pass.
 
 Run modes:
-  python3 automation/sentinel.py            # real pass (fires headless runs)
-  python3 automation/sentinel.py --dry-run  # detect + print plan; fire nothing,
+  python3 legacy/automation/sentinel.py            # real pass (fires headless runs)
+  python3 legacy/automation/sentinel.py --dry-run  # detect + print plan; fire nothing,
                                             # save nothing, notify nothing
 Runner exit-code contract (bav_headless.py): 0 = ran ok · 2 = skipped (busy repo
 / lock timeout / nothing to do) · 1 = failed. Only 0 clears pending work.
@@ -19,7 +19,7 @@ import argparse, datetime, fcntl, json, os, re, subprocess, sys, urllib.request
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 # BAV_REPO points at the (possibly separate, private) research repo holding coverage/
-REPO = os.environ.get('BAV_REPO') or os.path.dirname(TOOLS)
+REPO = os.environ.get('BAV_REPO') or os.path.dirname(os.path.dirname(TOOLS))
 COVERAGE = os.path.join(REPO, 'coverage')
 STATE_DIR = os.path.join(COVERAGE, '_state')          # gitignored
 STATE_PATH = os.path.join(STATE_DIR, 'sentinel_state.json')

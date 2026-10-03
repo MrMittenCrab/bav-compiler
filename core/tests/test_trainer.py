@@ -29,7 +29,7 @@ from core.trainer.workbook import (
 )
 
 ROOT = Path(__file__).resolve().parents[2]
-DEMO_JSON = ROOT / "example" / "DEMO_HK_Standardized.json"
+DEMO_JSON = ROOT / "legacy" / "example" / "DEMO_HK_Standardized.json"
 
 
 def _fill_rgb(cell) -> str:

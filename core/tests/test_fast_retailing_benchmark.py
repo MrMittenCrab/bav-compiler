@@ -31,7 +31,7 @@ from modeler.lease_liability import (
 )
 from modeler.period_axis import canonical_fiscal_periods
 import pytest
-from scripts.audit_fast_retailing_benchmark import run_audit
+from legacy.scripts.audit_fast_retailing_benchmark import run_audit
 
 ROOT = Path(__file__).resolve().parents[2]
 BENCH = ROOT / "build" / "input" / "fast_retailing"
@@ -44,7 +44,7 @@ PROV_JSON = RECONCILED / "provenance.json"
 CONFLICTS_JSON = RECONCILED / "conflicts.json"
 BASELINE = BENCH / "BASELINE.md"
 GAPS = BENCH / "GAPS.md"
-AUDIT = ROOT / "scripts" / "audit_fast_retailing_benchmark.py"
+AUDIT = ROOT / "legacy" / "scripts" / "audit_fast_retailing_benchmark.py"
 
 G2_CONCEPT_CODES = {
     "other_financial_assets_current": "financial_asset_current_financial_vs_operating",
@@ -1725,7 +1725,7 @@ def _assert_current_style_judgment_modules(trainer: Path, answer: Path) -> None:
 def test_release_audit_explicit_pair_verification(tmp_path: Path):
     """Saved/reopened current-style Fast Retailing pair verifies without regenerating."""
     from core.trainer.workbook import build_training_workbook
-    from scripts.audit_fast_retailing_benchmark import _verify_release_pair_contract
+    from legacy.scripts.audit_fast_retailing_benchmark import _verify_release_pair_contract
 
     from core.tests.test_learner_ready_presentation import (
         _assert_answer_key_no_yellow,
@@ -1915,7 +1915,7 @@ def _release_pair_fingerprints() -> dict[str, str]:
 
 
 def _copy_persisted_release_pair(tmp_path: Path) -> tuple[Path, Path]:
-    from scripts.audit_fast_retailing_benchmark import _copy_release_pair_to_temp
+    from legacy.scripts.audit_fast_retailing_benchmark import _copy_release_pair_to_temp
 
     assert RELEASE_TRAINER.is_file() and RELEASE_ANSWER.is_file()
     return _copy_release_pair_to_temp(RELEASE_TRAINER, RELEASE_ANSWER, tmp_path)
@@ -1981,7 +1981,7 @@ def _mutate_workbook(path: Path, mutator) -> None:
     ],
 )
 def test_release_source_fidelity_corruptions(tmp_path: Path, target: str, mutation: str, expect_snip: str):
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_release_pair_contents,
         _verify_release_pair_contract,
     )
@@ -2051,7 +2051,7 @@ def test_release_source_fidelity_corruptions(tmp_path: Path, target: str, mutati
 @pytest.mark.parametrize("state", ["hidden", "veryHidden"])
 @pytest.mark.parametrize("target", ["trainer", "answer", "both"])
 def test_release_hidden_historical_sheet_rejected(tmp_path: Path, state: str, target: str):
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_release_pair_contents,
         _verify_release_pair_contract,
     )
@@ -2092,7 +2092,7 @@ def test_release_hidden_historical_sheet_rejected(tmp_path: Path, state: str, ta
 )
 def test_release_layout_parity_corruptions(tmp_path: Path, mutation: str, expect_snip: str):
     from openpyxl.styles import Font
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_release_pair_contents,
         _verify_release_pair_contract,
     )
@@ -2158,7 +2158,7 @@ def test_release_contract_failure_surfaces_via_audit_stage(tmp_path: Path):
 
 
 def test_explicit_pair_verification_does_not_generate(tmp_path: Path, monkeypatch):
-    from scripts import audit_fast_retailing_benchmark as audit_mod
+    from legacy.scripts import audit_fast_retailing_benchmark as audit_mod
 
     before = _release_pair_fingerprints()
     trainer, answer = _copy_persisted_release_pair(tmp_path)
@@ -2197,7 +2197,7 @@ def test_explicit_pair_verification_does_not_generate(tmp_path: Path, monkeypatc
 
 
 def test_persisted_release_pair_contract_and_check_counts():
-    from scripts.audit_fast_retailing_benchmark import _verify_release_pair_contract
+    from legacy.scripts.audit_fast_retailing_benchmark import _verify_release_pair_contract
 
     if not RELEASE_TRAINER.is_file():
         pytest.skip("release/fast_retailing pair not built yet")
@@ -2257,7 +2257,7 @@ def test_release_layout_bypass_corruptions(
     from openpyxl.styles import Alignment, Font
     from openpyxl.styles.colors import Color
     from openpyxl.xml.functions import QName, fromstring, tostring
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_release_pair_contents,
         _verify_release_pair_contract,
     )
@@ -2357,7 +2357,7 @@ def test_release_layout_omitted_format_components(
     tmp_path: Path, mutation: str, expect_snip: str
 ):
     from openpyxl.styles import Alignment, Border, Font, PatternFill, Protection, Side
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_release_pair_contents,
         _verify_release_pair_contract,
     )
@@ -2420,7 +2420,7 @@ def test_release_layout_omitted_format_components(
 
 def test_release_layout_positive_judgment_response_diff(tmp_path: Path):
     from openpyxl.comments import Comment
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_release_pair_contents,
         _verify_release_pair_contract,
     )
@@ -2447,7 +2447,7 @@ def test_release_layout_positive_judgment_response_diff(tmp_path: Path):
 def test_release_layout_positive_equivalent_format_different_style_ids(tmp_path: Path):
     from openpyxl.styles import Font
     from openpyxl.styles.cell_style import StyleArray
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_release_pair_contents,
         _verify_release_pair_contract,
     )
@@ -2507,7 +2507,7 @@ def test_release_layout_bypass_fails_audit_stage_and_cli(tmp_path: Path):
     completed = subprocess.run(
         [
             sys.executable,
-            str(ROOT / "scripts" / "audit_fast_retailing_benchmark.py"),
+            str(ROOT / "legacy" / "scripts" / "audit_fast_retailing_benchmark.py"),
             "--standardized-json",
             str(RELEASE_STD),
             "--provenance-json",
@@ -2560,7 +2560,7 @@ def test_release_layout_border_start_end_corruptions(
     tmp_path: Path, target: str, side: str, mutation: str, cell_kind: str
 ):
     from openpyxl.styles import Border, Side
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_release_pair_contents,
         _verify_release_pair_contract,
     )
@@ -2620,7 +2620,7 @@ def test_release_layout_hyperlink_theme_definition_corruptions(
     from openpyxl.styles import Font
     from openpyxl.styles.colors import Color
     from openpyxl.xml.functions import QName, fromstring, tostring
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_release_pair_contents,
         _verify_release_pair_contract,
     )
@@ -2664,7 +2664,7 @@ def test_release_layout_hyperlink_theme_definition_corruptions(
 @pytest.mark.parametrize("side", ["start", "end"])
 def test_release_layout_positive_matching_start_end_borders(tmp_path: Path, side: str):
     from openpyxl.styles import Border, Side
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_release_pair_contents,
         _verify_release_pair_contract,
     )
@@ -2696,7 +2696,7 @@ def test_release_layout_positive_matching_hyperlink_theme_tint(
 ):
     from openpyxl.styles import Font
     from openpyxl.styles.colors import Color
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_release_pair_contents,
         _verify_release_pair_contract,
     )
@@ -2801,7 +2801,7 @@ def test_release_layout_border_hyperlink_fails_audit_stage_and_cli(
     completed = subprocess.run(
         [
             sys.executable,
-            str(ROOT / "scripts" / "audit_fast_retailing_benchmark.py"),
+            str(ROOT / "legacy" / "scripts" / "audit_fast_retailing_benchmark.py"),
             "--standardized-json",
             str(RELEASE_STD),
             "--provenance-json",
@@ -2851,7 +2851,7 @@ def _restyle_frozen_pair_current_decorators(tmp_path: Path) -> tuple[Path, Path]
 
 
 def test_restyled_frozen_pair_current_contract_and_check(tmp_path: Path):
-    from scripts.audit_fast_retailing_benchmark import _verify_release_pair_contract
+    from legacy.scripts.audit_fast_retailing_benchmark import _verify_release_pair_contract
     from core.tests.test_learner_ready_presentation import (
         _assert_answer_key_no_yellow,
         _assert_fresh_visible_style,
@@ -2899,7 +2899,7 @@ def test_restyled_frozen_pair_current_contract_and_check(tmp_path: Path):
 
 
 def test_frozen_yellow_answer_key_rejected_without_exception(tmp_path: Path):
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_release_pair_contents,
         _verify_release_pair_contract,
     )
@@ -2913,7 +2913,7 @@ def test_frozen_yellow_answer_key_rejected_without_exception(tmp_path: Path):
 
 
 def test_frozen_yellow_exception_does_not_apply_to_current_pair(tmp_path: Path):
-    from scripts.audit_fast_retailing_benchmark import _verify_release_pair_contract
+    from legacy.scripts.audit_fast_retailing_benchmark import _verify_release_pair_contract
 
     trainer, answer, fin = _fresh_fast_retailing_pair(tmp_path)
     with pytest.raises(
@@ -2926,7 +2926,7 @@ def test_frozen_yellow_exception_does_not_apply_to_current_pair(tmp_path: Path):
 
 def test_current_answer_key_yellow_practice_cell_rejected(tmp_path: Path):
     from openpyxl.styles import PatternFill
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_release_pair_contents,
         _verify_release_pair_contract,
     )
@@ -2945,7 +2945,7 @@ def test_current_answer_key_yellow_practice_cell_rejected(tmp_path: Path):
 
 def test_current_answer_key_yellow_nonpractice_cell_rejected(tmp_path: Path):
     from openpyxl.styles import PatternFill
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_release_pair_contents,
         _verify_release_pair_contract,
     )
@@ -2962,7 +2962,7 @@ def test_current_answer_key_yellow_nonpractice_cell_rejected(tmp_path: Path):
 
 def test_current_invalid_trainer_practice_fill_rejected(tmp_path: Path):
     from openpyxl.styles import PatternFill
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_release_pair_contents,
         _verify_release_pair_contract,
     )
@@ -2983,7 +2983,7 @@ def test_current_invalid_trainer_practice_fill_rejected(tmp_path: Path):
 
 def test_current_unauthorized_fill_difference_rejected(tmp_path: Path):
     from openpyxl.styles import PatternFill
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_release_pair_contents,
         _verify_release_pair_contract,
     )
@@ -3000,7 +3000,7 @@ def test_current_unauthorized_fill_difference_rejected(tmp_path: Path):
 
 def test_current_nonfill_corruption_at_practice_coordinate_rejected(tmp_path: Path):
     from openpyxl.styles import Font
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_release_pair_contents,
         _verify_release_pair_contract,
     )
@@ -3256,7 +3256,7 @@ def _xlsx_replace_styles_rgb(data: bytes, old_rgb: str, new_rgb: str) -> bytes:
 
 
 def test_frozen_compatibility_allowlist_matches_committed_release_pair():
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         FROZEN_COMPATIBILITY_ANSWER_KEY_SHA256,
         FROZEN_COMPATIBILITY_CHECKPOINT,
         FROZEN_COMPATIBILITY_TRAINER_SHA256,
@@ -3271,7 +3271,7 @@ def test_frozen_compatibility_allowlist_matches_committed_release_pair():
 
 
 def test_byte_identical_frozen_copy_qualifies_for_compatibility(tmp_path: Path):
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         FROZEN_COMPATIBILITY_ANSWER_KEY_SHA256,
         FROZEN_COMPATIBILITY_TRAINER_SHA256,
         _sha256_file,
@@ -3291,7 +3291,7 @@ def test_byte_identical_frozen_copy_qualifies_for_compatibility(tmp_path: Path):
 def test_altered_frozen_member_rejected_with_compatibility_flag(
     tmp_path: Path, target: str
 ):
-    from scripts.audit_fast_retailing_benchmark import _verify_release_pair_contract
+    from legacy.scripts.audit_fast_retailing_benchmark import _verify_release_pair_contract
 
     trainer, answer = _copy_persisted_release_pair(tmp_path)
     fin = _release_fin()
@@ -3307,7 +3307,7 @@ def test_altered_frozen_member_rejected_with_compatibility_flag(
 
 def test_fresh_and_fresh_yellow_pairs_rejected_with_compatibility_flag(tmp_path: Path):
     from openpyxl.styles import PatternFill
-    from scripts.audit_fast_retailing_benchmark import _verify_release_pair_contract
+    from legacy.scripts.audit_fast_retailing_benchmark import _verify_release_pair_contract
 
     trainer, answer, fin = _fresh_fast_retailing_pair(tmp_path)
     with pytest.raises(
@@ -3334,7 +3334,7 @@ def test_fresh_and_fresh_yellow_pairs_rejected_with_compatibility_flag(tmp_path:
 def test_mixed_historical_current_pairs_rejected_with_compatibility_flag(
     tmp_path: Path,
 ):
-    from scripts.audit_fast_retailing_benchmark import _verify_release_pair_contract
+    from legacy.scripts.audit_fast_retailing_benchmark import _verify_release_pair_contract
 
     frozen_dir = tmp_path / "frozen"
     frozen_dir.mkdir()
@@ -3441,7 +3441,7 @@ def test_current_style_contract_failure_skips_check_via_audit_and_cli(tmp_path: 
 def test_saved_reopened_encoded_yellow_rejected(
     tmp_path: Path, location: str, encoding: str, expect: str
 ):
-    from scripts.audit_fast_retailing_benchmark import _verify_release_pair_contract
+    from legacy.scripts.audit_fast_retailing_benchmark import _verify_release_pair_contract
 
     trainer, answer, fin = _fresh_fast_retailing_pair(tmp_path)
     _mutate_workbook(answer, lambda wb: _paint_answer_yellow(wb, location, encoding))
@@ -3460,7 +3460,7 @@ def test_saved_reopened_encoded_yellow_rejected(
 
 
 def test_rgb_is_yellow_classifies_pale_yellow_without_allowlist():
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         YELLOW_RGBS,
         _apply_tint,
         _rgb_is_yellow,
@@ -3519,7 +3519,7 @@ def test_saved_reopened_pale_yellow_resolves_and_rejects(
     tmp_path: Path, location: str, encoding: str
 ):
     from openpyxl import load_workbook
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _inspect_cell_fill,
         _rgb_is_yellow,
         _verify_answer_key_no_yellow,
@@ -3551,7 +3551,7 @@ def test_saved_reopened_pale_yellow_resolves_and_rejects(
 
 def test_saved_reopened_yellow_theme_tint_1_resolves_white(tmp_path: Path):
     from openpyxl import load_workbook
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _inspect_cell_fill,
         _rgb_is_yellow,
     )
@@ -3577,7 +3577,7 @@ def test_historical_yellow_replaced_with_ffffcc_rejected_in_memory(
 ):
     from openpyxl import load_workbook
     from openpyxl.styles import PatternFill
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _fill_rgb,
         _inspect_cell_fill,
         _load_workbook_xlsx_bytes,
@@ -3634,7 +3634,7 @@ def test_zip_styles_pale_yellow_rejected_in_memory(
     tmp_path: Path, old_rgb: str, new_rgb: str, resolved: str
 ):
     from openpyxl import load_workbook
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _inspect_cell_fill,
         _load_workbook_xlsx_bytes,
         _rgb_is_yellow,
@@ -3684,7 +3684,7 @@ def test_referenced_differential_yellow_rejected_when_embedded_dxf_cleared(
     encoding: str,
 ):
     from openpyxl import load_workbook
-    from scripts.audit_fast_retailing_benchmark import _verify_answer_key_no_yellow
+    from legacy.scripts.audit_fast_retailing_benchmark import _verify_answer_key_no_yellow
 
     trainer, answer, _fin = _fresh_fast_retailing_pair(tmp_path)
     _mutate_workbook(
@@ -3718,7 +3718,7 @@ def test_white_and_non_yellow_fill_controls_pass_no_yellow(tmp_path: Path):
     from openpyxl.formatting.rule import CellIsRule, ColorScaleRule
     from openpyxl.styles import GradientFill, PatternFill
     from openpyxl.styles.colors import Color
-    from scripts.audit_fast_retailing_benchmark import (
+    from legacy.scripts.audit_fast_retailing_benchmark import (
         _verify_answer_key_no_yellow,
         _verify_release_pair_contract,
     )

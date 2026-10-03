@@ -42,8 +42,8 @@ from core.trainer.workbook import build_training_workbook, group_components_by_f
 from core.tests.test_normalization import _inject_formula_and_cached_value
 
 ROOT = Path(__file__).resolve().parents[2]
-DEMO_JSON = ROOT / "example" / "DEMO_HK_Standardized.json"
-DEMO_ASSUMPTIONS = ROOT / "example" / "DEMO_HK_Assumptions.json"
+DEMO_JSON = ROOT / "legacy" / "example" / "DEMO_HK_Standardized.json"
+DEMO_ASSUMPTIONS = ROOT / "legacy" / "example" / "DEMO_HK_Assumptions.json"
 
 
 def _fill_rgb(cell) -> str:

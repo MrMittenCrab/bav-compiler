@@ -66,7 +66,7 @@ REVIEWED_PARENT_1093 = "a7e50356d5129066bad5a90ba8f54d801243f926"
 REVIEWED_CHECKPOINT_1094 = "06a7184194cd9cb462eebf262790e88d3808a92a"
 REVIEWED_PARENT_1094 = "d260153bbda7014d7069c2247f80db75890f61f9"
 EXPECTED_BRANCH = "checkpoint/20260913-183303"
-WORK_ID = "823b625d346943a6b3c6ee40c60a72ed"
+WORK_ID = "01a325c7ed794dcbbcc0167a74c9d572"
 IMPLEMENTATION_MD = ROOT / "IMPLEMENTATION.md"
 # Historical reviewed attempt — comparator only, never live authorization.
 HISTORICAL_REVIEWED_ATTEMPT = "afa6820bb22e4c8da5b7fcc1a3a3c26b"
@@ -174,13 +174,13 @@ RELOCATED = {
     "benchmark/lululemon/source/LULU_FY2024_Annual_Report.pdf": "build/input/lululemon/source/LULU_FY2024_Annual_Report.pdf",
     "benchmark/lululemon/source/LULU_FY2025_Annual_Report.pdf": "build/input/lululemon/source/LULU_FY2025_Annual_Report.pdf",
 }
-STAYED = [
-    "example/DEMO_HK_Answer_Key.xlsx",
-    "example/DEMO_HK_Assumptions.json",
-    "example/DEMO_HK_Standardized.json",
-    "example/DEMO_HK_Trainer.xlsx",
-    "example/GOOGL_Demo_Integrated_Financials.xlsx",
-]
+STAYED = {
+    "example/DEMO_HK_Answer_Key.xlsx": "legacy/example/DEMO_HK_Answer_Key.xlsx",
+    "example/DEMO_HK_Assumptions.json": "legacy/example/DEMO_HK_Assumptions.json",
+    "example/DEMO_HK_Standardized.json": "legacy/example/DEMO_HK_Standardized.json",
+    "example/DEMO_HK_Trainer.xlsx": "legacy/example/DEMO_HK_Trainer.xlsx",
+    "example/GOOGL_Demo_Integrated_Financials.xlsx": "legacy/example/GOOGL_Demo_Integrated_Financials.xlsx",
+}
 RETIRED = [
     "release/fast_retailing/FastRetailing_Answer_Key.assumptions.json",
     "release/fast_retailing/FastRetailing_Answer_Key.component_map.json",
@@ -1318,11 +1318,11 @@ def test_protected_artifacts_and_eight_extracts_unchanged():
         c2 = _git_out(["git", "rev-parse", f"{C2}:{old}"])
         assert wt == c1 == c2, (old, new)
         matches += 1
-    for rel in STAYED:
-        wt = _git_out(["git", "hash-object", str(ROOT / rel)])
-        c1 = _git_out(["git", "rev-parse", f"{C1}:{rel}"])
-        c2 = _git_out(["git", "rev-parse", f"{C2}:{rel}"])
-        assert wt == c1 == c2, rel
+    for old, new in STAYED.items():
+        wt = _git_out(["git", "hash-object", str(ROOT / new)])
+        c1 = _git_out(["git", "rev-parse", f"{C1}:{old}"])
+        c2 = _git_out(["git", "rev-parse", f"{C2}:{old}"])
+        assert wt == c1 == c2, (old, new)
         matches += 1
     for rel in RETIRED:
         c1 = _git_out(["git", "rev-parse", f"{C1}:{rel}"])

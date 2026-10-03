@@ -54,7 +54,7 @@ from core.trainer.workbook import build_training_workbook, group_components_by_f
 
 ROOT = Path(__file__).resolve().parents[2]
 FR_JSON = ROOT / "build" / "input" / "fast_retailing" / "reconciled" / "standardized.json"
-DEMO_JSON = ROOT / "example" / "DEMO_HK_Standardized.json"
+DEMO_JSON = ROOT / "legacy" / "example" / "DEMO_HK_Standardized.json"
 
 
 def _li(label, values, concept=""):

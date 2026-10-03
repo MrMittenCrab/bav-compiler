@@ -471,7 +471,7 @@ assert "legacy.ingestion.excel_import" not in sys.modules
 
 
 def test_ingest_retains_legacy_adapter(tmp_path: Path):
-    demo = ROOT / "example" / "DEMO_HK_Standardized.json"
+    demo = ROOT / "legacy" / "example" / "DEMO_HK_Standardized.json"
     out = tmp_path / "ingested.json"
     script = r"""
 import sys

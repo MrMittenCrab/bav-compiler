@@ -4,14 +4,39 @@ This tree holds useful prior functionality outside the active BAV Compiler
 architecture. Ordinary company `python -m bav {build,check,publish}` and
 canonical filing validate/reconcile do not import this package.
 
-## Manual HK / Excel ingestion
+Retained compatibility entry points used by public behavior:
 
-`legacy/ingestion/manual_hk.py` and `legacy/ingestion/excel_import.py` are the
-canonical transcribed HK JSON and Excel/Bloomberg/Wind adapters. They remain
-available through the retained compatibility entry points
-`core.ingestion.manual_hk` / `core.ingestion.excel_import` and the `ingest` /
-explicit Excel-input `-o` build commands. Those compatibility modules are not
-the active company execution path.
+- `legacy/ingestion/` — transcribed HK JSON and Excel/Bloomberg/Wind adapters,
+  still reachable through `core.ingestion.manual_hk` / `core.ingestion.excel_import`
+  and the `ingest` / explicit Excel-input `-o` build commands.
+- `legacy/trainer/` — optional Trainer derive, blanking, scoring and chrome,
+  still reachable through `core.trainer` façades and explicit `--workbook` check
+  or JSON `-o` derive.
+
+Those compatibility modules are not the active company execution path.
+
+## Step 10.13 destinations
+
+| Category | Current location | Retained entry points |
+|---|---|---|
+| Coverage automation | `legacy/automation/` | `legacy/automation/sentinel.py`, `bav_headless.py`, `install.sh` (do not install from ordinary BAV work) |
+| Controller patches | `legacy/autocycle-fixes/` | Isolated tests vs installed AutoCycle; patches are historical assets and are not applied here |
+| Skills and fixtures | `legacy/skills/` | Not imported by `python -m bav` |
+| Plugin metadata | `legacy/plugin/plugin.json` | Input to `legacy/build_plugin_zip.sh` |
+| Plugin archive | `legacy/bav-pipeline-plugin.zip` | Retained existing archive; packaged members stay `.claude-plugin/`, `skills/`, `README.md` |
+| Plugin packager | `legacy/build_plugin_zip.sh` | Optional output path; default `legacy/bav-pipeline-plugin.zip` |
+| Retired release / audit / PDF-cache scripts | `legacy/scripts/` | `python legacy/scripts/{build_lululemon_release,build_fast_retailing_release,audit_fast_retailing_benchmark,audit_reference_workbook,extract_benchmark_pdf_text}.py` |
+| Benchmark PDF helper deps | `legacy/scripts/requirements-benchmark.txt` | Alongside `extract_benchmark_pdf_text.py` |
+| Historical verifiers and SHA-bound Excel refs | `legacy/verification/` | `legacy/verification/verify_cached_workbook.py`, `verify_lululemon_overview_presentation.py`, `native-excel-*.json` |
+| Trainer guide, GOOGL reference, diagnosis / resume notes, superpowers specs | `legacy/docs/` | `legacy/docs/README-HK-TRAINER.md`, `legacy/docs/GOOGL_HISTORICAL_REFERENCE.md`, `legacy/docs/superpowers/specs/` |
+| HK / GOOGL example assets | `legacy/example/` | `DEMO_HK_*.json`, `DEMO_HK_Trainer.xlsx`, `DEMO_HK_Answer_Key.xlsx`, `GOOGL_Demo_Integrated_Financials.xlsx` |
+
+Historical RESULT records keep the commands that were run at the time. Current
+instructions use the destinations above.
+
+`scripts/build_fast_retailing_source_facts.py` remains at its old path as a
+later Remove item. Canonical `build/input/`, `build/output/` and leftover
+gitignored `example/` sidecars stay where they are.
 
 ## Original custom-GPT system (Gemini Gems)
 
@@ -32,7 +57,7 @@ Before this repository was a Claude Code skill, it was four instruction sets run
 | `4Alt. The Modeler Gem Instructions.md` | Single-scenario variant of the Modeler |
 | `Sample AppScript for Condensed and Dupont*.txt` | Reference Apps Script implementations for the Analyst's output |
 
-The authoritative reference `.gs` scripts the Modeler customizes (`Reference_Parameterized_Model.gs`, `MultiScenario_Parameterized_Model.gs`) live in `../skills/bav-pipeline/references/` — they remain the canonical definition of the Google Sheets model-tab layout, and the skill will still emit a customized `.gs` if you ask for Google Sheets output.
+The authoritative reference `.gs` scripts the Modeler customizes (`Reference_Parameterized_Model.gs`, `MultiScenario_Parameterized_Model.gs`) live in `skills/bav-pipeline/references/` — they remain the definition of the Google Sheets model-tab layout. This coverage pipeline is Legacy; ordinary BAV company execution does not use it.
 
 ## The manual workflow
 
@@ -41,4 +66,6 @@ The authoritative reference `.gs` scripts the Modeler customizes (`Reference_Par
 3. Run **Analyst** → paste the generated Apps Script into Extensions → Apps Script → run → Condensed + DuPont tabs appear.
 4. Give **Modeler** the strategy report + workbook → it returns `getScenarioConfigs()` → paste into the reference script → run → three model tabs + scenario summary.
 
-Each handoff is manual; each output is a one-shot artifact. That friction is precisely what the Claude Code skill in this repository automates — staged subagents, file contracts, a persistent coverage vault, and a daily sentinel. See the root [README](../README.md#lineage--from-custom-gpts-gemini-gems-to-a-claude-code-skill) for the full story.
+Each handoff is manual; each output is a one-shot artifact. The Claude Code skill
+in `legacy/skills/` automated that workflow historically. See the root
+[README](../README.md) for the current BAV Compiler architecture.

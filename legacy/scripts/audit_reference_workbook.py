@@ -69,7 +69,7 @@ def main(argv: list[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
     if len(args) != 1:
         print(
-            "Usage: python scripts/audit_reference_workbook.py <workbook.xlsx>",
+            "Usage: python legacy/scripts/audit_reference_workbook.py <workbook.xlsx>",
             file=sys.stderr,
         )
         return 2

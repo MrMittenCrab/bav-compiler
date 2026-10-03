@@ -10,7 +10,7 @@ behavior, doc-consistency fixes). Deferred, in rough priority order:
 1. **Headless `claude -p` invocation is UNVERIFIED end-to-end** — flags (`--settings`,
    `--permission-mode`), plugin-skill resolution in `-p` mode, and keychain auth from a
    launchd context. MUST smoke-test after the CLI is installed, before trusting the cadence:
-   `python3 automation/bav_headless.py GOOGL --mode news` while watching sentinel.log.
+   `python3 legacy/automation/bav_headless.py GOOGL --mode news` while watching sentinel.log.
 2. **Cost control is run-count only** (≤6 runs/pass) — no token/turn budget per run.
    Consider `--max-turns` or a task budget once real costs are observed.
 3. **osascript notifications from launchd** may be suppressed by Focus modes or TCC

@@ -8,11 +8,11 @@ How BAV skills run without a human at the keyboard. The write-authority rules li
 
 ## Permissions (the night-one failure mode)
 
-An unattended `claude -p` that hits a permission prompt hangs or dies silently. Fix: a dedicated profile at `automation/headless_settings.json`, passed via `--settings` — NOT merged into project settings, so interactive sessions keep their prompts. The profile allows file tools, web research, `python3`, and `git add coverage/` — and **denies `git push`, `rm`, `git reset/checkout/rebase`**: the runner wrapper owns push; the model inside an unattended run cannot mutate git history or delete files.
+An unattended `claude -p` that hits a permission prompt hangs or dies silently. Fix: a dedicated profile at `legacy/automation/headless_settings.json`, passed via `--settings` — NOT merged into project settings, so interactive sessions keep their prompts. The profile allows file tools, web research, `python3`, and `git add coverage/` — and **denies `git push`, `rm`, `git reset/checkout/rebase`**: the runner wrapper owns push; the model inside an unattended run cannot mutate git history or delete files.
 
 ## Concurrency (earnings cluster at scale)
 
-All unattended work goes through `automation/bav_headless.py`:
+All unattended work goes through `legacy/automation/bav_headless.py`:
 - **One repo-level exclusive lock** (`coverage/_state/run.lock`, `fcntl.flock`, 3h wait ceiling) — tickers process **sequentially**; concurrent invocations queue on the lock. Shared files (`_universe.md`, `_conventions.md`, git index) never see interleaved writers.
 - **Busy-repo guard:** mid-merge/rebase/index.lock ⇒ exit 2 (skipped) with notification, never run.
 - **Exit-code contract (the sentinel depends on it):** `0` ran ok ⇒ pending work cleared · `2` skipped ⇒ pending survives · `1` failed ⇒ pending survives + notification. **Triggers are transactional**: the sentinel records detected work (new filings, analyst edits, due sweeps) in a durable pending queue and clears an item only on exit 0 — failures and cost-guard deferrals are never lost.
@@ -37,11 +37,11 @@ Interactive bav-update sessions read pending_decisions.md at step 1 (before anyt
 
 **The `[pending since YYYY-MM-DD]` marker is machine-parsed** (sentinel nag + dashboard grep for exactly that pattern) — every entry MUST carry it verbatim in its heading line.
 
-## The sentinel (implemented: `automation/sentinel.py`)
+## The sentinel (implemented: `legacy/automation/sentinel.py`)
 
-One deterministic daily pass (launchd `com.bav.sentinel`, 07:00; install via `bash automation/install.sh`). Per covered ticker (discovered from dossier frontmatter, which must carry `cik:`):
+One deterministic daily pass (launchd `com.bav.sentinel`, 07:00; install via `bash legacy/automation/install.sh`). Per covered ticker (discovered from dossier frontmatter, which must carry `cik:`):
 1. **EDGAR poll** (submissions feed, material forms 10-K/10-Q/8-K; accession-deduped, date-floored) → new filing ⇒ queue `/bav-update {T} --prepare`.
 2. **Analyst-edit reconciliation** — workbook/notes mtime advanced since last pass ⇒ queue `--prepare` (registers Class A, proposes Class B).
 3. **Weekly media sweep** — `/bav-news {T} --prepare` when the last sweep is ≥7 days old (skipped for `status: needs-rebuild` stubs).
 4. **Monday brief**, **escalating nag** (pending ≥7d), **dashboard regeneration** (`coverage/dashboard.html` — read-only, self-flagging when stale), heartbeat.
-Cost guard: max 6 headless runs per pass (updates before sweeps; remainder deferred to the next pass). All execution goes through `bav_headless.py` (lock/queue/commit/push). Debug: `python3 automation/sentinel.py --dry-run`.
+Cost guard: max 6 headless runs per pass (updates before sweeps; remainder deferred to the next pass). All execution goes through `bav_headless.py` (lock/queue/commit/push). Debug: `python3 legacy/automation/sentinel.py --dry-run`.

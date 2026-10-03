@@ -127,11 +127,11 @@ def test_release_build_and_verification_accept_registered_extension(monkeypatch,
     fin = financials(company)
     _, generic_answer = build_training_workbook(fin, tmp_path / "generic/Example")
     if company == "lululemon":
-        from scripts import build_lululemon_release as release
+        from legacy.scripts import build_lululemon_release as release
         trainer, answer = release.build_workbooks(source, tmp_path / "release")
         release.verify_staged(trainer, answer, source)
     else:
-        from scripts import build_fast_retailing_release as release
+        from legacy.scripts import build_fast_retailing_release as release
         monkeypatch.setattr(release, "RELEASE", tmp_path / "release")
         monkeypatch.setattr(release, "SUPPORTING", source.parent)
         trainer, answer = release.build_workbooks(source)
@@ -208,10 +208,10 @@ def test_release_rejects_workbook_from_older_contract(monkeypatch, tmp_path, com
     register(monkeypatch, extension())
     with pytest.raises((ValueError, RuntimeError), match="semantic component mismatch"):
         if company == "lululemon":
-            from scripts.build_lululemon_release import verify_staged
+            from legacy.scripts.build_lululemon_release import verify_staged
             verify_staged(trainer, answer, source)
         else:
-            from scripts import build_fast_retailing_release as release
+            from legacy.scripts import build_fast_retailing_release as release
             monkeypatch.setattr(release, "SUPPORTING", source.parent)
             release.verify_release(trainer, answer)
 

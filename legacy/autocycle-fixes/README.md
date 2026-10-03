@@ -20,7 +20,7 @@ Regression harness (extracts and executes the installed shell branches with
 isolated stop directories and stubbed bookkeeping/Git; never launches AutoCycle):
 
 ```bash
-python automation/autocycle-fixes/test_cycle_stop.py ~/bin/autocycle
+python legacy/autocycle-fixes/test_cycle_stop.py ~/bin/autocycle
 bash -n ~/bin/autocycle
 ```
 
@@ -35,19 +35,19 @@ this fix or by the BAV build workflow.
 
 ## Cached-value verifier investigation
 
-See [the investigation](../../docs/excel-verifier-investigation-2026-09-20.md)
+See [the investigation](../docs/excel-verifier-investigation-2026-09-20.md)
 for why the current Excel recovery blocker has no suitable existing verifier.
 No production workaround was installed. The isolated missing-verifier regression
 uses the real helper with a mocked resolver and never invokes Excel:
 
 ```bash
-PYTHONDONTWRITEBYTECODE=1 python3 automation/autocycle-fixes/test_excel_missing_verifier.py ~/.autocycle/excel_verification.py
+PYTHONDONTWRITEBYTECODE=1 python3 legacy/autocycle-fixes/test_excel_missing_verifier.py ~/.autocycle/excel_verification.py
 ```
 
 
 ## Stable native-Excel permissions
 
-See [the permission diagnosis](../../docs/excel-permission-diagnosis-2026-09-20.md)
+See [the permission diagnosis](../docs/excel-permission-diagnosis-2026-09-20.md)
 for measured same-path reuse, per-file Grant Access, and prior-edit disposition.
 [stable-excel-permissions.patch](stable-excel-permissions.patch) records the
 reviewed AutoCycle source changes relative to the pre-diagnosis working tree;
@@ -91,7 +91,7 @@ serialization patch to a temporary copy of the authenticated runtime and
 cover the real osascript boundary (no Office, no capture):
 
 ```bash
-PYTHONDONTWRITEBYTECODE=1 python3 automation/autocycle-fixes/test_active_document_confirmation.py
+PYTHONDONTWRITEBYTECODE=1 python3 legacy/autocycle-fixes/test_active_document_confirmation.py
 ```
 
 Prior 21 passing isolated tests validated specifier identity against mocked

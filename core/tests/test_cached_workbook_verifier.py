@@ -9,7 +9,7 @@ from zipfile import ZipFile
 import pytest
 from openpyxl import Workbook
 
-SCRIPT = Path(__file__).resolve().parents[2] / 'scripts/verify_cached_workbook.py'
+SCRIPT = Path(__file__).resolve().parents[2] / 'legacy/verification/verify_cached_workbook.py'
 NS = '{http://schemas.openxmlformats.org/spreadsheetml/2006/main}'
 
 

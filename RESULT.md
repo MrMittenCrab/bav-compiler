@@ -1,3 +1,100 @@
+# RESULT.md — Step 10.13 Relocate remaining Legacy functionality and references
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.13 — Relocate remaining Legacy functionality and references
+**Work:** `01a325c7ed794dcbbcc0167a74c9d572`
+**Plan:** `07c9bd93061c439fbe0a6046baf1520e`
+**Finding:** Relocate remaining Legacy functionality and references
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. Controller files under `.git/autocycle` were read-only except as inspected. Canonical `build/input/` and `build/output/` were not written. AutoCycle patches were not applied; coverage automation was not installed or launched.
+
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `8fe369efb7fee769999e761125cc6e0e07a0e33b70c44cd9bfdc1e3da6d43383` (5489).
+
+This bounded attempt relocates remaining inventory-designated Legacy material and updates working references. It does not close parent Completion, does not execute Remove dispositions, and does not establish Session 10 acceptance.
+
+## Baseline authentication
+
+Continuation execution baseline resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state` and authenticated as a Git commit. `implementation-baseline.json` head matched that SHA. Leftover `latest-implementation` HEAD was not substituted.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / `10.13` allocated source | `4140f11c2019bba65311c5eb4b285dc1cc0878e2` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; `git merge-base --is-ancestor` true |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` work / plan | work `01a325c7ed794dcbbcc0167a74c9d572`, plan `07c9bd93061c439fbe0a6046baf1520e`, step `10.13` |
+| `work-state` allocated `10.13` | source = B, work_id = `01a325c7ed794dcbbcc0167a74c9d572`, status `opened` |
+| `admitted_review` | `review_sha256` `fe1909d1f7584b501dc2ecd030c02fa97457b924f82e3b8ba31a8eabbba44fd6`; `reviewed_head` `a44031d1…` |
+| `latest-implementation` leftover HEAD | `9fba2a7da3006c0f86ae52ba1fcc0fa7cbbaaa9a` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Fail-closed | Not required |
+
+B historical blobs were inspected with `git cat-file` before `git mv`. All 93 move sources matched B bytes in the working tree before relocation.
+
+## Path mappings
+
+93 tracked paths were `git mv`'d. 75 destinations remain byte-identical to the B blob. 18 destinations have explicit path/import/default edits after the move. New package marker: `legacy/scripts/__init__.py`.
+
+| B path | Destination | Continuity |
+|---|---|---|
+| `automation/{sentinel,bav_headless,build_dashboard,install,plist,headless_settings,punchlist}` | `legacy/automation/` | Move + repo-root discovery (`TOOLS/../..` / `dirname(dirname(TOOLS))`) and current-instruction path text |
+| `automation/autocycle-fixes/*` | `legacy/autocycle-fixes/` | Tests/patches byte-identical; README current commands and doc links retargeted. Patches not applied |
+| `skills/**` | `legacy/skills/` | Fixtures/`.gs`/xlsx byte-identical; trainer/automation/xlsx_patterns current paths retargeted |
+| `.claude-plugin/plugin.json` | `legacy/plugin/plugin.json` | Identical to B |
+| `scripts/build_plugin_zip.sh` | `legacy/build_plugin_zip.sh` | Restages `legacy/plugin` → `.claude-plugin` and `legacy/skills` → `skills`; optional output path; default `legacy/bav-pipeline-plugin.zip` |
+| `bav-pipeline-plugin.zip` | `legacy/bav-pipeline-plugin.zip` | Identical to B `514dd87edf5e6764267bff60d87746fddbab5ddfc4815694706de7154f092672` (191787) |
+| `scripts/{build_lululemon_release,build_fast_retailing_release,audit_fast_retailing_benchmark,audit_reference_workbook,extract_benchmark_pdf_text}.py` | `legacy/scripts/` | `parents[1]` → `parents[2]`; imports `legacy.scripts.*`; usage strings current |
+| `requirements-benchmark.txt` | `legacy/scripts/requirements-benchmark.txt` | Identical; beside extract helper |
+| `scripts/verify_cached_workbook.py`, `verify_lululemon_overview_presentation.py` | `legacy/verification/` | Identical |
+| `docs/native-excel-*.json` (7) | `legacy/verification/` | Identical; `source_sha256` bindings unchanged |
+| `README-HK-TRAINER.md`, `docs/GOOGL_HISTORICAL_REFERENCE.md`, `docs/excel-*-2026-09-20.md`, `docs/autocycle-resume-*.md`, `docs/superpowers/specs/*` | `legacy/docs/` (+ `superpowers/specs/`) | Diagnosis/resume/specs identical; GOOGL/HK current paths retargeted |
+| `example/DEMO_HK_{Standardized,Assumptions}.json`, `DEMO_HK_{Trainer,Answer_Key}.xlsx`, `GOOGL_Demo_Integrated_Financials.xlsx` | `legacy/example/` | Byte-identical. Trainer `dc93f5c1…` (26790); Answer Key `ae6df240…` (84370); GOOGL `81faf288…` (138326) |
+
+Not moved (subsequent Remove / stay):
+
+- `scripts/build_fast_retailing_source_facts.py`
+- gitignored leftover `example/{rowmap.json,DEMO_HK_Answer_Key.assumptions.json,DEMO_HK_Answer_Key.component_map.json}`
+- canonical `build/input/`, `build/output/`
+- completed Trainer / ingest / enrichment trees already under `legacy/trainer/` and `legacy/ingestion/`
+
+No forwarding `scripts/` or `automation/` layers. Empty leftover `automation/`, `skills/`, `.claude-plugin/`, `docs/` shells (plus regenerable `__pycache__`) were removed after the tracked files left.
+
+## Intentional edits
+
+- Tests: `from scripts.*` → `from legacy.scripts.*`; fixture paths `example/` → `legacy/example/`; verifier `legacy/verification/verify_cached_workbook.py`; GOOGL doc `legacy/docs/`. `STAYED` example assets became an old→new hash map against C1/C2 blobs. `WORK_ID` updated to current `01a325c7…` so live IMPLEMENTATION binding stays exact.
+- `legacy/README.md` and `director/docs/MIGRATION_INVENTORY.md` §§4.1, 4.6–4.11, 13–15 record actual destinations and retained entry points. Historical RESULT commands were not rewritten.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| Resume / baseline / work-state / HEAD / ancestry | B = `4140f11c…` authenticated as above |
+| `git cat-file` all 93 B sources vs working tree before `git mv` | all matched |
+| Destination vs B blob after move | 75 identical; 18 path/import edits listed above |
+| Binary example/xlsx/zip/native-excel vs B | byte-identical; GOOGL SHA still `81faf288…` |
+| `/opt/anaconda3/bin/python -m pytest -q` trainer, ingestion ownership, filing CLI, learner-presentation, cached-workbook verifier, reference-audit, build CLI, current-build, build-contract, normalization-candidate admission, historical-v1 exit gate, engine-trainer ownership | **221 passed**, 49.94s |
+| same interpreter `test_fast_retailing_benchmark.py` + `test_reference_integrity.py` | **360 passed**, 156.95s |
+| Relocated script `ROOT` / `legacy.scripts` import | repo root; `audit_workbook` / `run_audit` importable |
+| `legacy/automation/{sentinel,bav_headless}.py` default `REPO` | repository root; no install / no launchd / no coverage run |
+| Disposable `bash legacy/build_plugin_zip.sh /tmp/bav-10.13-plugin-rebuild.zip` | prefixes `.claude-plugin` (2) / `README.md` (1) / `skills` (64); members include `.claude-plugin/plugin.json` and `skills/bav-pipeline/SKILL.md`; leak guard clean. Retained archive unchanged `514dd87e…` / 191787 |
+| Ordinary company route sources (`director/cli.py`, `director/current_build.py`, `bav/__main__.py`, `core/__main__.py`, `modeler/build_bav.py`, `modeler/workbook.py`, `composer/research/publish.py`) | no imports of relocated `legacy.automation` / `skills` / `scripts` / `verification` / `example` / `plugin` / `autocycle` |
+| Representative Lululemon/FR build/check/publish | **Reused** Step 10.12.1 comparison: those routes' dependencies were not edited |
+| Native Office | **Not run** — no workbook formula/dependency or presentation change; SHA-bound native-excel JSON relocated only |
+| `git diff --check` | rc 0 after GOOGL audit-tool line whitespace fix |
+| `git diff --stat` vs B | 131 files, +265 / −209 (includes renames) |
+
+## Preservation
+
+Public `bav` / `python -m core` aliases, patchable Director configuration, explicit JSON/Excel routes, optional Trainer derive/check, analytical results, residual qualifications, dormant forecasting and zero-byte research placeholders were not redesigned. Normalization admission default-off, fingerprint/adoption/treatment/authorization gates, once-only conversion, lifecycle rejection coverage and 11-observation round trips remain covered by the admission suite. Controller patches remain historical assets. Installed AutoCycle was not altered.
+
+## Remaining toward Completion
+
+Remove dispositions, broader test ownership migration, product-wide branding and final Session verification remain subsequent scope. `scripts/build_fast_retailing_source_facts.py` and leftover gitignored `example/` sidecars stay for later Remove. Ordinary company execution remains independent of the newly isolated Legacy trees.
+
+This relocation does not establish Session 10 acceptance.
+
+---
+
 # RESULT.md — Step 10.12.1 Compare representative company outputs against B
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

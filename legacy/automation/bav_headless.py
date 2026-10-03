@@ -15,7 +15,7 @@ heartbeat is owned by sentinel.py, not this runner.
 import argparse, datetime, fcntl, os, shutil, subprocess, sys, time
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
-REPO = os.environ.get('BAV_REPO') or os.path.dirname(TOOLS)   # the research/vault repo
+REPO = os.environ.get('BAV_REPO') or os.path.dirname(os.path.dirname(TOOLS))   # the research/vault repo
 STATE = os.path.join(REPO, 'coverage', '_state')
 LOCK_PATH = os.path.join(STATE, 'run.lock')
 SETTINGS = os.path.join(TOOLS, 'headless_settings.json')

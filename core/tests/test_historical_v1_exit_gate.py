@@ -312,8 +312,8 @@ def test_canonical_demo_trainer_answer_key_practice_contract(tmp_path):
 
 
 def test_committed_canonical_demo_pair_matches_current_builder(tmp_path):
-    trainer = ROOT / "example" / "DEMO_HK_Trainer.xlsx"
-    answer = ROOT / "example" / "DEMO_HK_Answer_Key.xlsx"
+    trainer = ROOT / "legacy" / "example" / "DEMO_HK_Trainer.xlsx"
+    answer = ROOT / "legacy" / "example" / "DEMO_HK_Answer_Key.xlsx"
     assert trainer.is_file()
     assert answer.is_file()
 

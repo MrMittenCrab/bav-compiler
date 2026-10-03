@@ -6,10 +6,10 @@ from pathlib import Path
 
 from openpyxl import Workbook
 
-from scripts.audit_reference_workbook import audit_workbook
+from legacy.scripts.audit_reference_workbook import audit_workbook
 
 ROOT = Path(__file__).resolve().parents[2]
-GOOGL = ROOT / "example" / "GOOGL_Demo_Integrated_Financials.xlsx"
+GOOGL = ROOT / "legacy" / "example" / "GOOGL_Demo_Integrated_Financials.xlsx"
 
 
 def test_audit_workbook_synthetic_inventory(tmp_path):
@@ -71,7 +71,7 @@ def test_googl_reference_workbook_is_auditable_read_only():
 
 
 def test_googl_historical_reference_doc_separates_evidence_from_trainer():
-    doc = (ROOT / "docs" / "GOOGL_HISTORICAL_REFERENCE.md").read_text(encoding="utf-8")
+    doc = (ROOT / "legacy" / "docs" / "GOOGL_HISTORICAL_REFERENCE.md").read_text(encoding="utf-8")
     assert "Canonical Answer Key SHA-256:" not in doc
     assert "81faf2882d0df07ecf5def45695431c1935b4f7a94c1e017367596a063063896" in doc
 
