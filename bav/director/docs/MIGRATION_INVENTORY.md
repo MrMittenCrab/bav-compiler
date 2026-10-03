@@ -89,12 +89,12 @@ Inspect `interpreter/{selection,historical_strategy,revenue_driver,reported_marg
 | `composer/workbook_opening.py` | Overview layout | `bav/composer/workbook_opening.py` | Composer |
 | `composer/workbook_opening.py` | analysis/synthesis calls | stay sequenced by Director; Composer may import Director for existing opening behavior | Director orchestration (no new workflow) |
 
-Assumption origin/stance (minimal, existing payload unchanged):
+Assumption origin/stance (minimal, existing payload keys and outer mapping unchanged; nested mutable payload data is independently owned):
 
 | Responsibility | Destination | Disposition |
 |---|---|---|
-| Canonical neutral/base assumption set (`origin=inferer`, `stance=neutral`) | `bav/inferer/assumptions.py` | Inferer |
-| Stance-conditioned copy; must not mutate canonical | `bav/debater/assumptions.py` | Debater |
+| Canonical neutral/base assumption set (`origin=inferer`, `stance=neutral`); construction copies nested mutables before the outer read-only mapping | `bav/inferer/assumptions.py` | Inferer |
+| Stance-conditioned copy independently owns nested payload data; must not mutate canonical | `bav/debater/assumptions.py` | Debater |
 
 Serialized `assumptions.json` bytes stay `{classificationOverrides, normalizationCandidates}` — do not add sidecar keys.
 

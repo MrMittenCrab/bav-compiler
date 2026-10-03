@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from types import MappingProxyType
 from typing import Any, Mapping
 
@@ -31,13 +32,13 @@ def stance_conditioned_assumptions(
             "Debater assumption sets must declare a non-neutral stance"
         )
     if is_canonical_neutral(base):
-        data = dict(payload) if payload is not None else dict(base.payload)
+        data = deepcopy(dict(payload) if payload is not None else dict(base.payload))
         return AssumptionSet(
             origin=ORIGIN_DEBATER,
             stance=stance,
             payload=MappingProxyType(data),
         )
-    data = dict(payload) if payload is not None else dict(base.payload)
+    data = deepcopy(dict(payload) if payload is not None else dict(base.payload))
     return AssumptionSet(
         origin=ORIGIN_DEBATER,
         stance=stance,

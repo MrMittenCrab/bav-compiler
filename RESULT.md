@@ -1,3 +1,93 @@
+# RESULT.md — Step 11.1.1 Isolate nested assumption payloads
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 11.1.1 — Isolate nested assumption payloads
+**Work:** `f84fa0b0a013403d9a029c060cec1ed9`
+**Plan:** `e31cdb181777494c80abe5790ea80107`
+**Finding:** Complete the six-package architectural migration
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections, including the Step 11.1 separation claim, were not rewritten. This record corrects that earlier claim. No commit / push / sync / checkpoint / branch change. No sophisticated Inferer/Debater engines, new methods, LLM workflows or unrelated refactor. This record does not claim parent Completion or Session acceptance.
+
+TARGET SHA-256 `cd908d0e762071b0a0b86e8bd0e838233c64e244d52b51112a32671fdcd091c3` (49988).
+SESSION SHA-256 `26ca2cef00bc643b5ab814b93a71f1728aa1fce0a2eb68f3eec3538253454d96` (4318).
+IMPLEMENTATION SHA-256 `cf6c49cc3a268d4e57712c2f680c87689a94e3c9c755f5df3336a63feb10494d` (4589).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `d56d50c…` was ignored.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `11.1.1` source | `55a33e966b652e96200dea81ab2c1e26f78765f0` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; reviewed checkpoint `c24bd7c55757748af0d98888332e9f95f525911e` is an ancestor |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | work `f84fa0b0a013403d9a029c060cec1ed9`, plan `e31cdb181777494c80abe5790ea80107`, step `11.1.1` |
+| Bound running attempt | `c916d78b55cc4793a84a47115781c914`, `plan_sha` = B, phase `running`, `checkpoint_sha` absent |
+| `admitted_review` predecessor | `review_sha256` `ea5fd4354ced0fab705e5e27515dd3338e262fa0afbe118cfe1ce54a411ad07c`; `reviewed_head` `c24bd7c…` |
+| `latest-implementation` leftover HEAD | `d56d50ceb302b006a1c01c2e87fa37569e12cdad` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Fail-closed | Not required |
+
+## Correction of the earlier separation claim
+
+Step 11.1 recorded that Debater copies cannot overwrite the canonical object. That outer-mapping protection was real, but nested `classificationOverrides` and `normalizationCandidates` remained aliased. Review `ea5fd435…` reproduced stance mutations appearing in the neutral base. This repair isolates nested mutable payload data. The historical 11.1 record is left as written.
+
+## Isolation repair
+
+`AssumptionSet.__post_init__` deep-copies nested payload values before the existing outer `MappingProxyType`. `canonical_neutral_assumptions` and direct construction therefore own caller-supplied nested dicts/lists. `stance_conditioned_assumptions` deep-copies both the default `base.payload` route and an explicit payload before construction. Public signatures, origin/stance metadata, neutral-stance rejection, overwrite guards, sidecar keys and outer read-only mapping are unchanged. Nested containers remain ordinary dicts/lists.
+
+Inventory boundary text in `bav/director/docs/MIGRATION_INVENTORY.md` was corrected to record independent nested ownership. Historical inventory B SHA and other mapping rows were not rewritten.
+
+## Assumption regressions
+
+Interpreter: `/opt/anaconda3/bin/python` **3.13.9**. Commands from repository root.
+
+| Stage | Command | Measured result |
+|---|---|---|
+| Before adding nested regressions | `pytest -q bav/inferer/tests/test_assumptions.py bav/debater/tests/test_assumptions.py` | **3 passed** in 0.01s (existing outer-mapping cases only) |
+| After adding nested regressions, before repair | same | **4 failed, 3 passed** in 0.03s |
+| After repair | same | **7 passed** in 0.01s |
+
+Reproduced pre-repair failures:
+
+- `test_direct_construction_owns_nested_payload` — caller mutation of override dict/notes and candidate tags/meta/list appeared in the constructed set
+- `test_canonical_neutral_owns_nested_caller_payload` — caller notes/tags/meta mutations appeared in the canonical set
+- `test_default_payload_route_isolates_nested_mutations` — bull override/candidate mutations appeared in the neutral base and sibling bear
+- `test_explicit_payload_route_isolates_nested_mutations` — caller append to the base candidate list appeared in the constructed neutral set
+
+After repair: default and explicit payload routes, direct construction, caller mutation, stance mutation and sibling isolation all keep nested values unchanged across boundaries. Outer mapping still rejects item assignment. Origin/stance, `is_canonical_neutral`, `ORIGIN_DEBATER`, sidecar keys `{classificationOverrides, normalizationCandidates}` and overwrite guards remain.
+
+## Successor suites
+
+`/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_current_build.py bav/director/tests/test_build_cli.py bav/director/tests/test_engine_trainer_ownership.py bav/modeler/tests/test_build_contract.py bav/composer/tests/test_publication.py legacy/tests/test_trainer.py`
+
+**179 passed**, 5 pre-existing Swig importlib warnings, 60.46s. No skip / xfail / deselect.
+
+## Evidence-reuse justification
+
+This repair changes only assumption construction/copy isolation and their tests plus the inventory boundary sentence. `AssumptionSet` / `stance_conditioned_assumptions` are not on the ordinary company build/check/publish path; serialized sidecar keys are unchanged. Company command execution and output behavior are therefore unaffected, and representative Lululemon/Fast Retailing commands were not rerun.
+
+Retained applicable reviewed evidence: Step 11.1 / 10.16 migration, provenance and representative build/check/publication records. Current on-disk hashes still match those records (`assumptions.json` `73fbb33f…` 69; Lululemon Drivers `3fea615d…` 21884; Fast Retailing Drivers `5b3aca6c…` 10320; Forecast/Valuation/Overview placeholders `e3b0c442…` 0). No formula, dependency or presentation change; native Excel/Office Bridge was not required. Later verification is not treated as proof that the 11.1/10.16 gates ran.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `bav/inferer/assumptions.py` | `09861bbd2a046fe5a5dfa32f809967d67e0a9484c0fdff0dc1d084b7cc8cf1a0` | 1175 |
+| `bav/debater/assumptions.py` | `a3558abe90d6cfc9e4b7af0cd3636e8bd4a78088e896dc16f2ec38053e2dcf08` | 1672 |
+| `bav/inferer/tests/test_assumptions.py` | `4cc747354b13b40dc84e03aa700d2dc9d64392a941977c03254bf9af6bef1b96` | 3319 |
+| `bav/debater/tests/test_assumptions.py` | `9304d96a151d74777fe50ea69622a033c6ad38e181b55768aa73ccaa32118f87` | 5047 |
+| `bav/director/docs/MIGRATION_INVENTORY.md` | `1f3e482c3d53aeef33777382a8c4bb9c5f42e7d499103f0340aa8e9b57fddb10` | 142085 |
+
+## Remaining toward Completion
+
+Six-package relocation from Step 11.1 remains. Nested assumption aliasing is repaired in this attempt; Review adjudicates whether the neutral/stance boundary now satisfies Completion. Unresolved inventory ambiguities from 11.1 are unchanged.
+
+## Required plan change
+
+None.
+
+---
+
 # RESULT.md — Step 11.1 Complete the six-package architectural migration
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
