@@ -11121,3 +11121,94 @@ This verification repair does not establish Session 10 acceptance.
 
 None.
 
+
+# RESULT.md — Step 10.9.2 Relocate data contracts and ingestion responsibilities — provenance persistence verification
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.9.2 — Relocate data contracts and ingestion responsibilities — provenance persistence verification
+**Work:** `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`
+**Plan:** `6370c3e59e864abfa2257793d076b489`
+**Finding:** Relocate data contracts and ingestion responsibilities
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. Production admission/relocation code was not edited.
+
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `0c422796e83aec4acbf6a4ce84806f668fabf6227e49cfb1a8144044a91c76f4` (7822).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`.
+
+| Binding | Value |
+|---|---|
+| `resume-state` `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / HEAD / `implementation-baseline.json` head | `95efb965cd896e462814459b843d9a992358c7a9` |
+| Branch | `checkpoint/20260913-183303` |
+| Reviewed checkpoint | `1a82323aac1309141f480e550277ffb2f56b35ca` |
+| Reviewed-checkpoint parent / authenticated 10.9.1 implementation baseline | `250d57178d4b32b3b12a13ba9a08677789d59183` |
+| Retained pre-relocation comparator (checkpoint `38f5774170c577aa10eb5f03c4cbe99ed7cff789` parent) | `eb65dc63845b940162c48e39ae9af7598d2a3078` |
+| `latest-implementation` leftover HEAD | `250d57178d4b32b3b12a13ba9a08677789d59183` (ignored: `IMPLEMENT_BASE_SHA` populated) |
+| Fail-closed | Not required; populated `IMPLEMENT_BASE_SHA`, branch ref, `.git/logs/HEAD` ancestry and reviewed-checkpoint parent all authenticated |
+
+`.git/logs/HEAD` ancestry: `eb65dc6` → `38f5774` (Step 10.9) → `250d571` (merge) → `1a82323` (Step 10.9.1) → `95efb965` (current HEAD). `git cat-file -t` confirms all four bound commits exist.
+
+## Persistence entry points inspected
+
+Applicable admitted-financial persist/reload boundary under current canonical dependencies:
+
+| Role | Path | B blob (`95efb965` / `250d571`) | Current `git hash-object` |
+|---|---|---|---|
+| Writer / reader | `modeler/data/standardized_io.py` `standardized_to_payload` / `standardized_from_payload` | `e71188831fc9da477be2bce6ea99ca2b73babe71` | identical |
+| Admission (in-memory only) | `core/ingestion/normalization_candidate_admission.py` | `6ea5606928d2953f17107076d0a3d7e7e42486fe` | identical |
+| Documentary writer | `modeler/ingestion/filing_standardizer.py` `reconciliation_provenance_payload` | `d70f0bea94e15893e5fa2a54c471258ab57e88ae` | identical |
+
+Pre-relocation comparator `eb65dc6`: `standardized_io.py` already byte-identical (`e7118883…` at `core/data/standardized_io.py`). Admission `286be324…` and `filing_standardizer` `15f78d71…` differ by import-path relocation only.
+
+`standardized_to_payload` is model-only (`label` / `concept` / `values`); it excludes provenance, source paths, `source_doc` and `source_page`. `_insert_constructed_line` writes only those three fields. Admission has no persist/write/reload helper (`dir(...)` persist-name scan is empty). `reconciliation_provenance_payload` consumes `ReconciledCompanyData` from ordinary reconcile/CLI (`core/__main__.py` writes `provenance.json`); Director `filing_cli` does not call admission. Calling it with reloaded `StandardizedFinancials` raises `TypeError: unhashable type: 'FinancialPeriod'`. Live and ordinary `provenance.json` contain source-row impairment identities but not `analytical_is_impairment_restructuring_aggregate`, `SIGN_TRANSFORMATION`, observation fingerprints, `sign_conversions_applied`, or printed-page locators.
+
+Documentary reconciliation provenance therefore does not cover this opt-in admission path.
+
+## Recovered field comparison
+
+Independently specified source-derived expectations were computed before persist. After `standardized_to_payload` → temp `standardized.json` → independent `standardized_from_payload`, original result objects were discarded.
+
+| Field | Independent expectation | Recovered from persisted standardized artifact |
+|---|---|---|
+| Analytical identity / values | `concept=analytical_is_impairment_restructuring_aggregate`, values `(0, -407913, -74501, 0, 0)` | Recovered; financial identity/value round-trip holds |
+| Observation fingerprints | 11 source-derived SHA-256 fingerprints | Missing (`observation_fingerprints` absent) |
+| Source hashes | `BOUND_SOURCE_SHA256` members | Missing |
+| Physical pages | FY2022 `(50, 56)`; FY2023 `(50, 51, 56)`; FY2024 `(51, 56)`; FY2025/FY2026 `(51,)` | Missing |
+| Printed pages | FY2022 `(46, 50)`; FY2023 `(46, 50)`; FY2024 `(50,)`; FY2025/FY2026 `()` unresolved | Missing; unresolved printed-page states were not invented |
+| Row identities | authorized IS identities | Missing |
+| Sign transformation / once-only | `analytical_amount = -reported_face_expense`; `sign_conversions_applied == 1` | Missing; face amounts also absent, so once-only conversion cannot be recovered |
+| `source_doc` / `source_page` | empty on constructed `LineItem` | Remain `""` after reload |
+
+Equal B/current omissions do not establish provenance preservation. This is an existing production-contract limitation present at authenticated B, pre-relocation `eb65dc6`, and current dependencies — not a migration regression. The model-only serializer was not expanded.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| `rg -n "normalization_candidate\|reconciliation_provenance_payload\|provenance.json" core modeler director extractor` | Admission remains at `core/ingestion/normalization_candidate_admission.py`. Documentary writer is `modeler/ingestion/filing_standardizer.py`. CLI provenance write is ordinary reconcile only. |
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_normalization_candidate_admission.py` | **24 passed** in 2.30s. All **23** existing candidate cases preserved (10 rejection probes + 13 prior tests). One added persistence/reload case. No skip / xfail / deselect |
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_data_ingestion_ownership.py core/tests/test_normalization.py core/tests/test_filing_json.py` | **135 passed** in 10.24s |
+| Isolated persist/reload vs authenticated B `95efb965` and pre-relocation `eb65dc6` | JSON results identical, including `missing_required_fields`, empty admission persist names, and documentary `TypeError` |
+| `git diff --check` | rc 0. Test-only diff: `normalization_candidate_isolated_driver.py` and `test_normalization_candidate_admission.py` (+254 / −7) |
+| Enrichment-sidecar | Not re-run. Production dependencies unchanged. Prior Step 10.9 failure `test_ordinary_prepare_writes_resolution_and_keeps_revenue_per_store` remains visible; the broader suite is not claimed fully passing |
+
+Covered gates remain: absent/provisional/stale/contradictory adoption; missing/conflicting treatment; invalid source binding; missing periods; overlapping conflicts; unauthorized membership; cash-flow substitution; Studio/component exclusion; duplicate use; absent/repeated sign conversion; ambiguous selectors; repeated-admission rejection; default-off ordinary outputs; synthetic vs real-company authorization; unresolved after-tax treatment.
+
+## Preservation
+
+Completed Modeler/Director relocation, compatibility imports, public `bav` interfaces, source/extracted/reconciled inputs and production admission code were not rewritten. Ownership/recovery safeguards and protected documents were not disturbed.
+
+## Remaining toward Completion
+
+Required admission provenance fields cannot be recovered through the existing standardized persist/reload contract. That limitation matches authenticated B and the pre-relocation comparator; it was recorded, not repaired. Classification/normalization interpretation splits, normalization-candidate separation, enrichment/Legacy decomposition, remaining orchestration relocation, unrelated removals, test ownership migration and final repository-wide verification remain subsequent scope. The enrichment-sidecar defect was not repaired. FY2024/FY2025 printed-page resolution remains source-unresolved.
+
+This provenance-persistence verification does not establish Session 10 acceptance.
+
+## Required plan change
+
+None.
+

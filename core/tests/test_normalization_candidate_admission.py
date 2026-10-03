@@ -48,6 +48,19 @@ from modeler.ratio_values import UNDEFINED_RATIO
 ROOT = Path(__file__).resolve().parents[2]
 COMPARISON_B = "eb65dc63845b940162c48e39ae9af7598d2a3078"
 REVIEWED_CHECKPOINT = "38f5774170c577aa10eb5f03c4cbe99ed7cff789"
+AUTHENTICATED_B = "95efb965cd896e462814459b843d9a992358c7a9"
+REVIEWED_CHECKPOINT_1091 = "1a82323aac1309141f480e550277ffb2f56b35ca"
+REVIEWED_BASELINE_1091 = "250d57178d4b32b3b12a13ba9a08677789d59183"
+REQUIRED_PROVENANCE_FIELDS = (
+    "observation_fingerprints",
+    "source_hashes",
+    "physical_pages",
+    "printed_pages",
+    "row_identities",
+    "transformation",
+    "sign_conversions_applied",
+    "face_reported_usd_thousands",
+)
 LIVE_DIR = ROOT / "build" / "input" / "lululemon" / "evidence" / "prior-live"
 EXTRACTED_DIR = ROOT / "build" / "input" / "lululemon" / "extracted"
 SOURCE_DIR = ROOT / "build" / "input" / "lululemon" / "source"
@@ -985,9 +998,62 @@ def _page_lookup_rows(page_lookup: dict) -> list[list[object]]:
     ]
 
 
-def _materialize_b_tree(dest: Path) -> None:
+def _independent_expected_provenance(observations: list[dict], page_lookup: dict) -> dict[str, dict]:
+    """Source-derived expectations computed before any persist/reload."""
+    expected: dict[str, dict] = {}
+    for period in LEDGER_PERIODS:
+        members = [
+            _locator_attached(obs, page_lookup)
+            for obs in observations
+            if obs.get("period") == period and obs.get("row_identity") in AUTHORIZED_IS_IDENTITIES
+        ]
+        expected[period] = {
+            "observation_fingerprints": tuple(
+                _independent_fingerprint(obs) for obs in members
+            ),
+            "source_hashes": tuple(
+                sorted({str(obs["source_sha256_declared"]) for obs in members})
+            ),
+            "physical_pages": EXPECTED_PHYSICAL_PAGES[period],
+            "printed_pages": EXPECTED_PRINTED_PAGES[period],
+            "row_identities": tuple(sorted({str(obs["row_identity"]) for obs in members})),
+            "transformation": SIGN_TRANSFORMATION,
+            "sign_conversions_applied": 1,
+            "face_reported_usd_thousands": EXPECTED_FACE[LEDGER_PERIODS.index(period)],
+        }
+    return expected
+
+
+def _documentary_needles() -> dict[str, bool]:
+    return {
+        ANALYTICAL_CONCEPT: False,
+        ANALYTICAL_LABEL: False,
+        SIGN_TRANSFORMATION: False,
+        "observation_fingerprints": False,
+        "sign_conversions_applied": False,
+        "printed_page": False,
+    }
+
+
+def _documentary_hits(payload: object) -> dict[str, bool]:
+    text = json.dumps(payload, default=str)
+    return {needle: needle in text for needle in _documentary_needles()}
+
+
+def _admission_persist_names() -> list[str]:
+    import core.ingestion.normalization_candidate_admission as admission
+
+    tokens = ("persist", "write_", "reload", "dump", "save_", "to_json", "from_json")
+    return sorted(
+        name
+        for name in dir(admission)
+        if any(token in name.lower() for token in tokens)
+    )
+
+
+def _materialize_git_tree(dest: Path, sha: str) -> None:
     archive = subprocess.check_output(
-        ["git", "archive", COMPARISON_B, "core", "modeler", "extractor", "director"],
+        ["git", "archive", sha, "core", "modeler", "extractor", "director"],
         cwd=ROOT,
     )
     with tarfile.open(fileobj=io.BytesIO(archive), mode="r:") as tar:
@@ -1013,9 +1079,100 @@ def _run_isolated_compare(era: str, tree: Path, casebook: dict) -> dict:
     return json.loads(result.stdout)
 
 
+def test_admission_provenance_persistence_reload(retained):
+    expected = _independent_expected_provenance(
+        retained["observations"], retained["page_lookup"]
+    )
+    construction = construct_provisional_candidate(
+        retained["observations"],
+        bound_source_hashes=BOUND_SOURCE_SHA256,
+        page_lookup=retained["page_lookup"],
+    )
+    admitted = run_normalization_candidate_handoff(
+        retained["observations"],
+        copy.deepcopy(retained["live"]),
+        bound_source_hashes=BOUND_SOURCE_SHA256,
+        page_lookup=retained["page_lookup"],
+        adoption=_synthetic_adoption(construction),
+        treatment=_synthetic_treatment(),
+    )
+    assert admitted.production_admitted is True
+    isolated = admitted.constructed_financials
+    assert isolated is not None
+    exported = standardized_to_payload(isolated)
+    del admitted
+    del isolated
+    del construction
+
+    with tempfile.TemporaryDirectory() as tmp:
+        std_path = Path(tmp) / "standardized.json"
+        std_path.write_text(json.dumps(exported), encoding="utf-8")
+        del exported
+        reloaded_payload = json.loads(std_path.read_text(encoding="utf-8"))
+        reloaded = standardized_from_payload(reloaded_payload, strict=True)
+
+    item = resolve_income_statement_selector(reloaded, ANALYTICAL_SELECTOR)
+    ident = line_identity(item)
+    dates = [date.fromisoformat(period) for period in LEDGER_PERIODS]
+    recovered_line = next(
+        row
+        for row in reloaded_payload["income_statement"]
+        if row.get("concept") == ANALYTICAL_CONCEPT
+    )
+    assert item.label == ANALYTICAL_LABEL
+    assert item.concept == ANALYTICAL_CONCEPT
+    assert tuple(int(item.values[period]) for period in dates) == EXPECTED_ANALYTICAL
+    assert ident.key() == (
+        f"concept={ANALYTICAL_CONCEPT}|label={ANALYTICAL_LABEL.casefold()}"
+    )
+    assert set(recovered_line) == {"label", "concept", "values"}
+    assert item.source_doc == ""
+    assert item.source_page == ""
+    assert "provenance" not in reloaded_payload
+    missing = [field for field in REQUIRED_PROVENANCE_FIELDS if field not in recovered_line]
+    assert missing == list(REQUIRED_PROVENANCE_FIELDS)
+    for period, expect in expected.items():
+        assert expect["physical_pages"] == EXPECTED_PHYSICAL_PAGES[period]
+        assert expect["printed_pages"] == EXPECTED_PRINTED_PAGES[period]
+        assert expect["transformation"] == SIGN_TRANSFORMATION
+        assert expect["sign_conversions_applied"] == 1
+        assert expect["face_reported_usd_thousands"] == EXPECTED_FACE[
+            LEDGER_PERIODS.index(period)
+        ]
+        assert expect["observation_fingerprints"]
+        assert expect["source_hashes"]
+        assert expect["row_identities"]
+        recovered_period = recovered_line["values"].get(period)
+        assert int(recovered_period) == EXPECTED_ANALYTICAL[LEDGER_PERIODS.index(period)]
+        assert recovered_line.get("observation_fingerprints") != expect[
+            "observation_fingerprints"
+        ]
+    assert EXPECTED_PRINTED_PAGES["2025-02-02"] == ()
+    assert EXPECTED_PRINTED_PAGES["2026-02-01"] == ()
+    assert _admission_persist_names() == []
+    live_hits = _documentary_hits(_load_json(LIVE_DIR / "provenance.json"))
+    ordinary_hits = _documentary_hits(_load_json(ORDINARY_DIR / "provenance.json"))
+    assert live_hits == _documentary_needles()
+    assert ordinary_hits == _documentary_needles()
+    from modeler.ingestion.filing_standardizer import reconciliation_provenance_payload
+
+    try:
+        reconciliation_provenance_payload(reloaded)
+        documentary_accepts = True
+    except Exception as exc:
+        documentary_accepts = False
+        documentary_error = type(exc).__name__
+    assert documentary_accepts is False
+    assert documentary_error == "TypeError"
+    assert _snapshot_obs(retained["observations"]) == retained["obs_snapshot"]
+    assert retained["live_std_bytes"] == (LIVE_DIR / "standardized.json").read_bytes()
+
+
 def test_b_and_current_isolated_agreement(retained):
     parent = _git_out(["git", "rev-parse", f"{REVIEWED_CHECKPOINT}^"])
     assert parent == COMPARISON_B
+    reviewed_parent = _git_out(["git", "rev-parse", f"{REVIEWED_CHECKPOINT_1091}^"])
+    assert reviewed_parent == REVIEWED_BASELINE_1091
     casebook = {
         "observations": retained["observations"],
         "live_payload": retained["live_payload"],
@@ -1023,18 +1180,32 @@ def test_b_and_current_isolated_agreement(retained):
         "bound_source_hashes": BOUND_SOURCE_SHA256,
         "page_lookup": _page_lookup_rows(retained["page_lookup"]),
         "ordinary_selectors": list(ORDINARY_SELECTORS),
+        "expected_analytical": list(EXPECTED_ANALYTICAL),
+        "required_provenance_fields": list(REQUIRED_PROVENANCE_FIELDS),
     }
     current = _run_isolated_compare("current", ROOT, casebook)
     with tempfile.TemporaryDirectory() as tmp:
-        b_tree = Path(tmp)
-        _materialize_b_tree(b_tree)
-        admission = (b_tree / "core/ingestion/normalization_candidate_admission.py").read_bytes()
-        assert admission == subprocess.check_output(
+        root = Path(tmp)
+        pre_tree = root / "pre"
+        auth_tree = root / "auth"
+        pre_tree.mkdir()
+        auth_tree.mkdir()
+        _materialize_git_tree(pre_tree, COMPARISON_B)
+        _materialize_git_tree(auth_tree, AUTHENTICATED_B)
+        pre_admission = (pre_tree / "core/ingestion/normalization_candidate_admission.py").read_bytes()
+        assert pre_admission == subprocess.check_output(
             ["git", "show", f"{COMPARISON_B}:core/ingestion/normalization_candidate_admission.py"],
             cwd=ROOT,
         )
-        baseline = _run_isolated_compare("b", b_tree, casebook)
+        auth_admission = (auth_tree / "core/ingestion/normalization_candidate_admission.py").read_bytes()
+        assert auth_admission == subprocess.check_output(
+            ["git", "show", f"{AUTHENTICATED_B}:core/ingestion/normalization_candidate_admission.py"],
+            cwd=ROOT,
+        )
+        baseline = _run_isolated_compare("b", pre_tree, casebook)
+        authenticated = _run_isolated_compare("authenticated_b", auth_tree, casebook)
     assert current == baseline
+    assert current == authenticated
     assert current["construction"]["face_series"] == list(EXPECTED_FACE)
     assert current["construction"]["analytical_series"] == list(EXPECTED_ANALYTICAL)
     assert current["absent_adoption"]["blocked_reason"] == "absent_adoption"
@@ -1046,5 +1217,16 @@ def test_b_and_current_isolated_agreement(retained):
     assert current["repeated_admission"]["blocked_reason"] == "repeated_admission"
     assert current["ordinary_outputs"]["live"]["has_analytical"] is False
     assert current["ordinary_outputs"]["ordinary"]["empty_candidates"] is True
+    persistence = current["persistence"]
+    assert persistence["standardized_reload"]["recovered_values"] == list(EXPECTED_ANALYTICAL)
+    assert persistence["standardized_reload"]["missing_required_fields"] == list(
+        REQUIRED_PROVENANCE_FIELDS
+    )
+    assert persistence["standardized_reload"]["source_doc"] == ""
+    assert persistence["standardized_reload"]["source_page"] == ""
+    assert persistence["contract"]["admission_persist_names"] == []
+    assert persistence["contract"]["documentary_accepts_standardized"] is False
+    assert persistence["contract"]["documentary_error"] == "TypeError"
+    assert persistence["contract"]["limitation"] == "no_admission_provenance_persist_reload"
     assert _snapshot_obs(retained["observations"]) == retained["obs_snapshot"]
     assert retained["live_std_bytes"] == (LIVE_DIR / "standardized.json").read_bytes()

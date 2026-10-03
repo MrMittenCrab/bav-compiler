@@ -8,12 +8,15 @@ from __future__ import annotations
 import copy
 import json
 import sys
+import tempfile
 from datetime import date
+from pathlib import Path
 
 ERA = sys.argv[1]
 if ERA == "b":
     from core.data.line_identity import line_identity
     from core.data.standardized_io import standardized_from_payload, standardized_to_payload
+    from core.ingestion.filing_standardizer import reconciliation_provenance_payload
     from core.ingestion.normalization_candidate_admission import (
         ANALYTICAL_CONCEPT,
         ANALYTICAL_LABEL,
@@ -39,6 +42,7 @@ if ERA == "b":
 else:
     from modeler.data.line_identity import line_identity
     from modeler.data.standardized_io import standardized_from_payload, standardized_to_payload
+    from modeler.ingestion.filing_standardizer import reconciliation_provenance_payload
     from core.ingestion.normalization_candidate_admission import (
         ANALYTICAL_CONCEPT,
         ANALYTICAL_LABEL,
@@ -287,6 +291,66 @@ def _mutate(observations, bound, kwargs):
         )
         observations.append(copy.deepcopy(first_is))
     return observations, member_identities, sign_conversion
+
+
+def _admission_persist_names() -> list[str]:
+    import core.ingestion.normalization_candidate_admission as admission
+
+    tokens = ("persist", "write_", "reload", "dump", "save_", "to_json", "from_json")
+    return sorted(
+        name
+        for name in dir(admission)
+        if any(token in name.lower() for token in tokens)
+    )
+
+
+def _persistence_case(admitted, book) -> dict:
+    required = list(book["required_provenance_fields"])
+    isolated = admitted.constructed_financials
+    exported = standardized_to_payload(isolated)
+    with tempfile.TemporaryDirectory() as tmp:
+        std_path = Path(tmp) / "standardized.json"
+        std_path.write_text(json.dumps(exported), encoding="utf-8")
+        del admitted
+        del isolated
+        del exported
+        reloaded_payload = json.loads(std_path.read_text(encoding="utf-8"))
+        reloaded = standardized_from_payload(reloaded_payload, strict=True)
+    item = resolve_income_statement_selector(reloaded, ANALYTICAL_SELECTOR)
+    recovered_line = next(
+        row
+        for row in reloaded_payload["income_statement"]
+        if row.get("concept") == ANALYTICAL_CONCEPT
+    )
+    dates = [date.fromisoformat(period) for period in LEDGER_PERIODS]
+    try:
+        reconciliation_provenance_payload(reloaded)
+        documentary_accepts = True
+        documentary_error = None
+    except Exception as exc:
+        documentary_accepts = False
+        documentary_error = type(exc).__name__
+    return {
+        "standardized_reload": {
+            "recovered_keys": sorted(recovered_line.keys()),
+            "recovered_label": item.label,
+            "recovered_concept": item.concept,
+            "recovered_values": [int(item.values[period]) for period in dates],
+            "recovered_identity": line_identity(item).key(),
+            "source_doc": item.source_doc,
+            "source_page": item.source_page,
+            "missing_required_fields": [
+                field for field in required if field not in recovered_line
+            ],
+            "payload_has_provenance": "provenance" in reloaded_payload,
+        },
+        "contract": {
+            "admission_persist_names": _admission_persist_names(),
+            "documentary_accepts_standardized": documentary_accepts,
+            "documentary_error": documentary_error,
+            "limitation": "no_admission_provenance_persist_reload",
+        },
+    }
 
 
 def main() -> None:
@@ -587,6 +651,7 @@ def main() -> None:
             "has_analytical": any(item.concept == ANALYTICAL_CONCEPT for item in std.income_statement),
         }
     results["ordinary_outputs"] = ordinary_out
+    results["persistence"] = _persistence_case(admitted, book)
     json.dump(results, sys.stdout, sort_keys=True, default=str)
 
 
