@@ -1,3 +1,110 @@
+# RESULT.md — Step 10.9.7 Restore management-KPI enrichment compatibility exports
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.9.7 — Restore management-KPI enrichment compatibility exports
+**Work:** `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`
+**Plan:** `0d6df9da13994dad9013c7393a8d8d59`
+**Finding:** Relocate data contracts and ingestion responsibilities
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. Controller files under `.git/autocycle` were read-only.
+
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `38b4ef9397f920421c524d43d40143ef954af64455dfcd543640f53d344836fe` (6960).
+
+This bounded repair restores four omitted compatibility exports and checkpoint EOF whitespace. It does not close parent Completion and does not establish Session 10 acceptance. It is distinct from the 10.9.6 ownership split recorded below.
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state` and authenticated as a Git commit. `implementation-baseline.json` head matched B. Leftover `latest-implementation` HEAD was not substituted for B.
+
+| Binding source | Value |
+|---|---|
+| `resume-state` `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD | `a61fc66fc6e9bfb7faa0599d399a953b996245dc` |
+| Branch | `checkpoint/20260913-183303` |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` work / plan | work `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`, plan `0d6df9da13994dad9013c7393a8d8d59`, step `10.9.7` |
+| `work-state` allocated `10.9.7` | source = B, work_id = `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`, status `opened` |
+| Current implementation attempt | `d57367cdbb944cfca543f005abe7f822` (phase `running`, plan_sha = B, `checkpoint_sha` absent) |
+| Live authentication state | implementation at B (`HEAD == B`) after nonempty matching work and attempt bindings |
+| HEAD parent / reviewed checkpoint comparator | `f902de4922c3c745afb35aacc1cd0c8c74655308` |
+| Retained reviewed relocation baseline | `da53beb625d195794b947b98718a42f70a07bb53` |
+| Retained pre-relocation comparator | `eb65dc63845b940162c48e39ae9af7598d2a3078` |
+| `latest-implementation` leftover HEAD | `da53beb625d195794b947b98718a42f70a07bb53` (ignored: `IMPLEMENT_BASE_SHA` populated and authenticated) |
+| Fail-closed | Not required |
+
+Historical tuples remain separately bound comparators and do not authorize this live attempt.
+
+## Restored exports
+
+| Name | Canonical destination | Façade |
+|---|---|---|
+| `collect_calendar_corpus` | `extractor.ingestion.management_kpi_enrichment` | explicit re-export; `is` identity |
+| `collect_exclusion_corpus` | `extractor.ingestion.management_kpi_enrichment` | explicit re-export; `is` identity |
+| `extract_comparison_window` | `extractor.ingestion.management_kpi_enrichment` | explicit re-export; `is` identity |
+| `extract_spsf_prior_period_levels` | `extractor.ingestion.management_kpi_enrichment` | explicit re-export; `is` identity |
+
+No wrappers or duplicate implementations were added. Signatures and defaults match the Extractor objects (`__defaults__` / `__kwdefaults__` remain `None`). Function bodies are byte-identical to da53beb / f902de49 / live B:
+
+| Function | SHA-256 of definition |
+|---|---|
+| `collect_calendar_corpus` | `2b62c1fb48405c42aea804575c74732fee94196ce0404cc9d183fab94bc24938` |
+| `collect_exclusion_corpus` | `d0d86c4aaafcc83781cb2f6f86e56e94cd502bd723813956b9c042293be4b124` |
+| `extract_comparison_window` | `f5bef043ee74d60f490c7809982db52f28bb5dd4e03f4986214541c3960a849c` |
+| `extract_spsf_prior_period_levels` | `86231af1e21147b01358606d43e604f924f9e22d2ff72dd9f17ac904e50f998a` |
+
+Extractor / Modeler / Director owner files were changed only by removing one extra EOF blank line (rstrip-equal to live B; trailing newlines 2 → 1). Canonical owners still do not import the façade or Legacy.
+
+## Pre-repair vs post-repair coverage
+
+Added `ENRICHMENT_EXTRACTOR_COMPAT` coverage in `core/tests/test_data_ingestion_ownership.py` (direct imports, identity, signatures, representative owner paths, and fresh-process façade-first / canonical-first orders).
+
+| Phase | Measured result |
+|---|---|
+| Before façade repair | 4 failed: `ImportError` / `AttributeError` for `collect_calendar_corpus` on `test_management_kpi_enrichment_extractor_compatibility_exports`, `test_management_kpi_enrichment_canonical_ownership`, `test_compatibility_exports_are_identity_equal`, `test_facade_and_canonical_import_orders` |
+| After façade repair | those four tests pass; required suite **464 passed** |
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| B authentication (resume-state, baseline JSON, work-state 10.9.7, branch, HEAD==B, attempt `d57367cd…`) | B = `a61fc66fc6e9bfb7faa0599d399a953b996245dc`; HEAD == B; fail-closed not required |
+| Historical definition compare vs da53beb / f902de49 / live B | all four function bodies unchanged |
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_management_kpi_enrichment.py core/tests/test_management_kpi_reconciliation.py core/tests/test_normalization_candidate_admission.py core/tests/test_data_ingestion_ownership.py core/tests/test_normalization.py core/tests/test_filing_json.py core/tests/test_research_drivers.py` | **464 passed**, 5 warnings in 100.25s. No skip / xfail / deselect |
+| Isolated current-versus-B normalization compare, lifecycle fixtures, negative rejection, synthetic/independently authorized round trips for all 11 observations including `eb65dc6` | Retained by existing `test_normalization_candidate_admission` / `test_normalization` gates in the required suite |
+| Canonical vs façade identity for the four restored names | `is` identity; Extractor `__code__.co_filename`; signatures equal |
+| Fresh-process imports | façade-then-canonical and canonical-then-façade orders pass for all four names |
+| Protected-directory rejection, unsupported page bindings, complete passage attribution, repeated working-copy enrichment | Exercised by retained `test_management_kpi_enrichment` gates |
+| `git diff --check` | rc 0 |
+| `git diff --check da53beb625d195794b947b98718a42f70a07bb53` | rc 0 |
+
+Covered gates remain: protected-path refusal; PDF-consumed bindings; rejection of unsupported and extract-asserted pages; FY2022 calendar from FY2023 p.33; shifted windows not inferred; definition equivalence vs genuine differences; SPSF level vs comparison; metric-specific exclusions; complete passage attribution; pair/peer independence; isolated synthetic and independently authorized normalization round trips for all 11 observations.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `extractor/ingestion/management_kpi_enrichment.py` | `214138d17f5e4edce91d96d54afabf15b986e5c84c009f97ded947254bc88740` | 46494 |
+| `modeler/ingestion/management_kpi_enrichment.py` | `d3b6bea86136d6d53554bb0d2ea65368d8c08b348c5da86bd3d5f408de19a8b4` | 39148 |
+| `director/ingestion/management_kpi_enrichment.py` | `9ac1b24b84e6a9bf249d5383c6eba2ac40e51d820a88d3ce29ef70c04da98fd8` | 3677 |
+| `core/ingestion/management_kpi_enrichment.py` | `42eb6ab9f52879343a65cc733fe2d9d8b642750528f53f109a3ce01756691955` | 1342 |
+| `core/tests/test_data_ingestion_ownership.py` | `3d8a1036f604a811b9b84bd75deb32328ea8c3f34fa76f86a2373878beb5bcbc` | 29279 |
+
+## Preservation
+
+Completed Modeler data and ingestion ownership, Director schema and orchestration ownership, Extractor documentary types/binding, normalization-candidate owners, issue ordering, compatibility façades and inventory mappings remain. Public `bav` commands, aliases, lazy loading, optional Trainer independence, dormant forecasting, accounting signs, fiscal distinctions, precision, reconciliations, provenance, residual qualifications and admission/comparison independence were not rewritten. Canonical source and extracted/reconciled inputs were not rewritten. Ordinary company build still loads standardized-only input. Admission remains default-off and outside ordinary reconciliation. Canonical implementations do not import the façade or Legacy.
+
+## Remaining toward Completion
+
+Broader classification/normalization interpretation splits, remaining ingestion and Legacy decomposition, unrelated removals, test ownership migration and final repository-wide verification remain unfinished. No CLI expansion, general provenance framework, algorithm/report redesign, Trainer expansion or second-phase features.
+
+This bounded export/EOF repair does not establish parent Completion or Session 10 acceptance.
+
+## Required plan change
+
+None.
+
+---
+
 # RESULT.md — Step 10.9.6 Decompose management-KPI enrichment ownership
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

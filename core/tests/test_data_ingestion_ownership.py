@@ -80,6 +80,10 @@ REPRESENTATIVE = (
     ("director.ingestion.normalization_candidate_admission", "load_admitted_normalization_candidate", ROOT / "director/ingestion/normalization_candidate_admission.py"),
     ("interpreter.normalization", "grouping_established_as_source_fact", ROOT / "interpreter/normalization.py"),
     ("extractor.ingestion.management_kpi_enrichment", "inspect_source_pdf", ROOT / "extractor/ingestion/management_kpi_enrichment.py"),
+    ("extractor.ingestion.management_kpi_enrichment", "collect_calendar_corpus", ROOT / "extractor/ingestion/management_kpi_enrichment.py"),
+    ("extractor.ingestion.management_kpi_enrichment", "collect_exclusion_corpus", ROOT / "extractor/ingestion/management_kpi_enrichment.py"),
+    ("extractor.ingestion.management_kpi_enrichment", "extract_comparison_window", ROOT / "extractor/ingestion/management_kpi_enrichment.py"),
+    ("extractor.ingestion.management_kpi_enrichment", "extract_spsf_prior_period_levels", ROOT / "extractor/ingestion/management_kpi_enrichment.py"),
     ("modeler.ingestion.management_kpi_enrichment", "assess_definition_equivalence", ROOT / "modeler/ingestion/management_kpi_enrichment.py"),
     ("modeler.ingestion.management_kpi_enrichment", "build_group_decisions", ROOT / "modeler/ingestion/management_kpi_enrichment.py"),
     ("director.ingestion.management_kpi_enrichment", "enrich_management_working_copies", ROOT / "director/ingestion/management_kpi_enrichment.py"),
@@ -118,9 +122,20 @@ FACADE_PAIRS = (
     ("director.ingestion.normalization_candidate_admission", "core.ingestion.normalization_candidate_admission", "load_admitted_normalization_candidate"),
     ("director.ingestion.normalization_candidate_admission", "core.ingestion.normalization_candidate_admission", "HandoffResult"),
     ("extractor.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "inspect_source_pdf"),
+    ("extractor.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "collect_calendar_corpus"),
+    ("extractor.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "collect_exclusion_corpus"),
+    ("extractor.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "extract_comparison_window"),
+    ("extractor.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "extract_spsf_prior_period_levels"),
     ("modeler.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "assess_definition_equivalence"),
     ("modeler.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "build_group_decisions"),
     ("director.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "enrich_management_working_copies"),
+)
+
+ENRICHMENT_EXTRACTOR_COMPAT = (
+    "collect_calendar_corpus",
+    "collect_exclusion_corpus",
+    "extract_comparison_window",
+    "extract_spsf_prior_period_levels",
 )
 
 
@@ -235,6 +250,10 @@ def test_facade_and_canonical_import_orders():
         ("modeler.ingestion.normalization_candidate_admission", "core.ingestion.normalization_candidate_admission", "construct_provisional_candidate"),
         ("director.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "enrich_management_working_copies"),
         ("extractor.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "inspect_source_pdf"),
+        ("extractor.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "collect_calendar_corpus"),
+        ("extractor.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "collect_exclusion_corpus"),
+        ("extractor.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "extract_comparison_window"),
+        ("extractor.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "extract_spsf_prior_period_levels"),
         ("modeler.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "build_group_decisions"),
     )
     orders = (
@@ -314,7 +333,11 @@ def test_management_kpi_enrichment_canonical_ownership():
         SourceInspection as canonical_inspection,
         _metric_exclusion_evidence as canonical_exclusion,
         _metric_excludes_53rd_week as canonical_excludes,
+        collect_calendar_corpus as canonical_calendar_corpus,
+        collect_exclusion_corpus as canonical_exclusion_corpus,
         definition_features as canonical_features,
+        extract_comparison_window as canonical_window,
+        extract_spsf_prior_period_levels as canonical_spsf,
         inspect_source_pdf as canonical_inspect,
         validate_physical_page_binding as canonical_validate,
     )
@@ -333,9 +356,13 @@ def test_management_kpi_enrichment_canonical_ownership():
         _metric_excludes_53rd_week as facade_excludes,
         assess_definition_equivalence as facade_assess,
         build_group_decisions as facade_decisions,
+        collect_calendar_corpus as facade_calendar_corpus,
+        collect_exclusion_corpus as facade_exclusion_corpus,
         definition_features as facade_features,
         enrich_management_payload as facade_payload,
         enrich_management_working_copies as facade_enrich,
+        extract_comparison_window as facade_window,
+        extract_spsf_prior_period_levels as facade_spsf,
         inspect_source_pdf as facade_inspect,
         validate_physical_page_binding as facade_validate,
     )
@@ -347,6 +374,10 @@ def test_management_kpi_enrichment_canonical_ownership():
     assert canonical_inspection is facade_inspection
     assert canonical_exclusion is facade_exclusion
     assert canonical_excludes is facade_excludes
+    assert canonical_calendar_corpus is facade_calendar_corpus
+    assert canonical_exclusion_corpus is facade_exclusion_corpus
+    assert canonical_window is facade_window
+    assert canonical_spsf is facade_spsf
     assert canonical_assess is facade_assess
     assert canonical_equivalent is facade_equivalent
     assert canonical_decisions is facade_decisions
@@ -354,6 +385,18 @@ def test_management_kpi_enrichment_canonical_ownership():
     assert canonical_enrich is facade_enrich
     assert canonical_page is facade_page
     assert Path(canonical_inspect.__code__.co_filename).resolve() == (
+        ROOT / "extractor/ingestion/management_kpi_enrichment.py"
+    ).resolve()
+    assert Path(canonical_calendar_corpus.__code__.co_filename).resolve() == (
+        ROOT / "extractor/ingestion/management_kpi_enrichment.py"
+    ).resolve()
+    assert Path(canonical_exclusion_corpus.__code__.co_filename).resolve() == (
+        ROOT / "extractor/ingestion/management_kpi_enrichment.py"
+    ).resolve()
+    assert Path(canonical_window.__code__.co_filename).resolve() == (
+        ROOT / "extractor/ingestion/management_kpi_enrichment.py"
+    ).resolve()
+    assert Path(canonical_spsf.__code__.co_filename).resolve() == (
         ROOT / "extractor/ingestion/management_kpi_enrichment.py"
     ).resolve()
     assert Path(canonical_assess.__code__.co_filename).resolve() == (
@@ -365,6 +408,20 @@ def test_management_kpi_enrichment_canonical_ownership():
     assert Path(canonical_enrich.__code__.co_filename).resolve() == (
         ROOT / "director/ingestion/management_kpi_enrichment.py"
     ).resolve()
+
+
+def test_management_kpi_enrichment_extractor_compatibility_exports():
+    import inspect
+
+    from extractor.ingestion import management_kpi_enrichment as canonical
+    from core.ingestion import management_kpi_enrichment as facade
+
+    for name in ENRICHMENT_EXTRACTOR_COMPAT:
+        canonical_obj = getattr(canonical, name)
+        facade_obj = getattr(facade, name)
+        assert facade_obj is canonical_obj
+        assert inspect.signature(facade_obj) == inspect.signature(canonical_obj)
+        assert inspect.signature(facade_obj).parameters == inspect.signature(canonical_obj).parameters
 
 
 def test_normalization_candidate_canonical_ownership():

@@ -20,6 +20,10 @@ from extractor.ingestion.management_kpi_enrichment import (
     printed_pages_from_reference,
     resolve_physical_pages,
     validate_physical_page_binding,
+    collect_calendar_corpus,
+    collect_exclusion_corpus,
+    extract_comparison_window,
+    extract_spsf_prior_period_levels,
     _metric_exclusion_evidence,
     _metric_excludes_53rd_week,
 )

@@ -88,4 +88,3 @@ def enrich_management_working_copies(
     dest.write_text(json.dumps(sidecar, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     sidecar["resolution_path"] = str(dest)
     return sidecar
-

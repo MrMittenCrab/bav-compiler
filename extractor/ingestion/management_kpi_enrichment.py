@@ -1401,4 +1401,3 @@ def _definition_pages_and_text(
         )
         text = str(matched.get("definition") or "")
     return tuple(dict.fromkeys(pages)), text
-

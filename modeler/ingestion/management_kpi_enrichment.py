@@ -955,4 +955,3 @@ def build_group_decisions(
         )
     )
     return tuple(decisions)
-
