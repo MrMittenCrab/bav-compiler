@@ -13,10 +13,19 @@ import hashlib
 import json
 from dataclasses import dataclass, field
 from datetime import date
+from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from modeler.data.interface import LineItem, StandardizedFinancials
 from modeler.data.line_identity import line_identity
+from modeler.ingestion.normalization_candidate_admission_io import (
+    AdmittedNormalizationBundle,
+    AdmissionProvenanceError,
+    ObservationEvidence,
+    build_admission_provenance_payload,
+    load_admitted_bundle,
+    save_admitted_bundle,
+)
 from ..model.normalization import (
     NORMALIZATION_TREATMENTS,
     SUPPORTED_NORMALIZATION_SCOPE,
@@ -115,6 +124,7 @@ class PeriodConstruction:
     observation_fingerprints: tuple[str, ...]
     studio_cogs_included: bool
     grouping_is_accepted_source_fact: bool
+    observation_evidence: tuple[ObservationEvidence, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -142,6 +152,7 @@ class ConstructionResult:
     line: LineItem | None
     used_fingerprints: tuple[str, ...]
     failure: GateFailure | None = None
+    observation_evidence: tuple[ObservationEvidence, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -163,6 +174,9 @@ class HandoffResult:
     authorization_kind: str | None
     tax_disposition: str | None
     note_tax_effects_attributed: bool
+    observation_evidence: tuple[ObservationEvidence, ...] = ()
+    adoption: AdoptionRecord | None = None
+    treatment: TreatmentRecord | None = None
 
 
 def observation_fingerprint(obs: Mapping[str, Any]) -> str:
@@ -179,6 +193,79 @@ def printed_page_lookup_from_evidence(evidence: Mapping[str, Any]) -> dict[tuple
             "printed_status": printed.get("status"),
         }
     return out
+
+
+def _locator_state(obs: Mapping[str, Any]) -> tuple[int | None, Any, str]:
+    """Persist locator states explicitly. Never infer a printed page."""
+    raw_physical = obs.get("physical_page", obs.get("pdf_page"))
+    if raw_physical is None or raw_physical == "":
+        physical = None
+    else:
+        physical = int(raw_physical)
+        if physical == 0:
+            physical = None
+    printed = obs.get("printed_page")
+    status = obs.get("printed_page_status")
+    if isinstance(status, str) and status.strip():
+        printed_status = status.strip()
+    elif printed is not None:
+        printed_status = "resolved"
+    elif physical is None:
+        printed_status = "unavailable"
+    else:
+        printed_status = "unresolved"
+    return physical, printed, printed_status
+
+
+def _observation_evidence(obs: Mapping[str, Any], period: str, fingerprint: str) -> ObservationEvidence:
+    physical, printed, printed_status = _locator_state(obs)
+    return ObservationEvidence(
+        fingerprint=fingerprint,
+        source_file=str(obs.get("source_file") or ""),
+        source_hash=str(obs.get("source_sha256_declared") or ""),
+        row_identity=str(obs.get("row_identity") or ""),
+        physical_page=physical,
+        printed_page=printed,
+        printed_page_status=printed_status,
+        period=period,
+        reported_amount=_face_amount(obs["value"]),
+        currency=str(obs.get("currency") or ""),
+        unit_scale=str(obs.get("unit_scale") or ""),
+    )
+
+
+def _adoption_payload(adoption: AdoptionRecord) -> dict[str, Any]:
+    return {
+        "company": adoption.company,
+        "axis": list(adoption.axis),
+        "member_identities": list(adoption.member_identities),
+        "analytical_concept": adoption.analytical_concept,
+        "analytical_label": adoption.analytical_label,
+        "source_evidence_fingerprints": list(adoption.source_evidence_fingerprints),
+        "mapping_decision": adoption.mapping_decision,
+        "decision_authority": adoption.decision_authority,
+        "rationale": adoption.rationale,
+        "analytical_scope": adoption.analytical_scope,
+        "decision_status": adoption.decision_status,
+        "authorization_kind": adoption.authorization_kind,
+        "approved": adoption.approved,
+        "equivalent_by_concept": adoption.equivalent_by_concept,
+        "equivalent_by_agreeing_amounts": adoption.equivalent_by_agreeing_amounts,
+    }
+
+
+def _treatment_payload(treatment: TreatmentRecord) -> dict[str, Any]:
+    return {
+        "scope": treatment.scope,
+        "reference_treatment": treatment.reference_treatment,
+        "rationale": treatment.rationale,
+        "consequence_note": treatment.consequence_note,
+        "aggregate_or_component": treatment.aggregate_or_component,
+        "cogs_boundary": treatment.cogs_boundary,
+        "deductibility": treatment.deductibility,
+        "etr_disposition": treatment.etr_disposition,
+        "topic": treatment.topic,
+    }
 
 
 def _attach_pages(
@@ -301,12 +388,14 @@ def construct_provisional_candidate(
     used: set[str] = set()
     period_rows: list[PeriodConstruction] = []
     fingerprints: list[str] = []
+    all_evidence: list[ObservationEvidence] = []
     for period in periods_axis:
         members = [
             _attach_pages(obs, page_lookup)
             for obs in observations
             if obs.get("period") == period and obs.get("row_identity") in identities
         ]
+        period_evidence: list[ObservationEvidence] = []
         for obs in members:
             ident = str(obs.get("row_identity") or "")
             if ident.startswith("cash_flow|") and not allow_cf_members:
@@ -352,6 +441,9 @@ def construct_provisional_candidate(
                 )
             used.add(fp)
             fingerprints.append(fp)
+            evidence = _observation_evidence(obs, period, fp)
+            period_evidence.append(evidence)
+            all_evidence.append(evidence)
 
         unauthorized = sorted(
             {
@@ -422,6 +514,7 @@ def construct_provisional_candidate(
                 observation_fingerprints=tuple(observation_fingerprint(obs) for obs in members),
                 studio_cogs_included=False,
                 grouping_is_accepted_source_fact=False,
+                observation_evidence=tuple(period_evidence),
             )
         )
 
@@ -448,6 +541,7 @@ def construct_provisional_candidate(
         axis=periods_axis,
         line=line,
         used_fingerprints=tuple(fingerprints),
+        observation_evidence=tuple(all_evidence),
     )
 
 
@@ -732,4 +826,75 @@ def run_normalization_candidate_handoff(
         authorization_kind=adoption.authorization_kind,
         tax_disposition=treatment.etr_disposition,
         note_tax_effects_attributed=False,
+        observation_evidence=construction.observation_evidence,
+        adoption=adoption,
+        treatment=treatment,
     )
+
+
+def save_admitted_normalization_candidate(
+    result: HandoffResult,
+    *,
+    standardized_path: str | Path,
+    admission_path: str | Path,
+) -> None:
+    """Persist admitted financials plus dedicated admission provenance."""
+    if (
+        not result.production_admitted
+        or result.constructed_financials is None
+        or result.constructed_line is None
+        or result.candidate_configuration is None
+        or result.adoption is None
+        or result.treatment is None
+        or not result.observation_evidence
+        or result.mapping_status == "provisional_equivalence_unresolved"
+        or result.grouping_is_accepted_source_fact
+    ):
+        raise AdmissionProvenanceError("blocked_or_provisional_handoff")
+    fiscal_periods = tuple(row.period for row in result.periods)
+    face_by_period = {
+        row.period: int(row.face_reported_usd_thousands) for row in result.periods
+    }
+    analytical_by_period = {
+        row.period: int(row.analytical_amount_usd_thousands) for row in result.periods
+    }
+    if not fiscal_periods:
+        raise AdmissionProvenanceError("blocked_or_provisional_handoff")
+    transformations = {row.transformation for row in result.periods}
+    conversions = {row.sign_conversions_applied for row in result.periods}
+    if transformations != {SIGN_TRANSFORMATION} or conversions != {1}:
+        raise AdmissionProvenanceError("inconsistent_admission_binding")
+    payload = build_admission_provenance_payload(
+        result.constructed_financials,
+        result.constructed_line,
+        observations=result.observation_evidence,
+        face_by_period=face_by_period,
+        analytical_by_period=analytical_by_period,
+        fiscal_periods=fiscal_periods,
+        transformation=SIGN_TRANSFORMATION,
+        sign_conversions_applied=1,
+        adoption=_adoption_payload(result.adoption),
+        treatment=_treatment_payload(result.treatment),
+        candidate_configuration=result.candidate_configuration,
+        mapping_status=result.mapping_status,
+        grouping_is_accepted_source_fact=result.grouping_is_accepted_source_fact,
+        authorization_kind=result.authorization_kind or result.adoption.authorization_kind,
+        after_tax_available=result.after_tax_available,
+        tax_disposition=result.tax_disposition,
+        note_tax_effects_attributed=result.note_tax_effects_attributed,
+        real_company_acceptance=result.real_company_acceptance,
+    )
+    save_admitted_bundle(
+        result.constructed_financials,
+        payload,
+        standardized_path=standardized_path,
+        admission_path=admission_path,
+    )
+
+
+def load_admitted_normalization_candidate(
+    standardized_path: str | Path,
+    admission_path: str | Path,
+) -> AdmittedNormalizationBundle:
+    """Recover an admitted bundle from persisted paths only. No sign reconversion."""
+    return load_admitted_bundle(standardized_path, admission_path)

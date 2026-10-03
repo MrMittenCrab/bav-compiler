@@ -30,10 +30,13 @@ from core.ingestion.normalization_candidate_admission import (
     CF_AUDIT_IDENTITIES,
     LEDGER_PERIODS,
     SIGN_TRANSFORMATION,
+    AdmissionProvenanceError,
     AdoptionRecord,
     TreatmentRecord,
     construct_provisional_candidate,
+    load_admitted_normalization_candidate,
     run_normalization_candidate_handoff,
+    save_admitted_normalization_candidate,
 )
 from modeler.financial_math import AnchorMetrics, HistoricalSeries
 from core.model.normalization import (
@@ -51,6 +54,8 @@ REVIEWED_CHECKPOINT = "38f5774170c577aa10eb5f03c4cbe99ed7cff789"
 AUTHENTICATED_B = "95efb965cd896e462814459b843d9a992358c7a9"
 REVIEWED_CHECKPOINT_1091 = "1a82323aac1309141f480e550277ffb2f56b35ca"
 REVIEWED_BASELINE_1091 = "250d57178d4b32b3b12a13ba9a08677789d59183"
+REVIEWED_CHECKPOINT_1092 = "7cf143f53036afcb981fb4118b830e73b4fa58b6"
+IMPLEMENT_BASE_SHA = "a7e50356d5129066bad5a90ba8f54d801243f926"
 REQUIRED_PROVENANCE_FIELDS = (
     "observation_fingerprints",
     "source_hashes",
@@ -1024,6 +1029,49 @@ def _independent_expected_provenance(observations: list[dict], page_lookup: dict
     return expected
 
 
+def _independent_printed_status(obs: dict) -> str:
+    if obs.get("printed_page_status"):
+        return str(obs["printed_page_status"])
+    if obs.get("printed_page") is not None:
+        return "resolved"
+    physical = obs.get("physical_page", obs.get("pdf_page"))
+    if physical in (None, "", 0):
+        return "unavailable"
+    return "unresolved"
+
+
+def _independent_observation_evidence(observations: list[dict], page_lookup: dict) -> list[dict]:
+    rows: list[dict] = []
+    for period in LEDGER_PERIODS:
+        members = [
+            _locator_attached(obs, page_lookup)
+            for obs in observations
+            if obs.get("period") == period and obs.get("row_identity") in AUTHORIZED_IS_IDENTITIES
+        ]
+        for obs in members:
+            physical = obs.get("physical_page")
+            if physical in (None, "", 0):
+                physical = None
+            else:
+                physical = int(physical)
+            rows.append(
+                {
+                    "fingerprint": _independent_fingerprint(obs),
+                    "source_file": str(obs["source_file"]),
+                    "source_hash": str(obs["source_sha256_declared"]),
+                    "row_identity": str(obs["row_identity"]),
+                    "physical_page": physical,
+                    "printed_page": obs.get("printed_page"),
+                    "printed_page_status": _independent_printed_status(obs),
+                    "period": period,
+                    "reported_amount": int(obs["value"]),
+                    "currency": str(obs["currency"]),
+                    "unit_scale": str(obs["unit_scale"]),
+                }
+            )
+    return rows
+
+
 def _documentary_needles() -> dict[str, bool]:
     return {
         ANALYTICAL_CONCEPT: False,
@@ -1149,7 +1197,7 @@ def test_admission_provenance_persistence_reload(retained):
         ]
     assert EXPECTED_PRINTED_PAGES["2025-02-02"] == ()
     assert EXPECTED_PRINTED_PAGES["2026-02-01"] == ()
-    assert _admission_persist_names() == []
+    assert "save_admitted_normalization_candidate" in _admission_persist_names()
     live_hits = _documentary_hits(_load_json(LIVE_DIR / "provenance.json"))
     ordinary_hits = _documentary_hits(_load_json(ORDINARY_DIR / "provenance.json"))
     assert live_hits == _documentary_needles()
@@ -1173,6 +1221,8 @@ def test_b_and_current_isolated_agreement(retained):
     assert parent == COMPARISON_B
     reviewed_parent = _git_out(["git", "rev-parse", f"{REVIEWED_CHECKPOINT_1091}^"])
     assert reviewed_parent == REVIEWED_BASELINE_1091
+    reviewed_1092_parent = _git_out(["git", "rev-parse", f"{REVIEWED_CHECKPOINT_1092}^"])
+    assert reviewed_1092_parent == AUTHENTICATED_B
     casebook = {
         "observations": retained["observations"],
         "live_payload": retained["live_payload"],
@@ -1204,8 +1254,23 @@ def test_b_and_current_isolated_agreement(retained):
         )
         baseline = _run_isolated_compare("b", pre_tree, casebook)
         authenticated = _run_isolated_compare("authenticated_b", auth_tree, casebook)
-    assert current == baseline
-    assert current == authenticated
+    current_gates = {
+        key: value
+        for key, value in current.items()
+        if key not in {"persistence", "repaired_persistence"}
+    }
+    baseline_gates = {
+        key: value
+        for key, value in baseline.items()
+        if key not in {"persistence", "repaired_persistence"}
+    }
+    authenticated_gates = {
+        key: value
+        for key, value in authenticated.items()
+        if key not in {"persistence", "repaired_persistence"}
+    }
+    assert current_gates == baseline_gates
+    assert current_gates == authenticated_gates
     assert current["construction"]["face_series"] == list(EXPECTED_FACE)
     assert current["construction"]["analytical_series"] == list(EXPECTED_ANALYTICAL)
     assert current["absent_adoption"]["blocked_reason"] == "absent_adoption"
@@ -1224,9 +1289,271 @@ def test_b_and_current_isolated_agreement(retained):
     )
     assert persistence["standardized_reload"]["source_doc"] == ""
     assert persistence["standardized_reload"]["source_page"] == ""
-    assert persistence["contract"]["admission_persist_names"] == []
+    assert "save_admitted_normalization_candidate" in persistence["contract"]["admission_persist_names"]
     assert persistence["contract"]["documentary_accepts_standardized"] is False
     assert persistence["contract"]["documentary_error"] == "TypeError"
     assert persistence["contract"]["limitation"] == "no_admission_provenance_persist_reload"
+    assert baseline["persistence"]["contract"]["admission_persist_names"] == []
+    assert authenticated["persistence"]["contract"]["admission_persist_names"] == []
+    assert baseline["persistence"]["contract"]["limitation"] == "no_admission_provenance_persist_reload"
+    assert authenticated["persistence"]["contract"]["limitation"] == "no_admission_provenance_persist_reload"
+    assert baseline["repaired_persistence"]["available"] is False
+    assert authenticated["repaired_persistence"]["available"] is False
+    repaired = current["repaired_persistence"]
+    assert repaired["available"] is True
+    assert repaired["recovered_values"] == list(EXPECTED_ANALYTICAL)
+    assert repaired["face_values"] == list(EXPECTED_FACE)
+    assert repaired["transformation"] == SIGN_TRANSFORMATION
+    assert repaired["sign_conversions_applied"] == 1
+    assert repaired["authorization_kind"] == AUTHORIZATION_SYNTHETIC
+    assert repaired["after_tax_available"] is False
+    assert repaired["observations"]
+    assert any(item["printed_page_status"] == "unresolved" for item in repaired["observations"])
     assert _snapshot_obs(retained["observations"]) == retained["obs_snapshot"]
     assert retained["live_std_bytes"] == (LIVE_DIR / "standardized.json").read_bytes()
+
+
+def _admit(retained):
+    construction = construct_provisional_candidate(
+        retained["observations"],
+        bound_source_hashes=BOUND_SOURCE_SHA256,
+        page_lookup=retained["page_lookup"],
+    )
+    financials = copy.deepcopy(retained["live"])
+    original = standardized_to_payload(financials)
+    result = run_normalization_candidate_handoff(
+        retained["observations"],
+        financials,
+        bound_source_hashes=BOUND_SOURCE_SHA256,
+        page_lookup=retained["page_lookup"],
+        adoption=_synthetic_adoption(construction),
+        treatment=_synthetic_treatment(),
+    )
+    assert standardized_to_payload(financials) == original
+    return result
+
+
+def _run_fresh_load(standardized_path: Path, admission_path: Path) -> dict:
+    driver = ROOT / "core" / "tests" / "normalization_candidate_isolated_driver.py"
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(ROOT)
+    env["PYTHONNOUSERSITE"] = "1"
+    result = subprocess.run(
+        [sys.executable, str(driver), "load_bundle"],
+        cwd=str(ROOT),
+        input=json.dumps(
+            {
+                "standardized_path": str(standardized_path),
+                "admission_path": str(admission_path),
+                "ledger_periods": list(LEDGER_PERIODS),
+            }
+        ),
+        capture_output=True,
+        text=True,
+        env=env,
+        check=False,
+    )
+    if result.returncode != 0:
+        pytest.fail(f"fresh load failed: {result.stderr or result.stdout}")
+    return json.loads(result.stdout)
+
+
+def test_production_admission_bundle_save_load_fresh_process(retained):
+    expected = _independent_observation_evidence(
+        retained["observations"], retained["page_lookup"]
+    )
+    admitted = _admit(retained)
+    assert admitted.production_admitted is True
+    original_obs = _snapshot_obs(retained["observations"])
+    with tempfile.TemporaryDirectory() as tmp:
+        std_path = Path(tmp) / "standardized.json"
+        adm_path = Path(tmp) / "normalization_candidate_admission.json"
+        save_admitted_normalization_candidate(
+            admitted,
+            standardized_path=std_path,
+            admission_path=adm_path,
+        )
+        del admitted
+        recovered = _run_fresh_load(std_path, adm_path)
+        bundle = load_admitted_normalization_candidate(std_path, adm_path)
+    assert recovered["concept"] == ANALYTICAL_CONCEPT
+    assert recovered["label"] == ANALYTICAL_LABEL
+    assert recovered["identity_key"] == (
+        f"concept={ANALYTICAL_CONCEPT}|label={ANALYTICAL_LABEL.casefold()}"
+    )
+    assert recovered["values"] == list(EXPECTED_ANALYTICAL)
+    assert recovered["face_values"] == list(EXPECTED_FACE)
+    assert recovered["analytical_values"] == list(EXPECTED_ANALYTICAL)
+    assert recovered["fiscal_periods"] == list(LEDGER_PERIODS)
+    assert recovered["transformation"] == SIGN_TRANSFORMATION
+    assert recovered["sign_conversions_applied"] == 1
+    assert recovered["authorization_kind"] == AUTHORIZATION_SYNTHETIC
+    assert recovered["mapping_status"] == "synthetic_test_authorization"
+    assert recovered["after_tax_available"] is False
+    assert recovered["tax_disposition"] == "unresolved"
+    assert recovered["grouping_is_accepted_source_fact"] is False
+    assert recovered["real_company_acceptance"] is False
+    assert recovered["candidate_configuration"]["selector"] == ANALYTICAL_SELECTOR
+    recovered_obs = recovered["observations"]
+    assert recovered_obs == expected
+    assert len(recovered_obs) == 11
+    by_period = {period: [] for period in LEDGER_PERIODS}
+    for item in recovered_obs:
+        by_period[item["period"]].append(item)
+        assert item["source_hash"] in BOUND_SOURCE_SHA256.values()
+        assert item["row_identity"] in AUTHORIZED_IS_IDENTITIES
+        assert item["currency"] == "USD"
+        assert item["unit_scale"] == "thousands"
+        assert item["printed_page_status"] in {"resolved", "unresolved", "unavailable"}
+        if item["printed_page_status"] != "resolved":
+            assert item["printed_page"] is None
+        if item["printed_page_status"] == "unresolved":
+            assert item["physical_page"] is not None
+            assert item["printed_page"] != item["physical_page"]
+    assert {item["printed_page_status"] for item in by_period["2025-02-02"]} == {"unresolved"}
+    assert {item["printed_page_status"] for item in by_period["2026-02-01"]} == {"unresolved"}
+    assert any(item["printed_page_status"] == "resolved" for item in recovered_obs)
+    assert tuple(int(v) for v in bundle.analytical_values) == EXPECTED_ANALYTICAL
+    assert tuple(int(v) for v in bundle.face_values) == EXPECTED_FACE
+    assert bundle.sign_conversions_applied == 1
+    for period, expect in _independent_expected_provenance(
+        retained["observations"], retained["page_lookup"]
+    ).items():
+        members = [item for item in recovered_obs if item["period"] == period]
+        assert {item["fingerprint"] for item in members} == set(expect["observation_fingerprints"])
+        assert {item["source_hash"] for item in members} == set(expect["source_hashes"])
+        assert {item["row_identity"] for item in members} == set(expect["row_identities"])
+        assert {item["physical_page"] for item in members} == set(expect["physical_pages"])
+        assert {item["printed_page"] for item in members if item["printed_page"] is not None} == set(
+            expect["printed_pages"]
+        )
+        assert {item["reported_amount"] for item in members} == {expect["face_reported_usd_thousands"]}
+    repeated = run_normalization_candidate_handoff(
+        retained["observations"],
+        bundle.financials,
+        bound_source_hashes=BOUND_SOURCE_SHA256,
+        page_lookup=retained["page_lookup"],
+        adoption=_synthetic_adoption(
+            construct_provisional_candidate(
+                retained["observations"],
+                bound_source_hashes=BOUND_SOURCE_SHA256,
+                page_lookup=retained["page_lookup"],
+            )
+        ),
+        treatment=_synthetic_treatment(),
+    )
+    assert repeated.blocked_reason == "repeated_admission"
+    assert repeated.production_admitted is False
+    assert _snapshot_obs(retained["observations"]) == original_obs
+    assert retained["live_std_bytes"] == (LIVE_DIR / "standardized.json").read_bytes()
+
+
+def test_admission_bundle_rejects_mismatched_missing_and_blocked(retained):
+    admitted = _admit(retained)
+    blocked = _handoff(retained)
+    assert blocked.production_admitted is False
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        std_path = root / "standardized.json"
+        adm_path = root / "normalization_candidate_admission.json"
+        save_admitted_normalization_candidate(
+            admitted, standardized_path=std_path, admission_path=adm_path
+        )
+        with pytest.raises(AdmissionProvenanceError, match="blocked_or_provisional_handoff"):
+            save_admitted_normalization_candidate(
+                blocked,
+                standardized_path=root / "blocked.json",
+                admission_path=root / "blocked_admission.json",
+            )
+        construction = construct_provisional_candidate(
+            retained["observations"],
+            bound_source_hashes=BOUND_SOURCE_SHA256,
+            page_lookup=retained["page_lookup"],
+        )
+        provisional = _handoff(
+            retained,
+            adoption=_synthetic_adoption(construction).__class__(
+                **{**_synthetic_adoption(construction).__dict__, "decision_status": "provisional"}
+            ),
+            treatment=_synthetic_treatment(),
+        )
+        assert provisional.blocked_reason == "provisional_adoption"
+        with pytest.raises(AdmissionProvenanceError, match="blocked_or_provisional_handoff"):
+            save_admitted_normalization_candidate(
+                provisional,
+                standardized_path=root / "provisional.json",
+                admission_path=root / "provisional_admission.json",
+            )
+        assert not (root / "blocked.json").exists()
+        assert not (root / "blocked_admission.json").exists()
+        assert not (root / "provisional.json").exists()
+        assert not (root / "provisional_admission.json").exists()
+
+        missing_adm = root / "missing_admission.json"
+        with pytest.raises(AdmissionProvenanceError, match="missing_admission_evidence"):
+            load_admitted_normalization_candidate(std_path, missing_adm)
+
+        company = json.loads(adm_path.read_text(encoding="utf-8"))
+        company["company"] = "NOT_LULU"
+        company_path = root / "company.json"
+        company_path.write_text(json.dumps(company), encoding="utf-8")
+        with pytest.raises(AdmissionProvenanceError, match="mismatched_company_binding"):
+            load_admitted_normalization_candidate(std_path, company_path)
+
+        line = json.loads(adm_path.read_text(encoding="utf-8"))
+        line["analytical_line"]["concept"] = "impairment_and_restructuring"
+        line["analytical_line"]["identity"] = "concept=impairment_and_restructuring|label=x"
+        line_path = root / "line.json"
+        line_path.write_text(json.dumps(line), encoding="utf-8")
+        with pytest.raises(AdmissionProvenanceError, match="mismatched_line_binding"):
+            load_admitted_normalization_candidate(std_path, line_path)
+
+        period = json.loads(adm_path.read_text(encoding="utf-8"))
+        period["fiscal_periods"] = list(LEDGER_PERIODS[1:])
+        period_path = root / "period.json"
+        period_path.write_text(json.dumps(period), encoding="utf-8")
+        with pytest.raises(AdmissionProvenanceError, match="mismatched_period_binding"):
+            load_admitted_normalization_candidate(std_path, period_path)
+
+        value_std = json.loads(std_path.read_text(encoding="utf-8"))
+        for item in value_std["income_statement"]:
+            if item.get("concept") == ANALYTICAL_CONCEPT:
+                item["values"][LEDGER_PERIODS[1]] = 1
+        value_path = root / "value.json"
+        value_path.write_text(json.dumps(value_std), encoding="utf-8")
+        with pytest.raises(AdmissionProvenanceError, match="mismatched_value_binding"):
+            load_admitted_normalization_candidate(value_path, adm_path)
+
+        stale = json.loads(adm_path.read_text(encoding="utf-8"))
+        stale["observations"][0]["fingerprint"] = "0" * 64
+        stale_path = root / "stale.json"
+        stale_path.write_text(json.dumps(stale), encoding="utf-8")
+        with pytest.raises(AdmissionProvenanceError, match="stale_admission_evidence"):
+            load_admitted_normalization_candidate(std_path, stale_path)
+
+        missing_obs = json.loads(adm_path.read_text(encoding="utf-8"))
+        missing_obs["observations"] = [
+            item
+            for item in missing_obs["observations"]
+            if item["period"] != LEDGER_PERIODS[0]
+        ]
+        missing_path = root / "missing_obs.json"
+        missing_path.write_text(json.dumps(missing_obs), encoding="utf-8")
+        with pytest.raises(AdmissionProvenanceError, match="missing_admission_evidence"):
+            load_admitted_normalization_candidate(std_path, missing_path)
+
+        ambiguous_std = json.loads(std_path.read_text(encoding="utf-8"))
+        analytical = next(
+            item
+            for item in ambiguous_std["income_statement"]
+            if item.get("concept") == ANALYTICAL_CONCEPT
+        )
+        ambiguous_std["income_statement"].append(copy.deepcopy(analytical))
+        ambiguous_path = root / "ambiguous.json"
+        ambiguous_path.write_text(json.dumps(ambiguous_std), encoding="utf-8")
+        with pytest.raises(AdmissionProvenanceError, match="ambiguous_admission_linkage"):
+            load_admitted_normalization_candidate(ambiguous_path, adm_path)
+
+    ordinary = standardized_from_payload(copy.deepcopy(retained["ordinary_payload"]), strict=True)
+    assert not any(item.concept == ANALYTICAL_CONCEPT for item in ordinary.income_statement)
+    assert _snapshot_obs(retained["observations"]) == retained["obs_snapshot"]

@@ -13,7 +13,12 @@ from datetime import date
 from pathlib import Path
 
 ERA = sys.argv[1]
-if ERA == "b":
+if ERA == "load_bundle":
+    from core.ingestion.normalization_candidate_admission import (
+        load_admitted_normalization_candidate,
+    )
+    from modeler.data.line_identity import line_identity
+elif ERA == "b":
     from core.data.line_identity import line_identity
     from core.data.standardized_io import standardized_from_payload, standardized_to_payload
     from core.ingestion.filing_standardizer import reconciliation_provenance_payload
@@ -353,8 +358,100 @@ def _persistence_case(admitted, book) -> dict:
     }
 
 
+def _observation_row(item) -> dict:
+    return {
+        "fingerprint": item.fingerprint,
+        "source_file": item.source_file,
+        "source_hash": item.source_hash,
+        "row_identity": item.row_identity,
+        "physical_page": item.physical_page,
+        "printed_page": item.printed_page,
+        "printed_page_status": item.printed_page_status,
+        "period": item.period,
+        "reported_amount": int(item.reported_amount),
+        "currency": item.currency,
+        "unit_scale": item.unit_scale,
+    }
+
+
+def _repaired_persistence_case(admitted, book) -> dict:
+    try:
+        from core.ingestion.normalization_candidate_admission import (
+            save_admitted_normalization_candidate,
+            load_admitted_normalization_candidate,
+        )
+    except ImportError:
+        return {"available": False}
+    if not hasattr(admitted, "observation_evidence") or not admitted.observation_evidence:
+        return {"available": False}
+    with tempfile.TemporaryDirectory() as tmp:
+        std_path = Path(tmp) / "standardized.json"
+        adm_path = Path(tmp) / "normalization_candidate_admission.json"
+        save_admitted_normalization_candidate(
+            admitted,
+            standardized_path=std_path,
+            admission_path=adm_path,
+        )
+        del admitted
+        bundle = load_admitted_normalization_candidate(std_path, adm_path)
+    dates = [date.fromisoformat(period) for period in LEDGER_PERIODS]
+    return {
+        "available": True,
+        "recovered_identity": bundle.analytical_identity,
+        "recovered_values": [int(bundle.analytical_line.values[period]) for period in dates],
+        "face_values": list(bundle.face_values),
+        "transformation": bundle.transformation,
+        "sign_conversions_applied": bundle.sign_conversions_applied,
+        "authorization_kind": bundle.authorization_kind,
+        "mapping_status": bundle.mapping_status,
+        "after_tax_available": bundle.after_tax_available,
+        "grouping_is_accepted_source_fact": bundle.grouping_is_accepted_source_fact,
+        "observations": [_observation_row(item) for item in bundle.observations],
+        "unresolved_printed": [
+            _observation_row(item)
+            for item in bundle.observations
+            if item.printed_page_status == "unresolved"
+        ],
+    }
+
+
+def _load_bundle_main(book: dict) -> None:
+    bundle = load_admitted_normalization_candidate(
+        book["standardized_path"], book["admission_path"]
+    )
+    dates = [date.fromisoformat(period) for period in book["ledger_periods"]]
+    json.dump(
+        {
+            "identity": bundle.analytical_identity,
+            "concept": bundle.analytical_line.concept,
+            "label": bundle.analytical_line.label,
+            "identity_key": line_identity(bundle.analytical_line).key(),
+            "values": [int(bundle.analytical_line.values[period]) for period in dates],
+            "face_values": list(bundle.face_values),
+            "analytical_values": list(bundle.analytical_values),
+            "fiscal_periods": list(bundle.fiscal_periods),
+            "transformation": bundle.transformation,
+            "sign_conversions_applied": bundle.sign_conversions_applied,
+            "authorization_kind": bundle.authorization_kind,
+            "mapping_status": bundle.mapping_status,
+            "after_tax_available": bundle.after_tax_available,
+            "tax_disposition": bundle.tax_disposition,
+            "grouping_is_accepted_source_fact": bundle.grouping_is_accepted_source_fact,
+            "candidate_configuration": bundle.candidate_configuration,
+            "real_company_acceptance": bundle.real_company_acceptance,
+            "observations": [_observation_row(item) for item in bundle.observations],
+        },
+        sys.stdout,
+        sort_keys=True,
+        default=str,
+    )
+
+
 def main() -> None:
     book = json.loads(sys.stdin.read())
+    if ERA == "load_bundle":
+        _load_bundle_main(book)
+        return
     observations = book["observations"]
     bound = book["bound_source_hashes"]
     lookup = _page_lookup(book["page_lookup"])
@@ -651,6 +748,7 @@ def main() -> None:
             "has_analytical": any(item.concept == ANALYTICAL_CONCEPT for item in std.income_statement),
         }
     results["ordinary_outputs"] = ordinary_out
+    results["repaired_persistence"] = _repaired_persistence_case(admitted, book)
     results["persistence"] = _persistence_case(admitted, book)
     json.dump(results, sys.stdout, sort_keys=True, default=str)
 
