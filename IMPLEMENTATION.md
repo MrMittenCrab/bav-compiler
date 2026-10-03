@@ -1,45 +1,42 @@
-# Step 10.14 — Execute inventory-designated Remove dispositions
-AUTOCYCLE_PLAN: {"finding_key": "Execute inventory-designated Remove dispositions", "kind": "work", "objective": "Execute inventory-designated Remove dispositions", "plan_id": "929ee92e950e43b5ae91c8a191dfbcdf", "predecessor_review_sha256": "da85d9a5559667dfac6635ff3251d93bf0fc6f141b49eaa7fd5ce04991ee222f", "step_id": "10.14", "work_id": "5aa7273b08304f909042b1d1efecd98e"}
+# Step 10.15 — Align tests and current documentation with canonical ownership
+AUTOCYCLE_PLAN: {"finding_key": "Align tests and current documentation with canonical ownership", "kind": "work", "objective": "Align tests and current documentation with canonical ownership", "plan_id": "739d224b4bfb41dd89fdfef8787451cd", "predecessor_review_sha256": "e9ee6c54f0cf3700cb47bd483ab6f5fc2a2147e1403842fe0264c93c9553a82c", "step_id": "10.15", "work_id": "97863636032d4cc68fa5872fcc3f895d"}
 
 ## Completion
 
-Inventory-designated Remove material is removed, with required source evidence, retained Legacy behavior and public BAV interfaces preserved, and affected references and regressions verified.
+Remaining tests reside under their canonical component owners with preserved coverage and working discovery, and current repository documentation, branding and executable references accurately describe the migrated architecture and supported interfaces.
 
 ## Bounded work
 
-Follow `director/docs/MIGRATION_INVENTORY.md` §§4.1, 4.6, 4.10, 4.12 and 13. Confirm current callers and contents before deleting each item.
+Use `director/docs/MIGRATION_INVENTORY.md` §§4.5, 11 and 14–15 to finish test ownership and current-reference alignment.
 
-- Delete `scripts/build_fast_retailing_source_facts.py` and `core/ingestion/future_adapters.py`; update current documentation that presents them as available functionality.
-- Confirm `FIGURE_NAMES`, `FIGURE_PLOTTERS` and `_calendar_limit_block` are already removed; remove only remaining unused definitions, without changing live rendering.
-- Remove empty `benchmark/`, `release/` and `build/input/lululemon/evidence/stale-benchmark-reconciled/` directories after checking their contents.
-- Remove `build/input/fast_retailing/evidence/_extract/*.txt` after confirming they are regenerable caches and no retained workflow requires those copies.
-- Remove leftover generated `example/rowmap.json`, `example/DEMO_HK_Answer_Key.assumptions.json` and `example/DEMO_HK_Answer_Key.component_map.json`. Do not generalize deletion to canonical assumptions or retained fixtures.
-- Remove repository-owned `__pycache__/`, `.pytest_cache/` and `.DS_Store` artifacts within the inventoried areas. Exclude Git/controller state, environments and unrelated work; regenerated runtime caches need not remain absent after verification.
-- Update the inventory and `legacy/README.md` to record actual removals and retained destinations. Correct affected current references without rewriting historical records.
+- Move homogeneous tests from `core/tests/` to their owning component’s `tests/`. Split mixed test modules by the responsibility asserted; place orchestration and cross-component integration tests under Director.
+- Complete the ownership splits for research Drivers, revenue drivers, reported margin, ingestion/admission, benchmark policy versus numerical checks, publication, learner presentation and optional Trainer tests. Preserve already-completed splits.
+- Use canonical imports for component behavior tests. Retain explicit compatibility-import, façade identity, public CLI, patchability and historical-baseline coverage.
+- Update test helper imports, repository-root discovery, fixture paths and existing test commands after relocation. Preserve parameterization, assertions and independent negative cases; avoid duplicate collection or lost tests.
+- Keep protected fixture bytes and externally referenced fixture locations stable, including fixtures used by `project_companies.json`. Record retained shared fixture locations and ownership in the inventory.
+- Update `README.md` architecture and planned-work text to reflect completed Modeler relocation, Driver decomposition, Trainer inversion and removals. Describe five active components and retained Legacy behavior accurately.
+- Align current package descriptions, component documentation, benchmark guidance and executable build/test references with canonical paths and BAV Compiler identity. Preserve public `bav`, compatibility names, supported commands and dependency-file names.
+- Update the inventory’s test destinations and remaining-work descriptions. Preserve historical RESULT records, archived documentation and historical Git comparator paths.
 
-Retain required compatibility façades, the Director `validate_standardized` contract, one `legacy/bav-pipeline-plugin.zip`, retained Legacy assets and historical verification records. Do not introduce replacement adapters, forwarding layers or a `remove/` directory.
-
-Broader test ownership migration, remaining repository branding/alignment and final Session verification remain subsequent scope.
+Final representative Session verification remains subsequent scope; documentation must not claim Session completion.
 
 ## Preservation
 
 Authenticate execution baseline B from populated `IMPLEMENT_BASE_SHA`, otherwise through the normal baseline and bound-attempt mechanisms. Verify branch, ancestry and checkpoint bindings; fail closed if authentication is unavailable.
 
-Inspect tracked removal candidates through Git blobs at B, then current consumers and canonical destinations. Git preserves tracked history; deletion of obsolete material requires no duplicate, backup or receipt.
+Compare moved tests and fixtures against Git blobs at B, accounting for intentional splits and import/path edits. Preserve provenance and coverage continuity without duplicate legacy copies or migration receipts.
 
-Preserve local extracted/reconciled JSON, canonical company inputs and outputs, archived evidence, source manifests and required sidecars. Before removing any non-Git irreplaceable source copy, verify byte continuity and provenance at its intended canonical destination; otherwise block that removal. Do not remove restored source PDFs without verified canonical bytes.
+Preserve public interfaces, explicit JSON/Excel routes, optional Trainer behavior, source immutability, accounting signs, fiscal distinctions, precision, reconciliations, residual qualifications, admission/comparison independence, fail-closed gates and zero-byte research placeholders. Normalization admission remains default-off.
 
-Preserve public `bav` commands, aliases, patchable configuration, explicit JSON/Excel routes and optional Trainer behavior. Retain analytical results, source immutability, residual qualifications, dormant forecasting, zero-byte research placeholders and normalization admission’s existing gates and default-off behavior.
+Do not redesign production algorithms, workbook architecture or publication presentation, activate deferred features, introduce test infrastructure, or modify controller authentication machinery. Preserve ownership/recovery, provider retry, human adoption, interruption, candidate validation, protected-document, unrelated-dirty-work and Review-cache safeguards.
 
 ## Verification and recording
 
-- Check retained active and Legacy consumers for broken imports, paths and resource discovery after removal.
-- Run affected existing ingestion ownership, filing CLI, build CLI, current-build, build-contract, reference-integrity and optional Trainer regressions. Preserve assertions establishing public interfaces and source provenance.
-- Reuse representative Lululemon/Fast Retailing verification only while its dependencies remain applicable; rerun affected build/check/publication paths if removal changes those dependencies.
-- Apply SESSION’s Office Bridge requirements if workbook formulas/dependencies or presentation change.
-- Run `git diff --check` and inspect the comparison against authenticated B.
-- Append actual removals, absence-of-use findings, preservation evidence, measured verification and remaining Session scope to `RESULT.md`. Do not rewrite historical records or certify a prospective next ID.
-
-Preserve ownership/recovery, provider retry, human adoption, interruption, candidate validation, protected-document, unrelated-dirty-work and Review-cache safeguards.
+- Compare test collection before and after relocation, mapping moved or split cases so missing or duplicate coverage is visible.
+- Run the relocated suites and affected ownership, compatibility, CLI, build-contract, reference-integrity, publication and optional Trainer regressions using existing project tooling. Do not weaken assertions or add skips to obtain a pass.
+- Check current documentation links, executable paths, canonical imports and fixture consumers. Distinguish intentional historical/compatibility references from stale active references.
+- Reuse prior representative build/check/publication evidence only while its dependencies remain applicable; rerun affected routes when they change. Apply SESSION’s Office Bridge requirements if workbook formulas/dependencies or presentation change.
+- Run `git diff --check` and inspect the diff against authenticated B.
+- Add measured verification, test ownership mappings, preserved coverage, remaining failures and final Session verification scope to `RESULT.md` without rewriting historical records or certifying a prospective next ID.
 
 Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
