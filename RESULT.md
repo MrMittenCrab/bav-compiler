@@ -1,3 +1,124 @@
+# RESULT.md — Step 10.15.1 Finish normalization-admission test ownership and executable references
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.15.1 — Finish normalization-admission test ownership and executable references
+**Work:** `97863636032d4cc68fa5872fcc3f895d`
+**Plan:** `684fda603868472a89ce50dad49aa1d1`
+**Finding:** Align tests and current documentation with canonical ownership
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. Controller files under `.git/autocycle` were read-only except as inspected. Protected fixture bytes and `director/project_companies.json` fixture paths were not rewritten. No test-infrastructure, production-algorithm, workbook or publication-presentation redesign. AutoCycle patches were not applied. Documentation does not claim Session completion.
+
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `99d1ec915d775bcaf0a8b408ba575fd2272ab2dbb2268967ce16370041e298e9` (5415).
+
+This bounded attempt finishes normalization-admission test ownership and executable references. It does not close parent Completion and does not establish Session 10 acceptance.
+
+## Baseline authentication
+
+Continuation execution baseline resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state` and authenticated as a Git commit. `implementation-baseline.json` head matched that SHA. Leftover `latest-implementation` HEAD was not substituted.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / `10.15.1` allocated source | `5a3b9e39b504518fb06d449ca2afd4925bac7709` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD (`git rev-parse HEAD` = `5a3b9e39…`); identity ancestor |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` work / plan | work `97863636032d4cc68fa5872fcc3f895d`, plan `684fda603868472a89ce50dad49aa1d1`, step `10.15.1` |
+| `work-state` allocated `10.15.1` | source = B, work_id = `97863636032d4cc68fa5872fcc3f895d`, status `opened` |
+| Bound running attempt | `702d998909f04fd29d1ddde83b846928`, `plan_sha` = B |
+| `admitted_review` predecessor | `review_sha256` `bab919f4f81ed0e500546901b7d0617ccb3e480f00a6612ab15aaed4cd4df1ed` |
+| `latest-implementation` leftover HEAD | `550321b8e684af18704e3189e594593a7d87fcf8` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Fail-closed | Not required |
+
+Live admission `WORK_ID` remains `97863636032d4cc68fa5872fcc3f895d`. Historical reviewed attempt/checkpoint/B/plan comparators were not changed.
+
+## Test ownership
+
+`core/tests/test_normalization_candidate_admission.py` was split by asserted responsibility. Shared helpers/fixture live in Director test support `director/tests/normalization_candidate_admission_support.py` (not collected). Isolated driver was `git mv` to `director/tests/normalization_candidate_isolated_driver.py` (R099 vs B). Current-era behavior imports `modeler.normalization`; ERA=`b` and ERA=`authenticated_b` still import `core.model.normalization` for materialized Git trees. Compatibility persist-name probe still imports `core.ingestion.normalization_candidate_admission`. Test names, parameterization, assertions, negative cases, subprocess behavior and `ROOT = Path(__file__).resolve().parents[2]` are unchanged. Suites do not import collected test functions from another suite.
+
+| Asserted responsibility | Destination | Cases |
+|---|---|---|
+| Construction, mechanical validation, persistence | `modeler/tests/test_normalization_candidate_admission.py` | 21 (12 functions; 10 rejection-probe params) |
+| Handoff, cross-component integration, protected-artifact, baseline authentication | `director/tests/test_normalization_candidate_admission.py` | 8 |
+| Independently asserted interpretation qualifications | `interpreter/tests/test_normalization_candidate_admission.py` | 2 |
+
+Relocated node IDs (function + params preserved; path owner changed):
+
+| Before | After |
+|---|---|
+| `core/tests/…::test_segment_bridge_tolerance_unchanged` | `modeler/tests/…` |
+| `core/tests/…::test_provisional_construction_from_observations_not_hand_entered` | `modeler/tests/…` |
+| `core/tests/…::test_retained_construction_rejection_probes_leave_inputs_unchanged` (10 params) | `modeler/tests/…` |
+| `core/tests/…::test_ambiguous_selector_still_rejected_by_existing_resolver` | `modeler/tests/…` |
+| `core/tests/…::test_missing_treatment_rationale_consequence_and_conflicting_scope` | `modeler/tests/…` |
+| `core/tests/…::test_synthetic_admission_export_reload_and_hypothetical_pretax` | `modeler/tests/…` |
+| `core/tests/…::test_admission_provenance_persistence_reload` | `modeler/tests/…` |
+| `core/tests/…::test_production_admission_bundle_save_load_fresh_process` | `modeler/tests/…` |
+| `core/tests/…::test_admission_bundle_rejects_mismatched_missing_and_blocked` | `modeler/tests/…` |
+| `core/tests/…::test_production_loader_rejects_four_demonstrated_bypasses` | `modeler/tests/…` |
+| `core/tests/…::test_admission_bundle_rejects_authorization_treatment_and_fingerprint_disagreement` | `modeler/tests/…` |
+| `core/tests/…::test_production_loader_rejects_period_reassignment_and_false_transformation` | `modeler/tests/…` |
+| `core/tests/…::test_authenticated_retained_evidence_and_eleven_observations` | `director/tests/…` |
+| `core/tests/…::test_real_lululemon_path_blocks_production_without_adoption` | `director/tests/…` |
+| `core/tests/…::test_altered_decision_bindings_and_stale_adoption` | `director/tests/…` |
+| `core/tests/…::test_repeated_admission_rejected_and_inputs_unchanged` | `director/tests/…` |
+| `core/tests/…::test_ordinary_outputs_and_selectors_unchanged` | `director/tests/…` |
+| `core/tests/…::test_protected_artifacts_and_eight_extracts_unchanged` | `director/tests/…` |
+| `core/tests/…::test_b_and_current_isolated_agreement` | `director/tests/…` |
+| `core/tests/…::test_baseline_authentication_implementation_and_checkpoint_bindings` | `director/tests/…` |
+| `core/tests/…::test_provisional_adoption_and_technical_equivalence_cannot_authorize` | `interpreter/tests/…` |
+| `core/tests/…::test_independent_authorization_bundle_save_load_fresh_process` | `interpreter/tests/…` |
+
+No remaining `core/tests/test_normalization_candidate_admission.py`. No newly duplicated admission node IDs.
+
+Retained shared fixtures (bytes unchanged vs B / prior 10.15 record):
+
+| Path | SHA-256 / size |
+|---|---|
+| `core/tests/fixtures/operating_kpis/lululemon_company_operated_stores.json` | `7a7fca2965ea89bfc897a444676ecd0879bc120cd1ae24cb74270cae19c6ff3d` (3125) |
+| `core/tests/fixtures/strategy/lululemon_management_disclosures.json` | `50911486aa73593e1494cc509099f06057b698fa4530ea0f176e7e2e02b007b9` (5954) |
+| `core/tests/fixtures/ordinary_reconcile/lululemon/standardized.json` | `a3568c29e883c8ba57af23da7b4286641a3c5f929af311e2e9593c5f63ea2287` (25011) |
+| `core/tests/fixtures/ordinary_reconcile/lululemon/provenance.json` | `6799371215e02c888b3a5f687637b38dba4840bd1548cb1860a253f7a699cb12` (699438) |
+| `core/tests/fixtures/ordinary_reconcile/lululemon/conflicts.json` | `d8a33012f6ea73126ac4e2ece3613e7011c11cb2b581745d8c3563e3c2e978e0` (4718) |
+| `core/tests/fixtures/ordinary_reconcile/lululemon_assumptions.json` | `73fbb33f222a978828042ebde1fbbc3cd285c40efda6be5217c2cfbae1fda21a` (69) |
+
+`director/project_companies.json` SHA-256 `c0b177607784fb1e9dd1221cecb89c81eb476bd1180b082466428b84b012d6a3` (549); fixture paths unchanged.
+
+## Current documentation
+
+- `director/docs/build-contract.md` focused checks now target `modeler/tests/test_build_contract.py`. Regression discovery is `director/tests extractor/tests modeler/tests interpreter/tests composer/tests legacy/tests core/tests`.
+- `director/docs/MIGRATION_INVENTORY.md` §§4.5, 7.2, 11 and 14–15 record the admission-test and isolated-driver destinations. The active decision to retain mixed admission tests under Core was removed.
+- Historical RESULT records, archived `legacy/docs/`, completed ownership splits, branding updates and historical Git comparator paths were not rewritten.
+
+## Collection mapping
+
+`/opt/anaconda3/bin/python -m pytest --collect-only -q` on `director/tests extractor/tests modeler/tests interpreter/tests composer/tests legacy/tests core/tests` at start: **3548** nodeids (`/tmp/bav-10.15.1-collect-before.txt`), including **31** admission cases under `core/tests/test_normalization_candidate_admission.py`.
+
+After the split, same interpreter and trees: **3548** nodeids (`/tmp/bav-10.15.1-collect-after.txt`). Admission function+param keys: **0 missing, 0 extra, 0 duplicates**. Non-admission function-name multiset: **0 missing, 0 extra**.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| Resume / baseline / work-state / HEAD / ancestry | B = `5a3b9e39…` authenticated as above |
+| Fixture bytes / `project_companies.json` | unchanged vs prior 10.15 hashes and baseline |
+| Isolated driver vs B | R099 tracked move; current-era import `modeler.normalization` only |
+| `/opt/anaconda3/bin/python -m pytest --collect-only -q` seven trees | **3548 collected** before and after |
+| `/opt/anaconda3/bin/python -m pytest -q` split admission suites | **31 passed** in 4.00s. Includes isolated historical/current comparison. No skip / xfail / deselect |
+| Affected normalization, ingestion ownership, calculation/Trainer ownership, CLI, build-contract, reference-integrity, publication, Trainer | **295 passed**, 5 pre-existing Swig importlib warnings, 84.66s. No skip / xfail / deselect |
+| Documented focused `python -m pytest modeler/tests/test_build_contract.py -q` | **23 passed** in 6.15s |
+| Documented regression `python -m pytest director/tests extractor/tests modeler/tests interpreter/tests composer/tests legacy/tests core/tests -q` | **3548 passed**, 5 pre-existing Swig importlib warnings, 419.83s. No skip / xfail / deselect |
+| Representative Lululemon/FR build/check/publish | **Reused** prior comparison: production algorithms, workbook architecture and publication presentation were not edited |
+| Native Office | **Not run** — no workbook formula/dependency or presentation change |
+| `git diff --check` | rc 0 |
+| `git diff --stat` vs B | 8 files, +2898 / −2705 (admission split, isolated-driver move, inventory/build-contract repairs) |
+
+## Remaining toward Completion
+
+Final representative Session verification of the migrated architecture (Lululemon / Fast Retailing build, check, and publication) remains subsequent scope. This record does not certify a prospective next ID and does not claim Session completion.
+
+No required plan changes.
+
 # RESULT.md — Step 10.15 Align tests and current documentation with canonical ownership
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

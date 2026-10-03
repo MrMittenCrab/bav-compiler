@@ -94,7 +94,7 @@ else:
         LEDGER_PERIODS,
         construct_provisional_candidate,
     )
-    from core.model.normalization import (
+    from modeler.normalization import (
         SUPPORTED_NORMALIZATION_SCOPE,
         compute_normalization_series,
         normalization_cases,

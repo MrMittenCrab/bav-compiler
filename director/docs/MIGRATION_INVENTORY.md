@@ -233,9 +233,12 @@ Mixed inside otherwise Modeler files:
 
 Tests are not a sixth component. **Step 10.15 actual:** remaining
 homogeneous and split suites now live under the owner’s `tests/`.
-`test_normalization_candidate_admission.py` and
-`normalization_candidate_isolated_driver.py` remain at `core/tests/` as
-already decided. Shared fixture bytes stay at `core/tests/fixtures/`.
+**Step 10.15.1 actual:** `test_normalization_candidate_admission.py` is
+split by asserted responsibility to `modeler/tests/`, `director/tests/`
+and `interpreter/tests/`. Shared helpers live in Director test support
+`director/tests/normalization_candidate_admission_support.py`. The isolated
+driver is `director/tests/normalization_candidate_isolated_driver.py`.
+Shared fixture bytes stay at `core/tests/fixtures/`.
 
 | Group | Owner |
 |---|---|
@@ -245,7 +248,10 @@ already decided. Shared fixture bytes stay at `core/tests/fixtures/`.
 | `test_management_kpi_admission.py` admit/bind cases | Modeler |
 | `test_management_kpi_{enrichment,identity,reconciliation,history}.py` | Extractor/Modeler/Director enrich; Modeler identity/reconcile/history |
 | `test_operating_kpi_facts.py`, `test_geographic_segment_facts.py` load/round-trip | Extractor load + Modeler admit |
-| `test_normalization_candidate_admission.py` | Modeler construction/persistence, Director handoff, Interpreter qualifications (remain at `core/tests`; Step 10.15 preserved) |
+| `test_normalization_candidate_admission.py` construction, mechanical validation, persistence | Modeler (`modeler/tests/test_normalization_candidate_admission.py`) |
+| `test_normalization_candidate_admission.py` handoff, cross-component integration, protected-artifact and baseline-authentication | Director (`director/tests/test_normalization_candidate_admission.py`) |
+| `test_normalization_candidate_admission.py` independently asserted interpretation qualifications | Interpreter (`interpreter/tests/test_normalization_candidate_admission.py`) |
+| `normalization_candidate_isolated_driver.py` | Director test support (`director/tests/normalization_candidate_isolated_driver.py`); historical ERA=`b` / `authenticated_b` imports remain valid for materialized Git versions |
 | `test_filing_reconciler.py`, `test_validators.py`, `test_issuer_fiscal.py`, `test_line_identity.py`, `test_line_resolver.py`, `test_classification.py`, `test_share_basis.py`, `test_historical_segment.py`, `test_source_availability.py`, `test_normalization.py` | Modeler |
 | `test_reported_margin.py` series / signs / residuals / availability / catalog / workbook formulas | Modeler (`modeler/tests/test_reported_margin.py`) |
 | `test_reported_margin.py` assessment kind/established, mix unestablished, episodic-versus-recurring, contradiction class | Interpreter (`interpreter/tests/test_reported_margin.py`) |
@@ -821,7 +827,7 @@ catalog sheet-name constants; it does not invoke Interpreter. Director
 | `management_kpi.py` admit/bind | Modeler `modeler/ingestion/management_kpi.py` | Content-aware admission of already-parsed KPI documents | `test_management_kpi_admission.py` admit |
 | `management_kpi_identity.py`, `management_kpi_reconciliation.py`, `management_kpi_history.py` | Modeler | Identity, conflict, history derivation | matching tests |
 | `operating_kpi.py` / `geographic_segment.py` selection | Modeler | Restated-vs-prior / Q4-2023 identity | fact tests |
-| `normalization_candidate_admission.py` provisional construction, series admission, mechanical adoption/treatment validation, line insertion, configuration, persistence | Modeler `modeler/ingestion/normalization_candidate_admission.py` plus `normalization_candidate_admission_io.py` | Opt-in; not default reconcile | `test_normalization_candidate_admission.py` |
+| `normalization_candidate_admission.py` provisional construction, series admission, mechanical adoption/treatment validation, line insertion, configuration, persistence | Modeler `modeler/ingestion/normalization_candidate_admission.py` plus `normalization_candidate_admission_io.py` | Opt-in; not default reconcile | `modeler/tests/test_normalization_candidate_admission.py` |
 | `normalization_candidate_admission.py` adoption, treatment and handoff contracts | Director `director/data/normalization_candidate.py` | One definition per type; façade preserves identity | same tests |
 | `normalization_candidate_admission.py` handoff sequencing and save/load coordination | Director `director/ingestion/normalization_candidate_admission.py` | Delegates calculation and persistence to Modeler | same tests |
 | `normalization_candidate_admission.py` human treatment/grouping qualifications | Interpreter `interpreter/normalization.py` | Supplied judgments; mechanical validation does not choose them or establish them as source facts | same tests |
@@ -1297,6 +1303,16 @@ asserts that heading. STYLE/DRIVER test references now live under
 `director/tests/test_research_drivers.py` and the Composer/Modeler/Interpreter
 Drivers splits; they already use `director/docs/STYLE.md` and
 `director/docs/DRIVER.md`. Historical Git comparator paths above are unchanged.
+**Step 10.15.1 actual.** Normalization-admission tests live under
+`modeler/tests/test_normalization_candidate_admission.py` (construction,
+mechanical validation, persistence),
+`director/tests/test_normalization_candidate_admission.py` (handoff,
+protected-artifact, baseline authentication) and
+`interpreter/tests/test_normalization_candidate_admission.py`
+(interpretation qualifications). Isolated comparison uses
+`director/tests/normalization_candidate_isolated_driver.py`. Shared helpers
+are `director/tests/normalization_candidate_admission_support.py`. Historical
+Git comparator paths above are unchanged.
 
 ---
 
@@ -1394,7 +1410,11 @@ Subsequent reviewed steps execute this order. This step does not execute it.
 7. Move Director CLI / `current_build` / `project_companies.json` / build-contract policy. Keep `python -m bav` and company name interfaces. Director `build_company` sequences Modeler → Interpreter → Composer before workbook write. **Step 10.12:** CLI, company configuration and orchestration now live under `director/`; mechanical `build_status` lives under `modeler/`; `python -m core` remains a compatibility alias.
 8. Relocate Legacy (Trainer remainder, skills, automation, retired scripts, HK demo, historical docs/verifiers). **Step 10.7/10.11:** Trainer overlay and HK/Excel ingest already live under `legacy/trainer/` and `legacy/ingestion/`. **Step 10.13:** remaining coverage automation, skills, plugin, retired scripts, historical verifiers/docs and HK/GOOGL example assets now live under their assigned `legacy/` categories.
 9. Delete Remove items in place. Update imports, CLI routes, package docstrings, tests, README, `docs/FAST_RETAILING_BENCHMARK.md` stale paths, `source_manifest.json` if PDFs are restored. **Step 10.14:** designated Remove items above were deleted in place. **Step 10.15:** remaining tests now live under owner `tests/`; current README, package descriptions, benchmark guidance and executable references describe five active components plus Legacy. `source_manifest.json` restore-and-bind stays later work if PDFs are restored.
-10. Verify §15. **Step 10.15 remaining:** final representative Session verification of the migrated architecture. Stop. No second-phase features. This inventory does not claim Session completion.
+10. Verify §15. **Step 10.15.1 actual:** admission tests and the isolated
+    driver now live under owner `tests/` / Director test support as in §4.5.
+    **Remaining:** final representative Session verification of the migrated
+    architecture. Stop. No second-phase features. This inventory does not
+    claim Session completion.
 
 ### Affected surfaces (must be updated in the executing steps)
 
@@ -1404,7 +1424,7 @@ Subsequent reviewed steps execute this order. This step does not execute it.
 | CLI routes | Same public commands; bodies follow new owners |
 | Package metadata | `core/__init__.py` / `bav/__init__.py` branding → BAV Compiler; no `pyproject.toml` exists |
 | Build/publish | `build/input/<slug>/` and `build/output/<slug>/` stay canonical |
-| Tests | **Step 10.15:** owner `tests/` destinations in §4.5; STYLE/DRIVER paths already updated; `test_research_drivers.py` split across Director / Modeler / Interpreter / Composer |
+| Tests | **Step 10.15 / 10.15.1:** owner `tests/` destinations in §4.5, including the admission-test split and Director isolated-driver support; STYLE/DRIVER paths already updated; `test_research_drivers.py` split across Director / Modeler / Interpreter / Composer |
 | Docs | README, DRIVER↔STYLE links, FR benchmark paths |
 
 Preserve public `bav` and canonical company input/output interfaces.
@@ -1424,7 +1444,8 @@ This inventory step does not rebuild, publish, or run native Office.
 - Analytical family suites listed in §4.5 under `modeler/tests/`
 - `director/tests/test_*_benchmark_policy.py`, `modeler/tests/test_*_benchmark.py`
 - `legacy/tests/test_trainer.py`, `{composer,legacy}/tests/test_learner_ready_presentation.py`, `director/tests/test_readme.py` for optional Trainer / README identity
-- Stay at `core/tests/`: `test_normalization_candidate_admission.py`
+- `{modeler,director,interpreter}/tests/test_normalization_candidate_admission.py` — construction/persistence, handoff/protected-artifact/baseline authentication, interpretation qualifications
+- `director/tests/normalization_candidate_isolated_driver.py` — isolated historical/current comparison driver
 
 **Representative company paths**
 

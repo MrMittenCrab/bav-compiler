@@ -89,5 +89,7 @@ semantic identities; visibility is not release acceptance. Build never writes
 AutoCycle state, control documents, benchmark artifacts, or release artifacts,
 and never starts AutoCycle.
 
-Run focused checks with `python -m pytest core/tests/test_build_contract.py -q`
-and regressions with `python -m pytest core/tests -q` in the project environment.
+Run focused checks with `python -m pytest modeler/tests/test_build_contract.py -q`
+and regressions with
+`python -m pytest director/tests extractor/tests modeler/tests interpreter/tests composer/tests legacy/tests core/tests -q`
+in the project environment.
