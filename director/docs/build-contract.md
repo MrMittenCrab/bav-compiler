@@ -77,10 +77,11 @@ missing, or stale component set. Release blank/filled Check totals come from
 the same expected specs. Historical benchmark assertions may still describe
 fixed fixtures, but production completeness checks have no fixed total.
 
-Company routing and staged reconciliation live in `core/current_build.py`.
+Company routing and staged reconciliation live in `director/current_build.py`.
 Director policy is `director/build_contract.py`. Modeler binds writers and
-executes the policy in `modeler/engine/build_contract.py`.
-The public `bav` package delegates to the compatible internal `core` CLI.
+executes the policy in `modeler/engine/build_contract.py`. Mechanical Build
+Status lives in `modeler/build_status.py`. The public `bav` package routes to
+Director CLI; `python -m core` remains a compatibility entry point.
 Company builds verify the professional `<Company>_BAV.xlsx` and sidecars before
 atomically exchanging the canonical `build/output/<Company>/` directory. Trainer
 generation is unused on the ordinary company path. Build Status uses emitted

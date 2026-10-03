@@ -1,4 +1,5 @@
 """Current company workflow, publication safety, and public CLI contracts."""
+import ast
 import hashlib
 import json
 from pathlib import Path
@@ -333,3 +334,132 @@ def test_disabled_module_is_not_reported_as_missing_source(monkeypatch):
         for m in build_contract.BUILD_MODULES))
     rows = {r['family']: r for r in status_rows(SemanticMap())}
     assert rows['Store-count history']['status'] == INACTIVE
+
+
+def test_canonical_cli_company_definitions_are_owner_owned():
+    import director.cli as cli
+    import director.current_build as current_build
+    import modeler.build_status as build_status
+
+    assert Path(cli.__file__).resolve() == (ROOT / 'director/cli.py').resolve()
+    assert Path(current_build.__file__).resolve() == (ROOT / 'director/current_build.py').resolve()
+    assert Path(build_status.__file__).resolve() == (ROOT / 'modeler/build_status.py').resolve()
+    assert (ROOT / 'director/project_companies.json').is_file()
+    assert callable(cli.main)
+    assert callable(cli.cmd_build)
+    assert callable(cli._validate_build_output)
+    assert callable(current_build.resolve_company)
+    assert callable(current_build.build_company)
+    assert callable(current_build._exchange_directories)
+    assert callable(build_status.status_rows)
+    assert callable(build_status.add_build_status)
+
+
+def test_cli_company_compatibility_exports_are_identity_equal():
+    import core.__main__ as facade_cli
+    import director.cli as canonical_cli
+    import core.current_build as facade_current
+    import director.current_build as canonical_current
+    import core.build_status as facade_status
+    import modeler.build_status as canonical_status
+
+    assert facade_current is canonical_current
+    assert facade_cli.main is canonical_cli.main
+    assert facade_cli.cmd_build is canonical_cli.cmd_build
+    assert facade_cli.cmd_check is canonical_cli.cmd_check
+    assert facade_cli.cmd_publish is canonical_cli.cmd_publish
+    assert facade_cli.cmd_list is canonical_cli.cmd_list
+    assert facade_cli.cmd_ingest is canonical_cli.cmd_ingest
+    assert facade_cli.cmd_validate_source is canonical_cli.cmd_validate_source
+    assert facade_cli.cmd_reconcile is canonical_cli.cmd_reconcile
+    assert facade_cli._validate_build_output is canonical_cli._validate_build_output
+    assert facade_cli._load_build_json is canonical_cli._load_build_json
+    assert facade_cli._serialize_line_items is canonical_cli._serialize_line_items
+    assert facade_cli._date_key is canonical_cli._date_key
+    assert facade_cli._unique_json_object is canonical_cli._unique_json_object
+    assert facade_cli._reject_json_constant is canonical_cli._reject_json_constant
+    for name in (
+        'Company', 'PROJECTS', 'OUTPUT_ROOT', 'INPUT_ROOT', 'ROOT',
+        'resolve_company', 'build_company', 'check_company_output',
+        'prepare_company_input', 'current_workbook', 'verify_staged',
+        '_exchange_directories', '_publish_company_sidecars',
+        '_require_company_input', '_write_json', '_ensure_canonical_dirname',
+        'standardized_from_payload',
+    ):
+        assert getattr(facade_current, name) is getattr(canonical_current, name)
+    for name in ('ACTIVE', 'UNAVAILABLE', 'INACTIVE', 'GROUPS', 'status_rows', 'add_build_status'):
+        assert getattr(facade_status, name) is getattr(canonical_status, name)
+
+
+def test_cli_company_facade_and_canonical_import_orders():
+    samples = (
+        ('director.cli', 'core.__main__', 'main'),
+        ('director.cli', 'core.__main__', '_validate_build_output'),
+        ('director.current_build', 'core.current_build', 'resolve_company'),
+        ('director.current_build', 'core.current_build', '_exchange_directories'),
+        ('modeler.build_status', 'core.build_status', 'status_rows'),
+        ('modeler.build_status', 'core.build_status', 'GROUPS'),
+    )
+    orders = (
+        'import {facade} as facade\nimport {canonical} as canonical\n',
+        'import {canonical} as canonical\nimport {facade} as facade\n',
+    )
+    extras = (
+        'import core.current_build as facade_cb\n'
+        'import director.current_build as canonical_cb\n'
+        'assert facade_cb is canonical_cb\n'
+        'from director.cli import _validate_build_output as canonical_validate\n'
+        'from core.__main__ import _validate_build_output as facade_validate\n'
+        'assert facade_validate is canonical_validate\n'
+    )
+    for canonical, facade, attr in samples:
+        for template in orders:
+            script = (
+                template.format(canonical=canonical, facade=facade)
+                + f'assert facade.{attr} is canonical.{attr}\n'
+                + extras
+            )
+            result = subprocess.run(
+                [sys.executable, '-c', script],
+                check=False,
+                capture_output=True,
+                text=True,
+                cwd=str(ROOT),
+            )
+            assert result.returncode == 0, result.stderr or result.stdout
+
+
+def test_patchable_company_configuration_uses_one_implementation(monkeypatch):
+    import director.current_build as canonical
+    import core.current_build as facade
+    from director.cli import main
+
+    assert facade is canonical
+    original = canonical.OUTPUT_ROOT
+    monkeypatch.setattr(facade, 'OUTPUT_ROOT', original / 'patched-via-facade')
+    assert canonical.OUTPUT_ROOT == original / 'patched-via-facade'
+    monkeypatch.setattr(canonical, 'PROJECTS', canonical.PROJECTS)
+    assert facade.PROJECTS is canonical.PROJECTS
+    assert main is not None
+
+
+def test_both_module_entry_points_reach_director():
+    import ast
+
+    bav_main = ast.parse((ROOT / 'bav/__main__.py').read_text())
+    routed = False
+    for node in ast.walk(bav_main):
+        if isinstance(node, ast.ImportFrom) and node.module == 'director.cli':
+            routed = any(alias.name == 'main' for alias in node.names)
+    assert routed
+    for namespace in ('bav', 'core'):
+        result = subprocess.run(
+            [sys.executable, '-m', namespace, '--help'],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0, result.stderr
+        assert 'build' in result.stdout
+        assert 'check' in result.stdout
+        assert 'publish' in result.stdout

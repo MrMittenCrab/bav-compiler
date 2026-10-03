@@ -64,7 +64,7 @@ an entry. Mixed files have separate responsibility rows.
 |---|---|---|
 | Hidden / config | 4.1 | `.autocycle.toml`, `.gitignore`, `.cursor/`, `.claude-plugin/`, requirements |
 | Public `bav` package | 4.2 | Preserve `python -m bav` |
-| `core/__main__.py`, `current_build.py`, `build_status.py`, `project_companies.json` | 4.2, 10 | Director orchestration |
+| `core/__main__.py`, `current_build.py`, `build_status.py`, `project_companies.json` | 4.2, 10 | Step 10.12: Director CLI/company config; Modeler build status; core façades |
 | `core/data/` | 4.3, 7 | Split Extractor contract vs Modeler payload |
 | `core/ingestion/` | 7.3 | Extractor JSON contract I/O; Modeler admit/reconcile; no PDF extractor |
 | `core/model/` | 4.4, 7.0, 7.1, 7.4 | Homogeneous Modeler plus exhaustive revenue-driver, synthesis and reported-margin assessment splits |
@@ -113,7 +113,7 @@ Preserve public package name `bav` and company interfaces
 
 | Current | Destination | Callers | Disposition | Reason | Verification |
 |---|---|---|---|---|---|
-| `bav/__init__.py`, `bav/__main__.py` (`from core.__main__ import main`) | keep `bav/` at repo root | humans, tests | Director | Public identity; thin route | `python -m bav --help`; `test_build_cli.py` |
+| `bav/__init__.py`, `bav/__main__.py` (`from director.cli import main`) | keep `bav/` at repo root | humans, tests | Director | Public identity; thin route to Director CLI | `python -m bav --help`; `test_build_cli.py` |
 | `core/__init__.py` `__version__ = "0.1.0"` | stay as compatibility package; rewrite Trainer branding when copy is touched | imports | Director | Package identity | version string |
 | `core/__main__.py` `main` / argparse | `director/cli.py`; `python -m core` remains an alias | `bav/__main__.py` | Director | Lifecycle coordination | `test_build_cli.py`, `test_filing_cli.py` |
 | `cmd_build` company path | Director orchestration calling Modeler + Composer | `python -m bav build <Company>` | Director | Does not choose accounting | `test_current_build.py`; Lulu/FR build |
@@ -127,6 +127,23 @@ Preserve public package name `bav` and company interfaces
 | `core/current_build.py` `PROJECTS`, `resolve_company`, `build_company`, `check_company_output`, `prepare_company_input`, atomic exchange | `director/current_build.py` | CLI, `document.py`, tests | Director | “Company metadata selects evidence locations, never accounting behavior” | `test_current_build.py` |
 | `core/project_companies.json` | `director/project_companies.json` | `current_build.PROJECTS` | Director | Names/slugs/aliases/fixture paths | resolve Lululemon/LULU/FastRetailing/9983 |
 | `core/build_status.py` | `modeler/build_status.py` | `build_company` | Modeler | Mechanical family availability | `test_current_build.py` |
+
+**Step 10.12 actual ownership.** CLI argparse and command bodies execute from
+`director/cli.py`. `python -m bav` imports Director `main` directly;
+`python -m core` remains a compatibility entry point through a thin
+`core.__main__` façade (public names plus `_validate_build_output` and the
+other required private helpers). Company routing, aliases, admission
+settings and atomic current-snapshot publication execute from
+`director/current_build.py` using `director/project_companies.json`.
+Mechanical Build Status (`status_rows`, `add_build_status`) executes from
+`modeler/build_status.py`. Retained `core.current_build` is a module-identity
+façade over Director so patchable `OUTPUT_ROOT` / `PROJECTS` / failure
+injection stay one implementation. Retained `core.build_status` is a
+delegation-only façade. `composer/research/document.py` imports
+`director.current_build`. Ordinary company execution still does not load
+Legacy; `cmd_ingest` and Excel-input `-o` remain the explicit compatibility
+routes that load `legacy.ingestion.manual_hk`. Explicit JSON `-o` still
+derives a Trainer through `legacy.trainer.derive`.
 
 ### 4.3 Data contracts
 
@@ -465,7 +482,7 @@ period-axis inspection when the completed judgment is absent.
 `composer/research/style.py` is the `director/docs/STYLE.md` figure
 implementation. `composer/research/document.py` renders Word/PDF from
 canonical Markdown and figures without recalculation; company routing
-remains `core.current_build.resolve_company`. `composer/research/publish.py`
+is `director.current_build.resolve_company` (Step 10.12). `composer/research/publish.py`
 owns apply-if-applicable publication and heading/figure/placeholder
 verification; it consumes Modeler `financial_drivers_applicable` and
 Director `publish_drivers`. Retained `core/research/style.py`,
@@ -899,11 +916,12 @@ compatibility façades (public names plus `_parse_header` / `_header_layout` /
 `_parse_date` / `_load_historical_shares` / `_load_structured_json`). Package
 `core.ingestion` adapter exports (`ExcelExportAdapter`, `HKManualDocumentAdapter`)
 are lazy: importing ordinary compatibility modules does not initialize Legacy
-adapters. `core/__main__.py` loads `legacy.ingestion.manual_hk` only for
-`cmd_ingest` or the explicit Excel-input compatibility build branch. Ordinary
-company `build` / `check` / `publish` and canonical filing validate/reconcile
-do not depend on those adapters. Compatibility `core.ingestion.manual_hk` /
-`excel_import` remain importable; they are not active company execution.
+adapters. `director/cli.py` (reached by `python -m bav` and the `core.__main__`
+façade) loads `legacy.ingestion.manual_hk` only for `cmd_ingest` or the
+explicit Excel-input compatibility build branch. Ordinary company `build` /
+`check` / `publish` and canonical filing validate/reconcile do not depend on
+those adapters. Compatibility `core.ingestion.manual_hk` / `excel_import`
+remain importable; they are not active company execution.
 **Step 10.9.5:** `normalization_candidate_admission.py` is no longer a deferred
 mixed module at `core/ingestion/`; that path is now the compatibility façade over
 the Modeler / Director / Interpreter owners above.
@@ -1191,8 +1209,8 @@ layer.
 
 **Current (wrong) direction — active → Trainer**
 
-- `core/__main__.py` L27–29 imports `check_workbook`, `semantic_io`, `build_training_workbook`
-- `core/current_build.py` L278 imports `build_bav_workbook`
+- Historical: `core/__main__.py` imported Trainer helpers at module level; Step 10.12 CLI is `director/cli.py` and loads Legacy Trainer only on explicit `--workbook` check or JSON `-o` derive
+- `director/current_build.py` `build_company` imports Modeler `build_bav_workbook` (not Trainer)
 - `core/engine/reference_model.py` lazy-imports `trainer.check_context`
 
 **Required inversion**
@@ -1348,7 +1366,7 @@ Subsequent reviewed steps execute this order. This step does not execute it.
 4. Move remaining Modeler calculation modules, data payload, ingestion reconcile/standardize, engine workbook, `build_bav_workbook`, semantic I/O, check-context embed. **Step 10.8:** homogeneous calculation modules now live under `modeler/` with thin `core.model` façades. Engine/Trainer inversion is already done in 10.7. **Step 10.9:** assigned data contracts and ingestion admit/reconcile/CLI helpers now live under `modeler/data/`, `modeler/ingestion/`, `director/data/schema.py` and `director/ingestion/`. **Step 10.9.5:** normalization-candidate admission is split to Modeler construction/persistence, Director contracts/orchestration and Interpreter qualifications; enrichment remains transitional at `core/ingestion/`. **Step 10.10:** classification case selection and normalization calculations live under `modeler/`; classification templates and normalization rationale/prompt ownership live under `interpreter/`; retained `core.model.judgment` / `core.model.normalization` are compatibility façades.
 5. Move Interpreter judgment functions and classification/normalization rationales / strategy inference. **Step 10.10:** classification templates and normalization rationale/consequence/prompt ownership now live under Interpreter. Remaining Interpreter judgment functions and strategy inference stay later work.
 6. Move Composer `style.py`, `document.py`, `publish.py`, Drivers prose/plots, Overview opening/navigation. **Step 10.6:** `style.py`, `document.py` and `publish.py` now live under `composer/research/`. Drivers prose/plots already live there from 10.5. **Step 10.7:** Overview opening/navigation lives in `composer/workbook_opening.py`.
-7. Move Director CLI / `current_build` / `project_companies.json` / build-contract policy. Keep `python -m bav` and company name interfaces. Director `build_company` sequences Modeler → Interpreter → Composer before workbook write.
+7. Move Director CLI / `current_build` / `project_companies.json` / build-contract policy. Keep `python -m bav` and company name interfaces. Director `build_company` sequences Modeler → Interpreter → Composer before workbook write. **Step 10.12:** CLI, company configuration and orchestration now live under `director/`; mechanical `build_status` lives under `modeler/`; `python -m core` remains a compatibility alias.
 8. Relocate Legacy (Trainer remainder, skills, automation, retired scripts, HK demo, historical docs/verifiers).
 9. Delete Remove items in place. Update imports, CLI routes, package docstrings, tests, README, `docs/FAST_RETAILING_BENCHMARK.md` stale paths, `source_manifest.json` if PDFs are restored.
 10. Verify §15. Stop. No second-phase features.

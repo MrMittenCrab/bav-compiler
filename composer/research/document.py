@@ -27,7 +27,7 @@ from composer.research.style import (
     ResolvedFonts,
     resolve_required_fonts,
 )
-from core.current_build import Company, resolve_company
+from director.current_build import Company, resolve_company
 
 BODY_PT = 10
 HEADING_PT = 14

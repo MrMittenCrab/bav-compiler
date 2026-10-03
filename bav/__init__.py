@@ -1,1 +1,1 @@
-"""Public BAV package; implementation remains in core for compatibility."""
+"""Public BAV Compiler package; CLI routes to Director."""

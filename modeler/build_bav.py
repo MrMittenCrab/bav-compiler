@@ -130,7 +130,7 @@ def finalize_bav(
     financials = _financials_for_opening(bav_path, financials)
     wb = load_workbook(bav_path)
     _add_bav_opening(wb, financials)
-    from core.build_status import add_build_status
+    from modeler.build_status import add_build_status
     add_build_status(wb, semantic_map)
     _apply_minimal_style(wb)
     _decorate_answer_key_practice_cells(wb, semantic_map)

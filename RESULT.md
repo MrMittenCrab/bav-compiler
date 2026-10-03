@@ -1,3 +1,124 @@
+# RESULT.md — Step 10.12 Relocate CLI and company orchestration
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.12 — Relocate CLI and company orchestration
+**Work:** `889f7a7b0342467caa4faf6315b52b88`
+**Plan:** `7e4f1716a5944d429af75a2602fcca8e`
+**Finding:** Relocate CLI and company orchestration
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. Controller files under `.git/autocycle` were read-only.
+
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `77799683fcd0c4db79a80d4109e0c3c863fa5300d23374a42e7d128722e0eba3` (5880).
+
+This bounded relocation moves CLI routing and company configuration/orchestration to Director and mechanical Build Status to Modeler, with thin compatibility façades at the displaced `core` paths. It does not close parent Completion and does not establish Session 10 acceptance.
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state` and authenticated as a Git commit. `implementation-baseline.json` head matched B. Leftover `latest-implementation` HEAD was not substituted for B.
+
+| Binding source | Value |
+|---|---|
+| `resume-state` `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD | `2d272b7fdb4c0ab8bcabbcd50ef1efc357d181b3` |
+| Branch | `checkpoint/20260913-183303` |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` work / plan | work `889f7a7b0342467caa4faf6315b52b88`, plan `7e4f1716a5944d429af75a2602fcca8e`, step `10.12` |
+| `work-state` allocated `10.12` | source = B, work_id = `889f7a7b0342467caa4faf6315b52b88`, status `opened` |
+| Current implementation attempt | `1aeed994c57844349b2e9c09e53ab487` (phase `running`, plan_sha = B, `checkpoint_sha` absent) |
+| Live authentication state | implementation at B (`HEAD == B`) after nonempty matching work and attempt bindings |
+| `latest-implementation` leftover HEAD | `0296fc2988b8a48fecf66742c66b17d60f921ff4` (ignored: `IMPLEMENT_BASE_SHA` populated and authenticated) |
+| Fail-closed | Not required |
+
+Historical tuples remain separately bound comparators and do not authorize this live attempt.
+
+Historical Git blobs at B were inspected before destination comparison:
+
+| Path at B | SHA-256 | Bytes |
+|---|---|---|
+| `core/__main__.py` | `72d8552f694e7bd2fdf1021b3b8197d2f5827b49688e0dee43eaab459247f052` | 19985 |
+| `core/current_build.py` | `71dc0cdbdb57ba5c743d411d5dcbb32716bbbf9bf0cd9136089a53543160d605` | 13285 |
+| `core/build_status.py` | `d189eb28964d5a2763fced644a272491bc5e48226fe222fd50d4753c60143f48` | 4733 |
+| `core/project_companies.json` | `c0b177607784fb1e9dd1221cecb89c81eb476bd1180b082466428b84b012d6a3` | 549 |
+| `bav/__main__.py` | `3c002493a17cbd1833deade5d6013a59fe711e2289a55763eb5762df9b9d35f4` | 137 |
+
+## Ownership / path mappings
+
+| Responsibility | Destination | Notes |
+|---|---|---|
+| CLI `main` / argparse / command bodies | `director/cli.py` | Byte-identical to B `core/__main__.py`. Relative `.current_build` now resolves in Director |
+| `python -m bav` | `bav/__main__.py` → `director.cli.main` | Direct Director route |
+| `python -m core` | `core/__main__.py` façade | Compatibility entry point; public names plus `_validate_build_output`, `_load_build_json`, `_serialize_line_items`, `_date_key`, `_unique_json_object`, `_reject_json_constant` |
+| `PROJECTS`, `resolve_company`, `build_company`, `check_company_output`, `prepare_company_input`, atomic exchange | `director/current_build.py` | Same body as B except lazy imports retargeted to `modeler.build_status.status_rows` and `director.cli._validate_build_output` |
+| Company configuration | `director/project_companies.json` | Byte-identical to B `core/project_companies.json`; no duplicate at `core/` |
+| Mechanical Build Status | `modeler/build_status.py` | Byte-identical to B `core/build_status.py`; consumed by `modeler/build_bav.py` and `build_company` |
+| `core.current_build` | module-identity façade | `core.current_build is director.current_build`; preserves patchable `OUTPUT_ROOT` / `PROJECTS` / failure injection |
+| `core.build_status` | delegation façade | Public names plus `GROUPS` |
+| Publication routing | `composer/research/document.py` | `Company` / `resolve_company` imported from `director.current_build` |
+
+Director build-contract policy and Modeler workbook execution are unchanged. Canonical Legacy Trainer derivation and manual/Excel ingestion remain only on their explicit compatibility routes.
+
+## Relocation bytes versus B
+
+| Destination | vs B source blob | Intentional change |
+|---|---|---|
+| `director/cli.py` | identical to B `core/__main__.py` | none |
+| `director/project_companies.json` | identical to B `core/project_companies.json` | none; aliases LULU / Fast Retailing / 9983 / 9983.T and fixture references preserved |
+| `modeler/build_status.py` | identical to B `core/build_status.py` | none |
+| `director/current_build.py` | 13295 vs 13285; SHA-256 `1f522117…` | `from .build_status` → `from modeler.build_status`; `from .__main__ import _validate_build_output` → `from director.cli import _validate_build_output` (lazy, no cycle) |
+
+Repository-relative `ROOT` / `INPUT_ROOT` / `OUTPUT_ROOT` still resolve from `Path(__file__).parents[1]`. Configuration is loaded from `Path(__file__).with_name('project_companies.json')` beside the Director module.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| B authentication (resume-state, baseline JSON, work-state 10.12, branch, HEAD==B, attempt `1aeed994…`) | B = `2d272b7fdb4c0ab8bcabbcd50ef1efc357d181b3`; HEAD == B; fail-closed not required |
+| Historical blob inspect vs destinations | CLI / company JSON / build_status byte-identical; current_build only the two lazy-import retargets |
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_build_cli.py core/tests/test_filing_cli.py core/tests/test_current_build.py core/tests/test_build_contract.py core/tests/test_publication.py core/tests/test_data_ingestion_ownership.py core/tests/test_engine_trainer_ownership.py core/tests/test_trainer.py core/tests/test_reference_integrity.py core/tests/test_cross_company_robustness.py core/tests/test_lululemon_benchmark.py core/tests/test_fast_retailing_benchmark.py` | **616 passed** in 238.07s. No skip / xfail / deselect. 5 pre-existing Swig importlib warnings |
+| Canonical definitions / compatibility identities / patchable configuration / fresh-process import orders / both `python -m bav` and `python -m core` | Added tests in `test_current_build.py` passed; `core.current_build is director.current_build`; CLI helpers identity-equal |
+| Company routes with Legacy imports rejected | `test_company_routes_reject_legacy_ingestion` and Trainer-blocked company build/check/publish passed |
+| Explicit manual/Excel ingest, JSON Trainer derivation, optional Trainer checks | `test_excel_compatibility_build_uses_legacy_adapter`, `test_excel_input_still_builds`, `test_explicit_json_build_derives_trainer`, Trainer check tests passed |
+| Protected inputs, ambiguous aliases, missing inputs, staged verification failure, atomic exchange failure, unchanged current output after failed builds | Existing `test_current_build.py` / `test_build_cli.py` gates passed |
+| Representative Lululemon / FastRetailing build/check/publication | Existing integration routes passed (`test_current_build`, `test_publication`, both benchmark modules). Generated `build/output/<company>/` trees are not in Git at B; no byte comparison against B blobs is possible. Workbook formulas/presentation were not rewritten |
+| `git diff --check` | rc 0 |
+| `git diff --check 2d272b7fdb4c0ab8bcabbcd50ef1efc357d181b3` | rc 0 |
+
+Workbook formulas, presentation and canonical source/extracted/reconciled inputs were not rewritten. Office Bridge was not required.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `director/cli.py` | `72d8552f694e7bd2fdf1021b3b8197d2f5827b49688e0dee43eaab459247f052` | 19985 |
+| `director/current_build.py` | `1f52211745f9136a054dfb4bf8377e6270c2a6fb7d93dd4dc73c54be500be5ea` | 13295 |
+| `director/project_companies.json` | `c0b177607784fb1e9dd1221cecb89c81eb476bd1180b082466428b84b012d6a3` | 549 |
+| `modeler/build_status.py` | `d189eb28964d5a2763fced644a272491bc5e48226fe222fd50d4753c60143f48` | 4733 |
+| `modeler/build_bav.py` | `fc7118f2b9ecebab0fc532ab1a419e7a13f92a4498b084c6cc9c7f97f3601d57` | 5695 |
+| `core/__main__.py` | `d7f713105979942bfcc9c36cfe9980d031352ab3e03561a1994372a478e71394` | 325 |
+| `core/current_build.py` | `8ec8f81488add9e142ef53e4629e8afe7127fa14f6b3e7712caf84cd2a06ff44` | 174 |
+| `core/build_status.py` | `38a695fc2d4966879ef15b2b394aad5494dde55549952e12236648930c6045f9` | 151 |
+| `bav/__main__.py` | `52fd9e714dd9f2b115447a5181f2be9325a27847d31d0d4d1ac412a5400af2f8` | 136 |
+| `composer/research/document.py` | `9e84393d46d019f52f72ad0cc75aa4305f3030e32702c9cffc226b71db2633a3` | 52712 |
+| `core/tests/test_current_build.py` | `11b34fbc51270d068e7feca7239a72acc5ac30a1b3695601c71d4d887c3d0010` | 20781 |
+| `director/docs/MIGRATION_INVENTORY.md` | `e66224c2e79b0a464b6f4f2987cd280511d6575eca0402d8f02bada6a9faff08` | 123091 |
+| `director/docs/build-contract.md` | `b079949fa8b7ba9f5d088a3e625c242579d705c423ad277c5873381dc08f669c` | 5210 |
+
+## Preservation
+
+Command names, arguments, defaults, help, diagnostics, exit behavior, company aliases and explicit JSON/Excel output behavior are unchanged. Strict standardized-only company preparation, protected-output checks, source immutability, staged verification, sidecar placement, atomic exchange, failure rollback and retirement only after successful replacement remain. Ordinary company execution stays independent of Legacy. Admission remains default-off. Dormant forecasting and zero-byte research placeholders are unchanged.
+
+## Remaining toward Completion
+
+Broader Legacy migration, Remove dispositions, repository-wide test relocation and final Session verification remain unfinished. No algorithm/report redesign, new Extractor, reasoning engine, Trainer expansion or second-phase features.
+
+This bounded CLI/company relocation does not establish parent Completion or Session 10 acceptance.
+
+## Required plan change
+
+None.
+
+---
+
 # RESULT.md — Step 10.11 Isolate Legacy manual ingestion
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
