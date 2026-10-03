@@ -11497,3 +11497,86 @@ This bounded validation repair does not establish parent Completion or Session 1
 ## Required plan change
 
 None.
+
+---
+
+# RESULT.md — Step 10.9.4 Relocate data contracts and ingestion responsibilities — bind baseline authentication to the actual controller attempt
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.9.4 — Relocate data contracts and ingestion responsibilities — bind baseline authentication to the actual controller attempt
+**Work:** `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`
+**Plan:** `ab9f733870294d859da0cf0481edebcf`
+**Finding:** Relocate data contracts and ingestion responsibilities
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections, including prior 10.9.4 validation and admission-bundle records, were not rewritten. No commit / push / sync / checkpoint / branch change. Controller files under `.git/autocycle` were read-only.
+
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `b545d0bf8c090b8cbf7f6a1a822a1db208386cd82860726269fdcd8e22027278` (8106).
+
+This bounded repair binds baseline authentication to the current controller attempt and removes the unrecorded-direct-child fallback. It does not close parent Completion (remaining relocation/decomposition still open) and does not establish Session 10 acceptance. It is distinct from the predecessor admission-bundle validation repair.
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state` and authenticated as a Git commit. A SHA’s presence alone is not acceptance. `implementation-baseline.json` head matched B. Leftover `latest-implementation` HEAD was not substituted for B.
+
+| Binding source | Value |
+|---|---|
+| `resume-state` `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD | `8fa5a182c1d672522bf4ac24f14c0345bf9405f3` |
+| Branch | `checkpoint/20260913-183303` |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` work / plan | work `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`, plan `ab9f733870294d859da0cf0481edebcf`, step `10.9.4` |
+| `work-state` `work.id` | `59ab4fdc9ec144ffb2c2b3f0bb8adaeb` |
+| `work-state` allocated `10.9.4` | source = B, work_id = `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`, status `opened` |
+| Current implementation attempt | `41685ad86ff348d3803299c3fa19fce3` (phase `running`, plan_sha = B, `checkpoint_sha` absent) |
+| Authentication state | implementation at B (`HEAD == B`) after nonempty matching work and attempt bindings |
+| `latest-implementation` leftover HEAD | `418f7dc23a52c925d88f9a76ab32cfc33b70e204` (ignored: `IMPLEMENT_BASE_SHA` populated and authenticated) |
+
+Historical reviewed attempt `afa6820bb22e4c8da5b7fcc1a3a3c26b` remains a separately bound comparator: checkpoint `fe04b6ceaec34f825e6c56c2351508ed7fc79078` to B `418f7dc23a52c925d88f9a76ab32cfc33b70e204`. That tuple is not live authorization for this attempt. `admitted_review.reviewed_head` is not used as the current attempt’s checkpoint.
+
+Live caller now reads expected work from `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` and observed work from `work-state.work.id`. Expected attempt is the unique attempt bound to that plan_id and B; observed attempt is the repository-bound running or exact-checkpoint attempt. Identical hardcoded `WORK_ID` values are no longer used as proof of ownership. `HEAD == B` does not bypass missing or mismatched identities.
+
+## Rejection evidence
+
+Helper and isolated caller-path fixtures were derived from existing controller record shapes. Observed ownership was mutated independently of expected ownership without editing controller files.
+
+| Case | Result |
+|---|---|
+| Valid bound implementation at current B | `implementation` |
+| Exact recorded checkpoint for reviewed attempt `afa6820…` at B `418f7dc…` | `checkpoint` (fixture only) |
+| Missing expected or observed work ID at `HEAD == B` | `unavailable_ownership_binding` |
+| Missing expected or observed attempt ID at `HEAD == B` | `unavailable_ownership_binding` |
+| Mismatched observed work ID | `mismatched_attempt` |
+| Independently mutated observed attempt ID | `mismatched_attempt` |
+| Attempt baseline ≠ B | `mismatched_baseline` |
+| Unrecorded direct child of B (no checkpoint) | `unauthorized_checkpoint` |
+| Direct child of B with recorded checkpoint belonging to old B `d260153b` / `06a71841` | `unauthorized_checkpoint` |
+| Different child of correct B when exact checkpoint `fe04b6ce` is recorded | `unauthorized_checkpoint` |
+| Branch `main` | `inconsistent_branch` |
+
+Production loader repairs in `modeler/ingestion/normalization_candidate_admission_io.py` were preserved (SHA-256 `eb34b14cae6f53c6b8e3d9390d17d3bb9a3eb6561d98c6ed4014c016a5823e4f`). Admission evidence integration in `core/ingestion/normalization_candidate_admission.py` was unchanged (SHA-256 `903ed5233bc679433c47d76fc7ffa3e03656cc3a785652d9d2812ef6399893a2`).
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_normalization_candidate_admission.py` | **31 passed** in 5.75s. Prior analytical, persistence, and production-loader cases preserved. No skip / xfail / deselect |
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_data_ingestion_ownership.py core/tests/test_normalization.py core/tests/test_filing_json.py` | **135 passed** in 10.12s |
+| Isolated current-versus-B execution vs pre-relocation `eb65dc6`, authenticated historical B `95efb965`, and current B `8fa5a182` | Retained by `test_b_and_current_isolated_agreement`; analytical/admission-gate assertions unchanged. Historical persist names remain empty on `eb65dc6` / `95efb965`. Current B retains repaired persistence |
+| `git diff --check` | rc 0 |
+| Enrichment-sidecar | Not re-run. Prior Step 10.9 failure `test_ordinary_prepare_writes_resolution_and_keeps_revenue_per_store` remains visible; the broader suite is not claimed fully passing |
+
+Changed tracked file: `core/tests/test_normalization_candidate_admission.py` SHA-256 `763a1ec1bca84bc636e75a6ab3770d83c71ef179217cd649894a303a1e140b34` (112494).
+
+## Preservation
+
+Completed Modeler/Director relocation, compatibility imports, public `bav` interfaces, source/extracted/reconciled inputs and ordinary documentary provenance were not rewritten. Fingerprint, treatment, authorization, once-only conversion, independent-authorization and production-loader rejection gates were not weakened. Ownership/recovery safeguards and protected documents were not disturbed.
+
+## Remaining toward Completion
+
+Classification/normalization interpretation splits, broader normalization-candidate separation, enrichment/Legacy decomposition, remaining orchestration relocation, unrelated removals, test ownership migration and final repository-wide verification remain subsequent scope. The enrichment-sidecar defect was not repaired.
+
+This binding repair does not establish parent Completion or Session 10 acceptance.
+
+## Required plan change
+
+None.

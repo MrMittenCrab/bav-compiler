@@ -63,6 +63,11 @@ REVIEWED_CHECKPOINT_1094 = "06a7184194cd9cb462eebf262790e88d3808a92a"
 REVIEWED_PARENT_1094 = "d260153bbda7014d7069c2247f80db75890f61f9"
 EXPECTED_BRANCH = "checkpoint/20260913-183303"
 WORK_ID = "59ab4fdc9ec144ffb2c2b3f0bb8adaeb"
+IMPLEMENTATION_MD = ROOT / "IMPLEMENTATION.md"
+# Historical reviewed attempt — comparator only, never live authorization.
+HISTORICAL_REVIEWED_ATTEMPT = "afa6820bb22e4c8da5b7fcc1a3a3c26b"
+HISTORICAL_REVIEWED_CHECKPOINT = "fe04b6ceaec34f825e6c56c2351508ed7fc79078"
+HISTORICAL_REVIEWED_B = "418f7dc23a52c925d88f9a76ab32cfc33b70e204"
 AUTOCYCLE_DIR = ROOT / ".git" / "autocycle"
 RESUME_STATE = AUTOCYCLE_DIR / "resume-state"
 IMPLEMENTATION_BASELINE = AUTOCYCLE_DIR / "implementation-baseline.json"
@@ -252,19 +257,71 @@ def _read_work_state() -> dict[str, Any]:
     return payload if isinstance(payload, dict) else {}
 
 
-def _resolve_implement_base_sha() -> str:
-    resume = _read_resume_state()
+def _read_autocycle_plan(path: Path | None = None) -> dict[str, Any]:
+    text = (path or IMPLEMENTATION_MD).read_text(encoding="utf-8")
+    for line in text.splitlines():
+        if line.startswith("AUTOCYCLE_PLAN:"):
+            payload = json.loads(line.split(":", 1)[1].strip())
+            return payload if isinstance(payload, dict) else {}
+    return {}
+
+
+def _require_git_commit(sha: str) -> str:
+    if not sha:
+        raise AssertionError("unavailable_implement_base")
+    try:
+        kind = _git_out(["git", "cat-file", "-t", sha])
+    except subprocess.CalledProcessError as exc:
+        raise AssertionError("unavailable_implement_base") from exc
+    if kind != "commit":
+        raise AssertionError("unavailable_implement_base")
+    return sha
+
+
+def _live_controller_records() -> dict[str, Any]:
+    return {
+        "resume": _read_resume_state(),
+        "baseline": _read_implementation_baseline(),
+        "latest_head": _read_latest_implementation_head(),
+        "work_state": _read_work_state(),
+        "plan": _read_autocycle_plan(),
+    }
+
+
+def _isolate_controller_records() -> dict[str, Any]:
+    """Copy live controller record shapes without mutating controller files."""
+    return copy.deepcopy(_live_controller_records())
+
+
+def _branch_controller_state(work_state: dict[str, Any], branch: str) -> dict[str, Any]:
+    payload = ((work_state.get("branches") or {}).get(branch) or {})
+    return payload if isinstance(payload, dict) else {}
+
+
+def _resolve_implement_base_sha(records: dict[str, Any] | None = None) -> str:
+    if records is None:
+        resume = _read_resume_state()
+        baseline = _read_implementation_baseline()
+        latest = _read_latest_implementation_head()
+    else:
+        resume = records.get("resume") if isinstance(records.get("resume"), dict) else {}
+        baseline = records.get("baseline") if isinstance(records.get("baseline"), dict) else {}
+        latest = str(records.get("latest_head") or "")
     sha = str(resume.get("IMPLEMENT_BASE_SHA") or "").strip()
     if sha:
+        _require_git_commit(sha)
+        baseline_head = str(baseline.get("head") or "").strip()
+        if baseline_head and baseline_head != sha:
+            raise AssertionError("inconsistent_baseline")
         return sha
-    baseline = _read_implementation_baseline()
-    head = str(baseline.get("head") or "").strip()
-    if head:
-        return head
-    latest = _read_latest_implementation_head()
-    if latest:
-        return latest
-    raise AssertionError("unavailable_implement_base")
+    baseline_head = str(baseline.get("head") or "").strip()
+    latest = str(latest or "").strip()
+    candidates = [value for value in (baseline_head, latest) if value]
+    if not candidates:
+        raise AssertionError("unavailable_implement_base")
+    if len(set(candidates)) != 1:
+        raise AssertionError("inconsistent_baseline")
+    return _require_git_commit(candidates[0])
 
 
 def _authorize_head_against_baseline(
@@ -278,20 +335,27 @@ def _authorize_head_against_baseline(
     bound_attempt_id: str = "",
     work_id: str = "",
     bound_work_id: str = "",
+    attempt_baseline: str = "",
     head_parent: str = "",
 ) -> str:
-    """Authorize implementation-at-B or that B's recorded checkpoint.
+    """Authorize implementation-at-B or that same attempt's recorded checkpoint.
 
-    Ancestry alone does not authorize an unrelated checkpoint or attempt.
+    Ownership bindings must be nonempty and matching. HEAD == B does not
+    bypass them. Ancestry or an unrecorded direct child is not enough.
     """
+    del head_parent  # retained for callers; never authorizes a fallback
     if not implement_base or not head or not branch:
         raise AssertionError("unavailable_baseline_binding")
     if branch != EXPECTED_BRANCH:
         raise AssertionError("inconsistent_branch")
-    if work_id and bound_work_id and work_id != bound_work_id:
+    if not work_id or not bound_work_id or not attempt_id or not bound_attempt_id:
+        raise AssertionError("unavailable_ownership_binding")
+    if work_id != bound_work_id or attempt_id != bound_attempt_id:
         raise AssertionError("mismatched_attempt")
-    if attempt_id and bound_attempt_id and attempt_id != bound_attempt_id:
-        raise AssertionError("mismatched_attempt")
+    if not attempt_baseline:
+        raise AssertionError("unavailable_ownership_binding")
+    if attempt_baseline != implement_base:
+        raise AssertionError("mismatched_baseline")
     if head == implement_base:
         return "implementation"
     if (
@@ -300,41 +364,149 @@ def _authorize_head_against_baseline(
         and recorded_checkpoint_parent == implement_base
     ):
         return "checkpoint"
-    if head_parent == implement_base and (
-        not recorded_checkpoint or recorded_checkpoint_parent != implement_base
-    ):
-        return "checkpoint"
     raise AssertionError("unauthorized_checkpoint")
 
 
-def _authenticate_current_repository_baseline() -> dict[str, str]:
-    resume = _read_resume_state()
-    implement_base = _resolve_implement_base_sha()
-    _git_out(["git", "cat-file", "-t", implement_base])
+def _plan_bound_attempt(
+    attempts: list[Any],
+    *,
+    plan_id: str,
+    implement_base: str,
+) -> dict[str, Any]:
+    if not plan_id or not implement_base:
+        return {}
+    matches = [
+        attempt
+        for attempt in attempts
+        if isinstance(attempt, dict)
+        and str(attempt.get("plan_id") or "").strip() == plan_id
+        and str(attempt.get("plan_sha") or "").strip() == implement_base
+    ]
+    if len(matches) != 1:
+        return {}
+    return matches[0]
+
+
+def _running_attempt_for_baseline(
+    attempts: list[Any],
+    *,
+    implement_base: str,
+) -> dict[str, Any]:
+    running = [
+        attempt
+        for attempt in attempts
+        if isinstance(attempt, dict)
+        and str(attempt.get("phase") or "").strip() == "running"
+        and str(attempt.get("plan_sha") or "").strip() == implement_base
+    ]
+    if len(running) != 1:
+        return {}
+    return running[0]
+
+
+def _repository_bound_attempt(
+    attempts: list[Any],
+    *,
+    head: str,
+    implement_base: str,
+) -> dict[str, Any]:
+    if not head or not implement_base:
+        return {}
+    if head == implement_base:
+        return _running_attempt_for_baseline(attempts, implement_base=implement_base)
+    recorded = [
+        attempt
+        for attempt in attempts
+        if isinstance(attempt, dict)
+        and str(attempt.get("checkpoint_sha") or "").strip() == head
+    ]
+    if len(recorded) == 1:
+        return recorded[0]
+    return _running_attempt_for_baseline(attempts, implement_base=implement_base)
+
+
+def _checkpoint_parent(sha: str) -> str:
+    if not sha:
+        return ""
+    try:
+        return _git_out(["git", "rev-parse", f"{sha}^"])
+    except subprocess.CalledProcessError:
+        return ""
+
+
+def _authenticate_current_repository_baseline(
+    records: dict[str, Any] | None = None,
+) -> dict[str, str]:
+    live = records is None
+    records = records or _live_controller_records()
+    resume = records.get("resume") if isinstance(records.get("resume"), dict) else {}
+    baseline = records.get("baseline") if isinstance(records.get("baseline"), dict) else {}
+    plan = records.get("plan") if isinstance(records.get("plan"), dict) else {}
+    work_state = records.get("work_state") if isinstance(records.get("work_state"), dict) else {}
+    implement_base = _resolve_implement_base_sha(None if live else records)
     branch = str(resume.get("STATE_BRANCH") or "").strip()
-    git_branch = _git_out(["git", "rev-parse", "--abbrev-ref", "HEAD"])
-    baseline = _read_implementation_baseline()
+    git_branch = str(records.get("git_branch") or "").strip()
+    if not git_branch:
+        git_branch = _git_out(["git", "rev-parse", "--abbrev-ref", "HEAD"])
     baseline_branch = str(baseline.get("branch") or "").strip()
     if not branch or branch != git_branch or (baseline_branch and baseline_branch != branch):
         raise AssertionError("inconsistent_branch")
-    head = _git_out(["git", "rev-parse", "HEAD"])
-    work = _read_work_state()
-    admitted = ((work.get("branches") or {}).get(branch) or {}).get("admitted_review") or {}
-    recorded_checkpoint = str(admitted.get("reviewed_head") or "").strip()
+    head = str(records.get("git_head") or "").strip()
+    if not head:
+        head = _git_out(["git", "rev-parse", "HEAD"])
+    if live:
+        _require_git_commit(head)
+    branch_state = _branch_controller_state(work_state, branch)
+    allocated = branch_state.get("allocated") if isinstance(branch_state.get("allocated"), dict) else {}
+    work = branch_state.get("work") if isinstance(branch_state.get("work"), dict) else {}
+    attempts = branch_state.get("attempts") if isinstance(branch_state.get("attempts"), list) else []
+    expected_work_id = str(plan.get("work_id") or "").strip()
+    observed_work_id = str(work.get("id") or "").strip()
+    step_id = str(plan.get("step_id") or "").strip()
+    allocated_step = allocated.get(step_id) if step_id else None
+    allocated_step = allocated_step if isinstance(allocated_step, dict) else {}
+    allocated_work_id = str(allocated_step.get("work_id") or "").strip()
+    allocated_source = str(allocated_step.get("source") or "").strip()
+    plan_id = str(plan.get("plan_id") or "").strip()
+    expected_attempt = _plan_bound_attempt(
+        attempts,
+        plan_id=plan_id,
+        implement_base=implement_base,
+    )
+    observed_attempt = _repository_bound_attempt(
+        attempts,
+        head=head,
+        implement_base=implement_base,
+    )
+    expected_attempt_id = str(expected_attempt.get("id") or "").strip()
+    observed_attempt_id = str(observed_attempt.get("id") or "").strip()
+    if not expected_work_id or not observed_work_id or not expected_attempt_id or not observed_attempt_id:
+        raise AssertionError("unavailable_ownership_binding")
+    if allocated_work_id and allocated_work_id != expected_work_id:
+        raise AssertionError("mismatched_attempt")
+    if allocated_source and allocated_source != implement_base:
+        raise AssertionError("mismatched_baseline")
+    recorded_checkpoint = str(observed_attempt.get("checkpoint_sha") or "").strip()
+    attempt_baseline = str(observed_attempt.get("plan_sha") or "").strip()
     recorded_parent = ""
     if recorded_checkpoint:
-        recorded_parent = _git_out(["git", "rev-parse", f"{recorded_checkpoint}^"])
-    head_parent = ""
-    if head != implement_base:
-        head_parent = _git_out(["git", "rev-parse", f"{head}^"])
+        recorded_parent = str(records.get("git_checkpoint_parent") or "").strip()
+        if not recorded_parent:
+            recorded_parent = _checkpoint_parent(recorded_checkpoint)
+    head_parent = str(records.get("git_head_parent") or "").strip()
+    if not head_parent and head != implement_base:
+        head_parent = _checkpoint_parent(head)
     state = _authorize_head_against_baseline(
         head=head,
         branch=branch,
         implement_base=implement_base,
         recorded_checkpoint=recorded_checkpoint,
         recorded_checkpoint_parent=recorded_parent,
-        work_id=WORK_ID,
-        bound_work_id=WORK_ID,
+        attempt_id=expected_attempt_id,
+        bound_attempt_id=observed_attempt_id,
+        work_id=expected_work_id,
+        bound_work_id=observed_work_id,
+        attempt_baseline=attempt_baseline,
         head_parent=head_parent,
     )
     return {
@@ -344,6 +516,11 @@ def _authenticate_current_repository_baseline() -> dict[str, str]:
         "branch": branch,
         "recorded_checkpoint": recorded_checkpoint,
         "recorded_checkpoint_parent": recorded_parent,
+        "work_id": expected_work_id,
+        "bound_work_id": observed_work_id,
+        "attempt_id": expected_attempt_id,
+        "bound_attempt_id": observed_attempt_id,
+        "attempt_baseline": attempt_baseline,
     }
 
 
@@ -1391,14 +1568,14 @@ def test_b_and_current_isolated_agreement(retained):
     assert reviewed_1094_parent == REVIEWED_PARENT_1094
     binding = _authenticate_current_repository_baseline()
     implement_base = binding["implement_base"]
-    assert binding["state"] in {"implementation", "checkpoint"}
+    assert binding["state"] == "implementation"
+    assert binding["head"] == implement_base
+    assert binding["work_id"] and binding["work_id"] == binding["bound_work_id"]
+    assert binding["attempt_id"] and binding["attempt_id"] == binding["bound_attempt_id"]
+    assert binding["attempt_baseline"] == implement_base
     assert implement_base != REVIEWED_CHECKPOINT_1094
-    if binding["state"] == "checkpoint":
-        assert binding["head"] != implement_base
-        assert (
-            binding["head"] == REVIEWED_CHECKPOINT_1094
-            or _git_out(["git", "rev-parse", f"{binding['head']}^"]) == implement_base
-        )
+    assert binding["attempt_id"] != HISTORICAL_REVIEWED_ATTEMPT
+    assert binding["recorded_checkpoint"] != HISTORICAL_REVIEWED_CHECKPOINT
     casebook = {
         "observations": retained["observations"],
         "live_payload": retained["live_payload"],
@@ -1989,67 +2166,329 @@ def test_production_loader_rejects_period_reassignment_and_false_transformation(
     assert retained["live_std_bytes"] == (LIVE_DIR / "standardized.json").read_bytes()
 
 
+def _current_branch_state(records: dict[str, Any]) -> dict[str, Any]:
+    return _branch_controller_state(records["work_state"], EXPECTED_BRANCH)
+
+
 def test_baseline_authentication_implementation_and_checkpoint_bindings():
     current_b = _resolve_implement_base_sha()
     resume = _read_resume_state()
     assert resume.get("IMPLEMENT_BASE_SHA") == current_b
     assert resume.get("STATE_BRANCH") == EXPECTED_BRANCH
+    _require_git_commit(current_b)
+    assert current_b != HISTORICAL_REVIEWED_B
+    live_preview = _authenticate_current_repository_baseline()
+    current_attempt_id = live_preview["attempt_id"]
+    assert current_attempt_id
+    assert current_attempt_id != HISTORICAL_REVIEWED_ATTEMPT
+
+    shared = dict(
+        branch=EXPECTED_BRANCH,
+        work_id=WORK_ID,
+        bound_work_id=WORK_ID,
+        attempt_id=current_attempt_id,
+        bound_attempt_id=current_attempt_id,
+        attempt_baseline=current_b,
+    )
     assert _authorize_head_against_baseline(
+        head=current_b,
+        implement_base=current_b,
+        **shared,
+    ) == "implementation"
+    assert _authorize_head_against_baseline(
+        head=HISTORICAL_REVIEWED_CHECKPOINT,
+        branch=EXPECTED_BRANCH,
+        implement_base=HISTORICAL_REVIEWED_B,
+        recorded_checkpoint=HISTORICAL_REVIEWED_CHECKPOINT,
+        recorded_checkpoint_parent=HISTORICAL_REVIEWED_B,
+        work_id=WORK_ID,
+        bound_work_id=WORK_ID,
+        attempt_id=HISTORICAL_REVIEWED_ATTEMPT,
+        bound_attempt_id=HISTORICAL_REVIEWED_ATTEMPT,
+        attempt_baseline=HISTORICAL_REVIEWED_B,
+    ) == "checkpoint"
+
+    missing_identity_kwargs = dict(
         head=current_b,
         branch=EXPECTED_BRANCH,
         implement_base=current_b,
-        work_id=WORK_ID,
-        bound_work_id=WORK_ID,
-    ) == "implementation"
-    assert _authorize_head_against_baseline(
-        head=REVIEWED_CHECKPOINT_1094,
-        branch=EXPECTED_BRANCH,
-        implement_base=REVIEWED_PARENT_1094,
-        recorded_checkpoint=REVIEWED_CHECKPOINT_1094,
-        recorded_checkpoint_parent=REVIEWED_PARENT_1094,
-        attempt_id="aacc02bc28094966adad9d669ea4b748",
-        bound_attempt_id="aacc02bc28094966adad9d669ea4b748",
-    ) == "checkpoint"
+        attempt_baseline=current_b,
+    )
+    with pytest.raises(AssertionError, match="unavailable_ownership_binding"):
+        _authorize_head_against_baseline(**missing_identity_kwargs)
+    with pytest.raises(AssertionError, match="unavailable_ownership_binding"):
+        _authorize_head_against_baseline(
+            work_id=WORK_ID,
+            bound_work_id="",
+            attempt_id="present",
+            bound_attempt_id="present",
+            **missing_identity_kwargs,
+        )
+    with pytest.raises(AssertionError, match="unavailable_ownership_binding"):
+        _authorize_head_against_baseline(
+            work_id=WORK_ID,
+            bound_work_id=WORK_ID,
+            attempt_id="",
+            bound_attempt_id="present",
+            **missing_identity_kwargs,
+        )
+    with pytest.raises(AssertionError, match="mismatched_attempt"):
+        _authorize_head_against_baseline(
+            head=current_b,
+            implement_base=current_b,
+            work_id=WORK_ID,
+            bound_work_id="unrelated-work",
+            attempt_id="same",
+            bound_attempt_id="same",
+            attempt_baseline=current_b,
+            branch=EXPECTED_BRANCH,
+        )
+    with pytest.raises(AssertionError, match="mismatched_attempt"):
+        _authorize_head_against_baseline(
+            head=current_b,
+            implement_base=current_b,
+            work_id=WORK_ID,
+            bound_work_id=WORK_ID,
+            attempt_id="expected-attempt",
+            bound_attempt_id="observed-attempt",
+            attempt_baseline=current_b,
+            branch=EXPECTED_BRANCH,
+        )
+    with pytest.raises(AssertionError, match="mismatched_baseline"):
+        _authorize_head_against_baseline(
+            head=current_b,
+            implement_base=current_b,
+            work_id=WORK_ID,
+            bound_work_id=WORK_ID,
+            attempt_id="same",
+            bound_attempt_id="same",
+            attempt_baseline=HISTORICAL_REVIEWED_B,
+            branch=EXPECTED_BRANCH,
+        )
     with pytest.raises(AssertionError, match="unauthorized_checkpoint"):
         _authorize_head_against_baseline(
-            head=REVIEWED_CHECKPOINT_1094,
-            branch=EXPECTED_BRANCH,
+            head=HISTORICAL_REVIEWED_CHECKPOINT,
+            implement_base=current_b,
+            recorded_checkpoint="",
+            recorded_checkpoint_parent="",
+            head_parent=current_b,
+            **shared,
+        )
+    with pytest.raises(AssertionError, match="unauthorized_checkpoint"):
+        _authorize_head_against_baseline(
+            head=HISTORICAL_REVIEWED_CHECKPOINT,
             implement_base=current_b,
             recorded_checkpoint=REVIEWED_CHECKPOINT_1094,
             recorded_checkpoint_parent=REVIEWED_PARENT_1094,
+            head_parent=current_b,
+            **shared,
         )
     with pytest.raises(AssertionError, match="unauthorized_checkpoint"):
         _authorize_head_against_baseline(
             head=current_b,
+            implement_base=HISTORICAL_REVIEWED_B,
+            recorded_checkpoint=HISTORICAL_REVIEWED_CHECKPOINT,
+            recorded_checkpoint_parent=HISTORICAL_REVIEWED_B,
+            work_id=WORK_ID,
+            bound_work_id=WORK_ID,
+            attempt_id=HISTORICAL_REVIEWED_ATTEMPT,
+            bound_attempt_id=HISTORICAL_REVIEWED_ATTEMPT,
+            attempt_baseline=HISTORICAL_REVIEWED_B,
             branch=EXPECTED_BRANCH,
-            implement_base=REVIEWED_PARENT_1094,
-            recorded_checkpoint=REVIEWED_CHECKPOINT_1094,
-            recorded_checkpoint_parent=REVIEWED_PARENT_1094,
         )
     with pytest.raises(AssertionError, match="inconsistent_branch"):
         _authorize_head_against_baseline(
             head=current_b,
             branch="main",
             implement_base=current_b,
+            work_id=WORK_ID,
+            bound_work_id=WORK_ID,
+            attempt_id="same",
+            bound_attempt_id="same",
+            attempt_baseline=current_b,
         )
-    with pytest.raises(AssertionError, match="mismatched_attempt"):
-        _authorize_head_against_baseline(
-            head=REVIEWED_CHECKPOINT_1094,
-            branch=EXPECTED_BRANCH,
-            implement_base=REVIEWED_PARENT_1094,
-            recorded_checkpoint=REVIEWED_CHECKPOINT_1094,
-            recorded_checkpoint_parent=REVIEWED_PARENT_1094,
-            attempt_id="unrelated-attempt",
-            bound_attempt_id="aacc02bc28094966adad9d669ea4b748",
-        )
+
     live = _authenticate_current_repository_baseline()
     assert live["implement_base"] == current_b
     assert live["branch"] == EXPECTED_BRANCH
-    assert live["state"] in {"implementation", "checkpoint"}
-    assert live["recorded_checkpoint"] == REVIEWED_CHECKPOINT_1094
-    assert live["recorded_checkpoint_parent"] == REVIEWED_PARENT_1094
-    if live["state"] == "implementation":
-        assert live["head"] == current_b
-    else:
-        assert live["head"] != current_b
-        assert _git_out(["git", "rev-parse", f"{live['head']}^"]) == current_b
+    assert live["state"] == "implementation"
+    assert live["head"] == current_b
+    assert live["work_id"] == live["bound_work_id"] == WORK_ID
+    assert live["attempt_id"] == live["bound_attempt_id"]
+    assert live["attempt_id"]
+    assert live["attempt_id"] != HISTORICAL_REVIEWED_ATTEMPT
+    assert live["recorded_checkpoint"] == ""
+    assert live["attempt_baseline"] == current_b
+
+    records = _isolate_controller_records()
+    records["git_head"] = current_b
+    records["git_branch"] = EXPECTED_BRANCH
+    bound = _authenticate_current_repository_baseline(records)
+    assert bound["state"] == "implementation"
+    assert bound["head"] == current_b
+    assert bound["attempt_id"] == live["attempt_id"]
+    assert bound["work_id"] == WORK_ID
+
+    historical = _isolate_controller_records()
+    historical["resume"]["IMPLEMENT_BASE_SHA"] = HISTORICAL_REVIEWED_B
+    historical["baseline"]["head"] = HISTORICAL_REVIEWED_B
+    historical["plan"]["plan_id"] = "57858697f3f94db58c9e344d7023d3bf"
+    historical_branch = _current_branch_state(historical)
+    historical_branch["work"]["id"] = WORK_ID
+    historical_branch["allocated"]["10.9.4"] = {
+        "source": HISTORICAL_REVIEWED_B,
+        "status": "opened",
+        "work_id": WORK_ID,
+    }
+    historical_branch["attempts"] = [
+        attempt
+        for attempt in historical_branch["attempts"]
+        if str(attempt.get("id") or "") == HISTORICAL_REVIEWED_ATTEMPT
+    ]
+    historical["git_head"] = HISTORICAL_REVIEWED_CHECKPOINT
+    historical["git_branch"] = EXPECTED_BRANCH
+    exact = _authenticate_current_repository_baseline(historical)
+    assert exact["state"] == "checkpoint"
+    assert exact["head"] == HISTORICAL_REVIEWED_CHECKPOINT
+    assert exact["attempt_id"] == HISTORICAL_REVIEWED_ATTEMPT
+    assert exact["recorded_checkpoint"] == HISTORICAL_REVIEWED_CHECKPOINT
+    assert exact["recorded_checkpoint_parent"] == HISTORICAL_REVIEWED_B
+    assert exact["implement_base"] == HISTORICAL_REVIEWED_B
+
+    missing_expected_work = _isolate_controller_records()
+    missing_expected_work["git_head"] = current_b
+    missing_expected_work["git_branch"] = EXPECTED_BRANCH
+    missing_expected_work["plan"]["work_id"] = ""
+    with pytest.raises(AssertionError, match="unavailable_ownership_binding"):
+        _authenticate_current_repository_baseline(missing_expected_work)
+
+    missing_observed_work = _isolate_controller_records()
+    missing_observed_work["git_head"] = current_b
+    missing_observed_work["git_branch"] = EXPECTED_BRANCH
+    _current_branch_state(missing_observed_work)["work"]["id"] = ""
+    with pytest.raises(AssertionError, match="unavailable_ownership_binding"):
+        _authenticate_current_repository_baseline(missing_observed_work)
+
+    missing_expected_attempt = _isolate_controller_records()
+    missing_expected_attempt["git_head"] = current_b
+    missing_expected_attempt["git_branch"] = EXPECTED_BRANCH
+    missing_expected_attempt["plan"]["plan_id"] = "missing-plan-id"
+    with pytest.raises(AssertionError, match="unavailable_ownership_binding"):
+        _authenticate_current_repository_baseline(missing_expected_attempt)
+
+    missing_observed_attempt = _isolate_controller_records()
+    missing_observed_attempt["git_head"] = current_b
+    missing_observed_attempt["git_branch"] = EXPECTED_BRANCH
+    for attempt in _current_branch_state(missing_observed_attempt)["attempts"]:
+        if str(attempt.get("phase") or "") == "running":
+            attempt["phase"] = "checkpointed"
+    with pytest.raises(AssertionError, match="unavailable_ownership_binding"):
+        _authenticate_current_repository_baseline(missing_observed_attempt)
+
+    mismatched_work = _isolate_controller_records()
+    mismatched_work["git_head"] = current_b
+    mismatched_work["git_branch"] = EXPECTED_BRANCH
+    _current_branch_state(mismatched_work)["work"]["id"] = "unrelated-work"
+    with pytest.raises(AssertionError, match="mismatched_attempt"):
+        _authenticate_current_repository_baseline(mismatched_work)
+
+    mismatched_attempt = _isolate_controller_records()
+    mismatched_attempt["git_head"] = current_b
+    mismatched_attempt["git_branch"] = EXPECTED_BRANCH
+    observed = None
+    for attempt in _current_branch_state(mismatched_attempt)["attempts"]:
+        if (
+            str(attempt.get("phase") or "") == "running"
+            and str(attempt.get("plan_sha") or "") == current_b
+        ):
+            observed = copy.deepcopy(attempt)
+            attempt["phase"] = "checkpointed"
+            break
+    assert observed is not None
+    observed["id"] = "unrelated-attempt"
+    observed["plan_id"] = "unrelated-plan"
+    _current_branch_state(mismatched_attempt)["attempts"].append(observed)
+    with pytest.raises(AssertionError, match="mismatched_attempt"):
+        _authenticate_current_repository_baseline(mismatched_attempt)
+
+    no_recorded_child = _isolate_controller_records()
+    no_recorded_child["resume"]["IMPLEMENT_BASE_SHA"] = HISTORICAL_REVIEWED_B
+    no_recorded_child["baseline"]["head"] = HISTORICAL_REVIEWED_B
+    no_recorded_child["plan"]["plan_id"] = "ab9f733870294d859da0cf0481edebcf"
+    no_child_branch = _current_branch_state(no_recorded_child)
+    no_child_branch["allocated"]["10.9.4"] = {
+        "source": HISTORICAL_REVIEWED_B,
+        "status": "opened",
+        "work_id": WORK_ID,
+    }
+    running = None
+    for attempt in no_child_branch["attempts"]:
+        if (
+            str(attempt.get("phase") or "") == "running"
+            and str(attempt.get("plan_sha") or "") == current_b
+        ):
+            running = attempt
+            break
+    assert running is not None
+    running["plan_sha"] = HISTORICAL_REVIEWED_B
+    running["checkpoint_sha"] = None
+    no_child_branch["attempts"] = [running]
+    no_recorded_child["git_head"] = HISTORICAL_REVIEWED_CHECKPOINT
+    no_recorded_child["git_branch"] = EXPECTED_BRANCH
+    with pytest.raises(AssertionError, match="unauthorized_checkpoint"):
+        _authenticate_current_repository_baseline(no_recorded_child)
+
+    stale_old_b = _isolate_controller_records()
+    stale_old_b["resume"]["IMPLEMENT_BASE_SHA"] = HISTORICAL_REVIEWED_B
+    stale_old_b["baseline"]["head"] = HISTORICAL_REVIEWED_B
+    stale_old_b["plan"]["plan_id"] = "ab9f733870294d859da0cf0481edebcf"
+    stale_branch = _current_branch_state(stale_old_b)
+    stale_branch["allocated"]["10.9.4"] = {
+        "source": HISTORICAL_REVIEWED_B,
+        "status": "opened",
+        "work_id": WORK_ID,
+    }
+    stale_running = None
+    for attempt in stale_branch["attempts"]:
+        if (
+            str(attempt.get("phase") or "") == "running"
+            and str(attempt.get("plan_sha") or "") == current_b
+        ):
+            stale_running = attempt
+            break
+    assert stale_running is not None
+    stale_running["plan_sha"] = HISTORICAL_REVIEWED_B
+    stale_running["checkpoint_sha"] = REVIEWED_CHECKPOINT_1094
+    stale_branch["attempts"] = [stale_running]
+    stale_old_b["git_head"] = HISTORICAL_REVIEWED_CHECKPOINT
+    stale_old_b["git_branch"] = EXPECTED_BRANCH
+    with pytest.raises(AssertionError, match="unauthorized_checkpoint"):
+        _authenticate_current_repository_baseline(stale_old_b)
+
+    other_child = _isolate_controller_records()
+    other_child["resume"]["IMPLEMENT_BASE_SHA"] = HISTORICAL_REVIEWED_B
+    other_child["baseline"]["head"] = HISTORICAL_REVIEWED_B
+    other_child["plan"]["plan_id"] = "57858697f3f94db58c9e344d7023d3bf"
+    other_branch = _current_branch_state(other_child)
+    other_branch["allocated"]["10.9.4"] = {
+        "source": HISTORICAL_REVIEWED_B,
+        "status": "opened",
+        "work_id": WORK_ID,
+    }
+    other_branch["attempts"] = [
+        attempt
+        for attempt in other_branch["attempts"]
+        if str(attempt.get("id") or "") == HISTORICAL_REVIEWED_ATTEMPT
+    ]
+    assert other_branch["attempts"]
+    other_branch["attempts"][0]["phase"] = "running"
+    other_child["git_head"] = current_b
+    other_child["git_branch"] = EXPECTED_BRANCH
+    with pytest.raises(AssertionError, match="unauthorized_checkpoint"):
+        _authenticate_current_repository_baseline(other_child)
+
+    wrong_branch = _isolate_controller_records()
+    wrong_branch["git_head"] = current_b
+    wrong_branch["git_branch"] = "main"
+    with pytest.raises(AssertionError, match="inconsistent_branch"):
+        _authenticate_current_repository_baseline(wrong_branch)
