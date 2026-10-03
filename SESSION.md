@@ -1,32 +1,26 @@
-# BAV Compiler — Six-component Architectural Migration
+# BAV Compiler — Debater v1 Asian-growth benchmark
 
-Session: 11
+Session: 12
 
 ## Endpoint
 
-Complete and verify the ownership and filesystem migration so all active BAV implementation belongs to exactly one of `bav/director/`, `bav/extractor/`, `bav/modeler/`, `bav/inferer/`, `bav/debater/` and `bav/composer/`, preserving useful existing behavior and public `bav` interfaces.
+Implement the complete replacement Debater handbook in the current six-component checkout and demonstrate the ordinary noninteractive `python -m bav debate` path on “Fast Retailing's acquisition of Lululemon would accelerate Lululemon's growth in Asia.” using real local evidence, a controlled authorized backend, coherent `argument.json`/`argument.md` exports and evidence addition/resumption.
 
-Session acceptance requires:
+- Preserve the affirmative wording and hypothetical acquisition. Assess Japan and Greater China separately against realistic continued independence; approve the outcome measure, market interpretation and any necessary horizon through normal scope/proof planning. Do not substitute geography, store count, beneficiary, acquisition valuation or a weaker claim.
+- Register and search a fingerprinted source snapshot containing relevant material from both companies. Verify contextual strategy retrieval, direct Markdown intake, and actual installed PDF conversion when dependencies and PDFs exist. Preserve originals, source identity, definitions, qualifiers, dates, lineage and technical coverage limitations.
+- Produce one reviewed linked argument with a joint inference, visible retained questions, sourced answers/data, explicit assumptions, material counterevidence and decisive unresolved requests. Validate portable data and deterministically render a coherent revision pair, including Incomplete or Unsupported when warranted.
+- Implement the handbook's CLI identity, intake, approval, backend, budget, reader, durable-state, safety, terminal and recovery contracts. Planner and Reviewer remain Debater functions; Director controls execution. No new Inferer engine, forecasting engine, publication pipeline or AutoCycle dependency belongs to research.
+- Demonstrate an isolated, explicitly staged withholding and real `--add` resumption, full available evidence for the final benchmark, unchanged resume/status without reconversion or paid reasoning, and differently worded or negated propositions. Preserve canonical company inputs throughout.
+- Record real commands, source/conversion manifests, backend/model, locators, numerical provenance, output paths, measured checks and exact remaining limitations in `bav/director/docs/BENCHMARK.md` and `RESULT.md`. Mocks, intake-only results and unavailable integrations cannot establish end-to-end acceptance.
+- Preserve `python -m bav`, company build/check/list/publish behavior, accepted financial data, neutral assumptions, six-component ownership and company outputs. Debater produces no text-file argument, graph, chart specification, report prose, slides, Word or PDF publication; source PDF preparation remains required scope.
 
-- A complete responsibility inventory precedes movement and assigns every meaningful responsibility to one canonical component, Legacy, Remove or Runtime-tooling; mixed files are split by decision type.
-- No active Core, Interpreter, replacement generic layer or duplicate top-level implementation remains. Interpreter is decomposed rather than renamed wholesale; Core is distributed rather than moved wholesale into Director.
-- Director owns governance/orchestration and system-wide specifications; Extractor owns source-faithful evidence/provenance; Modeler owns the complete historical/prospective quantitative model; Inferer owns neutral/base assumptions; Debater owns stance-conditioned assumptions and case construction; Composer owns communication/publication without originating assumptions or substantive conclusions.
-- Management guidance remains evidence, not authority or a mechanically copied base case. Reported facts, management views, historical tendencies, inferred assumptions and uncertainty remain distinguishable. Assumption origin and stance are explicit; Debater cannot silently overwrite canonical neutral/base assumptions and may use Extractor/Modeler directly.
-- `build/` and `legacy/` remain at root. Only minimal README and genuinely required packaging/Git/AutoCycle/tooling files otherwise remain outside `bav/`; root retention is justified and AutoCycle document locations remain functional. Trainer remnants receive explicit dispositions.
-- Active components do not depend on Legacy as a hidden implementation layer. Imports, exports, CLI routing, tests, documentation, resource paths and build/publish paths match canonical ownership.
-- Relevant tests and representative Lululemon/Fast Retailing builds, checks and publications pass; useful optional Trainer behavior survives. RESULT.md records mapping, splits, intentional root retention, removals, verification and unresolved ambiguities.
-- Stop after verified structural migration. Do not build sophisticated Inferer/Debater engines, new methods or LLM workflows, redesign Extractor/Composer, unnecessarily rewrite quantitative logic or cosmetically refactor Legacy.
+The complete admitted handbook, retained in `bav/director/docs/DEBATER.md`, governs detailed acceptance. Instruction incorporation is not acceptance; DONE requires this Endpoint and current plan acceptance.
 
 ## Priority
 
-1. Inspect the complete repository and inventory responsibilities before movement, especially Interpreter, Core, Driver/research, current `bav`, top-level components, root Markdown and Trainer remnants.
-2. Execute inventory-led splits and relocation into the six canonical packages; update references, preserve useful behavior, establish minimal missing boundaries and remove justified obsolete material.
-3. Verify ownership, assumption separation, Legacy independence, representative behavior and relevant regressions; resolve migration defects and record evidence.
+1. Verify the actual checkout, registered sources, narrowly discovered missing filings, installed converter and effective provider restrictions before constructing the loop. Exercise a small synthetic permission probe before transmitting company material.
+2. Prepare the smallest useful reusable two-company corpus under Extractor, keeping research bundles outside strict accounting JSON inputs. Preserve direct Markdown usability when conversion is unavailable.
+3. Deliver the ordinary debate path through scope/proof approval, corpus-first questions and supported calculations, separate Planner/Reviewer contexts, and coherent JSON/Markdown export with truthful gaps.
+4. Demonstrate real evidence addition and durable resumption, then focused semantic, safety, recovery and affected company regressions. Continue independent work when a dependency is unavailable; stop the affected route with an exact blocker rather than retrying indefinitely.
 
-Preserve canonical source evidence, accounting signs, fiscal distinctions, precision, reconciliations, provenance, admission/comparison independence, residual qualifications, fail-closed controls, default-off normalization admission and zero-byte research placeholders. Deferred accounting and future product obligations remain deferred, not completed.
-
-Use authenticated implementation baseline B and historical Git blobs, then canonical destinations, provenance continuity and current verification. Git preserves tracked history; protect irreplaceable non-Git evidence through verified canonical continuity before removal. Preserve normal ownership, recovery, protected-document and unrelated-dirty-work safeguards.
-
-Reuse verification only where dependencies remain applicable. Changed workbook formulas/dependencies require native recalculation and independent saved-cache verification; changed presentation requires readability inspection. Native Office work uses Office Bridge and existing access controls. Never claim later verification proves an earlier gate ran.
-
-Instruction incorporation is not acceptance; DONE requires this Session Endpoint and current plan acceptance.
+Use the handbook's finite research allowances and separately bounded source preparation. Do not silently install, upgrade, download models, expand access or transmission permissions, change providers/models or create new billing. Preserve the current branch, unfinished work, protected-document ownership and normal baseline/recovery safeguards. Do not repeat migration, rebuild all workbooks, rerun full certification or launch Office for a tree/CLI change; retain required checks and run verification justified by actual dependencies.

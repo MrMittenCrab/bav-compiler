@@ -2,7 +2,7 @@
 
 ## Product target
 
-Build **BAV Compiler**, a source-grounded Business Analysis and Valuation equity-research system, in repository/local root `bav-compiler`. Preserve the public Python package and CLI name `bav` unless the migration actually requires changing it. Do not rename the Git remote or unrelated infrastructure for branding.
+Build **BAV Compiler**, a source-grounded Business Analysis and Valuation equity-research system, in repository/local root `bav-compiler`. Preserve the public Python package and CLI name `bav`. Do not rename the Git remote or unrelated infrastructure for branding.
 
 The Excel workbook remains the core analytical and source-traceability product; canonical Markdown, figures and Word/PDF publications communicate validated analysis. The BAV workbook must not present itself as an answer key, exercise or Trainer. Its front page is a concise product and company-analysis summary.
 
@@ -22,6 +22,36 @@ Formula correctness is necessary but not sufficient. The product must support ac
 Historical accounting analysis, normalization and reformulation, NOA, NOPAT, forecasting, valuation and investment interpretation remain long-term goals. A bounded Session need not complete every later stage.
 
 Trainer is preserved where useful as Legacy functionality, not an active architectural component or the project identity. Existing optional `<Company>_BAV_Trainer.xlsx` derivation must not become a prerequisite for BAV build or publication. The retained training specifications below govern preserved behavior, not Trainer expansion.
+
+## Debater v1 product direction
+
+Implement the complete Session 12 handbook `bav-debater-asia-benchmark.md`, retained as the reconciled specification in `bav/director/docs/DEBATER.md`. It replaces `bav-debater-v1-revised.md`, `bav-debater-v1-implementation.md` and earlier Debater briefs. This is authorized feature development within the existing six components, not another architectural migration. Migration-only prohibitions below remain historical boundaries and do not prohibit this explicitly authorized feature.
+
+A user submits a proposition through `python -m bav debate`. Debater develops one compact linked argument using the approved corpus, explicit assumptions, claim-attached research questions, supporting and challenging evidence, and a joint inference. It searches available evidence and supported Modeler outputs before requesting the most consequential missing material, accepts additions or availability notes, and resumes the same case. It may conclude that the examined record does not support the proposition.
+
+Each assessed case produces `argument.json` and a deterministic `argument.md` from the same validated revision, including Incomplete and Unsupported outcomes. The Markdown begins with a short title and a fenced Unicode tree showing linked claims, their assessments, retained questions, answers or unresolved requests, and selected evidence references. Exact excerpts and usable numerical selections retain context, locators, definitions, lineage and limitations. Questions are evidence-layer organizers, not recursively nested claims. Up to two existing evidence selections may receive emphasis; this is not an acceptance quota.
+
+The primary real benchmark preserves this exact submission:
+
+> Fast Retailing's acquisition of Lululemon would accelerate Lululemon's growth in Asia.
+
+Treat the acquisition as hypothetical. Assess Japan and Greater China separately, preserving issuer-specific market definitions and missing coverage. Neither China Mainland nor Rest of World substitutes for those focus markets, and focus-market findings do not establish every Asian market. Compare Lululemon's growth with realistic continued independence. Approve the outcome measure, market interpretation and any necessary horizon through the normal scope/proof-plan flow; do not invent uplift, closing dates or forecasts, replace growth with store count, weaken “would” to “might”, or require a favorable verdict. Acquisition valuation is not a necessary proof obligation for this growth-only proposition.
+
+Develop the thin path through actual local sources and authorized runtime: inspect access first; prepare a small two-company corpus; execute the ordinary debate command; retrieve real strategy passages and relevant Modeler data; export the linked argument and decisive gaps; demonstrate `--add` and resumption; then run focused regressions. Keep benchmark-specific companies, manifests and examples in configuration or fixtures rather than reasoning code. The reference tree is an unresearched illustration, never company evidence or a mandatory five-branch template.
+
+Extractor accepts supplied filing Markdown directly and prepares PDFs through the verified existing converter using a small application-controlled adapter. Preserve originals, assets, exact selected text, source identity and provenance. Reuse preparation by content and converter/profile hashes. Keep technical preparation failures distinct from searched-but-unanswered questions, and keep two representations of one filing distinct from independent corroboration. One-time bounded Developer-folder discovery does not authorize runtime scanning of other projects or personal directories.
+
+Director owns noninteractive CLI routing, backend policy, approvals, durable state, budgets, dispatch and terminal formatting. Debater owns its schema and separate Planner/Reviewer contexts; Extractor owns preparation and retrieval; Modeler owns numerical selection and supported calculations; Inferer retains existing neutral assumptions; Composer supplies a pure Markdown renderer. No new top-level component, general reasoning framework, forecasting engine or report composer is authorized.
+
+Prefer Cursor Agent CLI, with Codex CLI as an explicitly selected alternative behind one adapter contract. Verify installed behavior and enforce effective restrictions in a dedicated workspace before sending company material. Reasoning providers cannot execute arbitrary shell commands, write the project, use unrelated MCP tools or retrieve external material. Application-controlled conversion does not grant those powers. Do not silently change provider/model, install dependencies, create new billing or expand transmission permissions.
+
+Persist one authoritative case state, serialized mutations, approval bindings, source/model snapshots, completed work and remaining allowances. Initial research limits are one active route, up to three candidate routes, four research batches, twelve backend calls, twenty tool dispatches and twenty minutes of active work; intake, retries and repairs count. Restart or provider switching does not reset them. Source preparation has separately recorded finite limits. Ask for at most two external evidence items at once, preferably one decisive gap.
+
+Preserve all detailed CLI, approval, schema, safety, recovery, rendering, reader and acceptance requirements in the complete handbook. `--status` and `--list` are read-only and make no LLM calls; unchanged resume reuses saved work. Bare added filenames resolve only from Downloads; explicit paths retain ordinary meaning. Imported sources are untrusted data, never instructions or executable code. Missing evidence is not contradiction, user stipulation is not independent empirical proof, and schema validity does not certify semantic judgment.
+
+Debater emits no `argument.txt`, analytical report prose, graphs, chart specifications, slides, Word or PDF publications. Source PDF reading and conversion remain in scope. Later Composer publication is separate. Existing company build/check/list/publish behavior, accepted financial inputs, neutral assumptions, company outputs and STYLE.md remain protected.
+
+The real benchmark must document actual sources, converter behavior, provider/model, passage locators, Modeler provenance, commands, status and coherent export paths in `bav/director/docs/BENCHMARK.md`. Demonstrate a staged addition of a withheld real source in an isolated case, full available sources for the final result, unchanged resume without reconversion or paid reasoning, and a differently worded or negated fixture. Mock-only runs, intake-only responses and unavailable integrations do not establish end-to-end acceptance. Record verified portions and exact blockers while continuing independent authorized work.
 
 ## Active component architecture
 
@@ -43,7 +73,7 @@ Director-owned high-level documentation lives under `bav/director/docs/`, includ
 
 Extractor answers “What did the company publish?” It owns source-faithful acquisition and structuring of company evidence: filings, earnings-call materials, source Markdown, reported facts and KPIs, management commentary, management guidance, definitions and source provenance.
 
-Management guidance is evidence, not authority. Accounting interpretation, normalization, model calculations, assumption formation, thesis construction and research prose do not belong to Extractor. A minimal documented boundary is sufficient where implementation is absent; migration does not require building a new Extractor.
+Management guidance is evidence, not authority. Accounting interpretation, normalization, model calculations, assumption formation, thesis construction and research prose do not belong to Extractor. Debater v1 authorizes the narrow filing-preparation, existing-converter adapter and contextual retrieval extension specified above; it does not authorize a replacement extraction framework or automatic accounting reconstruction.
 
 ### Modeler
 
@@ -51,7 +81,7 @@ Modeler owns the complete quantitative company model, historical and prospective
 
 Modeler owns calculation provenance and validity checks, including transformation and output provenance, consistency and measurement-boundary checks, and mechanical support for numerical claims. Raw source provenance originates in Extractor.
 
-Forecast calculations belong to Modeler. It receives explicit assumptions and calculates their consequences without deciding whether those assumptions are neutral, bullish, bearish or otherwise desirable. Ownership of prospective calculations does not authorize adding or activating deferred methods during migration.
+Forecast calculations belong to Modeler. It receives explicit assumptions and calculates their consequences without deciding whether those assumptions are neutral, bullish, bearish or otherwise desirable. Debater v1 may reuse supported calculations and narrow necessary adapters; ownership of prospective calculations does not authorize a new forecasting or valuation engine.
 
 ### Inferer
 
@@ -61,7 +91,7 @@ It may use Extractor evidence, historical Modeler outputs, current model state, 
 
 Inferer distinguishes reported fact, management view, historical tendency, inferred assumption and uncertainty. It does not present management emphasis as established economic-driver status.
 
-The intended future loop is Inferer → neutral assumptions → Modeler → calculated consequences → Inferer → revised assumptions. Do not build a sophisticated inference engine or new reasoning loop during migration.
+The intended future loop is Inferer → neutral assumptions → Modeler → calculated consequences → Inferer → revised assumptions. Debater v1 does not authorize a new Inferer engine.
 
 ### Debater
 
@@ -73,7 +103,7 @@ It may select evidence, construct thesis logic, request historical tests or sens
 
 Debater must not alter historical facts or Extractor evidence, overwrite canonical neutral/base assumptions, present stance-conditioned assumptions as neutral, invent evidence or promote unresolved claims to facts. Assumption sets retain explicit origin and stance.
 
-Do not build a sophisticated Debater or add new research workflows during migration.
+Implement the bounded corpus-first workflow specified in Debater v1. Planner and Reviewer are functions within Debater, not additional components or an agent per question.
 
 ### Composer
 
@@ -83,6 +113,8 @@ Composer may communicate neutral analysis or a Debater case. It does not origina
 
 Composer must not alter facts or Modeler outputs, invent evidence, manufacture causal certainty, turn unresolved judgments into established facts or create unsupported numerical conclusions.
 
+For Debater v1, Composer supplies only a small deterministic Markdown-tree renderer with no LLM, Office, Pandoc, plotting or font dependency. Future publication remains a separate operation.
+
 ### Figures and handoffs
 
 Modeler produces valid numerical series and calculations. Inferer forms neutral assumptions and evaluates their plausibility and uncertainty. Debater selects evidence and develops position-conditioned cases. Composer presents the supplied analytical state or case and controls exhibit form, labels, annotations, captions, source notes, ordering and visual emphasis.
@@ -91,7 +123,7 @@ A persuasive chart does not justify inventing an analytical relationship.
 
 Extractor supplies evidence to Modeler, Inferer and Debater. Inferer supplies neutral assumptions to Modeler and may revise them after examining calculated consequences. Debater may request Modeler tests and calculations directly and supply explicitly separate stance-conditioned assumptions. Composer communicates neutral analysis or a Debater case under Director orchestration.
 
-Interfaces remain thin and traceable. Do not create a large deterministic intermediate reasoning framework or ontology. New inference engines, motivated-research workflows and prose systems remain deferred.
+Interfaces remain thin and traceable. Do not create a large deterministic intermediate reasoning framework or ontology. The expressly authorized Debater v1 workflow does not authorize broader inference engines or prose systems.
 
 ### Interpreter and Driver decomposition
 
@@ -133,17 +165,19 @@ Do not move SESSION.md, TARGET.md, RESULT.md, IMPLEMENTATION.md or similar files
 
 ## Structural migration boundary
 
-The current migration inspects the complete repository and records responsibility ownership before code movement. It assigns every meaningful responsibility to one of the six components, Legacy, Remove or Runtime-tooling, paying particular attention to `bav/`, Core, Interpreter, top-level component folders, Driver/research, root Markdown and Trainer remnants.
+The Session 11 migration contract is retained below as historical scope and preservation guidance. Session 12 implements the explicitly authorized Debater feature; it does not repeat migration or certify historical work by instruction incorporation.
+
+The migration inspects the complete repository and records responsibility ownership before code movement. It assigns every meaningful responsibility to one of the six components, Legacy, Remove or Runtime-tooling, paying particular attention to `bav/`, Core, Interpreter, top-level component folders, Driver/research, root Markdown and Trainer remnants.
 
 Then split mixed files, move all active implementation into the six canonical `bav` packages, dismantle Interpreter and Core, and update imports, package exports, CLI routing, tests, documentation, build paths and publish paths. Preserve Build and Legacy at root.
 
 Preserve useful existing BAV behavior and source evidence. Establish minimal component documentation where implementation is absent. Record the responsibility mapping, Interpreter split, Core split, root files intentionally retained and why, removed functionality, verification evidence and unresolved architectural ambiguities.
 
-Completion requires no active Core or Interpreter, no duplicate old/new implementations, correct six-component ownership, explicit assumption origin and stance, neutral/base protection, Legacy independence, passing relevant regressions and representative Lululemon and Fast Retailing builds, checks and publications.
+Migration completion requires no active Core or Interpreter, no duplicate old/new implementations, correct six-component ownership, explicit assumption origin and stance, neutral/base protection, Legacy independence, passing relevant regressions and representative Lululemon and Fast Retailing builds, checks and publications.
 
-Migration does not authorize sophisticated Inferer or Debater engines, new forecast or valuation methods, new LLM workflows, Extractor or Composer redesign, unnecessary rewrites of working quantitative logic, Trainer expansion, replacement generic layers, a large reasoning ontology or cosmetic Legacy refactoring.
+Migration alone did not authorize sophisticated Inferer or Debater engines, new forecast or valuation methods, new LLM workflows, Extractor or Composer redesign, unnecessary rewrites of working quantitative logic, Trainer expansion, replacement generic layers, a large reasoning ontology or cosmetic Legacy refactoring.
 
-The retained historical and future product specifications below preserve existing behavior and longer-term intent. They do not authorize feature development during migration. Stop after migration is completed and verified; do not automatically enter a second phase.
+The retained historical and future product specifications below preserve existing behavior and longer-term intent. Session 12's separate authorization permits only the Debater v1 feature and its necessary narrow extensions; completing a Session never automatically authorizes another phase.
 
 ## Research output architecture
 
@@ -152,7 +186,12 @@ The canonical build architecture separates persistent upstream inputs from gener
 - `build/input/<company>/source/`: original source filings.
 - `build/input/<company>/extracted/`: filing-level ordinary financial and management KPI extraction.
 - `build/input/<company>/reconciled/`: accepted company-level reconciled data and admission evidence.
+- `build/input/<company>/research_sources/<document-id>/`: retained research originals, source-faithful Markdown, manifests, passage records and required original/converter assets.
+- `build/input/cases/<case-slug>/`: durable case state, case-specific evidence, extracted selections and revisions.
 - `build/output/<company>/`: generated workbook, research, figures, supporting build artifacts and published documents.
+- `build/output/cases/<case-slug>/`: a coherent selected revision of `argument.json`, `argument.md` and portable selected `data/`.
+
+Research-source bundles remain outside strict accounting-extraction directories and never rewrite accepted standardized financial data. Shared preparation is reused across questions and cases; ambiguous issuer/version inputs remain case-local. Case inputs and shared research sources survive ordinary company rebuilds. Document backup implications where `build/input/` is Git-ignored.
 
 All company directory names are lowercase, including `lululemon` and `fast_retailing`. Human-facing filenames may retain normal capitalization.
 
@@ -174,6 +213,8 @@ Driver figures under `build/output/<company>/figures/drivers/` are optional and 
 
 Benchmark and release are uses of canonical outputs, represented through Git tracking, tags or release packaging, not separate company data architectures. After canonical paths and dependencies are verified, remove obsolete generated artifacts and duplicate legacy, benchmark and release company trees, including obsolete Trainer and Answer Key outputs. Preserve original filings and canonical upstream data. Compatibility copies or symlinks require an active supported interface; do not maintain alternate active build architectures. Runtime must not silently fall back to obsolete benchmark, release or other legacy company paths.
 
+The Debater benchmark uses an explicitly recorded isolated case for staged evidence addition without deleting or hiding canonical company inputs. Preserve prior reviewed revisions and manually edited exports; no blanket legacy-artifact cleanup is authorized by Debater v1.
+
 Root `README.md` minimally documents BAV Compiler, public use and its component and output architecture, linking detailed specifications. Director-owned `bav/director/docs/STYLE.md` is the single source of truth for human-facing BAV presentation and language conventions, applied to Markdown research, generated figures and rendered publications. Do not duplicate its specification in README or individual modules.
 
 Director-owned `bav/director/docs/DRIVER.md` retains the company-agnostic historical Driver specification with ownership aligned to the component boundaries above. The existing publication hierarchy is headline conclusion, principal drivers, optional secondary signals, and an auditable appendix. Supplied analytical conclusions and available evidence inform communication; Composer owns publication ordering and emphasis without originating substantive conclusions. Company-specific applications remain labeled regression fixtures. The main body must stand alone while the appendix preserves the detailed analytical record.
@@ -185,13 +226,13 @@ The research module sequence is Drivers, Forecast, Valuation, Overview:
 - Valuation: standalone valuation.
 - Overview: cross-module synthesis.
 
-These are output modules, not architectural components. Module names use one word unless a one-word name would be genuinely unclear. Preserve current Drivers behavior during migration; Forecast, Valuation and Overview files remain zero-content placeholders, without headings, explanatory text, TODOs, templates or analysis.
+These are output modules, not architectural components. Module names use one word unless a one-word name would be genuinely unclear. Preserve current Drivers behavior; Forecast, Valuation and Overview files remain zero-content placeholders, without headings, explanatory text, TODOs, templates or analysis. Debater case artifacts do not populate these company modules.
 
 Research and figures must be reproducible from the same validated BAV inputs as the workbook. Preserve calculations, source references, reconciliations and validation controls; do not maintain a separate uncontrolled numerical dataset. Figures use Matplotlib and one centralized style implementation derived from STYLE.md.
 
 Publication is downstream of analysis and must not duplicate analytical logic or maintain a second manually edited report. Use a standard maintainable Markdown-to-document toolchain where it meets actual rendering requirements. Word and PDF must be generated entirely from the CLI, without manual post-processing, and preserve headings, tables, equations, captions, source notes, meaningful structure and readable page layout. Resolve referenced canonical figures correctly; missing figures, broken references or conversion failures must fail clearly. Apply established styling and omit internal implementation/debug material from teammate-facing reports. Verify output readability and reproducibility.
 
-Preserve the existing validated workbook. Migration does not authorize a general workbook redesign or removal of audit evidence.
+Preserve the existing validated workbook. Debater v1 does not authorize a general workbook redesign or removal of audit evidence.
 
 ## Scope boundary
 
@@ -201,13 +242,13 @@ Hong Kong company input may remain manual. Automatic HKEX scraping is not requir
 
 Analysis and exercises should follow materiality and the information actually supplied. Missing historical facts must not be invented.
 
-BAV supplies source-grounded equity-research analysis and historical target-assessment evidence for the current Lululemon M&A teamwork project. Identify historical growth and margin drivers, recurring versus episodic components, robust relationships and unresolved explanations. This scope does not authorize buyer-specific analysis, a deal recommendation, forecasting, valuation, price targets, scenarios or forward projections.
+BAV supplies source-grounded equity-research analysis and historical target-assessment evidence for the Lululemon M&A teamwork project. Identify historical growth and margin drivers, recurring versus episodic components, robust relationships and unresolved explanations. Session 12 additionally authorizes the explicit hypothetical Fast Retailing–Lululemon growth proposition through Debater v1, including a transfer mechanism and continued-independence comparison. This is not authorization for a deal recommendation, acquisition valuation, price target or new forecasting engine. Use supported case-local arithmetic only under the approved scope and explicit assumptions.
 
-Preserve historical Driver publication for Lululemon and Fast Retailing through the shared company-agnostic path as representative migration regression cases. Neither company must reproduce the other's driver categories, figures or section count, and unavailable mechanisms do not justify fabricated data, forced external research acquisition or broad workbook changes. The previous publication-session sequence does not replace the migration Endpoint and Priority.
+Preserve historical Driver publication for Lululemon and Fast Retailing through the shared company-agnostic path as regression cases. Neither company must reproduce the other's driver categories, figures or section count, and unavailable mechanisms do not justify fabricated data, forced external research acquisition or broad workbook changes. The previous publication-session sequence does not replace the current Endpoint and Priority.
 
 ## Source-data architecture
 
-The analytical engine does not interpret arbitrary PDFs directly.
+The analytical accounting engine does not interpret arbitrary PDFs directly. Debater research may read source-faithful filing Markdown prepared by Extractor's verified existing-converter adapter; this is separate from accounting extraction.
 
 `build/input/<company>/` contains all persistent upstream data needed to reproduce the BAV output. For Lululemon, `source/` holds original filings; `extracted/` holds ordinary financial and management KPI filing JSON, such as `LULU_FY2022.json` and `LULU_FY2022_management_kpis.json`; `reconciled/` holds `standardized.json`, `provenance.json`, `conflicts.json` and `management_kpi_admission.json`.
 
@@ -215,7 +256,7 @@ The analytical engine does not interpret arbitrary PDFs directly.
 
 Preserve issuer fiscal-year labels and actual period-end dates as distinct information at the canonical data/presentation boundary. Workbook presentation, Markdown and figures use the same issuer fiscal-year mapping; never derive issuer fiscal year from the calendar year of the period-end date.
 
-For filing-based workflows, the canonical upstream handoff is **source-grounded filing JSON**. Each filing is extracted independently and preserves reported labels, statement sections, periods, currency/unit scale, values, and page-level provenance.
+For filing-based accounting workflows, the canonical upstream handoff is **source-grounded filing JSON**. Each filing is extracted independently and preserves reported labels, statement sections, periods, currency/unit scale, values, and page-level provenance.
 
 LLM-assisted extraction is permitted upstream, but extraction must remain separate from accounting judgment and analytical modeling. Extractor records what the filing says; Modeler owns reproducible classification, normalization, reconciliation and analysis under explicit assumptions. Inferer owns neutral/base assumption formation; Debater owns position-conditioned assumptions and case construction.
 
@@ -227,15 +268,17 @@ Optional Legacy Trainer derivation may consume the completed model; active BAV g
 
 Canonical Markdown research and reusable figures consume the same validated analytical outputs, with traceability to the workbook and source evidence.
 
+Debater additionally consumes supplied filing Markdown or source PDFs converted to Markdown, through Extractor's source-located corpus. Preserve headings, tables, footnotes, context and exact selected passages. Use section/line locators when page mappings are unavailable. Hash and attribute representations separately, and do not count a PDF and its derivative as independent corroboration. Prepared research text does not replace the validated financial handoff.
+
 Cross-filing differences, restatements, and source conflicts must be recorded rather than silently overwritten. Later audited presentations may take deterministic precedence, but the superseded observations remain in provenance.
 
 `StandardizedFinancials` remains the model-facing contract. Source paths, page references, extraction evidence, conflicts, and discarded observations remain separate audit artifacts.
 
-PDF/LLM extraction may later be automated through an external model/API, but the BAV accounting engine must remain provider-independent and consume validated structured data rather than model responses directly.
+PDF/LLM accounting extraction may later be automated through an external model/API, but the BAV accounting engine must remain provider-independent and consume validated structured data rather than model responses directly. Debater's authorized local PDF-to-Markdown preparation neither requires nor authorizes that later accounting automation.
 
 ## Curriculum progression
 
-This is retained Legacy Trainer intent, not active migration development.
+This is retained Legacy Trainer intent, not active Debater development.
 
 The learner should progress through three levels.
 
@@ -259,7 +302,7 @@ Ambiguous accounting treatments should be taught as alternatives with consequenc
 
 ## Historical Step 9 — retained product stage
 
-The historical-v1 model-construction foundation is release-gated and usable for learning now. Historical Step 9 describes retained analytical scope; it is distinct from Session 11 migration and its work numbering.
+The historical-v1 model-construction foundation is release-gated and usable for learning now. Historical Step 9 describes retained analytical scope; it is distinct from Session/work numbering.
 
 Preserve existing historical capabilities under their correct component owners:
 
@@ -278,7 +321,7 @@ Preserve existing historical capabilities under their correct component owners:
 - completed reference-model formulas and Notes with a matched Trainer;
 - cross-company synthetic robustness tests.
 
-Forecasting, valuation, scenario analysis, and investment conclusions remain deferred. Migration preserves useful historical behavior without expanding these capabilities.
+Broader forecasting, valuation, scenario engines and investment conclusions remain deferred. The explicitly authorized Debater v1 case workflow may reuse supported Modeler calculations without activating those deferred product stages.
 
 ## Reference workbook for historical convergence
 
@@ -348,13 +391,13 @@ Operating margin = Gross margin − SG&A / Revenue − impairment or asset-relat
 
 Bridge changes with consistent signs and denominators in percentage points or basis points. Reconcile levels and changes to reported operating margin and show any residual. Do not hide disclosed components in an aggregate operating burden or invent undisclosed subcomponents.
 
-After establishing the arithmetic, trace explanations such as mix, markdowns, freight, input costs, occupancy, geographic mix and leverage/deleverage to source evidence. Preserve management explanations as attributed statements; measure causal contributions only where disclosures support the calculation. Management emphasis does not itself establish a driver. Migration preserves existing source controls without building a new extraction workflow.
+After establishing the arithmetic, trace explanations such as mix, markdowns, freight, input costs, occupancy, geographic mix and leverage/deleverage to source evidence. Preserve management explanations as attributed statements; measure causal contributions only where disclosures support the calculation. Management emphasis does not itself establish a driver. Preserve these source controls when adding the narrow Debater filing-retrieval path.
 
 For each non-trivial proposed driver relationship, historical validation tests direction, magnitude, reconstruction, residual, stability across periods, contradictions and the disclosure check. Use compact bridges or tables. Validation tests the decomposition against observed history; it is not a separate predictive model. Do not add statistically elaborate models unsupported by the historical sample.
 
 Clearly distinguish accounting identity, reported historical fact, management explanation or strategy, observed historical relationship, economically plausible causal hypothesis and inference not established by evidence. An accounting identity or correlation alone does not establish a causal driver. Reconsider unsupported explanations or state that evidence is insufficient.
 
-Use this history to identify informative versus weak relationships, recurring versus episodic movements, accounting growth versus underlying operating improvement, and sourced claims versus inference. Methods generalize across companies; benchmark issuers do not justify issuer-specific analytical rules. Migration does not expand analysis to new outcomes or modules.
+Use this history to identify informative versus weak relationships, recurring versus episodic movements, accounting growth versus underlying operating improvement, and sourced claims versus inference. Methods generalize across companies; benchmark issuers do not justify issuer-specific analytical rules. Debater v1 does not authorize expansion of the ordinary company analysis modules.
 
 Other interpretation questions include:
 
@@ -375,7 +418,7 @@ The workbook need not grade free-form essays. Preserved diagnostics do not justi
 5. Optionally derive `<Company>_BAV_Trainer.xlsx` from the same completed model.
 6. In the Trainer, source data and supplied facts remain populated. The learner fills selected yellow historical formula cells and guided judgment-response cells.
 7. Run **Check** when desired: blank cells remain yellow, correct cells become green and incorrect cells become red.
-8. Consult the matching BAV for correct formulas and concise analytical Notes. The BAV uses ordinary white/no-fill cells and contains no yellow fill or yellow highlighting.
+8. Consult the matching BAV for correct formulas and concise analytical Notes. The BAV uses ordinary white/no-fill cells and contains no yellow fill/highlight or exercise framing.
 
 The BAV is the authoritative formula-and-Note reference. Check validates only; it does not reveal answers. The BAV must remain professionally presented rather than adopting learning instructions.
 
@@ -428,15 +471,15 @@ The historical roadmap retains:
 10. only after historical Step 9 is coherent and usable, reintroduce driver-based forecasting;
 11. only after forecasting is separately verified, add valuation, scenarios, and investment conclusions.
 
-SESSION.md specifies the current Endpoint and Priority within this destination. Full normalization, NOA and NOPAT completion need not precede historical driver-and-strategy analysis unless directly necessary for it.
+SESSION.md specifies the current Endpoint and Priority within this destination. Full normalization, NOA and NOPAT completion need not precede historical driver-and-strategy analysis unless directly necessary for it. The separately authorized Debater v1 workflow need not await completion of unrelated historical roadmap items.
 
 Do not jump from the release-gated historical-v1 baseline directly into forecasting merely because the baseline is technically complete.
 
 ## Autonomous progression policy
 
-The current Session is structural migration. Historical product-stage numbers below are retained roadmap references, not authorization to add features or a substitute for Session/work numbering.
+The current authorized feature direction is Debater v1. Historical product-stage numbers below are retained roadmap references, not authorization to add unrelated features or a substitute for Session/work numbering.
 
-Autonomous planning must advance the migration Endpoint under its Priority. Preserve useful existing capabilities and defer historical feature expansion until separately authorized.
+Autonomous planning must advance the current Session Endpoint under its Priority. Preserve useful existing capabilities and defer unrelated historical feature expansion.
 
 ### Current analytical focus gate
 
@@ -444,9 +487,9 @@ Endpoint and Priority belong in SESSION.md.
 
 Preserve accepted Geographic Analysis, Operating KPIs and Normalization Judgment / Earnings Normalization work. Unfinished normalization and broader accounting work remain open long-term obligations; do not represent deferral as completion.
 
-Preserve already accepted accounting, ingestion, geographic, KPI, normalization, provenance, workbook and regression work while changing ownership and organization as required by the migration.
+Preserve already accepted accounting, ingestion, geographic, KPI, normalization, provenance, workbook and regression work within the six-component architecture.
 
-Historical Net Debt / Debt-Like Items Bridge, Complete NOPAT / RNOA and forecasting remain deferred. Historical Lululemon M&A evidence remains within the Scope boundary; migration does not expand that analysis, and buyer-specific analysis and deal recommendations remain excluded.
+Historical Net Debt / Debt-Like Items Bridge, Complete NOPAT / RNOA and new forecasting remain deferred. Debater v1 authorizes the specified hypothetical acquisition-growth case, including its buyer-specific transfer and independence comparison, without authorizing a deal recommendation or acquisition valuation.
 
 ### Step 9 exit gate
 
@@ -496,7 +539,7 @@ Step 11 is complete when valuation is internally reconciled, scenario difference
 
 ### Step 12 — Investment interpretation
 
-Only after historical analysis, forecasting, and valuation are verified, build the final research interpretation layer.
+Only after historical analysis, forecasting, and valuation are verified, build the final research interpretation layer. This long-term stage is distinct from Session 12's expressly authorized corpus-first Debater feature.
 
 The analyst, and subsequently the learner, should be able to:
 
@@ -507,7 +550,7 @@ The analyst, and subsequently the learner, should be able to:
 - connect scenario and sensitivity results to the investment thesis;
 - produce a concise, evidence-based investment conclusion.
 
-Inferer owns neutral/base assumption formation, Debater owns position-conditioned assumptions and case construction, Modeler calculates consequences, and Composer communicates supplied analysis and conclusions. Future reasoning and prose systems remain deferred; this roadmap does not mandate a deterministic reasoning ontology.
+Inferer owns neutral/base assumption formation, Debater owns position-conditioned assumptions and case construction, Modeler calculates consequences, and Composer communicates supplied analysis and conclusions. Beyond Debater v1's specified workflow, future reasoning and prose systems remain deferred; this roadmap does not mandate a deterministic reasoning ontology.
 
 ### Autonomous planning rule
 
@@ -517,7 +560,7 @@ Within the active Session, choose the smallest direct work that materially advan
 
 Defer infrastructure refinement, hypothetical edge-case hardening, cosmetic work and abstractions that are unnecessary for the Endpoint.
 
-The long-term stage order remains Step 9 → Step 10 → Step 11 → Step 12. Advance only when stage exit conditions are supported by evidence and the active Session permits that scope.
+The long-term stage order remains Step 9 → Step 10 → Step 11 → Step 12. Advance those stages only when their exit conditions are supported by evidence and the active Session permits that scope. The explicit Debater v1 authorization is a bounded feature direction, not certification or activation of the deferred forecasting and valuation stages.
 
 `DONE` requires the Session Endpoint and current plan acceptance, not merely publication or consumption of instructions. Never start a new Session automatically.
 
@@ -527,7 +570,9 @@ Forecasting, residual-income valuation, DCF/cross-check valuation, terminal valu
 
 Historical relationships must not become forward assumptions in a historical-only Session. Later forecasting requires both the Step 9 exit gate and a Session permitting that work.
 
-The repository may retain dormant forecast/valuation scaffolding with an explicit inventory disposition, but normal historical builds must not execute it or depend on forecast outputs. Retention does not authorize implementation during migration.
+Debater v1 may use existing supported Modeler capabilities and narrow necessary calculations with explicit case-local assumptions and provenance. It must report a capability gap rather than build a new financial engine. A scenario does not establish the truth of its assumptions, and case calculations must not activate dormant forecasting in ordinary company builds.
+
+The repository may retain dormant forecast/valuation scaffolding with an explicit inventory disposition, but normal historical builds must not execute it or depend on forecast outputs. Retention alone does not authorize implementation.
 
 Deferred tabs may remain hidden placeholders: `Model_Bear`, `Model_Base`, `Model_Bull`, `Scenario_Summary`.
 
@@ -562,6 +607,8 @@ The broader BAV research system succeeds when an unfamiliar supported non-financ
 - value the equity using BAV-consistent methods and appropriate cross-checks;
 - explain key sensitivities, risks, and variant assumptions; and
 - communicate a concise, evidence-based investment conclusion.
+
+Debater additionally supports inspectable, source-grounded proposition cases with linked claims, visible research questions, reusable selected evidence, explicit assumptions and qualifications, and durable evidence addition and resumption. A defensible Incomplete or Unsupported case is a legitimate research outcome; it does not excuse missing technical acceptance evidence.
 
 The secondary Trainer should enable an accounting novice to progress toward solving such an unseen-company research case with materially less scaffolding.
 
