@@ -784,7 +784,7 @@ def _source_failure(
 
 
 def _canonical_periods(fin) -> list:
-    from modeler.period_axis import canonical_fiscal_periods
+    from bav.modeler.period_axis import canonical_fiscal_periods
 
     return canonical_fiscal_periods(fin)
 
@@ -893,7 +893,7 @@ def _verify_source_value(
 
 
 def _verify_statement_sheet(ws, items, periods, *, workbook: str, sheet: str) -> None:
-    from modeler.data.line_identity import line_identity
+    from bav.modeler.data.line_identity import line_identity
 
     _verify_period_headers(
         ws,
@@ -1211,7 +1211,7 @@ def _verify_practice_contract(
     *,
     allow_frozen_yellow_answer_key: bool = False,
 ) -> None:
-    from modeler.semantic_io import parse_cell_ref
+    from bav.modeler.semantic_io import parse_cell_ref
 
     for comp in comps:
         row, col = parse_cell_ref(comp.cell)
@@ -1273,7 +1273,7 @@ def _verify_practice_contract(
 
 def _assert_frozen_yellow_answer_key_signature(wb_a, comps) -> None:
     """Refuse the frozen-yellow exception unless Answer-Key practice cells are yellow."""
-    from modeler.semantic_io import parse_cell_ref
+    from bav.modeler.semantic_io import parse_cell_ref
 
     for comp in comps:
         row, col = parse_cell_ref(comp.cell)
@@ -1293,13 +1293,13 @@ def _verify_release_pair_contents(
     skip_answer_key_yellow: bool = False,
 ) -> str:
     """Source fidelity, practice contract, visibility, and visible structural parity."""
-    from modeler.semantic_io import load_semantic_map, parse_cell_ref
+    from bav.modeler.semantic_io import load_semantic_map, parse_cell_ref
     from openpyxl import load_workbook
 
     smap = load_semantic_map(answer_key_path)
     comps = smap.all_ordered()
-    from modeler.workbook import ReferenceModelBuilder
-    from modeler.engine.build_contract import verify_complete_build
+    from bav.modeler.workbook import ReferenceModelBuilder
+    from bav.modeler.engine.build_contract import verify_complete_build
 
     verify_complete_build(ReferenceModelBuilder(fin).expected_specs, smap)
     practice_coords = {
@@ -1360,30 +1360,30 @@ def _verify_release_pair_contract(
 
 
 def _module_applicability(fin, anchor=None) -> dict[str, Any]:
-    from modeler.earnings_quality import earnings_quality_availability
-    from modeler.deferred_tax import (
+    from bav.modeler.earnings_quality import earnings_quality_availability
+    from bav.modeler.deferred_tax import (
         deferred_tax_applicable,
         deferred_tax_availability,
     )
-    from modeler.fixed_asset import fixed_asset_applicable
-    from modeler.goodwill_intangibles import (
+    from bav.modeler.fixed_asset import fixed_asset_applicable
+    from bav.modeler.goodwill_intangibles import (
         goodwill_intangibles_applicable,
         goodwill_intangibles_availability,
     )
-    from modeler.lease_liability import (
+    from bav.modeler.lease_liability import (
         lease_liability_applicable,
         lease_liability_availability,
     )
-    from modeler.lease_rou import (
+    from bav.modeler.lease_rou import (
         lease_rou_applicable,
         lease_rou_availability,
     )
-    from modeler.ownership_attribution import (
+    from bav.modeler.ownership_attribution import (
         ownership_attribution_applicable,
         ownership_attribution_availability,
     )
-    from modeler.per_share import per_share_available
-    from modeler.working_capital import working_capital_applicable
+    from bav.modeler.per_share import per_share_available
+    from bav.modeler.working_capital import working_capital_applicable
 
     lease_avail = lease_liability_availability(fin)
     lease_rou_avail = lease_rou_availability(fin)
@@ -1551,13 +1551,13 @@ def run_audit(
             stages.append(StageResult(name, "skipped", message="prior stage failed"))
         return {"stages": stages, "context": context}
 
-    from modeler.data.standardized_io import standardized_from_payload
+    from bav.modeler.data.standardized_io import standardized_from_payload
 
     fin = standardized_from_payload(payload)
 
     # Stage 2
     try:
-        from modeler.data.line_identity import validate_financials_identities
+        from bav.modeler.data.line_identity import validate_financials_identities
 
         validate_financials_identities(fin)
         stages.append(StageResult("2_identity_validation", "pass"))
@@ -1579,7 +1579,7 @@ def run_audit(
 
     # Stage 3
     try:
-        from modeler.ingestion.reconciler import reconcile_financials
+        from bav.modeler.ingestion.reconciler import reconcile_financials
 
         report = reconcile_financials(fin)
         if not all(report.checksums.values()):
@@ -1602,7 +1602,7 @@ def run_audit(
     # Stage 4
     builder = None
     try:
-        from modeler.workbook import ReferenceModelBuilder
+        from bav.modeler.workbook import ReferenceModelBuilder
 
         builder = ReferenceModelBuilder(fin)
         expected_total = len(builder.expected_specs)
@@ -1645,7 +1645,7 @@ def run_audit(
     # Stage 5–7: either use persisted release pair or generate temporary workbooks.
     try:
         from legacy.trainer.checker import check_workbook
-        from modeler.semantic_io import load_semantic_map, parse_cell_ref
+        from bav.modeler.semantic_io import load_semantic_map, parse_cell_ref
         from openpyxl import load_workbook
 
         with tempfile.TemporaryDirectory(prefix="fr_bench_") as tmp:
@@ -1692,7 +1692,7 @@ def run_audit(
                 }
                 stages.append(StageResult("5_workbook_generation", "pass"))
 
-            from modeler.engine.build_contract import verify_complete_build
+            from bav.modeler.engine.build_contract import verify_complete_build
             verify_complete_build(builder.expected_specs, load_semantic_map(answer))
 
             # Stage 6

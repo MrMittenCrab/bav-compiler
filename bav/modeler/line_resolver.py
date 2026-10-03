@@ -1,0 +1,366 @@
+"""Canonical financial statement line resolver.
+
+Python expected-value math and Excel reference-model construction must resolve
+the same ``LineItem`` for each concept through this module only.
+"""
+
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass
+
+from bav.modeler.data.interface import LineItem
+from bav.director.data.schema import normalize_label
+
+
+class LineResolutionError(ValueError):
+    """Base class for line-resolution failures."""
+
+
+class MissingLineError(LineResolutionError):
+    """Raised when a required concept cannot be resolved."""
+
+
+class AmbiguousLineError(LineResolutionError):
+    """Raised when two or more lines match at the same priority."""
+
+
+@dataclass(frozen=True)
+class ResolvedLine:
+    item: LineItem | None
+    index: int | None
+
+
+def _norm_text(text: str) -> str:
+    s = normalize_label(text).lower()
+    for ch in ("\u2018", "\u2019", "`", "´"):
+        s = s.replace(ch, "'")
+    s = re.sub(r"[^a-z0-9' ]+", " ", s)
+    return " ".join(s.split())
+
+
+# Exact normalized label aliases (priority 2).
+_EXACT_ALIASES: dict[str, frozenset[str]] = {
+    "revenue": frozenset({"revenue", "turnover"}),
+    "net_income": frozenset(
+        {"profit for the year", "net income", "net profit", "profit for the period"}
+    ),
+    "pretax_income": frozenset(
+        {
+            "profit before tax",
+            "profit before taxation",
+            "pretax income",
+            "pre tax income",
+            "profit before income tax",
+            "income before income tax expense",
+        }
+    ),
+    "tax_expense": frozenset(
+        {
+            "income tax expense",
+            "tax expense",
+            "taxation",
+            "income tax",
+            "taxation expense",
+        }
+    ),
+    "interest_expense": frozenset(
+        {"finance cost", "finance costs", "interest expense", "interest expenses"}
+    ),
+    "interest_income": frozenset({"finance income", "interest income"}),
+    "total_equity": frozenset(
+        {
+            "total equity",
+            "shareholders' equity",
+            "shareholders equity",
+            "shareholders' funds",
+            "shareholders funds",
+            "equity attributable to owners of the company",
+            "owners' equity",
+            "owners equity",
+        }
+    ),
+    "total_assets": frozenset({"total assets"}),
+    "total_liabilities": frozenset({"total liabilities"}),
+    "operating_cash_flow": frozenset(
+        {
+            "net cash from operating activities",
+            "net cash generated from operating activities",
+            "net cash provided by operating activities",
+            "net cash flow from operating activities",
+            "net cash flows from operating activities",
+        }
+    ),
+    "property_plant_equipment": frozenset(
+        {
+            "property plant and equipment",
+            "property and equipment",
+            "net property plant and equipment",
+            "property and equipment net",
+            "property plant and equipment net",
+        }
+    ),
+    "depreciation_amortization": frozenset(
+        {
+            "depreciation and amortisation",
+            "depreciation and amortization",
+        }
+    ),
+    "lease_liability": frozenset(
+        {
+            "lease liability",
+            "lease liabilities",
+            "operating lease liability",
+            "operating lease liabilities",
+        }
+    ),
+    "profit_attributable_to_owners": frozenset(
+        {
+            "owners of the parent",
+            "profit attributable to owners of the parent",
+            "profit attributable to owners of the parent company",
+            "equity holders of the parent",
+        }
+    ),
+    "profit_attributable_to_nci": frozenset(
+        {
+            "non controlling interests",
+            "non-controlling interests",
+            "profit attributable to non controlling interests",
+            "profit attributable to non-controlling interests",
+        }
+    ),
+    "equity_attributable_to_owners": frozenset(
+        {
+            "equity attributable to owners of the parent",
+            "equity attributable to owners of the parent company",
+        }
+    ),
+    "noncontrolling_interests": frozenset(
+        {
+            "non controlling interests",
+            "non-controlling interests",
+        }
+    ),
+    # Explicit-concept only — no label-alias or safe-pattern fallback.
+    "goodwill": frozenset(),
+    "intangible_assets": frozenset(),
+    "payments_for_intangible_assets": frozenset(),
+    "payments_for_ppe": frozenset(),
+    "repayments_of_lease_liabilities": frozenset(),
+    "right_of_use_assets": frozenset(),
+    "deferred_tax_assets": frozenset(),
+    "deferred_tax_liabilities": frozenset(),
+    "stock_based_compensation": frozenset(),
+    "acquisition_net_of_cash_acquired": frozenset(),
+    "repurchase_of_common_stock": frozenset(),
+    "net_cash_from_operating_activities": frozenset(),
+    "net_cash_from_investing_activities": frozenset(),
+    "net_cash_from_financing_activities": frozenset(),
+    "effect_of_fx_on_cash": frozenset(),
+    "cash_beginning": frozenset(),
+    "cash_ending": frozenset(),
+    "change_in_cash": frozenset(),
+    "gross_profit": frozenset(),
+    "operating_profit": frozenset(),
+    "selling_general_and_administrative_expenses": frozenset(
+        {
+            "selling, general and administrative expenses",
+            "selling general and administrative expenses",
+        }
+    ),
+    "impairment_and_restructuring": frozenset(),
+    "amortization_of_intangible_assets": frozenset(),
+    "acquisition_related_expenses": frozenset(),
+    "gain_on_disposal_of_assets": frozenset(),
+    "inventories": frozenset(),
+    "change_in_inventories": frozenset(),
+}
+
+# Explicit LineItem.concept aliases at priority 1 (stored concept left unchanged).
+_EXPLICIT_CONCEPT_ALIASES: dict[str, frozenset[str]] = {
+    "property_plant_equipment": frozenset(
+        {
+            "property plant equipment",
+            "property plant and equipment",
+        }
+    ),
+    "pretax_income": frozenset(
+        {
+            "pretax income",
+            "income before tax",
+        }
+    ),
+    "payments_for_ppe": frozenset(
+        {
+            "payments for ppe",
+            "capital expenditures",
+        }
+    ),
+    "right_of_use_assets": frozenset(
+        {
+            "right of use assets",
+            "right of use lease asset",
+        }
+    ),
+    "deferred_tax_assets": frozenset(
+        {
+            "deferred tax assets",
+            "deferred tax asset",
+        }
+    ),
+    "deferred_tax_liabilities": frozenset(
+        {
+            "deferred tax liabilities",
+            "deferred tax liability",
+        }
+    ),
+    "net_cash_from_operating_activities": frozenset(
+        {
+            "net cash from operating activities",
+            "operating cash flow",
+        }
+    ),
+    "net_cash_from_investing_activities": frozenset(
+        {
+            "net cash from investing activities",
+            "investing cash flow",
+        }
+    ),
+    "net_cash_from_financing_activities": frozenset(
+        {
+            "net cash from financing activities",
+            "financing cash flow",
+        }
+    ),
+    "effect_of_fx_on_cash": frozenset(
+        {
+            "effect of fx on cash",
+            "effect of exchange rate on cash",
+        }
+    ),
+    "change_in_cash": frozenset(
+        {
+            "change in cash",
+            "net change in cash",
+        }
+    ),
+    "operating_profit": frozenset(
+        {
+            "operating profit",
+            "operating income",
+        }
+    ),
+    "selling_general_and_administrative_expenses": frozenset(
+        {
+            "selling general and administrative expenses",
+            "selling general administrative",
+        }
+    ),
+}
+
+
+def _safe_pattern_match(concept: str, label_norm: str) -> bool:
+    """Narrow pattern aliases (priority 3). Avoid unrestricted substrings."""
+    if concept == "revenue":
+        # Allow bare "sales" / "net sales" but never "cost of sales".
+        if "cost of sales" in label_norm or "cost of goods" in label_norm:
+            return False
+        return label_norm in {"sales", "net sales", "net revenue"}
+    if concept == "tax_expense":
+        # Do not match pretax labels ("profit before tax", "income before income tax expense").
+        if "before tax" in label_norm or "before taxation" in label_norm:
+            return False
+        if "before income tax" in label_norm:
+            return False
+        if label_norm.startswith("pre tax") or label_norm.startswith("pretax"):
+            return False
+        return label_norm.endswith("tax expense") or label_norm.endswith("taxation")
+    if concept == "total_equity":
+        if "attributable to owners" in label_norm and "equity" in label_norm:
+            return True
+        if label_norm.startswith("total equity"):
+            return True
+        return False
+    if concept == "total_assets":
+        return label_norm == "total assets"
+    if concept == "total_liabilities":
+        return label_norm == "total liabilities"
+    return False
+
+
+def resolve_line(
+    items: list[LineItem],
+    concept: str,
+    *,
+    required: bool = False,
+) -> ResolvedLine:
+    """Resolve a canonical financial concept to a statement line.
+
+    Priority:
+      1. exact normalized ``LineItem.concept``
+      2. exact normalized label aliases
+      3. narrowly defined safe label patterns
+    """
+    if concept not in _EXACT_ALIASES:
+        raise ValueError(f"Unknown financial concept: {concept!r}")
+
+    concept_norm = _norm_text(concept)
+    explicit_concepts = _EXPLICIT_CONCEPT_ALIASES.get(concept) or frozenset(
+        {concept_norm}
+    )
+
+    def _collect(predicate) -> list[tuple[int, LineItem]]:
+        hits: list[tuple[int, LineItem]] = []
+        for idx, item in enumerate(items):
+            if predicate(item):
+                hits.append((idx, item))
+        return hits
+
+    # Priority 1 — explicit concept field (canonical + declared aliases)
+    p1 = _collect(
+        lambda it: bool(it.concept) and _norm_text(it.concept) in explicit_concepts
+    )
+    if len(p1) > 1:
+        labels = ", ".join(repr(it.label) for _, it in p1)
+        raise AmbiguousLineError(
+            f"Ambiguous concept={concept!r} via LineItem.concept: {labels}"
+        )
+    if len(p1) == 1:
+        idx, item = p1[0]
+        return ResolvedLine(item=item, index=idx)
+
+    aliases = _EXACT_ALIASES[concept]
+
+    # Priority 2 — exact label aliases
+    p2 = _collect(lambda it: _norm_text(it.label) in aliases)
+    if len(p2) > 1:
+        labels = ", ".join(repr(it.label) for _, it in p2)
+        raise AmbiguousLineError(
+            f"Ambiguous concept={concept!r} via exact label aliases: {labels}"
+        )
+    if len(p2) == 1:
+        idx, item = p2[0]
+        return ResolvedLine(item=item, index=idx)
+
+    # Priority 3 — safe patterns
+    p3 = _collect(lambda it: _safe_pattern_match(concept, _norm_text(it.label)))
+    if len(p3) > 1:
+        labels = ", ".join(repr(it.label) for _, it in p3)
+        raise AmbiguousLineError(
+            f"Ambiguous concept={concept!r} via safe patterns: {labels}"
+        )
+    if len(p3) == 1:
+        idx, item = p3[0]
+        return ResolvedLine(item=item, index=idx)
+
+    if required:
+        raise MissingLineError(f"Required concept {concept!r} not found in statement lines")
+    return ResolvedLine(item=None, index=None)
+
+
+def workbook_row_for(resolved: ResolvedLine, *, start_row: int = 7) -> int | None:
+    """Convert a resolved statement index to the workbook source-sheet row."""
+    if resolved.index is None:
+        return None
+    return start_row + resolved.index

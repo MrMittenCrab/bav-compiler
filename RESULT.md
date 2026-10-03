@@ -1,3 +1,78 @@
+# RESULT.md — Step 11.1 Complete the six-package architectural migration
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 11.1 — Complete the six-package architectural migration
+**Work:** `f84fa0b0a013403d9a029c060cec1ed9`
+**Plan:** `7c19dc90f52d4ffc96c98e61733e9253`
+**Finding:** Complete the six-package architectural migration
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. No sophisticated Inferer/Debater engines, new methods, LLM workflows, Extractor/Composer redesign, Trainer expansion or cosmetic Legacy refactor. This record does not claim Session completion.
+
+TARGET SHA-256 `cd908d0e762071b0a0b86e8bd0e838233c64e244d52b51112a32671fdcd091c3` (49988).
+SESSION SHA-256 `26ca2cef00bc643b5ab814b93a71f1728aa1fce0a2eb68f3eec3538253454d96` (4318).
+IMPLEMENTATION SHA-256 `bccafeb7a2ff12cba35bf71eb6ecbb8aae84afde6822b1206ec6886e23c07e83` (7930).
+
+Interrupted working-tree movement was inspected and finished. Inventory at `bav/director/docs/MIGRATION_INVENTORY.md` already held the Step 11.1 responsibility map; remaining leftover top-level imports, `python -m core` CLI tests and duplicate Inferer helpers in Debater were completed before verification.
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `749fdc3…` was ignored.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `11.1` source | `d56d50ceb302b006a1c01c2e87fa37569e12cdad` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; reviewed checkpoint `77e5869423ef538ed09925f45c81e15529470e16` is an ancestor |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` | work `f84fa0b0a013403d9a029c060cec1ed9`, plan `7c19dc90f52d4ffc96c98e61733e9253`, step `11.1` |
+| Bound running attempt | `c7965efcdec343e889c3ac00e13e1d1e`, `plan_sha` = B, phase `running` |
+| `admitted_review` predecessor | `review_sha256` `0dc7f74858f929402997806574267473994059677e4b4a390b85ee3ad272a8e4`; `reviewed_head` `77e5869…` |
+| Fail-closed | Not required |
+
+## Responsibility mapping and splits
+
+Canonical owners are `bav/director/`, `bav/extractor/`, `bav/modeler/`, `bav/inferer/`, `bav/debater/`, `bav/composer/`. Public wiring is thin `bav/__init__.py` / `bav/__main__.py` (`from bav.director.cli import main`). Director owns `repository_root()`. No active `core/`, `interpreter/`, `common/` or `shared/` layer and no parallel top-level component trees.
+
+**Interpreter split (not a rename):** `reported_margin.py`, `classification_judgment.py`, `normalization.py` → Inferer. `selection.py` gates/claim typology → Inferer; question construction / strongest conclusion / `interpret_driver_selection` → Debater. `historical_strategy.py` codes/verdict inference → Inferer; featured disclosures / counterexamples / `interpret_historical_strategy` → Debater. `revenue_driver.py` verdict/qual/req + `interpret_revenue_assessment` → Inferer; hypotheses/mechanisms/theme compose → Debater. Composer `research/selection.py` ID featuring → `bav/debater/argument_selection.py`; wording remains Composer. Minimal `AssumptionSet` origin/stance: Inferer `origin=inferer`/`stance=neutral`; Debater copies cannot declare neutral or overwrite the canonical object. Serialized `assumptions.json` keys unchanged (`73fbb33f…`, 69 bytes).
+
+**Core dissolution:** every `core/` path at B was a façade or leftover fixture. Callers now import `bav.*` / `legacy.*`. `python -m core` is gone (`test_current_build` asserts nonzero). Core was not moved wholesale into Director.
+
+**Removed / relocated:** top-level `core/`, `interpreter/`, `director/`, `extractor/`, `modeler/`, `composer/`; root `pyyaml` pin moved to `legacy/requirements-trainer.txt`. Git retains historical bytes. No migration backups.
+
+## Intentional root retention
+
+Protected AutoCycle documents remain at root: `TARGET.md`, `SESSION.md`, `IMPLEMENTATION.md`, `RESULT.md`. Also retained: `.autocycle.toml` (Office Bridge), `.gitignore`, `.git/` (including `.git/autocycle`), `.cursor/cli.json`, `README.md` (public use; links `bav/director/docs/`), `requirements-trainer.txt` (active BAV/publication pins only), `bav/`, `build/`, `legacy/`. `pyproject.toml` is absent. `.DS_Store` / `__pycache__` / `.pytest_cache` are regenerable.
+
+## Verification
+
+Interpreter: `/opt/anaconda3/bin/python` **3.13.9**. Commands from repository root.
+
+Required successor suites (`179 passed` in 60.22s):
+
+`bav/director/tests/test_current_build.py` `bav/director/tests/test_build_cli.py` `bav/director/tests/test_engine_trainer_ownership.py` `bav/modeler/tests/test_build_contract.py` `bav/composer/tests/test_publication.py` `legacy/tests/test_trainer.py`
+
+Broader `pytest -q bav legacy/tests`: **3544 passed**, 7 leftover ownership-import failures, then those seven re-run **7 passed** after replacing obsolete `core`/`director`/`inferer` expectations. Behavioral assertions retained (numerical/provenance, aliases, JSON/Excel routes, atomic failure, optional Trainer, Legacy independence, isolated B admission compare).
+
+Company commands (inputs 44 files unchanged before/after):
+
+| Command | rc | s | Notes |
+|---|---|---|---|
+| `python -m bav build Lululemon` | 0 | 1.026 | Canonical `build/output/lululemon/`; same active families as 10.16 |
+| `python -m bav check Lululemon` | 0 | 0.353 | Checked `Lululemon_BAV.xlsx` |
+| `python -m bav publish Lululemon` | 0 | 1.067 | Word/PDF published; existing `fitz` deprecation |
+| `python -m bav build FastRetailing` | 0 | 0.738 | Canonical `build/output/fast_retailing/`; same unavailable class as 10.16 |
+| `python -m bav check FastRetailing` | 0 | 0.306 | Checked `FastRetailing_BAV.xlsx` |
+| `python -m bav publish FastRetailing` | 0 | 0.639 | Word/PDF published; existing `fitz` deprecation |
+
+No `*Trainer*` under either output. Builds wrote only lowercase `build/output/{lululemon,fast_retailing}/`. Publication did not mutate upstream inputs.
+
+Supporting JSON, nonempty Drivers Markdown, referenced figures and zero-byte Forecast/Valuation/Overview placeholders are **byte-identical** to the 10.16 recorded hashes (`assumptions.json` `73fbb33f…`; Lululemon Drivers `3fea615d…` 21884; FR Drivers `5b3aca6c…` 10320; empty placeholders `e3b0c442…`). Lululemon Drivers references `margin.png` and `geography.png`; FR references `margin.png` only.
+
+XLSX vs pre-command and vs `/tmp/bav-10.16-prior`: member sets equal; payload diff only `docProps/core.xml` timestamps; **0 formula diffs, 0 value diffs**. Native Excel was not required. Word/PDF `_word_documents_equal` / `_pdf_documents_equal` True vs pre-command and 10.16; `_publication_diff` only PDF `creationDate`/`modDate`/`id`. Presentation bytes (Markdown/figures/Word members) unchanged, so Observer readability capture was not requested. STYLE.md SHA-256 `4360b24b…` is identical to B `director/docs/STYLE.md`.
+
+## Preservation and plan changes
+
+Tracked relocations compare to B blobs with `bav.` import-prefix updates; new Inferer/Debater files are splits of B `interpreter/*` plus minimal assumption origin/stance. No required source evidence was deleted without a canonical destination. No plan changes. Unresolved inventory ambiguities unchanged: dual `PUBLICATION_*` write, Composer Overview calling Director `complete_*`, unused `validate_standardized`, source PDFs absent locally.
+
 # RESULT.md — Step 10.16 Verify representative company behavior and migration acceptance
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

@@ -8,19 +8,19 @@ from pathlib import Path
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
 
-from modeler.build_bav import (
+from bav.modeler.build_bav import (
     JUDGMENT_RESPONSE_COLS,
     _apply_minimal_style,
     _financials_for_opening,
     _judgment_case_rows,
     finalize_bav,
 )
-from modeler.check_context import CHECK_CONTEXT_SHEET
-from modeler.engine.component_catalog import is_operating_kpi_source_identity
-from modeler.engine.map_embed import COMPONENT_MAP_SHEET
-from modeler.engine.semantic_map import SemanticMap
-from modeler.semantic_io import group_components_by_family, load_semantic_map, parse_cell_ref
-from modeler.workbook import JUDGMENT_SHEET, NORMALIZATION_JUDGMENT_SHEET
+from bav.modeler.check_context import CHECK_CONTEXT_SHEET
+from bav.modeler.engine.component_catalog import is_operating_kpi_source_identity
+from bav.modeler.engine.map_embed import COMPONENT_MAP_SHEET
+from bav.modeler.engine.semantic_map import SemanticMap
+from bav.modeler.semantic_io import group_components_by_family, load_semantic_map, parse_cell_ref
+from bav.modeler.workbook import JUDGMENT_SHEET, NORMALIZATION_JUDGMENT_SHEET
 
 PRACTICE_FILL = PatternFill("solid", start_color="FFFF00")
 

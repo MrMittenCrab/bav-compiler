@@ -1,0 +1,3 @@
+# Trainer/Legacy-only dependency. Active BAV install uses the root
+# requirements-trainer.txt (openpyxl, matplotlib, python-docx, reportlab, pymupdf).
+pyyaml>=6.0

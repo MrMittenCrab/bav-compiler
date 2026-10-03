@@ -6,17 +6,17 @@ from pathlib import Path
 import pytest
 from openpyxl import load_workbook
 
-from extractor.data.interface import DocumentManifest, DocumentType
-from modeler.engine.component_catalog import (
+from bav.extractor.data.interface import DocumentManifest, DocumentType
+from bav.modeler.engine.component_catalog import (
     COMPONENT_CATALOG,
     DEFERRED_COMPONENT_SPECS,
     expand_historical_specs,
 )
 from legacy.ingestion.manual_hk import HKManualDocumentAdapter
-from modeler.classification import BALANCE_SHEET_CATEGORIES
+from bav.modeler.classification import BALANCE_SHEET_CATEGORIES
 from legacy.trainer.checker import check_workbook
-from modeler.build_bav import FONT_NAME
-from modeler.semantic_io import (
+from bav.modeler.build_bav import FONT_NAME
+from bav.modeler.semantic_io import (
     answer_key_path_for,
     group_components_by_family,
     load_semantic_map,
@@ -49,7 +49,7 @@ def _build_pair(tmp_path):
 
 
 def test_legacy_components_module_removed():
-    assert importlib.util.find_spec("modeler.engine.components") is None
+    assert importlib.util.find_spec("bav.modeler.engine.components") is None
 
 
 def test_no_trainer_components_symbols_in_repo():
@@ -59,7 +59,7 @@ def test_no_trainer_components_symbols_in_repo():
         text = path.read_text(encoding="utf-8")
         assert "TRAINER_COMPONENTS" not in text
         assert "TrainerComponent" not in text
-        assert "from modeler.engine.components" not in text
+        assert "from bav.modeler.engine.components" not in text
         assert "from .engine.components" not in text
 
 
@@ -141,7 +141,7 @@ def test_build_paired_trainer_and_answer_key(tmp_path):
     smap = load_semantic_map(answer_key_path)
     data = _ingest_demo()
     periods = data.fiscal_years() or data.period_dates()
-    from modeler.engine.component_catalog import (
+    from bav.modeler.engine.component_catalog import (
         expand_fixed_asset_specs,
         expand_lease_liability_specs,
         expand_quality_specs,
@@ -424,7 +424,7 @@ def test_no_adjacent_hint_cells_on_generation(tmp_path):
 
 
 def test_cli_list_catalog():
-    from core.__main__ import main
+    from bav.director.cli import main
 
     assert main(["list"]) == 0
 
@@ -538,10 +538,10 @@ def test_check_requires_matching_answer_key(tmp_path):
 
 
 def test_cli_check_is_workbook_wide_and_hint_reveal_are_removed(tmp_path, capsys):
-    from core.__main__ import main
+    from bav.director.cli import main
     import io
     from contextlib import redirect_stdout, redirect_stderr
-    from core import __main__ as cli
+    from bav.director import cli
 
     trainer_path, answer_key_path = _build_pair(tmp_path)
     smap = load_semantic_map(answer_key_path)
@@ -571,7 +571,7 @@ def test_cli_check_is_workbook_wide_and_hint_reveal_are_removed(tmp_path, capsys
 
 
 def test_cli_check_output_does_not_disclose_answers(tmp_path, capsys):
-    from core.__main__ import main
+    from bav.director.cli import main
 
     trainer_path, answer_key_path = _build_pair(tmp_path)
     smap = load_semantic_map(answer_key_path)
@@ -600,13 +600,13 @@ def test_cli_check_output_does_not_disclose_answers(tmp_path, capsys):
 
 def test_cli_list_resolved(tmp_path):
     trainer_path, _ = _build_pair(tmp_path)
-    from core.__main__ import main
+    from bav.director.cli import main
 
     assert main(["list", "--workbook", str(trainer_path)]) == 0
 
 
 def test_cli_build_reports_both_paths(tmp_path, capsys):
-    from core.__main__ import main
+    from bav.director.cli import main
 
     out = tmp_path / "DEMO_HK_Trainer.xlsx"
     rc = main(["build", str(DEMO_JSON), "-o", str(out)])
@@ -732,7 +732,7 @@ def test_expanded_historical_chain_check_three_states(tmp_path):
     assert _fill_rgb(wb[cod.tab].cell(r, c)) == "FFFF00"
     wb.close()
 
-    from core.__main__ import main
+    from bav.director.cli import main
     import io
     from contextlib import redirect_stdout
 
@@ -745,7 +745,9 @@ def test_expanded_historical_chain_check_three_states(tmp_path):
 
 
 def test_hint_reveal_modules_removed():
-    assert importlib.util.find_spec("core.trainer.hints") is None
+    assert importlib.util.find_spec("core") is None
+    assert importlib.util.find_spec("legacy.trainer.hints") is None
+    assert not (ROOT / "core").exists()
     assert not (ROOT / "core" / "templates" / "TrainerMacros.bas").exists()
 
 
@@ -885,9 +887,9 @@ def test_equivalent_cached_formula_stays_correct_across_repeated_checks(tmp_path
 
 
 def test_period_aware_semantic_map_round_trip(tmp_path):
-    from modeler.engine.component_catalog import ComponentSpec
-    from modeler.engine.map_embed import embed_component_map_sheet
-    from modeler.engine.semantic_map import SemanticMap
+    from bav.modeler.engine.component_catalog import ComponentSpec
+    from bav.modeler.engine.map_embed import embed_component_map_sheet
+    from bav.modeler.engine.semantic_map import SemanticMap
     from openpyxl import Workbook
 
     specs = (
@@ -1033,7 +1035,7 @@ def test_remove_trainer_sidecars_never_deletes_primary_bav_metadata(tmp_path):
 
 
 def test_stale_trainer_sidecars_removed_on_rebuild(tmp_path, capsys):
-    from core.__main__ import main
+    from bav.director.cli import main
 
     requested = tmp_path / "DEMO_HK_Trainer.xlsx"
     secret = "SECRET_OLD_FORMULA\nSECRET_OLD_HINT"
@@ -1071,9 +1073,9 @@ def test_stale_trainer_sidecars_removed_on_rebuild(tmp_path, capsys):
 )
 def test_paired_build_preserves_primary_bav_sidecars(tmp_path, requested_name):
     import json
-    from modeler.engine.semantic_map import SemanticMap
+    from bav.modeler.engine.semantic_map import SemanticMap
     from legacy.trainer.checker import check_workbook
-    from modeler.semantic_io import component_map_path_for
+    from bav.modeler.semantic_io import component_map_path_for
 
     data = _ingest_demo()
     requested = tmp_path / requested_name
@@ -1126,7 +1128,7 @@ def test_paired_build_preserves_primary_bav_sidecars(tmp_path, requested_name):
 
 
 def test_accounting_judgment_sheet_answer_key_and_trainer_contract(tmp_path):
-    from modeler.workbook import (
+    from bav.modeler.workbook import (
         JUDGMENT_INSTRUCTION,
         JUDGMENT_SHEET,
         JUDGMENT_STEP_NOTE,
@@ -1240,7 +1242,7 @@ def test_trainer_instruction_mentions_judgment_not_graded_by_check(tmp_path):
 
 def test_direct_constructor_sanitizes_judgment_without_case_objects(tmp_path):
     """Trainer blanking must work from workbook structure alone."""
-    from modeler.workbook import JUDGMENT_SHEET, ReferenceModelBuilder
+    from bav.modeler.workbook import JUDGMENT_SHEET, ReferenceModelBuilder
     from legacy.trainer.workbook import TrainingWorkbookGenerator
 
     data = _ingest_demo()
@@ -1275,8 +1277,8 @@ def test_direct_constructor_sanitizes_judgment_without_case_objects(tmp_path):
 
 
 def test_zero_case_judgment_sheet_is_not_treated_as_response_row(tmp_path):
-    from modeler.workbook import JUDGMENT_SHEET, ReferenceModelBuilder
-    from modeler.build_bav import _judgment_case_rows
+    from bav.modeler.workbook import JUDGMENT_SHEET, ReferenceModelBuilder
+    from bav.modeler.build_bav import _judgment_case_rows
     from legacy.trainer.workbook import TrainingWorkbookGenerator
 
     data = _ingest_demo()
@@ -1309,7 +1311,7 @@ def test_zero_case_judgment_sheet_is_not_treated_as_response_row(tmp_path):
 
 
 def test_check_context_absent_from_trainer(tmp_path):
-    from modeler.check_context import CHECK_CONTEXT_SHEET, load_check_context
+    from bav.modeler.check_context import CHECK_CONTEXT_SHEET, load_check_context
 
     trainer_path, answer_key_path = _build_pair(tmp_path)
     wb_t = load_workbook(trainer_path, data_only=False)
@@ -1323,7 +1325,7 @@ def test_check_context_absent_from_trainer(tmp_path):
 
 
 def test_judgment_link_and_treatment_dropdown_pair_identity(tmp_path):
-    from modeler.workbook import JUDGMENT_SHEET
+    from bav.modeler.workbook import JUDGMENT_SHEET
 
     trainer_path, answer_key_path = _build_pair(tmp_path)
     wb_a = load_workbook(answer_key_path, data_only=False)
@@ -1377,11 +1379,11 @@ def test_dynamic_check_fresh_reference_parity(tmp_path):
 def test_alternative_treatment_exact_formula_is_green(tmp_path):
     trainer_path, answer_key_path = _build_pair(tmp_path)
     smap = load_semantic_map(answer_key_path)
-    from modeler.data.standardized_io import standardized_from_payload
-    from modeler.financial_math import compute_anchor
-    from modeler.historical_expected import expected_value_for_component
-    from modeler.period_axis import canonical_fiscal_periods
-    from modeler.check_context import classification_overrides_for_check, load_check_context
+    from bav.modeler.data.standardized_io import standardized_from_payload
+    from bav.modeler.financial_math import compute_anchor
+    from bav.modeler.historical_expected import expected_value_for_component
+    from bav.modeler.period_axis import canonical_fiscal_periods
+    from bav.modeler.check_context import classification_overrides_for_check, load_check_context
 
     comp = max(
         (c for c in smap.all_ordered() if c.family_id == "net_debt"),
@@ -1412,11 +1414,11 @@ def test_alternative_treatment_exact_formula_is_green(tmp_path):
 
 
 def test_alternative_treatment_equivalent_formula_and_stale_reference(tmp_path):
-    from modeler.data.standardized_io import standardized_from_payload
-    from modeler.financial_math import compute_anchor
-    from modeler.historical_expected import expected_value_for_component
-    from modeler.period_axis import canonical_fiscal_periods
-    from modeler.check_context import classification_overrides_for_check, load_check_context
+    from bav.modeler.data.standardized_io import standardized_from_payload
+    from bav.modeler.financial_math import compute_anchor
+    from bav.modeler.historical_expected import expected_value_for_component
+    from bav.modeler.period_axis import canonical_fiscal_periods
+    from bav.modeler.check_context import classification_overrides_for_check, load_check_context
 
     trainer_path, answer_key_path = _build_pair(tmp_path)
     smap = load_semantic_map(answer_key_path)
@@ -1473,12 +1475,12 @@ def test_alternative_treatment_equivalent_formula_and_stale_reference(tmp_path):
 def test_dynamic_check_two_case_combined_state(tmp_path):
     from datetime import date
 
-    from modeler.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
-    from modeler.workbook import ReferenceModelBuilder
-    from modeler.financial_math import compute_anchor
-    from modeler.historical_expected import expected_value_for_component
-    from modeler.period_axis import canonical_fiscal_periods
-    from modeler.check_context import classification_overrides_for_check, load_check_context
+    from bav.modeler.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
+    from bav.modeler.workbook import ReferenceModelBuilder
+    from bav.modeler.financial_math import compute_anchor
+    from bav.modeler.historical_expected import expected_value_for_component
+    from bav.modeler.period_axis import canonical_fiscal_periods
+    from bav.modeler.check_context import classification_overrides_for_check, load_check_context
     from legacy.trainer.workbook import TrainingWorkbookGenerator
 
     d1, d2 = date(2024, 12, 31), date(2025, 12, 31)
@@ -1610,7 +1612,7 @@ def test_invalid_treatment_raises_before_fill_updates(tmp_path):
 
 
 def test_legacy_check_context_uses_fixed_expected_values(tmp_path):
-    from modeler.check_context import CHECK_CONTEXT_SHEET
+    from bav.modeler.check_context import CHECK_CONTEXT_SHEET
 
     trainer_path, answer_key_path = _build_pair(tmp_path)
     # Remove Check context to simulate legacy Answer Key.
@@ -1653,7 +1655,7 @@ def _assert_probe_still_yellow(trainer_path, comp):
 
 
 def test_judgment_structure_passes_for_blank_and_alternative(tmp_path):
-    from modeler.check_context import load_check_context, validate_live_judgment_structure
+    from bav.modeler.check_context import load_check_context, validate_live_judgment_structure
 
     trainer_path, answer_key_path = _build_pair(tmp_path)
     ctx = load_check_context(answer_key_path)
@@ -1720,9 +1722,9 @@ def test_classification_modified_rejected_before_grading(tmp_path):
 def test_judgment_structure_two_case_distinct_links(tmp_path):
     from datetime import date
 
-    from modeler.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
-    from modeler.workbook import ReferenceModelBuilder
-    from modeler.check_context import (
+    from bav.modeler.data.interface import FinancialPeriod, LineItem, StandardizedFinancials
+    from bav.modeler.workbook import ReferenceModelBuilder
+    from bav.modeler.check_context import (
         live_classification_formula,
         load_check_context,
         validate_live_judgment_structure,

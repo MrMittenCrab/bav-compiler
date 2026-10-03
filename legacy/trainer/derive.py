@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from modeler.build_bav import build_bav_workbook
-from modeler.semantic_io import company_stem_from_output, resolve_pair_paths
+from bav.modeler.build_bav import build_bav_workbook
+from bav.modeler.semantic_io import company_stem_from_output, resolve_pair_paths
 from .workbook import TrainingWorkbookGenerator, remove_trainer_sidecars
 
 

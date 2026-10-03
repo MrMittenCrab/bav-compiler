@@ -1,0 +1,25 @@
+[
+  {
+    "name": "Lululemon",
+    "slug": "lululemon",
+    "aliases": [
+      "LULU"
+    ],
+    "admit_periods": [
+      "2022-01-30"
+    ],
+    "supplemental_facts": "bav/extractor/tests/fixtures/operating_kpis/lululemon_company_operated_stores.json",
+    "strategy_disclosures": "bav/extractor/tests/fixtures/strategy/lululemon_management_disclosures.json"
+  },
+  {
+    "name": "FastRetailing",
+    "slug": "fast_retailing",
+    "aliases": [
+      "Fast Retailing",
+      "9983",
+      "9983.T"
+    ],
+    "admit_periods": [],
+    "supplemental_facts": null
+  }
+]

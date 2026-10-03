@@ -15,15 +15,15 @@ import json
 from datetime import date, datetime
 from pathlib import Path
 
-from extractor.data.interface import DocumentManifest, DocumentType
-from modeler.data.interface import (
+from bav.extractor.data.interface import DocumentManifest, DocumentType
+from bav.modeler.data.interface import (
     FinancialPeriod,
     HistoricalShareData,
     LineItem,
     StandardizedFinancials,
 )
-from director.data.schema import normalize_label
-from modeler.ingestion.base import BaseIngestionAdapter
+from bav.director.data.schema import normalize_label
+from bav.modeler.ingestion.base import BaseIngestionAdapter
 from .excel_import import ExcelExportAdapter
 
 
@@ -166,7 +166,7 @@ class HKManualDocumentAdapter(BaseIngestionAdapter):
             if result is None:
                 result = data
             else:
-                from modeler.ingestion.reconciler import merge_documents
+                from bav.modeler.ingestion.reconciler import merge_documents
                 merge_documents(result, data, str(path))
 
         assert result is not None

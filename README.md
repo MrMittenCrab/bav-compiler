@@ -6,17 +6,18 @@ The analytical scope is **non-financial** operating companies. Hong Kong company
 
 ## Architecture
 
-BAV Compiler has five active components. Implementation lives under `director/`, `extractor/`, `modeler/`, `interpreter/`, and `composer/`. Retained `core` modules are compatibility façades for public `bav` and historical imports.
+BAV Compiler has six active components under `bav/`: `bav/director/`, `bav/extractor/`, `bav/modeler/`, `bav/inferer/`, `bav/debater/`, and `bav/composer/`. Public entry is `python -m bav`; routing is owned by Director. Specifications live under `bav/director/docs/`, including `bav/director/docs/STYLE.md` and `bav/director/docs/DRIVER.md`.
 
-- **Director** — architecture, orchestration, contracts, company CLI routing, and high-level specifications under `director/docs/`, including `director/docs/STYLE.md` and `director/docs/DRIVER.md`.
+- **Director** — architecture, orchestration, contracts, and company CLI routing.
 - **Extractor** — source-faithful filing JSON contracts and loaders. This repository does not extract statements from PDF.
-- **Modeler** — reproducible calculations, workbook construction, mechanical validity, revenue-driver observations, reported-margin series, identity validity, and Driver numerical assembly.
-- **Interpreter** — judgments about economic meaning, including revenue-driver verdicts, reported-margin claim typology, classification/normalization rationale ownership, and Driver selection gates.
-- **Composer** — publication, argument structure, figure presentation, research styling, Word/PDF generation, Driver wording, and Overview opening.
+- **Modeler** — the complete quantitative model, workbook construction, and mechanical validity.
+- **Inferer** — neutral/base assumptions, plausibility, and neutral uncertainty.
+- **Debater** — stance-conditioned assumptions, thesis logic, and evidence selection. It cannot overwrite canonical neutral assumptions.
+- **Composer** — publication wording, figures, Markdown, and Word/PDF rendering.
 
 **Legacy** holds useful prior functionality outside the active architecture, including optional Trainer derivation, historical HK/Excel ingest, coverage-skill assets, and SHA-bound verifiers. Active BAV build and publication must not depend on it as a hidden implementation layer.
 
-`director/docs/STYLE.md` is the single authority for human-facing presentation and language. Do not copy that specification here.
+`bav/director/docs/STYLE.md` is the single authority for human-facing presentation and language. Do not copy that specification here.
 
 ## What works now
 
@@ -61,11 +62,11 @@ Publication converters and fonts are not bundled. Install and keep on PATH:
 
 - `pandoc` 3.x — Markdown parser (`brew install pandoc` or https://pandoc.org/installing.html)
 - Python packages from `requirements-trainer.txt`: `python-docx`, `reportlab`, `pymupdf`
-- The host fonts named in `director/docs/STYLE.md`, resolved at generation time. Do not copy or vendor font files. Missing faces fail instead of substituting.
+- The host fonts named in `bav/director/docs/STYLE.md`, resolved at generation time. Do not copy or vendor font files. Missing faces fail instead of substituting.
 
 `python -m bav publish Lululemon` writes `Lululemon_BAV.docx` and
 `Lululemon_BAV.pdf` under `build/output/lululemon/`. Presentation follows
-`director/docs/STYLE.md`. Forecast, Valuation and Overview stay empty placeholders and
+`bav/director/docs/STYLE.md`. Forecast, Valuation and Overview stay empty placeholders and
 are not added as report sections. Failed conversion leaves the last successful
 Word and PDF in place and does not change canonical research, figures, or the
 workbook. A company without publishable Drivers research fails with a
@@ -83,7 +84,7 @@ Persistent inputs live under `build/input/<company>/` (`source/`, `extracted/`,
 
 Research module order is Drivers → Forecast → Valuation → Overview. Drivers is
 implemented. Forecast, Valuation and Overview remain reserved empty files.
-Presentation and language follow `director/docs/STYLE.md`.
+Presentation and language follow `bav/director/docs/STYLE.md`.
 
 Keep the BAV, research, figures and generated sidecars together. Outputs are
 not a second persistent input store. `build/` is ignored by Git.
@@ -128,9 +129,7 @@ Explicit input accepts strict canonical StandardizedFinancials JSON or Excel;
 `-o` is a filename stem, and `-a assumptions.json` remains supported. This
 path mode writes at the requested paths; the atomic current-directory contract
 applies to company builds. Source-extraction JSON and partial HK JSON are
-not canonical build inputs. `python -m core` remains an internal compatibility
-entry point; `bav` is the public interface. Existing internal `core` imports remain
-supported.
+not canonical build inputs. The public interface is `python -m bav`.
 
 ## How to practice
 
@@ -169,7 +168,7 @@ No automatic HKEX/SEC scraping in this product.
 
 Session verification:
 
-- Step 10.16 executed representative Lululemon / Fast Retailing build, check, and publication under canonical ownership. Session criterion dispositions are in RESULT.md. This README does not claim Session completion.
+- Session 11 is the six-package structural migration. Representative company verification is recorded in RESULT.md. This README does not claim Session completion.
 
 Later (deferred product capabilities):
 

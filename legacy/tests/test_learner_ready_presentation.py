@@ -6,7 +6,7 @@ import shutil
 
 from openpyxl import load_workbook
 
-from composer.tests.test_learner_ready_presentation import (
+from bav.composer.tests.test_learner_ready_presentation import (
     ROOT,
     WHITE_RGBS,
     _assert_answer_key_no_yellow,
@@ -15,9 +15,9 @@ from composer.tests.test_learner_ready_presentation import (
     _fill_rgb,
 )
 from legacy.trainer.checker import check_workbook
-from modeler.build_bav import JUDGMENT_RESPONSE_COLS, _judgment_case_rows
-from modeler.semantic_io import group_components_by_family, load_semantic_map, parse_cell_ref
-from modeler.workbook import JUDGMENT_SHEET, NORMALIZATION_JUDGMENT_SHEET
+from bav.modeler.build_bav import JUDGMENT_RESPONSE_COLS, _judgment_case_rows
+from bav.modeler.semantic_io import group_components_by_family, load_semantic_map, parse_cell_ref
+from bav.modeler.workbook import JUDGMENT_SHEET, NORMALIZATION_JUDGMENT_SHEET
 
 def test_committed_canonical_pair_matches_minimal_style_contract(tmp_path):
     committed_trainer = ROOT / "legacy" / "example" / "DEMO_HK_Trainer.xlsx"

@@ -55,7 +55,7 @@ def validate_source_manifest() -> None:
 
 
 def validate_extracted_filings() -> None:
-    from director.ingestion.filing_cli import load_and_validate_extracted_dir
+    from bav.director.ingestion.filing_cli import load_and_validate_extracted_dir
 
     validated = load_and_validate_extracted_dir(EXTRACTED, source_root=SOURCE)
     years = set()
@@ -78,10 +78,10 @@ def validate_extracted_filings() -> None:
 
 
 def reconcile_to_supporting() -> Path:
-    from modeler.data.standardized_io import standardized_to_payload
-    from director.ingestion.filing_cli import load_and_validate_extracted_dir
-    from modeler.ingestion.filing_reconciler import reconcile_filings
-    from modeler.ingestion.filing_standardizer import (
+    from bav.modeler.data.standardized_io import standardized_to_payload
+    from bav.director.ingestion.filing_cli import load_and_validate_extracted_dir
+    from bav.modeler.ingestion.filing_reconciler import reconcile_filings
+    from bav.modeler.ingestion.filing_standardizer import (
         reconciliation_conflicts_payload,
         reconciliation_provenance_payload,
         standardize_reconciled,
@@ -110,7 +110,7 @@ def reconcile_to_supporting() -> Path:
 
 
 def build_workbooks(standardized_json: Path) -> tuple[Path, Path]:
-    from modeler.data.standardized_io import standardized_from_payload
+    from bav.modeler.data.standardized_io import standardized_from_payload
     from legacy.trainer.derive import build_training_workbook
 
     payload = json.loads(standardized_json.read_text(encoding="utf-8"))
@@ -170,9 +170,9 @@ Forecasting and valuation remain dormant in this historical release.
 
 
 def write_availability(standardized_json: Path) -> Path:
-    from modeler.data.standardized_io import standardized_from_payload
-    from modeler.period_axis import canonical_fiscal_periods
-    from modeler.source_availability import (
+    from bav.modeler.data.standardized_io import standardized_from_payload
+    from bav.modeler.period_axis import canonical_fiscal_periods
+    from bav.modeler.source_availability import (
         assess_interest_availability,
         availability_payload,
     )
