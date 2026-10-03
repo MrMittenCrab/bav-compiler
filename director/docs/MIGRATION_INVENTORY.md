@@ -103,8 +103,8 @@ disposition → reason → verification.
 | `requirements-trainer.txt` | stay root | README, install | Director | Active runtime deps | `pip install -r` then `python -m bav` |
 | `requirements-benchmark.txt` | `legacy/scripts/requirements-benchmark.txt` (Step 10.13 actual) | `legacy/scripts/extract_benchmark_pdf_text.py` | Legacy | `pypdf` for obsolete text cache | that script only |
 | `.claude-plugin/plugin.json` | `legacy/plugin/plugin.json` (Step 10.13 actual) | `legacy/build_plugin_zip.sh` | Legacy | Superseded coverage-skill product | zip rebuild |
-| `.DS_Store` | delete in place | Finder | Remove | OS junk; already gitignored | no import |
-| `__pycache__/`, `.pytest_cache/` | delete in place | CPython / pytest | Remove | Regenerable; already gitignored | reimport source |
+| `.DS_Store` | deleted in inventoried leftover trees (Step 10.14 actual) | Finder | Remove | OS junk; already gitignored | no import |
+| `__pycache__/`, `.pytest_cache/` | deleted in inventoried leftover trees (Step 10.14 actual); runtime caches may regenerate | CPython / pytest | Remove | Regenerable; already gitignored | reimport source |
 
 ### 4.2 Public package, CLI, company routing
 
@@ -278,7 +278,7 @@ implementation move.
 | `legacy/scripts/extract_benchmark_pdf_text.py` | stay `legacy/scripts/` (Step 10.13) | Legacy | Regenerable PDF text cache | `legacy/scripts/requirements-benchmark.txt` |
 | `legacy/build_plugin_zip.sh` | stay `legacy/` (Step 10.13) | Legacy | Packs superseded plugin; internal zip layout remains `.claude-plugin/` + `skills/` + `README.md` | zip listing |
 | `legacy/verification/verify_cached_workbook.py`, `verify_lululemon_overview_presentation.py` | stay `legacy/verification/` (Step 10.13) | Legacy | Historical verifiers; SHA-bound | `test_cached_workbook_verifier.py`; native Office only when SHA matches |
-| `scripts/build_fast_retailing_source_facts.py` | delete in place | Remove | File header: “OBSOLETE after Step 9M.1… do not use”. Writes absent `source_facts.json`. No `core/`/`bav/` import | `rg` self-only; `source_facts.json` absent |
+| `scripts/build_fast_retailing_source_facts.py` | deleted in place (Step 10.14 actual); empty leftover `scripts/` removed | Remove | File header: “OBSOLETE after Step 9M.1… do not use”. Wrote absent `source_facts.json`. No `core/`/`bav/` import | `rg` self-only before delete; `source_facts.json` absent |
 
 ### 4.7 Automation
 
@@ -321,7 +321,7 @@ No AWS/GCP/S3/Terraform.
 | `legacy/example/DEMO_HK_Standardized.json`, `DEMO_HK_Assumptions.json` | stay `legacy/example/` (Step 10.13) | Legacy | Synthetic HK curriculum | trainer tests |
 | `legacy/example/DEMO_HK_Trainer.xlsx`, `DEMO_HK_Answer_Key.xlsx` | stay `legacy/example/` (Step 10.13) | Legacy | Committed Trainer pair | `test_learner_ready_presentation.py` |
 | `legacy/example/GOOGL_Demo_Integrated_Financials.xlsx` | stay `legacy/example/` (Step 10.13) | Legacy | Structural reference, not a template | GOOGL doc SHA |
-| gitignored `example/rowmap.json`, `*_component_map.json`, `*_assumptions.json` | delete leftover generate | Remove | Regenerable sidecars; already gitignored; leftover copies stay at `example/` | not used by company build |
+| gitignored `example/rowmap.json`, `*_component_map.json`, `*_assumptions.json` | leftover generate deleted (Step 10.14 actual); empty leftover `example/` removed; canonical `legacy/example/` retained | Remove | Regenerable sidecars; leftover copies unused by company build | not used by company build |
 
 ### 4.11 Existing legacy/
 
@@ -336,8 +336,8 @@ material now lives under `legacy/automation/`, `legacy/autocycle-fixes/`,
 existing plugin archive is `legacy/bav-pipeline-plugin.zip`;
 `legacy/build_plugin_zip.sh` restages `legacy/plugin/` as `.claude-plugin/`
 and `legacy/skills/` as `skills/` so packaged members keep that internal
-layout. `scripts/build_fast_retailing_source_facts.py` stays for later Remove.
-No forwarding layers were added for retired script paths. Ordinary company
+layout. **Step 10.14:** `scripts/build_fast_retailing_source_facts.py` was
+deleted in place; no forwarding `scripts/` layer remains. Ordinary company
 `build`/`check`/`publish` still do not import these trees.
 
 ### 4.12 Company inputs and generated outputs
@@ -350,8 +350,8 @@ No forwarding layers were added for retired script paths. Ordinary company
 | `build/input/*/BASELINE.md`, `GAPS.md`, `PROVENANCE.md` | stay as input notes or copy under `director/docs/` | Director | Fixture policy, not runtime | not imported by `bav` |
 | `build/input/lululemon/evidence/prior-live/*` | `legacy/evidence/` or stay archive | Legacy | Relocated prior-live bytes; no live fallback | no `lululemon-live` path in `current_build` |
 | `build/input/lululemon/evidence/ordinary-reconcile/*` | redundant with tracked fixtures | Legacy local copy | Tracked fixtures are the regression contract | fixture SHA tests |
-| `build/input/lululemon/evidence/stale-benchmark-reconciled/` | delete empty dir | Remove | Empty | `ls` empty |
-| `build/input/fast_retailing/evidence/_extract/*.txt` | delete after unused-script confirmation | Remove | Regenerable cache; not `prepare_company_input` | not read by build |
+| `build/input/lululemon/evidence/stale-benchmark-reconciled/` | deleted empty dir (Step 10.14 actual) | Remove | Empty | `ls` empty before delete |
+| `build/input/fast_retailing/evidence/_extract/*.txt` | deleted (Step 10.14 actual) after unused-script confirmation | Remove | Regenerable cache; only consumer was the obsolete source-facts script; not `prepare_company_input` | not read by build |
 | `build/input/fast_retailing/source_manifest.json` | stay `build/input/fast_retailing/source_manifest.json` | Extractor | SHA ledger of source filings. Director later rewrites obsolete `benchmark/` paths as a path-policy edit; the file owner remains Extractor | restore-then-bind |
 | `build/output/<slug>/` workbook + supporting JSON | stay | Modeler | Reproducible analytical artifacts | `python -m bav build/check` |
 | `build/output/<slug>/research/*.md`, `figures/`, `*.docx`, `*.pdf` | stay | Composer | Reproducible publication | `python -m bav publish`; Forecast/Valuation/Overview remain 0 bytes |
@@ -907,7 +907,7 @@ Remaining ingestion rows:
 | `filing_standardizer.py` | `modeler/ingestion/filing_standardizer.py` | Modeler | Emit model-only `StandardizedFinancials` | Lulu/FR reconcile |
 | `note_handoff.py` | `director/ingestion/note_handoff.py` | Director | Appends already-authored note facts | prepare script |
 | `excel_import.py`, `manual_hk.py` | `legacy/ingestion/` (Step 10.11 actual; old paths are compatibility façades) | Legacy | Transcribed Excel/JSON adapters. Not loaded by ordinary company execution or canonical filing ingest | ingest / demo tests; ordinary import isolation |
-| `future_adapters.py` `HKEXAdapter`, `SECAdapter`, `SGXAdapter` | delete in place | Remove | `NotImplementedError`; TARGET forbids HKEX scrape; no production import | `rg` definition + `legacy/docs/README-HK-TRAINER.md` mention only |
+| `future_adapters.py` `HKEXAdapter`, `SECAdapter`, `SGXAdapter` | deleted in place (Step 10.14 actual); no replacement adapter or forwarding layer | Remove | `NotImplementedError`; TARGET forbids HKEX scrape; no production import | `rg` definition + historical `legacy/docs/README-HK-TRAINER.md` mention only |
 | `base.py` / `reconciler.py` | `modeler/ingestion/` | Modeler | Shared checksum reconcile | build refuse-on-fail |
 | `management_kpi_enrichment.py` `inspect_source_pdf`, decoding, passage extraction, documentary records, printed/physical page binding | `extractor/ingestion/management_kpi_enrichment.py` | Extractor | Source-faithful PDF inspection of already-bound filings; not a new extractor | `test_management_kpi_enrichment.py` |
 | `management_kpi_enrichment.py` `assess_definition_equivalence`, `enrich_management_payload`, `build_group_decisions` | `modeler/ingestion/management_kpi_enrichment.py` | Modeler | Deterministic comparison checks and analytical enrichment; consumes Extractor evidence | same tests |
@@ -915,8 +915,8 @@ Remaining ingestion rows:
 
 **Step 10.9 actual destinations.** `filing_cli.py` and `note_handoff.py` now
 execute from `director/ingestion/`. Assigned reconcile/standardize/admit modules
-execute from `modeler/ingestion/`. `future_adapters.py` remains at `core/ingestion/`
-(Remove / deferred mixed). Thin `core.ingestion` façades retain package `__all__`
+execute from `modeler/ingestion/`. **Step 10.14:** `future_adapters.py` was
+deleted in place; no replacement adapter or forwarding layer was added. Thin `core.ingestion` façades retain package `__all__`
 and explicit private imports (`reconciler._merge_line_items`,
 `management_kpi_reconciliation._select_ordinary_group`,
 and the split normalization-candidate and enrichment private helpers).
@@ -1344,16 +1344,16 @@ into Modeler/Composer before Legacy is isolated.
 
 ### Remove (delete in place; never create `remove/`)
 
-| Item | Absence-of-use / no-preservation-value |
-|---|---|
-| `scripts/build_fast_retailing_source_facts.py` | Obsolete header; unused; writes absent `source_facts.json` |
-| `core/ingestion/future_adapters.py` stubs | No production import; TARGET forbids building them |
-| `FIGURE_NAMES`, `FIGURE_PLOTTERS`, `_calendar_limit_block` | Dead symbols |
-| Empty `benchmark/`, `release/` dirs (`.DS_Store` only) | Trees already relocated; Git history keeps old blobs. Runtime has no fallback |
-| `build/input/lululemon/evidence/stale-benchmark-reconciled/` | Empty |
-| `build/input/fast_retailing/evidence/_extract/*.txt` | Regenerable cache; not a build input |
-| gitignored example sidecars | Regenerable |
-| `__pycache__/`, `.pytest_cache/`, `.DS_Store` | Regenerable / OS junk |
+| Item | Absence-of-use / no-preservation-value | Step 10.14 actual |
+|---|---|---|
+| `scripts/build_fast_retailing_source_facts.py` | Obsolete header; unused; wrote absent `source_facts.json` | Deleted; empty leftover `scripts/` removed |
+| `core/ingestion/future_adapters.py` stubs | No production import; TARGET forbids building them | Deleted; no replacement adapters |
+| `FIGURE_NAMES`, `FIGURE_PLOTTERS`, `_calendar_limit_block` | Dead symbols | Already absent; no remaining unused definitions removed; live `_PLOT_BY_ID` / `calendar_limitation` unchanged |
+| Empty `benchmark/`, `release/` dirs (`.DS_Store` only) | Trees already relocated; Git history keeps old blobs. Runtime has no fallback | Deleted |
+| `build/input/lululemon/evidence/stale-benchmark-reconciled/` | Empty | Deleted |
+| `build/input/fast_retailing/evidence/_extract/*.txt` | Regenerable cache; not a build input | Deleted after confirming only the obsolete script read them |
+| gitignored example sidecars | Regenerable | Deleted leftover `example/rowmap.json`, `DEMO_HK_Answer_Key.assumptions.json`, `DEMO_HK_Answer_Key.component_map.json`; canonical `legacy/example/` retained |
+| `__pycache__/`, `.pytest_cache/`, `.DS_Store` | Regenerable / OS junk | Removed in inventoried leftover trees; runtime caches may regenerate |
 
 Do not delete Git history. Do not delete local extracted/reconciled JSON.
 Do not delete source PDFs if they are later restored until
@@ -1379,7 +1379,7 @@ Subsequent reviewed steps execute this order. This step does not execute it.
 6. Move Composer `style.py`, `document.py`, `publish.py`, Drivers prose/plots, Overview opening/navigation. **Step 10.6:** `style.py`, `document.py` and `publish.py` now live under `composer/research/`. Drivers prose/plots already live there from 10.5. **Step 10.7:** Overview opening/navigation lives in `composer/workbook_opening.py`.
 7. Move Director CLI / `current_build` / `project_companies.json` / build-contract policy. Keep `python -m bav` and company name interfaces. Director `build_company` sequences Modeler → Interpreter → Composer before workbook write. **Step 10.12:** CLI, company configuration and orchestration now live under `director/`; mechanical `build_status` lives under `modeler/`; `python -m core` remains a compatibility alias.
 8. Relocate Legacy (Trainer remainder, skills, automation, retired scripts, HK demo, historical docs/verifiers). **Step 10.7/10.11:** Trainer overlay and HK/Excel ingest already live under `legacy/trainer/` and `legacy/ingestion/`. **Step 10.13:** remaining coverage automation, skills, plugin, retired scripts, historical verifiers/docs and HK/GOOGL example assets now live under their assigned `legacy/` categories.
-9. Delete Remove items in place. Update imports, CLI routes, package docstrings, tests, README, `docs/FAST_RETAILING_BENCHMARK.md` stale paths, `source_manifest.json` if PDFs are restored.
+9. Delete Remove items in place. Update imports, CLI routes, package docstrings, tests, README, `docs/FAST_RETAILING_BENCHMARK.md` stale paths, `source_manifest.json` if PDFs are restored. **Step 10.14:** designated Remove items above were deleted in place. Broader branding/alignment and remaining stale-path rewrites stay later work.
 10. Verify §15. Stop. No second-phase features.
 
 ### Affected surfaces (must be updated in the executing steps)

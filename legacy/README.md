@@ -34,9 +34,23 @@ Those compatibility modules are not the active company execution path.
 Historical RESULT records keep the commands that were run at the time. Current
 instructions use the destinations above.
 
-`scripts/build_fast_retailing_source_facts.py` remains at its old path as a
-later Remove item. Canonical `build/input/`, `build/output/` and leftover
-gitignored `example/` sidecars stay where they are.
+## Step 10.14 removals
+
+Designated Remove items are gone. Current retained destinations stay as above.
+
+| Removed | Retained destination / note |
+|---|---|
+| `scripts/build_fast_retailing_source_facts.py` | No forwarding `scripts/` layer. Canonical Fast Retailing input remains `build/input/fast_retailing/extracted/` and `reconciled/` |
+| `core/ingestion/future_adapters.py` (`HKEXAdapter`, `SECAdapter`, `SGXAdapter`) | No replacement adapters. Retained `core.ingestion` façades still export `ExcelExportAdapter` / `HKManualDocumentAdapter` from `legacy/ingestion/` |
+| Leftover gitignored `example/rowmap.json`, `DEMO_HK_Answer_Key.assumptions.json`, `DEMO_HK_Answer_Key.component_map.json` | Canonical HK/GOOGL fixtures remain in `legacy/example/` |
+| Empty leftover `benchmark/`, `release/`, `build/input/lululemon/evidence/stale-benchmark-reconciled/` | Git history keeps old blobs; runtime has no fallback |
+| Regenerable `build/input/fast_retailing/evidence/_extract/*.txt` | Legacy helper `legacy/scripts/extract_benchmark_pdf_text.py` can regenerate from source PDFs; ordinary build does not read those copies |
+
+`legacy/bav-pipeline-plugin.zip` remains the one retained archive. Director
+`validate_standardized` remains the unused completeness contract. Historical
+`legacy/docs/README-HK-TRAINER.md` still mentions future adapters as a past
+architecture sketch and was not rewritten. Canonical `build/input/` and
+`build/output/` stay where they are.
 
 ## Original custom-GPT system (Gemini Gems)
 

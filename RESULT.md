@@ -1,3 +1,89 @@
+# RESULT.md — Step 10.14 Execute inventory-designated Remove dispositions
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.14 — Execute inventory-designated Remove dispositions
+**Work:** `5aa7273b08304f909042b1d1efecd98e`
+**Plan:** `929ee92e950e43b5ae91c8a191dfbcdf`
+**Finding:** Execute inventory-designated Remove dispositions
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. Controller files under `.git/autocycle` were read-only except as inspected. Canonical extracted/reconciled JSON, source manifests, required sidecars, retained Legacy assets and `legacy/bav-pipeline-plugin.zip` were not rewritten. No `remove/` directory, replacement adapters or forwarding layers were added. AutoCycle patches were not applied.
+
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `6b81e88637084a6c0dc2a900fad808396caa38967b0c4350f5d0e8a433e07f69` (4848).
+
+This bounded attempt executes inventory-designated Remove material. It does not close parent Completion, does not migrate remaining test ownership, and does not establish Session 10 acceptance.
+
+## Baseline authentication
+
+Continuation execution baseline resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state` and authenticated as a Git commit. `implementation-baseline.json` head matched that SHA. Leftover `latest-implementation` HEAD was not substituted.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / `10.14` allocated source | `c2ca80d108351a0c4babe168885858636fc30987` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD (`git rev-parse HEAD` = `c2ca80d1…`); identity ancestor |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` work / plan | work `5aa7273b08304f909042b1d1efecd98e`, plan `929ee92e950e43b5ae91c8a191dfbcdf`, step `10.14` |
+| `work-state` allocated `10.14` | source = B, work_id = `5aa7273b08304f909042b1d1efecd98e`, status `opened` |
+| `admitted_review` | `review_sha256` `da85d9a5559667dfac6635ff3251d93bf0fc6f141b49eaa7fd5ce04991ee222f`; `reviewed_head` `3c0322a1…` |
+| `latest-implementation` leftover HEAD | `4140f11c2019bba65311c5eb4b285dc1cc0878e2` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Fail-closed | Not required |
+
+Tracked removal candidates were inspected with `git cat-file` / `git rev-parse` at B, then current consumers. Working-tree bytes matched B before delete.
+
+| B path | B blob | SHA-256 / size | Consumers before delete |
+|---|---|---|---|
+| `scripts/build_fast_retailing_source_facts.py` | `431bb47357425bb366e811d3e7cc12b1f104ee06` | `64e8744892bc8addbaeda0729053f3ede027ef4e7bdc91ae9d6b8d8c735764f4` (38688) | Self only; header “OBSOLETE after Step 9M.1”; wrote absent `source_facts.json` |
+| `core/ingestion/future_adapters.py` | `fd368e5a1ad3c8fcdcfce68cbf7a5528792446fe` | `81f5370dda4390966179add906e3760b0ad1ae6928e5f2caf1f4a98b750e7073` (1930) | No production import; not in `core.ingestion.__all__`; historical `legacy/docs/README-HK-TRAINER.md` mention only |
+
+## Actual removals
+
+| Item | Finding | Action |
+|---|---|---|
+| `scripts/build_fast_retailing_source_facts.py` | Unused obsolete helper; `source_facts.json` absent | `git rm`; empty leftover `scripts/` removed. No forwarding layer |
+| `core/ingestion/future_adapters.py` | `HKEXAdapter` / `SECAdapter` / `SGXAdapter` stubs; no callers | `git rm`. No replacement adapters |
+| `FIGURE_NAMES`, `FIGURE_PLOTTERS`, `_calendar_limit_block` | Already absent from `*.py` | Confirmed; live `_PLOT_BY_ID` / `calendar_limitation` unchanged |
+| Empty `benchmark/`, `release/` | `.DS_Store` only | Directories removed |
+| `build/input/lululemon/evidence/stale-benchmark-reconciled/` | Empty | Directory removed |
+| `build/input/fast_retailing/evidence/_extract/*.txt` | Five regenerable CFS text caches; only consumer was the obsolete source-facts script; not read by `prepare_company_input` or tests | Files and empty leftover `_extract/` removed |
+| Leftover `example/rowmap.json` (`aaaeb15c…`, 47557), `example/DEMO_HK_Answer_Key.assumptions.json` (`9d629557…`, 691), `example/DEMO_HK_Answer_Key.component_map.json` (`b3901fe8…`, 353373) | Gitignored generated sidecars; no current Python/test consumer | Deleted; leftover empty `example/` removed. Canonical `legacy/example/DEMO_HK_Assumptions.json` is byte-identical to the leftover assumptions copy and was retained with the other HK/GOOGL fixtures |
+| Inventoried leftover `.DS_Store` / `.pytest_cache/` | OS / pytest junk | Removed in leftover trees; runtime caches may regenerate |
+
+`director/docs/MIGRATION_INVENTORY.md` §§4.1, 4.6, 4.10–4.12, 7.3, 13–14 and `legacy/README.md` record the actual removals and retained destinations. Historical RESULT records and `legacy/docs/README-HK-TRAINER.md` were not rewritten.
+
+## Preservation
+
+- Canonical `build/input/fast_retailing/extracted/FY2021–FY2025.json` and `reconciled/{standardized,provenance,conflicts}.json` remain.
+- Lululemon `extracted/` and `evidence/{prior-live,ordinary-reconcile}/` remain.
+- `legacy/bav-pipeline-plugin.zip` unchanged `514dd87edf5e6764267bff60d87746fddbab5ddfc4815694706de7154f092672` (191787).
+- Director `validate_standardized` remains exported from `director.data.schema` and `core.data.schema` (identity-equal).
+- Public `core.ingestion` façades still export `ExcelExportAdapter`, `HKManualDocumentAdapter`, `reconcile_financials`.
+- No restored source PDFs were removed.
+- Public `bav` / `python -m core` aliases, patchable Director configuration, explicit JSON/Excel routes and optional Trainer derive/check were not redesigned.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| Resume / baseline / work-state / HEAD / ancestry | B = `c2ca80d1…` authenticated as above |
+| `git cat-file` / byte compare of both tracked Remove sources vs B | both matched |
+| Python caller scan for `future_adapters` / `HKEXAdapter` / `build_fast_retailing_source_facts` | no remaining `.py` hits after delete |
+| `FIGURE_NAMES` / `FIGURE_PLOTTERS` / `_calendar_limit_block` in `*.py` | no matches |
+| `/opt/anaconda3/bin/python -m pytest -q` ingestion ownership, filing CLI, build CLI, current-build, build-contract, trainer, learner-presentation | **167 passed**, 40.34s |
+| same interpreter `test_reference_integrity.py` | **67 passed**, 8.45s |
+| Representative Lululemon/FR build/check/publish | **Reused** Step 10.12.1 comparison: those routes' dependencies were not edited |
+| Native Office | **Not run** — no workbook formula/dependency or presentation change |
+| `git diff --check` | rc 0 |
+| `git diff --stat` vs B | 4 files, +39 / −1084 (two tracked deletes + inventory/README) |
+
+## Remaining toward Completion
+
+Broader test ownership migration, remaining repository branding/alignment and final Session verification remain subsequent scope. Ordinary company execution remains independent of the deleted Remove material.
+
+This removal does not establish Session 10 acceptance.
+
+---
+
 # RESULT.md — Step 10.13 Relocate remaining Legacy functionality and references
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
