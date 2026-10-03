@@ -1,6 +1,6 @@
-# Step 10.9.2 — Relocate data contracts and ingestion responsibilities — provenance persistence verification
+# Step 10.9.3 — Relocate data contracts and ingestion responsibilities — admission provenance persistence repair
 
-AUTOCYCLE_PLAN: {"evidence_routes": [{"commands": [["rg", "-n", "normalization_candidate|reconciliation_provenance_payload|provenance.json", "core", "modeler", "director", "extractor"], ["/opt/anaconda3/bin/python", "-m", "pytest", "-q", "core/tests/test_normalization_candidate_admission.py"], ["/opt/anaconda3/bin/python", "-m", "pytest", "-q", "core/tests/test_data_ingestion_ownership.py", "core/tests/test_normalization.py", "core/tests/test_filing_json.py"]], "fact": "Whether observation fingerprints, source hashes, physical/printed locators, row identities and sign transformation remain recoverable through the applicable admission persistence/reload boundary under current canonical dependencies."}], "finding_key": "Relocate data contracts and ingestion responsibilities", "kind": "work", "minor": 2, "objective": "Relocate data contracts and ingestion responsibilities — provenance persistence verification", "plan_id": "6370c3e59e864abfa2257793d076b489", "predecessor_review_sha256": "d9df190fdab715f115dbbcfb8abe7aed69d58501b1e819c3ce052c1f07190bce", "step_id": "10.9.2", "work_id": "59ab4fdc9ec144ffb2c2b3f0bb8adaeb"}
+AUTOCYCLE_PLAN: {"finding_key": "Relocate data contracts and ingestion responsibilities", "kind": "work", "minor": 3, "objective": "Relocate data contracts and ingestion responsibilities — admission provenance persistence repair", "plan_id": "599e137086184011ae3ea0dbf34bb107", "predecessor_review_sha256": "bd8f4230127d31d892b312e675fe0d6f98e523293b5600c769812d3aacc0ef8b", "step_id": "10.9.3", "work_id": "59ab4fdc9ec144ffb2c2b3f0bb8adaeb"}
 
 ## Completion
 
@@ -8,28 +8,28 @@ The data contracts, admission/reconciliation implementations and ingestion orche
 
 ## Bounded work
 
-Verify normalization-candidate provenance through its actual persistence/reload boundary against authenticated B. Reuse the completed reproducible fixtures and admission comparisons.
+Implement a production persistence/reload boundary for explicitly admitted normalization candidates, retaining recoverable evidence linked to the persisted analytical line and fiscal periods.
 
-- Resolve B from populated `IMPLEMENT_BASE_SHA`, otherwise normal baseline and attempt/checkpoint records; authenticate branch, ancestry and binding, failing closed if unavailable. The reviewed checkpoint is `1a82323aac1309141f480e550277ffb2f56b35ca`, whose authenticated implementation baseline is `250d57178d4b32b3b12a13ba9a08677789d59183`. Retain `eb65dc63845b940162c48e39ae9af7598d2a3078` only as the separately bound pre-relocation comparator for checkpoint `38f5774170c577aa10eb5f03c4cbe99ed7cff789`.
-- Inspect B Git blobs, current canonical implementations and admission callers to identify the applicable persisted provenance artifact, writer, reader and linkage to admitted financial identity. Establish whether documentary reconciliation provenance actually covers this opt-in admission path.
-- Extend `core/tests/test_normalization_candidate_admission.py` and its isolated driver or directly necessary test helpers to exercise that existing contract. Persist to temporary storage, reload independently and assert against recovered data, without retaining original result objects as provenance evidence.
-- Verify recovered observation fingerprints, source hashes, physical/printed locators, row identities and sign transformation against independently specified source-derived expectations. Preserve explicit unresolved printed-page states; do not invent locators.
-- Establish that recovered provenance belongs to the reloaded analytical line and fiscal periods, with reported face values retained and sign conversion applied exactly once. Preserve financial identity/value round-trip checks.
-- Run the same persistence cases against authenticated B and current dependencies in isolated processes; retain the pre-relocation comparison. Keep historical production code unchanged, allowing only necessary test import/path adaptations.
-- If no applicable production persistence/reload contract exists, or required fields cannot be recovered, record the concrete missing path or field and B/current behavior with a minimal executable reproduction. Equal omissions do not establish preservation; distinguish an existing contract limitation from a migration regression.
-- Do not substitute test-only serialization of `result.periods` for a production contract, reconstruct expected provenance from original observations after reload, or add provenance to the model-only standardized serializer.
-- Limit changes to tests, directly necessary fixtures/helpers and appended `RESULT.md` evidence. Document production mismatches for Review without production repairs or architectural expansion.
+- Resolve implementation B from populated `IMPLEMENT_BASE_SHA`, otherwise authenticated baseline and attempt/checkpoint records; authenticate branch, ancestry and binding, failing closed if unavailable. Reviewed checkpoint `7cf143f53036afcb981fb4118b830e73b4fa58b6` has authenticated parent B `95efb965cd896e462814459b843d9a992358c7a9`. Keep `eb65dc63845b940162c48e39ae9af7598d2a3078` as the separately bound pre-relocation comparator.
+- Add a small Modeler-owned admission provenance writer/reader and the directly necessary handoff integration in `core/ingestion/normalization_candidate_admission.py`. Preserve existing signatures and compatibility behavior; defer broader admission decomposition.
+- Persist admission evidence alongside standardized financials in a dedicated artifact. Keep `modeler/data/standardized_io.py` model-only and ordinary documentary reconciliation provenance unchanged.
+- Capture evidence during construction/admission, before per-period aggregation loses observation associations. Retain each observation fingerprint with its source file/hash, row identity, physical page, printed-page value/status, period, reported amount, currency and scale.
+- Preserve unresolved and unavailable locator states explicitly. Do not infer printed pages from physical pages or rebuild missing evidence from labels or analytical amounts.
+- Bind the artifact to company, statement, canonical analytical line identity, fiscal periods and analytical values. Retain reported face amounts, transformation and exactly-once sign-conversion evidence without summing overlapping comparative observations.
+- Persist the supplied adoption/treatment decisions and their authorization distinctions needed to interpret admission. Preserve provisional grouping qualifications, synthetic status, unresolved after-tax treatment and candidate configuration.
+- Provide an explicit production save/load path using the existing standardized serializer plus the admission artifact. Loading must recover and validate the association without original observations or in-memory handoff objects, and must not reapply sign conversion.
+- Reject missing, stale, inconsistent or ambiguously linked evidence when loading an admission bundle. Ordinary standardized-only loading remains supported without claiming recovered admission provenance. Blocked/provisional handoffs must not be persisted as admitted bundles.
+- Limit production changes to this persistence contract and necessary evidence capture/integration, with focused tests and appended `RESULT.md` evidence. Do not add default admission activation, CLI expansion, a general provenance framework or unrelated repairs.
 
 ## Verification
 
-Whether observation fingerprints, source hashes, physical/printed locators, row identities and sign transformation remain recoverable through the applicable admission persistence/reload boundary under current canonical dependencies.
-
-Criterion: IMPLEMENTATION.md explicitly requires provenance to survive round-trip, and the parent Completion preserves source provenance and analytical behavior.
-
-- Execute the finite inspection and test routes above. Preserve all 23 existing candidate cases and the related regression checks; do not skip, deselect, xfail or weaken them.
-- Preserve admission/rejection gates, independent analytical expectations, input immutability, repeated-admission rejection, default-off behavior, synthetic authorization distinctions and unresolved after-tax treatment.
-- Run `git diff --check`. Append exact commands, measured results, persistence entry points, recovered field comparisons, baseline bindings and remaining limitations to `RESULT.md`; do not rewrite historical records.
-- Keep the separate enrichment-sidecar failure visible. Reuse prior relocation/build/publication evidence only while its dependencies remain applicable; do not claim broader-suite or Session completion.
+- Reuse the completed source-derived fixtures, independently specified expectations and isolated driver. Exercise production save/load through temporary artifacts and a fresh process receiving only persisted paths.
+- Assert recovered fingerprints, associated source hashes/rows/locators, unresolved locator states, face amounts and transformation evidence against independent expectations. Verify their linkage to the reloaded analytical identity and each fiscal period, unchanged values and exactly-once conversion.
+- Cover mismatched company/line/period/value bindings, missing evidence and blocked admission; preserve input immutability and repeated-admission rejection after reload.
+- Preserve all existing candidate scenarios. Retain the historical omission reproduction as diagnostic coverage; add positive assertions for the repaired production boundary. Update baseline/current comparisons only for the intentional persistence difference, retaining analytical and admission-gate parity.
+- Compare authenticated B Git code with current behavior in isolated processes; retain the pre-relocation comparison without modifying historical production code. Equal historical omissions remain evidence of the original limitation, not successful preservation.
+- Run `/opt/anaconda3/bin/python -m pytest -q core/tests/test_normalization_candidate_admission.py` and `/opt/anaconda3/bin/python -m pytest -q core/tests/test_data_ingestion_ownership.py core/tests/test_normalization.py core/tests/test_filing_json.py`, plus focused tests added for the repair. Do not skip, deselect, xfail or weaken existing gates.
+- Run `git diff --check`. Append measured results, baseline bindings, production persistence entry points and recovered linkage evidence to `RESULT.md`; distinguish this repair from parent Completion and Session acceptance.
 
 ## Preserved relocation and constraints
 
@@ -37,10 +37,10 @@ Completed Modeler data ownership covers `interface`, `validators`, `standardized
 
 Completed Modeler ingestion ownership covers `base`, `reconciler`, `filing_reconciler`, `filing_standardizer`, `management_kpi`, `management_kpi_identity`, `management_kpi_reconciliation`, `management_kpi_history`, `operating_kpi`, `geographic_segment`, `share_basis` and KPI validator admission. Director owns `filing_cli`, `note_handoff` and combined validation; Extractor retains documentary binding. Preserve issue ordering, façades, private exports, object identity and inventory mappings.
 
-Preserve signatures, public commands, aliases, lazy loading, optional Trainer independence, dormant forecasting, accounting signs, fiscal distinctions, precision, reconciliations, source/transformation provenance, residual qualifications and admission/comparison independence. Do not rewrite canonical source or extracted/reconciled inputs.
+Preserve public commands, aliases, lazy loading, optional Trainer independence, dormant forecasting, accounting signs, fiscal distinctions, precision, reconciliations, source/transformation provenance, residual qualifications and admission/comparison independence. Do not rewrite canonical source or extracted/reconciled inputs.
 
 Preserve completed Driver handoffs, first-name-wins assessments, CFO classification, attribution amounts/locators, counterfactual scope, `supported_as_attribution`, `not independently verified` and `outside the accounting bridge`. Attribution appendices remain independent of principal selection; margin prose requires independently selected margin evidence.
 
-Classification/normalization interpretation splits, normalization-candidate separation, enrichment/Legacy decomposition, remaining orchestration relocation, unrelated removals, test ownership migration and final repository-wide verification remain subsequent scope. Do not repair the enrichment-sidecar defect, redesign algorithms/reports, expand Trainer or implement second-phase features.
+Classification/normalization interpretation splits, broader normalization-candidate separation, enrichment/Legacy decomposition, remaining orchestration relocation, unrelated removals, test ownership migration and final repository-wide verification remain subsequent scope. Keep the separate enrichment-sidecar defect visible without repairing it here. Do not redesign algorithms/reports, expand Trainer or implement second-phase features.
 
-Preserve ownership/recovery safeguards, protected documents, unrelated dirty work and zero-byte research placeholders. SESSION native verification remains binding if formulas/dependencies or presentation change, through Office Bridge. Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
+Preserve ownership/recovery safeguards, protected documents, unrelated dirty work and zero-byte research placeholders. Reuse prior verification only while dependencies remain applicable. SESSION native verification remains binding if formulas/dependencies or presentation change, through Office Bridge. Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
