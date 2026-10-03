@@ -84,7 +84,7 @@ from .goodwill_intangibles import (
 from .lease_liability import LeaseLiabilitySeries
 from .lease_repayment import LeaseRepaymentSeries
 from .lease_rou import LeaseRouSeries
-from core.model.normalization import NormalizationSeries
+from .normalization import NormalizationSeries
 from .normalized_per_share import compute_normalized_per_share_series
 from .ownership_attribution import OwnershipAttributionSeries
 from .per_share import PerShareSeries

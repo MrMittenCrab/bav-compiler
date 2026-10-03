@@ -52,6 +52,91 @@ PRIVATE_EXPORTS = {
     "classification": ("_norm",),
     "line_resolver": ("_EXPLICIT_CONCEPT_ALIASES",),
 }
+SPLIT_MODELER = (
+    ("modeler.judgment", "JudgmentCase", ROOT / "modeler/judgment.py"),
+    ("modeler.judgment", "classification_judgment_cases", ROOT / "modeler/judgment.py"),
+    ("modeler.normalization", "NormalizationCase", ROOT / "modeler/normalization.py"),
+    ("modeler.normalization", "NormalizationSeries", ROOT / "modeler/normalization.py"),
+    ("modeler.normalization", "normalization_cases", ROOT / "modeler/normalization.py"),
+    ("modeler.normalization", "compute_normalization_series", ROOT / "modeler/normalization.py"),
+    ("modeler.normalization", "resolve_income_statement_selector", ROOT / "modeler/normalization.py"),
+    ("modeler.normalization", "zero_normalization_series", ROOT / "modeler/normalization.py"),
+)
+SPLIT_INTERPRETER = (
+    (
+        "interpreter.classification_judgment",
+        "ClassificationJudgmentTemplate",
+        ROOT / "interpreter/classification_judgment.py",
+    ),
+    (
+        "interpreter.classification_judgment",
+        "CLASSIFICATION_JUDGMENT_TEMPLATES",
+        ROOT / "interpreter/classification_judgment.py",
+    ),
+    (
+        "interpreter.classification_judgment",
+        "CONSEQUENCE_PROMPT",
+        ROOT / "interpreter/classification_judgment.py",
+    ),
+    (
+        "interpreter.normalization",
+        "CONSEQUENCE_PROMPT",
+        ROOT / "interpreter/normalization.py",
+    ),
+    (
+        "interpreter.normalization",
+        "supplied_normalization_interpretation",
+        ROOT / "interpreter/normalization.py",
+    ),
+    (
+        "interpreter.normalization",
+        "grouping_established_as_source_fact",
+        ROOT / "interpreter/normalization.py",
+    ),
+)
+SPLIT_FACADE_PAIRS = (
+    ("modeler.judgment", "core.model.judgment", "JudgmentCase"),
+    ("modeler.judgment", "core.model.judgment", "classification_judgment_cases"),
+    ("interpreter.classification_judgment", "core.model.judgment", "ClassificationJudgmentTemplate"),
+    ("interpreter.classification_judgment", "core.model.judgment", "CLASSIFICATION_JUDGMENT_TEMPLATES"),
+    ("interpreter.classification_judgment", "core.model.judgment", "CONSEQUENCE_PROMPT"),
+    ("modeler.normalization", "core.model.normalization", "NormalizationCase"),
+    ("modeler.normalization", "core.model.normalization", "NormalizationSeries"),
+    ("modeler.normalization", "core.model.normalization", "normalization_cases"),
+    ("modeler.normalization", "core.model.normalization", "compute_normalization_series"),
+    ("modeler.normalization", "core.model.normalization", "resolve_income_statement_selector"),
+    ("modeler.normalization", "core.model.normalization", "zero_normalization_series"),
+    ("interpreter.normalization", "core.model.normalization", "CONSEQUENCE_PROMPT"),
+)
+SPLIT_PRIVATE_EXPORTS = {
+    "core.model.judgment": (("modeler.judgment", "_line_has_nonzero_value"),),
+    "core.model.normalization": (
+        ("modeler.normalization", "_label_match_key"),
+        ("modeler.normalization", "_parse_selector"),
+        ("modeler.normalization", "_parse_candidate"),
+        ("modeler.normalization", "_candidate_period_values"),
+        ("modeler.normalization", "_line_has_nonzero_value"),
+        ("modeler.normalization", "_stable_override_selector"),
+        ("modeler.normalization", "_case_by_id"),
+    ),
+}
+SPLIT_CANONICAL_PATHS = (
+    ROOT / "modeler/judgment.py",
+    ROOT / "modeler/normalization.py",
+    ROOT / "interpreter/classification_judgment.py",
+    ROOT / "interpreter/normalization.py",
+    ROOT / "modeler/workbook.py",
+    ROOT / "modeler/check_context.py",
+    ROOT / "modeler/historical_expected.py",
+    ROOT / "modeler/normalized_per_share.py",
+    ROOT / "modeler/ingestion/normalization_candidate_admission.py",
+)
+SPLIT_FORBIDDEN_FACADES = frozenset(
+    {
+        "core.model.judgment",
+        "core.model.normalization",
+    }
+)
 REPRESENTATIVE = (
     ("classification", "BALANCE_SHEET_CATEGORIES"),
     ("financial_math", "compute_anchor"),
@@ -165,3 +250,79 @@ def test_canonical_modules_do_not_import_own_facades():
                     if alias.name.startswith("core.model."):
                         rest = alias.name.split(".", 2)[-1]
                         assert rest not in MOVED_SET
+
+
+def test_split_canonical_definitions_are_owner_owned():
+    for module_name, attr, path in (*SPLIT_MODELER, *SPLIT_INTERPRETER):
+        module = __import__(module_name, fromlist=[attr])
+        assert Path(module.__file__).resolve() == path.resolve()
+        assert callable(getattr(module, attr)) or getattr(module, attr) is not None
+
+
+def test_split_compatibility_exports_are_identity_equal():
+    for canonical_name, facade_name, attr in SPLIT_FACADE_PAIRS:
+        canonical = __import__(canonical_name, fromlist=["*"])
+        facade = __import__(facade_name, fromlist=["*"])
+        assert getattr(facade, attr) is getattr(canonical, attr)
+    for facade_name, pairs in SPLIT_PRIVATE_EXPORTS.items():
+        facade = __import__(facade_name, fromlist=["*"])
+        for canonical_name, attr in pairs:
+            canonical = __import__(canonical_name, fromlist=["*"])
+            assert getattr(facade, attr) is getattr(canonical, attr)
+
+
+def test_split_facade_and_canonical_import_orders():
+    samples = (
+        ("modeler.judgment", "core.model.judgment", "classification_judgment_cases"),
+        ("interpreter.classification_judgment", "core.model.judgment", "CLASSIFICATION_JUDGMENT_TEMPLATES"),
+        ("modeler.normalization", "core.model.normalization", "compute_normalization_series"),
+        ("interpreter.normalization", "core.model.normalization", "CONSEQUENCE_PROMPT"),
+    )
+    orders = (
+        "import {facade} as facade\nimport {canonical} as canonical\n",
+        "import {canonical} as canonical\nimport {facade} as facade\n",
+    )
+    for canonical, facade, attr in samples:
+        for template in orders:
+            script = (
+                template.format(canonical=canonical, facade=facade)
+                + f"assert facade.{attr} is canonical.{attr}\n"
+            )
+            if facade == "core.model.judgment":
+                script += (
+                    "from modeler.judgment import _line_has_nonzero_value as canonical_private\n"
+                    "assert facade._line_has_nonzero_value is canonical_private\n"
+                )
+            if facade == "core.model.normalization" and attr == "compute_normalization_series":
+                script += (
+                    "from modeler.normalization import _parse_candidate as canonical_private\n"
+                    "assert facade._parse_candidate is canonical_private\n"
+                )
+            result = subprocess.run(
+                [sys.executable, "-c", script],
+                check=False,
+                capture_output=True,
+                text=True,
+                cwd=str(ROOT),
+            )
+            assert result.returncode == 0, result.stderr or result.stdout
+
+
+def test_split_canonical_modules_do_not_import_facades_or_legacy():
+    blocked = []
+    for path in SPLIT_CANONICAL_PATHS:
+        tree = ast.parse(path.read_text())
+        for node in ast.walk(tree):
+            modules = []
+            if isinstance(node, ast.ImportFrom) and node.module:
+                modules.append(node.module)
+            if isinstance(node, ast.Import):
+                modules.extend(alias.name for alias in node.names)
+            for module in modules:
+                if module in SPLIT_FORBIDDEN_FACADES or module.startswith(
+                    tuple(f"{name}." for name in SPLIT_FORBIDDEN_FACADES)
+                ):
+                    blocked.append((str(path), module))
+                if module == "legacy" or module.startswith("legacy."):
+                    blocked.append((str(path), module))
+    assert not blocked

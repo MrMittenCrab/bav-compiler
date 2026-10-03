@@ -168,9 +168,9 @@ from modeler.ownership_attribution import (
     compute_ownership_attribution_series,
     ownership_attribution_applicable,
 )
-from core.model.judgment import JudgmentCase, classification_judgment_cases
+from modeler.judgment import JudgmentCase, classification_judgment_cases
 from modeler.line_resolver import resolve_line, workbook_row_for
-from core.model.normalization import (
+from modeler.normalization import (
     NormalizationCase,
     compute_normalization_series,
     normalization_cases,
@@ -1764,7 +1764,7 @@ class ReferenceModelBuilder:
                     self.per_share_series.nopat_per_diluted_share[j],
                 )
         if self.normalization_cases and "Earnings Normalization" in wb.sheetnames:
-            from core.model.normalization import compute_normalization_series
+            from modeler.normalization import compute_normalization_series
 
             series = compute_normalization_series(
                 self.fin,

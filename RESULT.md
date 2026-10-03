@@ -1,3 +1,128 @@
+# RESULT.md — Step 10.10 Split classification and normalization interpretation ownership
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.10 — Split classification and normalization interpretation ownership
+**Work:** `823b625d346943a6b3c6ee40c60a72ed`
+**Plan:** `f3e25b8607b9495588b36e3549201fb9`
+**Finding:** Split classification and normalization interpretation ownership
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. Controller files under `.git/autocycle` were read-only.
+
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `5ff5e874f1abe00438fbccefe4ed8d5d686358a7dcdee483edb40f1166f57d80` (6006).
+
+This bounded split moves classification case selection and normalization calculations to Modeler and their interpretive rationales/prompts to Interpreter. It does not close parent Completion and does not establish Session 10 acceptance.
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state` and authenticated as a Git commit. `implementation-baseline.json` head matched B. Leftover `latest-implementation` HEAD was not substituted for B.
+
+| Binding source | Value |
+|---|---|
+| `resume-state` `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD | `1a65ef34304f04903d4abd0a8bbdcdead40b154f` |
+| Branch | `checkpoint/20260913-183303` |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` work / plan | work `823b625d346943a6b3c6ee40c60a72ed`, plan `f3e25b8607b9495588b36e3549201fb9`, step `10.10` |
+| `work-state` allocated `10.10` | source = B, work_id = `823b625d346943a6b3c6ee40c60a72ed`, status `opened` |
+| Current implementation attempt | `2284959d12e446968d56aa9523f0305b` (phase `running`, plan_sha = B, `checkpoint_sha` absent) |
+| Live authentication state | implementation at B (`HEAD == B`) after nonempty matching work and attempt bindings |
+| HEAD parent / reviewed checkpoint comparator | `563fa639a051702883788ea6ad2cd55067444f3b` |
+| `latest-implementation` leftover HEAD | `a61fc66fc6e9bfb7faa0599d399a953b996245dc` (ignored: `IMPLEMENT_BASE_SHA` populated and authenticated) |
+| Fail-closed | Not required |
+
+Historical tuples remain separately bound comparators and do not authorize this live attempt.
+
+Historical Git blobs at B were inspected before destination comparison:
+
+| Path at B | SHA-256 | Bytes |
+|---|---|---|
+| `core/model/judgment.py` | `b29054d4e9cf9c02b564046c14ecfc5df8b5f71ffe4b2553db8168c6b806a5e5` | 13726 |
+| `core/model/normalization.py` | `74c5869d1dfeef825d43ee1b9f6dc732c9db294442765e421c7623baeffaa824` | 11866 |
+| `interpreter/normalization.py` | `c5125cfb12878318208e066fb8c43e05ad1f4ff1a1cf01b39553f07481d83a32` | 559 |
+
+## Ownership split
+
+| Responsibility | Destination | Notes |
+|---|---|---|
+| Deterministic classification case selection, `JudgmentCase`, `_line_has_nonzero_value` | `modeler/judgment.py` | Ambiguity/override/zero-value filters unchanged |
+| `ClassificationJudgmentTemplate`, `CLASSIFICATION_JUDGMENT_TEMPLATES`, classification `CONSEQUENCE_PROMPT` | `interpreter/classification_judgment.py` | 12 registry keys, options, wording and validation unchanged |
+| Selectors, candidate validation, case identities, treatment selection, series arithmetic, associated types | `modeler/normalization.py` | Mechanical only; no new treatment decisions |
+| Normalization rationale/consequence handling and interpretive prompt | `interpreter/normalization.py` | Verbatim `referenceRationale` / `consequenceNote`; existing grouping qualifications preserved |
+| Compatibility façades, including required private helpers | `core/model/judgment.py`, `core/model/normalization.py` | Object identity preserved; one canonical definition per symbol |
+
+Runtime callers now import canonical owners: `modeler/workbook.py`, `modeler/check_context.py`, `modeler/historical_expected.py`, `modeler/normalized_per_share.py`, `modeler/ingestion/normalization_candidate_admission.py`. Tests and Legacy may still import the façades. Canonical implementations do not import those façades or Legacy.
+
+Admission `WORK_ID` in `core/tests/test_normalization_candidate_admission.py` was rebound from the prior 10.9 work `59ab4fdc9ec144ffb2c2b3f0bb8adaeb` to this live work `823b625d346943a6b3c6ee40c60a72ed`. Historical reviewed attempt/checkpoint/B/plan comparators were not changed. Isolated current-versus-B admission comparisons, lifecycle rejection fixtures and synthetic/independently authorized round trips remain.
+
+Inventory §4.4 and §14 items 4–5 now record Step 10.10 actual ownership and that tests/Legacy may still depend on the façades.
+
+## Provenance / fixture continuity versus B
+
+Classification template keys, options, rationale, consequence and prompt text match the B `core/model/judgment.py` blob (12 keys). Normalization `CONSEQUENCE_PROMPT` matches the B `core/model/normalization.py` blob.
+
+Representative DEMO_HK fixture:
+
+| Object | Measured result |
+|---|---|
+| Classification case | `classification::concept=lease_liability\|label=operating lease liabilities`; treatment `Operating Long-Term Liability`; alternative `Financial Liability`; B rationale/consequence/prompt attached |
+| Normalization case | `normalization::concept=restructuring_expense\|label=restructuring expense`; treatment `Non-recurring`; alternative `Recurring`; supplied rationale/consequence verbatim |
+| Series pretax | `(0.0, 0.0, 200.0, 0.0, 0.0)` |
+| Series after-tax FY2023 | `166.01769911504425` |
+| Tiny fixture | `referenceRationale="r"` / `consequenceNote="c"` pass through unchanged |
+
+Signatures/defaults preserved: `classification_judgment_cases(financials, periods, reformulation)`; `normalization_cases(financials, periods, assumptions)`; `compute_normalization_series(..., treatments=None)`; `zero_normalization_series(n)`.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| B authentication (resume-state, baseline JSON, work-state 10.10, branch, HEAD==B, attempt `2284959d…`) | B = `1a65ef34304f04903d4abd0a8bbdcdead40b154f`; HEAD == B; fail-closed not required |
+| Historical blob inspect vs current destinations | template keys/wording and both `CONSEQUENCE_PROMPT` strings match B |
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_classification.py core/tests/test_normalization.py core/tests/test_normalized_per_share.py core/tests/test_lease_liability.py core/tests/test_normalization_candidate_admission.py core/tests/test_modeler_calculation_ownership.py core/tests/test_data_ingestion_ownership.py core/tests/test_reference_integrity.py core/tests/test_current_build.py core/tests/test_cross_company_robustness.py core/tests/test_lululemon_benchmark.py core/tests/test_fast_retailing_benchmark.py` | **934 passed** in 200.64s. No skip / xfail / deselect |
+| Isolated current-versus-B admission compare, lifecycle fixtures, synthetic/independently authorized round trips for all 11 observations | Retained by existing `test_normalization_candidate_admission` gates (31 passed in that file) |
+| Canonical vs façade identity | `is` identity for public split symbols and required private helpers (`_line_has_nonzero_value`, `_parse_candidate`, `_parse_selector`, `_label_match_key`, `_candidate_period_values`, `_stable_override_selector`, `_case_by_id`) |
+| Fresh-process imports | façade-then-canonical and canonical-then-façade orders pass for classification cases/templates and normalization series/prompt |
+| Runtime façade/Legacy imports | absent from canonical owner files and updated callers |
+| `git diff --check` | rc 0 |
+| `git diff --check 1a65ef34304f04903d4abd0a8bbdcdead40b154f` | rc 0 |
+
+Workbook formulas, presentation and canonical source/extracted/reconciled inputs were not rewritten. Office Bridge was not required.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `modeler/judgment.py` | `b429554c6b4f556bccffa4b05a5d240e2e84dcebd44783d98907d146d4fc5c91` | 3331 |
+| `modeler/normalization.py` | `b67eb0fb5e2affddc7da79a5a975b49d6075d1dac22512e990b959ef8948e9e0` | 11962 |
+| `interpreter/classification_judgment.py` | `d569e4e7921ac957e40db20aa98116808c6126e3f2d1b342a5811741be307fa6` | 10618 |
+| `interpreter/normalization.py` | `cc238b3d3249e0040f649c4f2a6ee84b4dc6b329fa19e1e6aaadfa787c922000` | 1389 |
+| `core/model/judgment.py` | `3972d3f4d69ae58a2d4566e19cacbe0aced5a8022355dace41f8021230e42fdc` | 389 |
+| `core/model/normalization.py` | `bacc2a144bd647df2a25ae12a9e624f1d6e83e6944ff80b6e0035f79f77d11bc` | 725 |
+| `modeler/workbook.py` | `d58cbb3c9cd842d1684f8b12ce40ee7a943f735707633008c091d4240958158a` | 505837 |
+| `modeler/check_context.py` | `25614e9887a1213a4db44442b9bec3f81663c2ad2a66309f456ad771d8014f28` | 29193 |
+| `modeler/historical_expected.py` | `c0d5f9ee594106efb3b825a7447de7f5c3765de4295033cf09bb75046fa6239f` | 76698 |
+| `modeler/normalized_per_share.py` | `d5b768b4a234cce422c443fce5c1275b7466114dd0893643f266830908405de0` | 5157 |
+| `modeler/ingestion/normalization_candidate_admission.py` | `6eadd99d9673f4327194d5d8e9cf4eb205f732809a4b049e9d8ddc4841959e64` | 26021 |
+| `core/tests/test_modeler_calculation_ownership.py` | `7b11c087d63b4ca894b10f296578ccf6684a4fdab0d2078412746ba521933df8` | 14018 |
+| `core/tests/test_normalization_candidate_admission.py` | `7fe61a0864ec1b732e01a6642f61a38603fa968f3404c0cde0750c6aa873d4aa` | 120418 |
+| `director/docs/MIGRATION_INVENTORY.md` | `4ad267b02e95fa6738ba3693acb28ac1a240922e17426c1f5361f7643da24a78` | 120273 |
+
+## Preservation
+
+Completed ingestion/enrichment ownership, compatibility exports, standardized-only ordinary preparation, protected input immutability, admission/comparison independence, Driver qualifications, public `bav` commands and lazy loading, optional Trainer independence, dormant forecasting and zero-byte research placeholders remain. Case IDs, ordering, selectors, ambiguity/override/zero-value filtering, alternatives, errors, treatment defaults, missing-value behavior, accounting signs, precision, tax handling and numerical series were not redesigned. Admission stays default-off and outside ordinary reconciliation. Independent authorization still establishes neither grouping as source fact nor after-tax treatment. Canonical implementations do not import the façades or Legacy.
+
+## Remaining toward Completion
+
+Remaining Legacy/ingestion dispositions, repository-wide test ownership migration, unrelated removals and final migration verification remain unfinished. No algorithm/report redesign, general provenance framework, new Extractor, reasoning engine, Trainer expansion or second-phase features.
+
+This bounded classification/normalization split does not establish parent Completion or Session 10 acceptance.
+
+## Required plan change
+
+None.
+
+---
+
 # RESULT.md — Step 10.9.7 Restore management-KPI enrichment compatibility exports
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

@@ -30,7 +30,7 @@ from modeler.ingestion.normalization_candidate_admission_io import (
     observation_fingerprint,
     save_admitted_bundle,
 )
-from core.model.normalization import (
+from modeler.normalization import (
     NORMALIZATION_TREATMENTS,
     SUPPORTED_NORMALIZATION_SCOPE,
 )

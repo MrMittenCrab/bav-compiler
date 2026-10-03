@@ -13,8 +13,8 @@ from openpyxl.utils import get_column_letter
 
 from modeler.data.interface import StandardizedFinancials
 from modeler.data.standardized_io import standardized_to_payload
-from core.model.judgment import JudgmentCase
-from core.model.normalization import NormalizationCase
+from modeler.judgment import JudgmentCase
+from modeler.normalization import NormalizationCase
 
 CHECK_CONTEXT_SHEET = "_CheckContext"
 CHECK_CONTEXT_MAGIC = "BAV_CHECK_CONTEXT_V1"

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from core.model.normalization import NormalizationSeries
+from .normalization import NormalizationSeries
 from .per_share import PerShareSeries
 from .ratio_values import SOURCE_UNAVAILABLE, UNDEFINED_RATIO, is_source_unavailable, ratio_or_na
 

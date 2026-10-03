@@ -164,11 +164,9 @@ later split is listed.
 
 **Step 10.8 actual ownership.** Homogeneous calculation modules now execute
 from `modeler/<basename>.py`. Retained `core/model/<basename>.py` files for
-those modules are delegation-only compatibility façades. `judgment.py` and
-`normalization.py` remain at `core/model/` pending their inventory-defined
-Interpreter splits. Completed `revenue_driver.py`, `reported_margin.py` and
-`revenue_strategy_synthesis.py` splits are unchanged. Transitional
-dependencies remain on `core.model.judgment` / `core.model.normalization`.
+those modules are delegation-only compatibility façades. Completed
+`revenue_driver.py`, `reported_margin.py` and `revenue_strategy_synthesis.py`
+splits are unchanged.
 **Step 10.9:** data contracts and assigned ingestion modules now live under
 `modeler/data/`, `modeler/ingestion/`, `director/data/` and `director/ingestion/` with thin
 `core.data` / `core.ingestion` façades. **Step 10.9.5:** normalization-candidate
@@ -177,6 +175,21 @@ admission now executes from Modeler, Director and Interpreter owners, with a thi
 **Step 10.9.6:** management-KPI enrichment now executes from Extractor, Modeler
 and Director owners, with a thin `core.ingestion.management_kpi_enrichment`
 compatibility façade.
+**Step 10.10 actual ownership.** Classification case selection, `JudgmentCase`
+and mechanical helpers execute from `modeler/judgment.py`.
+`ClassificationJudgmentTemplate`, `CLASSIFICATION_JUDGMENT_TEMPLATES` and their
+rationale, consequence and prompt content execute from
+`interpreter/classification_judgment.py`. Normalization selectors, candidate
+validation, case identities, treatment selection, series arithmetic and
+associated data types execute from `modeler/normalization.py`. Normalization
+rationale/consequence handling and interpretive prompt ownership execute from
+`interpreter/normalization.py` (supplied `referenceRationale` /
+`consequenceNote` verbatim; existing grouping qualifications unchanged).
+Retained `core/model/judgment.py` and `core/model/normalization.py` are
+delegation-only compatibility façades preserving existing names, signatures,
+defaults, required private helpers and canonical object identity. Runtime
+callers use the canonical owners. Tests and Legacy may still import the
+façades. Canonical implementations do not import those façades or Legacy.
 
 | Current files | Disposition | Callers | Verification |
 |---|---|---|---|
@@ -1320,8 +1333,8 @@ Subsequent reviewed steps execute this order. This step does not execute it.
 1. Create visible roots `director/`, `extractor/`, `modeler/`, `interpreter/`, `composer/`; keep `legacy/`. Add `extractor/README.md`. Move Extractor contract + `filing_json` loaders + `classify_extracted_payload` + management-KPI parse + provenance bind per §7.3 / §12.
 2. Move `STYLE.md` and `DRIVER.md` to `director/docs/` and apply §11 reference updates, including README identity if that step touches README. Protected planning docs stay.
 3. Split `revenue_driver.py`, `revenue_strategy_synthesis.py` and `reported_margin.py` per §7.0–7.1 and §7.4 (observations / identity validity / verdicts / wording). Then split `drivers.py` / `selection.py` per §5. Apply the management-emphasis removal in §9. Deduplicate reconstruction helpers. Assessment concatenation stays first-name-wins; façades may not choose judgments.
-4. Move remaining Modeler calculation modules, data payload, ingestion reconcile/standardize, engine workbook, `build_bav_workbook`, semantic I/O, check-context embed. **Step 10.8:** homogeneous calculation modules now live under `modeler/` with thin `core.model` façades; `judgment.py` and `normalization.py` stay pending Interpreter splits. Engine/Trainer inversion is already done in 10.7. **Step 10.9:** assigned data contracts and ingestion admit/reconcile/CLI helpers now live under `modeler/data/`, `modeler/ingestion/`, `director/data/schema.py` and `director/ingestion/`. **Step 10.9.5:** normalization-candidate admission is split to Modeler construction/persistence, Director contracts/orchestration and Interpreter qualifications; enrichment remains transitional at `core/ingestion/`.
-5. Move Interpreter judgment functions and classification/normalization rationales / strategy inference.
+4. Move remaining Modeler calculation modules, data payload, ingestion reconcile/standardize, engine workbook, `build_bav_workbook`, semantic I/O, check-context embed. **Step 10.8:** homogeneous calculation modules now live under `modeler/` with thin `core.model` façades. Engine/Trainer inversion is already done in 10.7. **Step 10.9:** assigned data contracts and ingestion admit/reconcile/CLI helpers now live under `modeler/data/`, `modeler/ingestion/`, `director/data/schema.py` and `director/ingestion/`. **Step 10.9.5:** normalization-candidate admission is split to Modeler construction/persistence, Director contracts/orchestration and Interpreter qualifications; enrichment remains transitional at `core/ingestion/`. **Step 10.10:** classification case selection and normalization calculations live under `modeler/`; classification templates and normalization rationale/prompt ownership live under `interpreter/`; retained `core.model.judgment` / `core.model.normalization` are compatibility façades.
+5. Move Interpreter judgment functions and classification/normalization rationales / strategy inference. **Step 10.10:** classification templates and normalization rationale/consequence/prompt ownership now live under Interpreter. Remaining Interpreter judgment functions and strategy inference stay later work.
 6. Move Composer `style.py`, `document.py`, `publish.py`, Drivers prose/plots, Overview opening/navigation. **Step 10.6:** `style.py`, `document.py` and `publish.py` now live under `composer/research/`. Drivers prose/plots already live there from 10.5. **Step 10.7:** Overview opening/navigation lives in `composer/workbook_opening.py`.
 7. Move Director CLI / `current_build` / `project_companies.json` / build-contract policy. Keep `python -m bav` and company name interfaces. Director `build_company` sequences Modeler → Interpreter → Composer before workbook write.
 8. Relocate Legacy (Trainer remainder, skills, automation, retired scripts, HK demo, historical docs/verifiers).
