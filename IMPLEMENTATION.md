@@ -1,45 +1,44 @@
-# Step 10.12.1 — Compare representative company outputs against B
+# Step 10.13 — Relocate remaining Legacy functionality and references
+AUTOCYCLE_PLAN: {"finding_key": "Relocate remaining Legacy functionality and references", "kind": "work", "objective": "Relocate remaining Legacy functionality and references", "plan_id": "07c9bd93061c439fbe0a6046baf1520e", "predecessor_review_sha256": "fe1909d1f7584b501dc2ecd030c02fa97457b924f82e3b8ba31a8eabbba44fd6", "step_id": "10.13", "work_id": "01a325c7ed794dcbbcc0167a74c9d572"}
 
 ## Completion
 
-Director owns CLI routing, company configuration and company build/check/publication orchestration, with mechanical build status owned by Modeler, while public interfaces and existing execution behavior remain preserved.
-
-AUTOCYCLE_PLAN: {"evidence_routes": [{"commands": [["/opt/anaconda3/bin/python", "-m", "bav", "build", "Lululemon"], ["/opt/anaconda3/bin/python", "-m", "bav", "check", "Lululemon"], ["/opt/anaconda3/bin/python", "-m", "bav", "publish", "Lululemon"], ["/opt/anaconda3/bin/python", "-m", "bav", "build", "FastRetailing"], ["/opt/anaconda3/bin/python", "-m", "bav", "check", "FastRetailing"], ["/opt/anaconda3/bin/python", "-m", "bav", "publish", "FastRetailing"], ["/opt/anaconda3/bin/python", "-m", "pytest", "-q", "core/tests/test_current_build.py", "core/tests/test_publication.py"]], "fact": "Whether representative Lululemon and FastRetailing build/check/publication outputs preserve baseline B behavior under equivalent inputs."}], "finding_key": "Relocate CLI and company orchestration", "kind": "work", "minor": 1, "objective": "Compare representative company outputs against B", "plan_id": "38e6f227c15b488eb6a3c8d4ff3e1793", "predecessor_review_sha256": "3a5d8de4f33aede968617f319a6d2ef47c78aa518a0ab5b404adfc1be0d8a593", "step_id": "10.12.1", "work_id": "889f7a7b0342467caa4faf6315b52b88"}
+Inventory-designated Legacy functionality and supporting assets reside under their assigned Legacy categories, with working references and preserved useful behavior, while ordinary BAV company execution remains independent of Legacy.
 
 ## Bounded work
 
-Resolve the representative comparison required by the parent plan. Retain completed relocation, compatibility façades, canonical callers and ownership documentation.
+Follow `director/docs/MIGRATION_INVENTORY.md` §§4.6–4.11, 10 and 13–14. Retain completed Trainer, ingestion and enrichment relocations; move only remaining Legacy material.
 
-Unresolved fact: Whether representative Lululemon and FastRetailing build/check/publication outputs preserve baseline B behavior under equivalent inputs.
+- Relocate coverage automation to `legacy/automation/` and `automation/autocycle-fixes/` to `legacy/autocycle-fixes/`. Preserve controller patches as historical assets; do not apply them or alter installed AutoCycle.
+- Relocate repository skills and their fixtures/references to `legacy/skills/`, plugin metadata to `legacy/plugin/`, and the packaging script to `legacy/build_plugin_zip.sh`. Retain one existing archive at `legacy/bav-pipeline-plugin.zip`.
+- Relocate retired release builders, benchmark/reference audit scripts and PDF text-cache extraction to `legacy/scripts/`; place `requirements-benchmark.txt` alongside its extraction helper.
+- Relocate historical workbook verifiers and `docs/native-excel-*.json` to `legacy/verification/`. Preserve SHA bindings and independent expectations; relocation does not refresh native verification.
+- Relocate the Trainer guide, GOOGL reference, historical Excel diagnosis/resume notes and `docs/superpowers/specs/` under `legacy/docs/`, preserving useful substructure.
+- Relocate the five inventory-listed HK/GOOGL example JSON/workbook assets to `legacy/example/`, preserving their bytes.
+- Update imports, repository-root discovery, resource paths, script defaults, packaging inputs, installation templates, test fixtures and current documentation links affected by these moves. Keep the packaged plugin’s expected internal layout.
+- Update `legacy/README.md` and the migration inventory with actual destinations and retained entry points. Preserve historical RESULT records and distinguish historical commands from current instructions.
 
-Criterion: IMPLEMENTATION.md explicitly requires comparison with B to verify existing execution behavior is preserved.
+Keep existing compatibility interfaces where required by public behavior. Do not add forwarding layers for retired script paths without a demonstrated caller. Leave canonical company inputs, outputs and archived local evidence at their existing locations.
 
-- Authenticate the execution baseline through populated `IMPLEMENT_BASE_SHA`, otherwise normal baseline and bound-attempt mechanisms. Verify branch, ancestry and checkpoint bindings; fail closed on missing authentication.
-- Preserve the reviewed attempt’s authenticated comparator B, `2d272b7fdb4c0ab8bcabbcd50ef1efc357d181b3`, bound to attempt `1aeed994c57844349b2e9c09e53ab487` and checkpoint `d3629419e6120ce815841bf1a37f65f06c092152`. Distinguish this comparator from any new continuation baseline.
-- Materialize B and the current candidate from Git into separate disposable directories. Inspect B’s historical blobs before using current canonical destinations. Keep the working repository, canonical outputs and controller evidence untouched.
-- Supply identical copies of the existing canonical company inputs and referenced fixtures to both directories; record source paths and hashes. Verify their immutability afterward. Missing required inputs remain unresolved.
-- Use the same Python installation, dependencies, fonts and environment for both executions. Run the six company commands above from each isolated repository root, recording exit codes, stdout, stderr and generated output locations.
-- Compare actual B-generated and current-generated artifacts for both companies. Passing tests on both revisions and preserved source bytes do not substitute for this comparison.
+## Preservation
 
-## Output comparison
+Authenticate execution baseline B using populated `IMPLEMENT_BASE_SHA`, otherwise the normal baseline and bound-attempt mechanisms. Verify branch, ancestry and checkpoint bindings; fail closed if authentication is unavailable.
 
-- Compare relative output inventories, supporting JSON, research Markdown, figure contents and zero-byte placeholders. Compare check diagnostics and exit behavior, accounting for only explicitly identified temporary-root differences.
-- Compare XLSX ZIP member inventories and decompressed payloads, including workbook formulas, values, styles, relationships and embedded provenance. Inspect every differing member; distinguish archive timestamps and demonstrated volatile document metadata from analytical or presentation differences.
-- Reuse `_word_member_diffs`, `_publication_diff` and `_pdf_documents_equal` from `core/tests/test_publication.py` for the two generated DOCX/PDF pairs. Record content, layout and metadata differences separately; do not broadly discard document properties or unexplained differences.
-- Use existing check helpers and finite inspection commands without adding a verifier framework or AutoCycle infrastructure. Record the exact comparison invocations and results.
-- Run the listed current-build and publication tests against the current candidate after generation. Retain applicable evidence for the completed 616-test run; rerun affected portions of the parent suite if a demonstrated defect requires a repair.
-- Repair only a demonstrated relocation defect preventing this Completion, then repeat the affected paired comparison. Do not weaken, skip, deselect or xfail preserved gates.
+Inspect historical Git blobs at B before comparing canonical destinations. Record old-to-new mappings, byte identity for unchanged assets and explicit path/import changes for modified files. Git preserves tracked history; no duplicate legacy copies or migration receipts are required.
 
-## Preservation and recording
+Preserve non-Git irreplaceable evidence through verified canonical continuity before removing its old copy. Preserve source immutability, protected outputs, staged verification, sidecars, atomic replacement, rollback and provenance.
 
-Preserve CLI contracts, aliases, patchable configuration, explicit JSON/Excel routes, optional Trainer behavior and ordinary execution’s independence from Legacy.
+Preserve CLI aliases, patchable configuration, explicit JSON/Excel routes, optional Trainer behavior, analytical results, residual qualifications, dormant forecasting and zero-byte research placeholders. Retain normalization admission’s default-off behavior, fingerprint/adoption/treatment/authorization gates, once-only conversion, lifecycle rejection coverage and 11-observation round trips.
 
-Preserve source immutability, strict standardized preparation, protected outputs, staged verification, sidecars, atomic replacement, failure rollback, provenance, analytical results, residual qualifications, dormant forecasting and research placeholders.
+Remove dispositions, broader test ownership migration, product-wide branding and final Session verification remain subsequent scope. Do not redesign Legacy, expand features or alter active analytical algorithms.
 
-Retain normalization fingerprint, adoption, treatment, authorization, persistence, once-only conversion, isolated comparisons, lifecycle rejection coverage and all 11-observation round trips. Admission remains default-off and independent of ordinary reconciliation and comparison.
+## Verification and recording
 
-Apply SESSION’s Office Bridge requirements if workbook formulas/dependencies or presentation change. Reuse prior verification only while its dependencies remain applicable.
+- Run affected existing Trainer, ingestion, learner-presentation, cached-workbook verifier, reference-audit, CLI and company-orchestration tests. Update path assumptions without weakening assertions.
+- Check relocated Python/shell entry points and plugin packaging in disposable locations; inspect archive members and resource resolution. Do not install automation, launch services or invoke external coverage workflows.
+- Verify ordinary company build/check/publication routes still avoid Legacy imports. Reuse the reviewed representative comparison only while its dependencies remain unchanged; rerun affected representative paths if relocation changes their dependencies.
+- Preserve binary workbook assets exactly. Apply SESSION’s Office Bridge requirements if formulas/dependencies or presentation change; historical SHA-bound records do not substitute for current native verification.
+- Run `git diff --check` and the corresponding comparison against authenticated B.
+- Append relocation mappings, intentional edits, measured verification and remaining Session scope to `RESULT.md`. Preserve ownership/recovery, provider retry, human adoption, interruption, candidate validation, protected-document, unrelated-dirty-work and Review-cache safeguards.
 
-Run `git diff --check` and the corresponding diff check against the authenticated execution baseline. Append bindings, input hashes, output inventories, comparison results, measured checks and unresolved defects to `RESULT.md`; preserve historical records. Distinguish this Completion from unfinished Session migration.
-
-Preserve ownership/recovery, provider retry, human adoption, interruption, candidate validation, protected-document, unrelated-dirty-work and Review-cache safeguards. Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
+Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
