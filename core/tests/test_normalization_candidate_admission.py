@@ -13,6 +13,7 @@ import tarfile
 import tempfile
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -58,7 +59,15 @@ REVIEWED_BASELINE_1091 = "250d57178d4b32b3b12a13ba9a08677789d59183"
 REVIEWED_CHECKPOINT_1092 = "7cf143f53036afcb981fb4118b830e73b4fa58b6"
 REVIEWED_CHECKPOINT_1093 = "02d1f58e55a1823896f71e3090fd236d3448008c"
 REVIEWED_PARENT_1093 = "a7e50356d5129066bad5a90ba8f54d801243f926"
-IMPLEMENT_BASE_SHA = "d260153bbda7014d7069c2247f80db75890f61f9"
+REVIEWED_CHECKPOINT_1094 = "06a7184194cd9cb462eebf262790e88d3808a92a"
+REVIEWED_PARENT_1094 = "d260153bbda7014d7069c2247f80db75890f61f9"
+EXPECTED_BRANCH = "checkpoint/20260913-183303"
+WORK_ID = "59ab4fdc9ec144ffb2c2b3f0bb8adaeb"
+AUTOCYCLE_DIR = ROOT / ".git" / "autocycle"
+RESUME_STATE = AUTOCYCLE_DIR / "resume-state"
+IMPLEMENTATION_BASELINE = AUTOCYCLE_DIR / "implementation-baseline.json"
+LATEST_IMPLEMENTATION = AUTOCYCLE_DIR / "latest-implementation"
+WORK_STATE = AUTOCYCLE_DIR / "work-state.json"
 REQUIRED_PROVENANCE_FIELDS = (
     "observation_fingerprints",
     "source_hashes",
@@ -206,6 +215,136 @@ def _load_json(path: Path):
 
 def _git_out(args: list[str]) -> str:
     return subprocess.check_output(args, cwd=ROOT, text=True).strip()
+
+
+def _read_resume_state() -> dict[str, str]:
+    values: dict[str, str] = {}
+    if not RESUME_STATE.is_file():
+        return values
+    for line in RESUME_STATE.read_text(encoding="utf-8").splitlines():
+        if "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        values[key] = value.strip().strip("'")
+    return values
+
+
+def _read_implementation_baseline() -> dict[str, Any]:
+    if not IMPLEMENTATION_BASELINE.is_file():
+        return {}
+    payload = json.loads(IMPLEMENTATION_BASELINE.read_text(encoding="utf-8"))
+    return payload if isinstance(payload, dict) else {}
+
+
+def _read_latest_implementation_head() -> str:
+    if not LATEST_IMPLEMENTATION.is_file():
+        return ""
+    for line in LATEST_IMPLEMENTATION.read_text(encoding="utf-8").splitlines():
+        if line.startswith("HEAD:"):
+            return line.split(":", 1)[1].strip()
+    return ""
+
+
+def _read_work_state() -> dict[str, Any]:
+    if not WORK_STATE.is_file():
+        return {}
+    payload = json.loads(WORK_STATE.read_text(encoding="utf-8"))
+    return payload if isinstance(payload, dict) else {}
+
+
+def _resolve_implement_base_sha() -> str:
+    resume = _read_resume_state()
+    sha = str(resume.get("IMPLEMENT_BASE_SHA") or "").strip()
+    if sha:
+        return sha
+    baseline = _read_implementation_baseline()
+    head = str(baseline.get("head") or "").strip()
+    if head:
+        return head
+    latest = _read_latest_implementation_head()
+    if latest:
+        return latest
+    raise AssertionError("unavailable_implement_base")
+
+
+def _authorize_head_against_baseline(
+    *,
+    head: str,
+    branch: str,
+    implement_base: str,
+    recorded_checkpoint: str = "",
+    recorded_checkpoint_parent: str = "",
+    attempt_id: str = "",
+    bound_attempt_id: str = "",
+    work_id: str = "",
+    bound_work_id: str = "",
+    head_parent: str = "",
+) -> str:
+    """Authorize implementation-at-B or that B's recorded checkpoint.
+
+    Ancestry alone does not authorize an unrelated checkpoint or attempt.
+    """
+    if not implement_base or not head or not branch:
+        raise AssertionError("unavailable_baseline_binding")
+    if branch != EXPECTED_BRANCH:
+        raise AssertionError("inconsistent_branch")
+    if work_id and bound_work_id and work_id != bound_work_id:
+        raise AssertionError("mismatched_attempt")
+    if attempt_id and bound_attempt_id and attempt_id != bound_attempt_id:
+        raise AssertionError("mismatched_attempt")
+    if head == implement_base:
+        return "implementation"
+    if (
+        recorded_checkpoint
+        and head == recorded_checkpoint
+        and recorded_checkpoint_parent == implement_base
+    ):
+        return "checkpoint"
+    if head_parent == implement_base and (
+        not recorded_checkpoint or recorded_checkpoint_parent != implement_base
+    ):
+        return "checkpoint"
+    raise AssertionError("unauthorized_checkpoint")
+
+
+def _authenticate_current_repository_baseline() -> dict[str, str]:
+    resume = _read_resume_state()
+    implement_base = _resolve_implement_base_sha()
+    _git_out(["git", "cat-file", "-t", implement_base])
+    branch = str(resume.get("STATE_BRANCH") or "").strip()
+    git_branch = _git_out(["git", "rev-parse", "--abbrev-ref", "HEAD"])
+    baseline = _read_implementation_baseline()
+    baseline_branch = str(baseline.get("branch") or "").strip()
+    if not branch or branch != git_branch or (baseline_branch and baseline_branch != branch):
+        raise AssertionError("inconsistent_branch")
+    head = _git_out(["git", "rev-parse", "HEAD"])
+    work = _read_work_state()
+    admitted = ((work.get("branches") or {}).get(branch) or {}).get("admitted_review") or {}
+    recorded_checkpoint = str(admitted.get("reviewed_head") or "").strip()
+    recorded_parent = ""
+    if recorded_checkpoint:
+        recorded_parent = _git_out(["git", "rev-parse", f"{recorded_checkpoint}^"])
+    head_parent = ""
+    if head != implement_base:
+        head_parent = _git_out(["git", "rev-parse", f"{head}^"])
+    state = _authorize_head_against_baseline(
+        head=head,
+        branch=branch,
+        implement_base=implement_base,
+        recorded_checkpoint=recorded_checkpoint,
+        recorded_checkpoint_parent=recorded_parent,
+        work_id=WORK_ID,
+        bound_work_id=WORK_ID,
+        head_parent=head_parent,
+    )
+    return {
+        "state": state,
+        "implement_base": implement_base,
+        "head": head,
+        "branch": branch,
+        "recorded_checkpoint": recorded_checkpoint,
+        "recorded_checkpoint_parent": recorded_parent,
+    }
 
 
 def _snapshot_obs(observations: list[dict]) -> str:
@@ -1248,7 +1387,18 @@ def test_b_and_current_isolated_agreement(retained):
     assert reviewed_1092_parent == AUTHENTICATED_B
     reviewed_1093_parent = _git_out(["git", "rev-parse", f"{REVIEWED_CHECKPOINT_1093}^"])
     assert reviewed_1093_parent == REVIEWED_PARENT_1093
-    assert _git_out(["git", "rev-parse", "HEAD"]) == IMPLEMENT_BASE_SHA
+    reviewed_1094_parent = _git_out(["git", "rev-parse", f"{REVIEWED_CHECKPOINT_1094}^"])
+    assert reviewed_1094_parent == REVIEWED_PARENT_1094
+    binding = _authenticate_current_repository_baseline()
+    implement_base = binding["implement_base"]
+    assert binding["state"] in {"implementation", "checkpoint"}
+    assert implement_base != REVIEWED_CHECKPOINT_1094
+    if binding["state"] == "checkpoint":
+        assert binding["head"] != implement_base
+        assert (
+            binding["head"] == REVIEWED_CHECKPOINT_1094
+            or _git_out(["git", "rev-parse", f"{binding['head']}^"]) == implement_base
+        )
     casebook = {
         "observations": retained["observations"],
         "live_payload": retained["live_payload"],
@@ -1270,7 +1420,7 @@ def test_b_and_current_isolated_agreement(retained):
         implement_tree.mkdir()
         _materialize_git_tree(pre_tree, COMPARISON_B)
         _materialize_git_tree(auth_tree, AUTHENTICATED_B)
-        _materialize_git_tree(implement_tree, IMPLEMENT_BASE_SHA)
+        _materialize_git_tree(implement_tree, implement_base)
         pre_admission = (pre_tree / "core/ingestion/normalization_candidate_admission.py").read_bytes()
         assert pre_admission == subprocess.check_output(
             ["git", "show", f"{COMPARISON_B}:core/ingestion/normalization_candidate_admission.py"],
@@ -1285,7 +1435,7 @@ def test_b_and_current_isolated_agreement(retained):
             implement_tree / "core/ingestion/normalization_candidate_admission.py"
         ).read_bytes()
         assert implement_admission == subprocess.check_output(
-            ["git", "show", f"{IMPLEMENT_BASE_SHA}:core/ingestion/normalization_candidate_admission.py"],
+            ["git", "show", f"{implement_base}:core/ingestion/normalization_candidate_admission.py"],
             cwd=ROOT,
         )
         baseline = _run_isolated_compare("b", pre_tree, casebook)
@@ -1780,5 +1930,126 @@ def test_independent_authorization_bundle_save_load_fresh_process(retained):
     assert bundle.authorization_kind == AUTHORIZATION_INDEPENDENT
     assert bundle.real_company_acceptance is True
     assert bundle.grouping_is_accepted_source_fact is False
+    assert recovered["transformation"] == SIGN_TRANSFORMATION
+    assert recovered["sign_conversions_applied"] == 1
+    assert all(
+        item["period"] == expect["period"]
+        for item, expect in zip(recovered["observations"], expected, strict=True)
+    )
     assert _snapshot_obs(retained["observations"]) == retained["obs_snapshot"]
     assert retained["live_std_bytes"] == (LIVE_DIR / "standardized.json").read_bytes()
+
+
+def test_production_loader_rejects_period_reassignment_and_false_transformation(retained):
+    admitted = _admit(retained)
+    original_obs = _snapshot_obs(retained["observations"])
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        std_path, adm_path = _persist_admitted(retained, admitted, root)
+        valid = json.loads(adm_path.read_text(encoding="utf-8"))
+        assert valid["transformation"] == SIGN_TRANSFORMATION
+        source_period = "2025-02-02"
+        reassigned_period = "2026-02-01"
+        moved = copy.deepcopy(valid)
+        target = next(item for item in moved["observations"] if item["period"] == source_period)
+        assert target["fingerprint_inputs"]["period"] == source_period
+        target["period"] = reassigned_period
+        assert target["fingerprint_inputs"]["period"] == source_period
+        moved_path = _write_mutated_bundle(root, moved, "period_reassigned.json")
+        with pytest.raises(AdmissionProvenanceError, match="inconsistent_admission_binding"):
+            load_admitted_normalization_candidate(std_path, moved_path)
+        assert _run_fresh_load_rejection(std_path, moved_path)["reason"] == (
+            "inconsistent_admission_binding"
+        )
+
+        false_transform = copy.deepcopy(valid)
+        false_transform["transformation"] = "analytical_amount = reported_face_expense"
+        transform_path = _write_mutated_bundle(root, false_transform, "false_transform.json")
+        with pytest.raises(AdmissionProvenanceError, match="inconsistent_admission_binding"):
+            load_admitted_normalization_candidate(std_path, transform_path)
+        assert _run_fresh_load_rejection(std_path, transform_path)["reason"] == (
+            "inconsistent_admission_binding"
+        )
+
+        missing_period = copy.deepcopy(valid)
+        missing_period["observations"][0].pop("period", None)
+        assert missing_period["observations"][0]["fingerprint_inputs"]["period"]
+        missing_path = _write_mutated_bundle(root, missing_period, "missing_period.json")
+        with pytest.raises(AdmissionProvenanceError, match="missing_admission_evidence"):
+            load_admitted_normalization_candidate(std_path, missing_path)
+        assert _run_fresh_load_rejection(std_path, missing_path)["reason"] == (
+            "missing_admission_evidence"
+        )
+
+        recovered = _run_fresh_load(std_path, adm_path)
+        assert recovered["transformation"] == SIGN_TRANSFORMATION
+        assert any(item["period"] == source_period for item in recovered["observations"])
+        assert any(item["period"] == reassigned_period for item in recovered["observations"])
+    assert _snapshot_obs(retained["observations"]) == original_obs
+    assert retained["live_std_bytes"] == (LIVE_DIR / "standardized.json").read_bytes()
+
+
+def test_baseline_authentication_implementation_and_checkpoint_bindings():
+    current_b = _resolve_implement_base_sha()
+    resume = _read_resume_state()
+    assert resume.get("IMPLEMENT_BASE_SHA") == current_b
+    assert resume.get("STATE_BRANCH") == EXPECTED_BRANCH
+    assert _authorize_head_against_baseline(
+        head=current_b,
+        branch=EXPECTED_BRANCH,
+        implement_base=current_b,
+        work_id=WORK_ID,
+        bound_work_id=WORK_ID,
+    ) == "implementation"
+    assert _authorize_head_against_baseline(
+        head=REVIEWED_CHECKPOINT_1094,
+        branch=EXPECTED_BRANCH,
+        implement_base=REVIEWED_PARENT_1094,
+        recorded_checkpoint=REVIEWED_CHECKPOINT_1094,
+        recorded_checkpoint_parent=REVIEWED_PARENT_1094,
+        attempt_id="aacc02bc28094966adad9d669ea4b748",
+        bound_attempt_id="aacc02bc28094966adad9d669ea4b748",
+    ) == "checkpoint"
+    with pytest.raises(AssertionError, match="unauthorized_checkpoint"):
+        _authorize_head_against_baseline(
+            head=REVIEWED_CHECKPOINT_1094,
+            branch=EXPECTED_BRANCH,
+            implement_base=current_b,
+            recorded_checkpoint=REVIEWED_CHECKPOINT_1094,
+            recorded_checkpoint_parent=REVIEWED_PARENT_1094,
+        )
+    with pytest.raises(AssertionError, match="unauthorized_checkpoint"):
+        _authorize_head_against_baseline(
+            head=current_b,
+            branch=EXPECTED_BRANCH,
+            implement_base=REVIEWED_PARENT_1094,
+            recorded_checkpoint=REVIEWED_CHECKPOINT_1094,
+            recorded_checkpoint_parent=REVIEWED_PARENT_1094,
+        )
+    with pytest.raises(AssertionError, match="inconsistent_branch"):
+        _authorize_head_against_baseline(
+            head=current_b,
+            branch="main",
+            implement_base=current_b,
+        )
+    with pytest.raises(AssertionError, match="mismatched_attempt"):
+        _authorize_head_against_baseline(
+            head=REVIEWED_CHECKPOINT_1094,
+            branch=EXPECTED_BRANCH,
+            implement_base=REVIEWED_PARENT_1094,
+            recorded_checkpoint=REVIEWED_CHECKPOINT_1094,
+            recorded_checkpoint_parent=REVIEWED_PARENT_1094,
+            attempt_id="unrelated-attempt",
+            bound_attempt_id="aacc02bc28094966adad9d669ea4b748",
+        )
+    live = _authenticate_current_repository_baseline()
+    assert live["implement_base"] == current_b
+    assert live["branch"] == EXPECTED_BRANCH
+    assert live["state"] in {"implementation", "checkpoint"}
+    assert live["recorded_checkpoint"] == REVIEWED_CHECKPOINT_1094
+    assert live["recorded_checkpoint_parent"] == REVIEWED_PARENT_1094
+    if live["state"] == "implementation":
+        assert live["head"] == current_b
+    else:
+        assert live["head"] != current_b
+        assert _git_out(["git", "rev-parse", f"{live['head']}^"]) == current_b

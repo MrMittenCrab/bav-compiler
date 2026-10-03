@@ -11395,3 +11395,105 @@ This validation repair does not establish parent Completion or Session 10 accept
 
 None.
 
+---
+
+# RESULT.md — Step 10.9.4 Relocate data contracts and ingestion responsibilities — complete admission-bundle validation repair
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.9.4 — Relocate data contracts and ingestion responsibilities — complete admission-bundle validation repair
+**Work:** `59ab4fdc9ec144ffb2c2b3f0bb8adaeb`
+**Plan:** `57858697f3f94db58c9e344d7023d3bf`
+**Finding:** Relocate data contracts and ingestion responsibilities
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections, including the prior 10.9.4 admission-bundle validation record, were not rewritten. No commit / push / sync / checkpoint / branch change.
+
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `e80a74cd182eca89bd1d11ac0e19e8481bc75129da9e7664f3857e5cc82252fb` (8456).
+
+This bounded repair closes the predecessor-review defects (recovered period reassignment, false transformation metadata, and HEAD-equals-B failure at checkpoint). It does not close parent Completion (remaining relocation/decomposition still open) and does not establish Session 10 acceptance.
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. Controller records were read-only.
+
+| Binding | Value |
+|---|---|
+| `resume-state` `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / HEAD / `implementation-baseline.json` head | `418f7dc23a52c925d88f9a76ab32cfc33b70e204` |
+| Branch | `checkpoint/20260913-183303` |
+| Authentication state | implementation at B (`HEAD == B`) |
+| Historical reviewed checkpoint | `06a7184194cd9cb462eebf262790e88d3808a92a` |
+| Historical checkpoint parent | `d260153bbda7014d7069c2247f80db75890f61f9` |
+| HEAD parent | `06a7184194cd9cb462eebf262790e88d3808a92a` |
+| Retained pre-relocation comparator | `eb65dc63845b940162c48e39ae9af7598d2a3078` |
+| `latest-implementation` leftover HEAD | `d260153bbda7014d7069c2247f80db75890f61f9` (ignored: `IMPLEMENT_BASE_SHA` populated) |
+| Fail-closed | Not required; populated `IMPLEMENT_BASE_SHA`, branch ref, ancestry and historical checkpoint parent all authenticated |
+
+Historical binding preserved: checkpoint `06a71841` is the direct child of `d260153b`. That parent is not this implementation’s B. Ancestry of `d260153b` through `06a71841` to current HEAD/`418f7dc` does not authorize `418f7dc` as a checkpoint of `d260153b`.
+
+`test_b_and_current_isolated_agreement` no longer requires HEAD-equals-B. It authenticates implementation-at-B or a checkpoint whose recorded parent is current B (or whose direct parent is current B when the recorded reviewed-head belongs to a prior B). Isolated current-versus-B execution and behavioral assertions were not weakened.
+
+## Validation repair
+
+`observation_evidence_from_payload` now requires the persisted observation period to equal `fingerprint_inputs.period` after fingerprint validation. The expected projection is derived from those inputs, never from the recovered period. Missing period on either side is `missing_admission_evidence`; disagreement is `inconsistent_admission_binding`. Periods are not filled or rewritten.
+
+`load_admitted_bundle` now requires the exact transformation identity `analytical_amount = -reported_face_expense`. Face/analytical agreement (`analytical = -face`) and `sign_conversions_applied == 1` remain; reload does not reapply conversion.
+
+Admission evidence integration in `core/ingestion/normalization_candidate_admission.py` was unchanged (SHA-256 `903ed5233bc679433c47d76fc7ffa3e03656cc3a785652d9d2812ef6399893a2`).
+
+## Bypass rejection evidence
+
+Independent mutations of a valid production-saved bundle, each failing through `load_admitted_normalization_candidate` and a fresh process that received only persisted paths:
+
+| Mutation | Production-loader reason |
+|---|---|
+| Observation period `2025-02-02` → `2026-02-01`, fingerprint inputs unchanged | `inconsistent_admission_binding` |
+| `transformation = analytical_amount = reported_face_expense` | `inconsistent_admission_binding` |
+| Observation `period` removed, fingerprint inputs retained | `missing_admission_evidence` |
+| `adoption.decision_status=provisional` | `blocked_or_provisional_handoff` |
+| empty `treatment` | `missing_admission_evidence` |
+| synthetic authorization with `real_company_acceptance=true` | `inconsistent_admission_binding` |
+| observation `source_hash` altered, fingerprints unchanged | `inconsistent_admission_binding` |
+
+Existing authorization, treatment/configuration, fingerprint, stale-evidence, v1-schema and linkage rejection cases were preserved.
+
+Baseline authentication unit checks: valid implementation at current B; valid historical checkpoint `06a71841` bound to parent `d260153b`; rejection of that checkpoint against current B; rejection of current HEAD against `d260153b` (ancestry-only); rejection of branch `main`; rejection of mismatched attempt id.
+
+## Successful recovered linkage
+
+Synthetic and independently supplied authorization records both saved and reloaded in a fresh process from persisted paths only. All 11 observations retained original period associations, hashes, rows, locators, face amounts, exact transformation and analytical values.
+
+| Field | Synthetic | Independent |
+|---|---|---|
+| `authorization_kind` | `synthetic` | `independently_supplied` |
+| `real_company_acceptance` | `False` | `True` (independently supplied; not grouping-as-fact) |
+| `grouping_is_accepted_source_fact` | `False` | `False` |
+| Analytical values | `(0, -407913, -74501, 0, 0)` | same |
+| Face / transformation / once-only | `(0, 407913, 74501, 0, 0)`; `analytical_amount = -reported_face_expense`; `sign_conversions_applied == 1` | same |
+| Observations | 11 source-derived fingerprints; FY2025/FY2026 `printed_page_status=unresolved` with `printed_page=None` | same recovered projection |
+
+Input observations and live standardized bytes were unchanged. Repeated admission after reload remains `repeated_admission`. After-tax treatment stays unresolved. Admission remains default-off.
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_normalization_candidate_admission.py` | **31 passed** in 5.58s. All **29** prior cases preserved (including standardized-only omission and the four bypass regressions). Two added repair tests. No skip / xfail / deselect |
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_data_ingestion_ownership.py core/tests/test_normalization.py core/tests/test_filing_json.py` | **135 passed** in 10.02s |
+| Isolated compare vs pre-relocation `eb65dc6`, 10.9.2 parent `95efb965`, and authenticated B `418f7dc` | Analytical and admission-gate JSON equal. Historical persist names remain empty on `eb65dc6` / `95efb965` and still report `no_admission_provenance_persist_reload`. Authenticated B `418f7dc` already has repaired persistence; current adds period-binding and exact transformation identity. Successful recovered values still match |
+| `git diff --check` | rc 0 |
+| Enrichment-sidecar | Not re-run. Prior Step 10.9 failure `test_ordinary_prepare_writes_resolution_and_keeps_revenue_per_store` remains visible; the broader suite is not claimed fully passing |
+
+## Preservation
+
+Completed Modeler/Director relocation, compatibility imports, public `bav` interfaces, source/extracted/reconciled inputs and ordinary documentary provenance were not rewritten. `standardized_io.py` remains model-only. Admission stays at `core/ingestion/normalization_candidate_admission.py` with IO validation in `modeler/ingestion/normalization_candidate_admission_io.py`. Ownership/recovery safeguards and protected documents were not disturbed.
+
+## Remaining toward Completion
+
+Classification/normalization interpretation splits, broader normalization-candidate separation, enrichment/Legacy decomposition, remaining orchestration relocation, unrelated removals, test ownership migration and final repository-wide verification remain subsequent scope. The enrichment-sidecar defect was not repaired.
+
+This bounded validation repair does not establish parent Completion or Session 10 acceptance.
+
+## Required plan change
+
+None.

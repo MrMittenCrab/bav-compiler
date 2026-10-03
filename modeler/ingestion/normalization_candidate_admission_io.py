@@ -22,6 +22,7 @@ ARTIFACT_SCHEMA = "normalization_candidate_admission/v2"
 PRIOR_ARTIFACT_SCHEMAS = frozenset({"normalization_candidate_admission/v1"})
 STATEMENT = "income_statement"
 SIGN_CONVERSION_ONCE = 1
+SIGN_TRANSFORMATION = "analytical_amount = -reported_face_expense"
 AUTHORIZATION_SYNTHETIC = "synthetic"
 AUTHORIZATION_INDEPENDENT = "independently_supplied"
 SUPPORTED_NORMALIZATION_SCOPE = "operating_pretax_effective_tax"
@@ -184,11 +185,20 @@ def observation_evidence_from_payload(payload: Mapping[str, Any]) -> Observation
             fingerprint=stored_fingerprint,
             recomputed=recomputed,
         )
-    period = str(payload.get("period") or inputs.get("period") or "")
-    if not period:
-        raise AdmissionProvenanceError("mismatched_period_binding")
+    input_period = inputs.get("period")
+    stored_period = payload.get("period")
+    if _blank(input_period) or stored_period is None or _blank(stored_period):
+        raise AdmissionProvenanceError("missing_admission_evidence")
+    input_period = str(input_period)
+    stored_period = str(stored_period)
+    if stored_period != input_period:
+        raise AdmissionProvenanceError(
+            "inconsistent_admission_binding",
+            stored_period=stored_period,
+            fingerprint_period=input_period,
+        )
     projected = observation_evidence_from_inputs(
-        inputs, period=period, fingerprint=stored_fingerprint
+        inputs, period=input_period, fingerprint=stored_fingerprint
     )
     physical = payload.get("physical_page")
     if physical is not None:
@@ -201,7 +211,7 @@ def observation_evidence_from_payload(payload: Mapping[str, Any]) -> Observation
         physical_page=physical,
         printed_page=payload.get("printed_page"),
         printed_page_status=str(payload.get("printed_page_status") or ""),
-        period=period,
+        period=stored_period,
         reported_amount=int(payload.get("reported_amount")),
         currency=str(payload.get("currency") or ""),
         unit_scale=str(payload.get("unit_scale") or ""),
@@ -557,6 +567,11 @@ def load_admitted_bundle(
     raw_analytical = _require_mapping(artifact.get("analytical_values"), "mismatched_value_binding")
     raw_face = _require_mapping(artifact.get("face_values"), "mismatched_value_binding")
     transformation = _require_text(artifact, "transformation", "missing_admission_evidence")
+    if transformation != SIGN_TRANSFORMATION:
+        raise AdmissionProvenanceError(
+            "inconsistent_admission_binding",
+            transformation=transformation,
+        )
     sign_conversions = artifact.get("sign_conversions_applied")
     if sign_conversions != SIGN_CONVERSION_ONCE:
         raise AdmissionProvenanceError(
