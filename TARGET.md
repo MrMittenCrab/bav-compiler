@@ -25,85 +25,123 @@ Trainer is preserved where useful as Legacy functionality, not an active archite
 
 ## Active component architecture
 
-BAV Compiler has exactly five active components: Director, Extractor, Modeler, Interpreter and Composer. The repository visibly represents `director/`, `extractor/`, `modeler/`, `interpreter/`, `composer/` and `legacy/`.
+BAV Compiler has exactly six active components: Director, Extractor, Modeler, Inferer, Debater and Composer. `bav/` is the canonical active Python package, with component implementation under `bav/director/`, `bav/extractor/`, `bav/modeler/`, `bav/inferer/`, `bav/debater/` and `bav/composer/`.
 
-Every meaningful responsibility has exactly one disposition: Director, Extractor, Modeler, Interpreter, Composer, Legacy or Remove. Classification follows the kind of decision, not the historical file, module, class or subsystem. A mixed module must be decomposed when its responsibilities cross component boundaries.
+All active BAV implementation belongs to exactly one component. Every meaningful responsibility has exactly one disposition: Director, Extractor, Modeler, Inferer, Debater, Composer, Legacy, Remove or Runtime-tooling. Classification follows responsibility and decision type, not current filenames, directories, classes or subsystems. Split mixed files across their substantive owners.
+
+Do not retain active `core`, `common`, `shared` or `interpreter` implementation layers, or parallel active implementations in top-level component folders. Minimal `bav` package initialization and public entry wiring delegate to their component owner; they do not form another component.
 
 ### Director
 
-Director owns system architecture, component boundaries, workflow orchestration, project-level configuration, global policies, high-level Markdown specifications, STYLE.md, interfaces, handoff contracts and lifecycle/execution coordination.
+Director owns architecture, orchestration, component boundaries, global configuration and policy, high-level component contracts, lifecycle and routing. It owns STYLE.md and other system-wide design/style specifications.
 
-Director defines policy and controls execution. Shared analytical, extraction, interpretation or rendering implementation belongs to its substantive component rather than Director.
+Director defines policy and controls execution. It is not a miscellaneous bucket. Extraction, quantitative calculations, neutral assumption formation, motivated research and publication implementation belong to their substantive components.
 
-Director-owned high-level documentation lives under `director/docs/`. Move STYLE.md there and update references. Global architectural specifications, including the retained Driver specification, are Director-owned. TARGET.md, SESSION.md and IMPLEMENTATION.md remain at their protected controller-facing locations.
+Director-owned high-level documentation lives under `bav/director/docs/`, including STYLE.md and the retained Driver specification. Move architectural and policy Markdown there when safe and update references. Determine AutoCycle root-path requirements before moving controller-facing documents; TARGET.md, SESSION.md, IMPLEMENTATION.md and RESULT.md remain at their required protected/controller-facing locations.
 
 ### Extractor
 
-Extractor answers “What did the company publish?” It owns source-faithful conversion, Markdown, text, tables, reported financial facts and KPIs, management commentary, definitions and document/page/source provenance.
+Extractor answers “What did the company publish?” It owns source-faithful acquisition and structuring of company evidence: filings, earnings-call materials, source Markdown, reported facts and KPIs, management commentary, management guidance, definitions and source provenance.
 
-Accounting interpretation, normalization, financial modeling, causal analysis and research prose do not belong to Extractor. Existing functionality belongs here only where its responsibility is source-faithful extraction. A minimal documented boundary is sufficient when no implementation qualifies; migration does not require building a new Extractor.
+Management guidance is evidence, not authority. Accounting interpretation, normalization, model calculations, assumption formation, thesis construction and research prose do not belong to Extractor. A minimal documented boundary is sufficient where implementation is absent; migration does not require building a new Extractor.
 
 ### Modeler
 
-Modeler owns analytical operations with reproducible answers from the same inputs and explicit assumptions: accounting identities, classification and normalization, historical reconstruction, schedules, ratios, series, reconciliations, bridges, deterministic decompositions, statistical calculations, forecast/scenario/valuation arithmetic, workbook generation and BAV Excel construction.
+Modeler owns the complete quantitative company model, historical and prospective: accounting classification and normalization, historical financial reconstruction, schedules, ratios and analytical series, identities, reconciliations, bridges and residuals, regressions and deterministic tests, forecasts, scenario calculations, sensitivities, DCF, comparables, valuation, workbook generation and BAV Excel construction.
 
-Modeler owns transformation, calculation, assumption and output provenance; residuals; validity, consistency and measurement-boundary checks; and tests establishing mechanical support for numerical claims. Raw source provenance originates in Extractor.
+Modeler owns calculation provenance and validity checks, including transformation and output provenance, consistency and measurement-boundary checks, and mechanical support for numerical claims. Raw source provenance originates in Extractor.
 
-Modeler may calculate consequences of Interpreter assumptions. It does not choose economic importance, plausible mechanisms, thesis emphasis or arguments.
+Forecast calculations belong to Modeler. It receives explicit assumptions and calculates their consequences without deciding whether those assumptions are neutral, bullish, bearish or otherwise desirable. Ownership of prospective calculations does not authorize adding or activating deferred methods during migration.
 
-### Interpreter
+### Inferer
 
-Interpreter owns judgments about meaning: materiality, economic importance, hypotheses, mechanisms, competing explanations, causal interpretation, uncertainty, research gaps, diagnostic evidence, justified assumptions, strongest supported conclusions and further investigation.
+Inferer owns neutral/base assumption formation, assumption plausibility and neutral uncertainty.
 
-Management-emphasized metrics remain attributed evidence. Management emphasis alone must never establish economic-driver status; analytical significance belongs to Interpreter.
+It may use Extractor evidence, historical Modeler outputs, current model state, historical persistence, mean reversion, known business changes, management guidance, uncertainty and alternative plausible assumptions. Management guidance must not be copied mechanically into the base case.
 
-Interpreter may request Modeler calculations and tests and assess their implications. The future Modeler ⇄ Interpreter reasoning loop is not implemented during migration.
+Inferer distinguishes reported fact, management view, historical tendency, inferred assumption and uncertainty. It does not present management emphasis as established economic-driver status.
+
+The intended future loop is Inferer → neutral assumptions → Modeler → calculated consequences → Inferer → revised assumptions. Do not build a sophisticated inference engine or new reasoning loop during migration.
+
+### Debater
+
+Debater owns motivated, position-conditioned research. Given a position, it asks: “What is the strongest defensible case for this position?”
+
+Debater may directly use Extractor evidence, historical Modeler outputs, Modeler forecasts and valuation, and Inferer/base assumptions as a benchmark. It does not have to route through Inferer.
+
+It may select evidence, construct thesis logic, request historical tests or sensitivities from Modeler, supply stance-conditioned assumptions to Modeler, construct counterarguments and rebuttals, and identify weaknesses in its own case.
+
+Debater must not alter historical facts or Extractor evidence, overwrite canonical neutral/base assumptions, present stance-conditioned assumptions as neutral, invent evidence or promote unresolved claims to facts. Assumption sets retain explicit origin and stance.
+
+Do not build a sophisticated Debater or add new research workflows during migration.
 
 ### Composer
 
-Composer owns argument structure, publication emphasis, ordering, framing, headlines, paragraphs, transitions, rebuttal, prose generation, communication-oriented figure/table selection, captions, source notes, appendices, Markdown assembly, Word/PDF generation, publishing, layout and visual formatting.
+Composer owns communication and publication: prose, report organization, headlines and transitions, chart/table presentation, captions and source notes, appendices, Markdown, Word/PDF, layout, style and rendering.
 
-Composer consumes source evidence, Modeler outputs and Interpreter conclusions/hypotheses appropriate for communication. It may argue from valid evidence, but may not alter facts or Modeler outputs, invent evidence, manufacture causal certainty, turn unresolved judgments into established facts or create unsupported numerical conclusions.
+Composer may communicate neutral analysis or a Debater case. It does not originate assumptions or substantive analytical conclusions. Thesis logic, supporting-evidence selection, counterarguments and rebuttal substance belong to Debater; their wording and presentation belong to Composer.
 
-Future composition may support explicit neutral, bullish, bearish, thesis-defense, consensus-challenge or thesis-change objectives and LLM prose generation. These are deferred. Motivated reasoning must not enter Modeler or Interpreter.
+Composer must not alter facts or Modeler outputs, invent evidence, manufacture causal certainty, turn unresolved judgments into established facts or create unsupported numerical conclusions.
 
 ### Figures and handoffs
 
-Modeler produces valid numerical series and calculations. Interpreter determines economically meaningful relationships and candidate evidence relevant to hypotheses. Composer selects valid exhibits for publication and controls form, labels, annotations, captions, source notes, ordering and visual emphasis.
+Modeler produces valid numerical series and calculations. Inferer forms neutral assumptions and evaluates their plausibility and uncertainty. Debater selects evidence and develops position-conditioned cases. Composer presents the supplied analytical state or case and controls exhibit form, labels, annotations, captions, source notes, ordering and visual emphasis.
 
 A persuasive chart does not justify inventing an analytical relationship.
 
-The intended analytical flow is:
+Extractor supplies evidence to Modeler, Inferer and Debater. Inferer supplies neutral assumptions to Modeler and may revise them after examining calculated consequences. Debater may request Modeler tests and calculations directly and supply explicitly separate stance-conditioned assumptions. Composer communicates neutral analysis or a Debater case under Director orchestration.
 
-Extractor → Evidence → Modeler ⇄ Interpreter → validated analytical state → Composer → Publication
+Interfaces remain thin and traceable. Do not create a large deterministic intermediate reasoning framework or ontology. New inference engines, motivated-research workflows and prose systems remain deferred.
 
-Interfaces remain thin and traceable. Do not create a large deterministic intermediate reasoning framework or ontology to encode every interpretation. Exact future report structure, stance systems and prose architecture remain deferred.
+### Interpreter and Driver decomposition
 
-### Driver decomposition
+Interpreter must cease to exist as an active component. Do not rename it wholesale to Inferer. Inventory each Interpreter and Driver/research responsibility and split mixed files by decision type:
 
-The existing Driver/research layer is not an indivisible component.
+- Source-faithful facts, management statements, guidance and source provenance belong to Extractor.
+- Historical and forecast calculations, scenario and valuation arithmetic, series, accounting identities, reconciliations, bridges, regressions, residuals, deterministic tests and mechanical claim validity belong to Modeler.
+- Neutral/base assumption formation, assumption plausibility and neutral uncertainty belong to Inferer.
+- Position-conditioned assumptions, thesis construction, supporting-evidence selection, counterarguments, rebuttals and case weaknesses belong to Debater.
+- Research prose, headlines, report organization and publication presentation belong to Composer.
+- System orchestration and global policy belong to Director.
+- Obsolete functionality belongs to Legacy or Remove.
 
-- Facts used in analysis, calculations, historical series, reconciliation, identities, bridges, regressions, residuals, measurement validity and mechanically determinable claim validity belong to Modeler.
-- Materiality, mechanisms, hypotheses, causal interpretation, alternatives, uncertainty, research gaps, management-framing interpretation and conclusions worth communicating belong to Interpreter.
-- Principal/secondary publication emphasis, argument structure, ordering, headlines, paragraphs, rhetoric, rebuttal, exhibit selection and rendering belong to Composer.
+Split mixed deterministic prose into substantive decisions and wording/presentation. Preserve useful behavior and evidence qualifications without redesigning reports or assigning all former interpretation to one new component.
 
-Split mixed deterministic prose into analytical judgment and wording/presentation. Do not preserve a deterministic prose architecture merely because it already exists; preserve useful behavior and evidence qualifications without redesigning reports.
+### Core dissolution
+
+Core must cease to exist as an active implementation layer. Assign orchestration/policy to Director, source/provenance handling to Extractor, financial/model calculations to Modeler, neutral assumption logic to Inferer, argument/thesis logic to Debater and publication/rendering to Composer. Obsolete functionality belongs to Legacy or Remove.
+
+Do not move all of Core into Director or create a replacement Core/Common/Shared layer. Update callers and remove obsolete active façades and duplicate implementations.
 
 ### Legacy and Remove
 
-Legacy holds useful prior functionality outside the active architecture. Categories follow the actual inventory and may include Trainer, superseded workflows/interfaces, historical verification machinery, experiments or former research-generation architecture. Do not substantially refactor Legacy.
+Keep `legacy/` at repository root. Legacy holds useful prior functionality outside the active architecture. Categories follow the actual inventory and may include Trainer, superseded workflows/interfaces, historical verification machinery, experiments or former research-generation architecture. Do not substantially or cosmetically refactor Legacy.
 
-Active code must not depend on Legacy as a hidden implementation layer. Any implementation required by active behavior belongs under its correct active owner.
+Active components must not depend on Legacy as a hidden implementation layer. Any implementation required by active behavior belongs under its correct active owner.
 
 Remove material with no preservation value, including obsolete cloud infrastructure without a BAV Compiler role, dead duplicates, abandoned compatibility layers, inappropriate source-controlled generated/cache artifacts, temporary infrastructure and obsolete experiments. Do not create a `remove/` directory.
 
+### Runtime workspace and root files
+
+Keep `build/` at repository root as the runtime/generated workspace, not a component. Do not move it into Director. Preserve its canonical persistent upstream inputs and generated-output separation.
+
+Outside `bav/`, retain only `legacy/`, `build/`, a minimal README.md and files genuinely required at repository root for packaging, Git, AutoCycle or other repository tooling. Keep `pyproject.toml` at root if required. Record why retained root files must remain there.
+
+Inspect `requirements-trainer.txt` and other Trainer remnants by actual use. Move Trainer-only material to Legacy or remove it when unused; preserve active dependency declarations in appropriate required packaging/tooling files.
+
+Do not move SESSION.md, TARGET.md, RESULT.md, IMPLEMENTATION.md or similar files without determining AutoCycle requirements. Architectural tidiness must not break controller operation or override protected-document ownership.
+
 ## Structural migration boundary
 
-The current migration inspects the complete repository and records responsibility ownership before substantial movement. It then splits mixed modules, relocates responsibilities, updates imports, paths, metadata, tests, documentation, CLI routing and build/publish references, and removes material classified Remove.
+The current migration inspects the complete repository and records responsibility ownership before code movement. It assigns every meaningful responsibility to one of the six components, Legacy, Remove or Runtime-tooling, paying particular attention to `bav/`, Core, Interpreter, top-level component folders, Driver/research, root Markdown and Trainer remnants.
 
-Preserve useful existing BAV behavior and source evidence. Establish minimal component documentation where implementation is absent. Record the inventory, important splits, removed components, test/build evidence and unresolved architectural ambiguities.
+Then split mixed files, move all active implementation into the six canonical `bav` packages, dismantle Interpreter and Core, and update imports, package exports, CLI routing, tests, documentation, build paths and publish paths. Preserve Build and Legacy at root.
 
-Migration does not authorize a new Extractor, Modeler algorithm redesign, the Modeler ⇄ Interpreter loop, a hypothesis engine, Composer stance modes, new LLM prose generation, new financial-analysis modules or valuation methods, Trainer expansion, report redesign, a large reasoning ontology or broad cosmetic refactoring.
+Preserve useful existing BAV behavior and source evidence. Establish minimal component documentation where implementation is absent. Record the responsibility mapping, Interpreter split, Core split, root files intentionally retained and why, removed functionality, verification evidence and unresolved architectural ambiguities.
+
+Completion requires no active Core or Interpreter, no duplicate old/new implementations, correct six-component ownership, explicit assumption origin and stance, neutral/base protection, Legacy independence, passing relevant regressions and representative Lululemon and Fast Retailing builds, checks and publications.
+
+Migration does not authorize sophisticated Inferer or Debater engines, new forecast or valuation methods, new LLM workflows, Extractor or Composer redesign, unnecessary rewrites of working quantitative logic, Trainer expansion, replacement generic layers, a large reasoning ontology or cosmetic Legacy refactoring.
 
 The retained historical and future product specifications below preserve existing behavior and longer-term intent. They do not authorize feature development during migration. Stop after migration is completed and verified; do not automatically enter a second phase.
 
@@ -136,9 +174,9 @@ Driver figures under `build/output/<company>/figures/drivers/` are optional and 
 
 Benchmark and release are uses of canonical outputs, represented through Git tracking, tags or release packaging, not separate company data architectures. After canonical paths and dependencies are verified, remove obsolete generated artifacts and duplicate legacy, benchmark and release company trees, including obsolete Trainer and Answer Key outputs. Preserve original filings and canonical upstream data. Compatibility copies or symlinks require an active supported interface; do not maintain alternate active build architectures. Runtime must not silently fall back to obsolete benchmark, release or other legacy company paths.
 
-Root `README.md` documents BAV Compiler and its component and output architecture. Director-owned `director/docs/STYLE.md` is the single source of truth for human-facing BAV presentation and language conventions, applied to Markdown research, generated figures and rendered publications. Do not duplicate its specification in README or individual modules.
+Root `README.md` minimally documents BAV Compiler, public use and its component and output architecture, linking detailed specifications. Director-owned `bav/director/docs/STYLE.md` is the single source of truth for human-facing BAV presentation and language conventions, applied to Markdown research, generated figures and rendered publications. Do not duplicate its specification in README or individual modules.
 
-Director-owned `director/docs/DRIVER.md` retains the company-agnostic historical Driver specification with ownership aligned to the component boundaries above. The existing publication hierarchy is headline conclusion, principal drivers, optional secondary signals, and an auditable appendix. Interpretive importance and available evidence inform conclusions; Composer owns publication ordering and emphasis. Company-specific applications remain labeled regression fixtures. The main body must stand alone while the appendix preserves the detailed analytical record.
+Director-owned `bav/director/docs/DRIVER.md` retains the company-agnostic historical Driver specification with ownership aligned to the component boundaries above. The existing publication hierarchy is headline conclusion, principal drivers, optional secondary signals, and an auditable appendix. Supplied analytical conclusions and available evidence inform communication; Composer owns publication ordering and emphasis without originating substantive conclusions. Company-specific applications remain labeled regression fixtures. The main body must stand alone while the appendix preserves the detailed analytical record.
 
 The research module sequence is Drivers, Forecast, Valuation, Overview:
 
@@ -179,7 +217,7 @@ Preserve issuer fiscal-year labels and actual period-end dates as distinct infor
 
 For filing-based workflows, the canonical upstream handoff is **source-grounded filing JSON**. Each filing is extracted independently and preserves reported labels, statement sections, periods, currency/unit scale, values, and page-level provenance.
 
-LLM-assisted extraction is permitted upstream, but extraction must remain separate from accounting judgment and analytical modeling. Extractor records what the filing says; Modeler owns reproducible classification, normalization, reconciliation and analysis under explicit assumptions. Interpreter owns judgments about economic meaning.
+LLM-assisted extraction is permitted upstream, but extraction must remain separate from accounting judgment and analytical modeling. Extractor records what the filing says; Modeler owns reproducible classification, normalization, reconciliation and analysis under explicit assumptions. Inferer owns neutral/base assumption formation; Debater owns position-conditioned assumptions and case construction.
 
 The preserved filing workflow is:
 
@@ -221,7 +259,7 @@ Ambiguous accounting treatments should be taught as alternatives with consequenc
 
 ## Historical Step 9 — retained product stage
 
-The historical-v1 model-construction foundation is release-gated and usable for learning now. Historical Step 9 describes retained analytical scope; it is distinct from Session 10 migration and its work numbering.
+The historical-v1 model-construction foundation is release-gated and usable for learning now. Historical Step 9 describes retained analytical scope; it is distinct from Session 11 migration and its work numbering.
 
 Preserve existing historical capabilities under their correct component owners:
 
@@ -296,7 +334,7 @@ The product should not require every topic for every company. Optional modules s
 
 Major schedules should explain what changed economically and why it matters, as well as how a number is calculated.
 
-The historical decomposition is the primary analytical object. Preserve this analytical sequence while assigning calculations to Modeler, meaning to Interpreter and expression to Composer:
+The historical decomposition is the primary analytical object. Preserve this analytical sequence while assigning calculations and deterministic validity to Modeler, neutral assumptions and uncertainty to Inferer, position-conditioned case construction to Debater and expression to Composer:
 
 reported outcome → decomposition → measurable components / admitted KPIs → historical contribution analysis → reconstruction of actual results → residuals and contradictions → source and management-disclosure check → interpretation
 
@@ -414,7 +452,7 @@ Historical Net Debt / Debt-Like Items Bridge, Complete NOPAT / RNOA and forecast
 
 Step 9 is complete when all of the following are true:
 
-- the GOOGL historical reference audit has no unresolved high-value historical gap;
+- the GOOOGL historical reference audit has no unresolved high-value historical gap;
 - historically material modules supported by available source facts are implemented, tested, or explicitly deferred with a documented reason;
 - the source-document → filing JSON → reconciliation → `StandardizedFinancials` → reference-model → professional BAV → derivative Trainer path has been demonstrated on real-company data;
 - optional historical modules fail closed when required evidence is missing or contradictory;
@@ -469,7 +507,7 @@ The analyst, and subsequently the learner, should be able to:
 - connect scenario and sensitivity results to the investment thesis;
 - produce a concise, evidence-based investment conclusion.
 
-Interpreter owns analytical judgments and Composer owns their expression. Future reasoning and prose systems remain deferred; this roadmap does not mandate a deterministic reasoning ontology.
+Inferer owns neutral/base assumption formation, Debater owns position-conditioned assumptions and case construction, Modeler calculates consequences, and Composer communicates supplied analysis and conclusions. Future reasoning and prose systems remain deferred; this roadmap does not mandate a deterministic reasoning ontology.
 
 ### Autonomous planning rule
 

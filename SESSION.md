@@ -1,32 +1,32 @@
-# BAV Compiler — Structural Migration
+# BAV Compiler — Six-component Architectural Migration
 
-Session: 10
+Session: 11
 
 ## Endpoint
 
-Complete and verify the existing repository’s structural migration to BAV Compiler in `bav-compiler`, with Director, Extractor, Modeler, Interpreter, Composer and Legacy visibly represented, preserving useful existing behavior and public `bav` interfaces.
+Complete and verify the ownership and filesystem migration so all active BAV implementation belongs to exactly one of `bav/director/`, `bav/extractor/`, `bav/modeler/`, `bav/inferer/`, `bav/debater/` and `bav/composer/`, preserving useful existing behavior and public `bav` interfaces.
 
 Session acceptance requires:
 
-- A complete responsibility inventory assigns every meaningful responsibility exactly one disposition by kind of decision; mixed modules, especially Driver/research, are decomposed across their proper owners.
-- Director owns governance, orchestration, contracts and global specifications; STYLE.md resides in its high-level documentation location with references updated.
-- Extractor has a clear source-faithful boundary, with minimal documentation sufficient where implementation is absent. Modeler owns reproducible calculations, workbook construction and mechanical validity; Interpreter owns judgments about meaning; Composer owns expression, publication and figure presentation.
-- Management emphasis remains evidence rather than automatic driver status. Numerical support, provenance, uncertainties and claim qualifications survive; motivated reasoning does not enter Modeler or Interpreter.
-- Legacy categories reflect the inventory, active implementation does not depend on Legacy, and obsolete cloud/dead material without preservation value is removed.
-- Imports, paths, metadata, tests, documentation, CLI routing and build/publish references match the new ownership. The active repository presents itself as BAV Compiler.
-- Relevant existing tests and representative BAV builds/checks/publications pass, useful optional Trainer behavior survives under appropriate ownership, and RESULT.md records splits, removals, verification and unresolved architectural ambiguities.
-- No second-phase features are implemented. Stop after verified migration.
+- A complete responsibility inventory precedes movement and assigns every meaningful responsibility to one canonical component, Legacy, Remove or Runtime-tooling; mixed files are split by decision type.
+- No active Core, Interpreter, replacement generic layer or duplicate top-level implementation remains. Interpreter is decomposed rather than renamed wholesale; Core is distributed rather than moved wholesale into Director.
+- Director owns governance/orchestration and system-wide specifications; Extractor owns source-faithful evidence/provenance; Modeler owns the complete historical/prospective quantitative model; Inferer owns neutral/base assumptions; Debater owns stance-conditioned assumptions and case construction; Composer owns communication/publication without originating assumptions or substantive conclusions.
+- Management guidance remains evidence, not authority or a mechanically copied base case. Reported facts, management views, historical tendencies, inferred assumptions and uncertainty remain distinguishable. Assumption origin and stance are explicit; Debater cannot silently overwrite canonical neutral/base assumptions and may use Extractor/Modeler directly.
+- `build/` and `legacy/` remain at root. Only minimal README and genuinely required packaging/Git/AutoCycle/tooling files otherwise remain outside `bav/`; root retention is justified and AutoCycle document locations remain functional. Trainer remnants receive explicit dispositions.
+- Active components do not depend on Legacy as a hidden implementation layer. Imports, exports, CLI routing, tests, documentation, resource paths and build/publish paths match canonical ownership.
+- Relevant tests and representative Lululemon/Fast Retailing builds, checks and publications pass; useful optional Trainer behavior survives. RESULT.md records mapping, splits, intentional root retention, removals, verification and unresolved ambiguities.
+- Stop after verified structural migration. Do not build sophisticated Inferer/Debater engines, new methods or LLM workflows, redesign Extractor/Composer, unnecessarily rewrite quantitative logic or cosmetically refactor Legacy.
 
 ## Priority
 
-1. Inspect the complete repository and classify responsibilities before substantial file movement; specify mixed Driver decomposition and thin handoffs first.
-2. Execute inventory-led splits and relocation, update references and establish minimal empty boundaries. Preserve useful behavior and remove justified obsolete material.
-3. Verify architecture, dependencies, representative Lululemon/Fast Retailing behavior and relevant regressions; record evidence and resolve migration defects.
+1. Inspect the complete repository and inventory responsibilities before movement, especially Interpreter, Core, Driver/research, current `bav`, top-level components, root Markdown and Trainer remnants.
+2. Execute inventory-led splits and relocation into the six canonical packages; update references, preserve useful behavior, establish minimal missing boundaries and remove justified obsolete material.
+3. Verify ownership, assumption separation, Legacy independence, representative behavior and relevant regressions; resolve migration defects and record evidence.
 
-Preserve canonical source evidence, accounting signs, fiscal distinctions, precision, reconciliations, provenance, admission/comparison independence, residual qualifications, fail-closed controls and zero-byte research placeholders. Do not redesign Modeler algorithms, reports or workbook architecture; build a new Extractor, reasoning loop, hypothesis engine, Composer stance modes or LLM prose; add analysis/valuation methods; expand Trainer; or introduce a large reasoning ontology.
+Preserve canonical source evidence, accounting signs, fiscal distinctions, precision, reconciliations, provenance, admission/comparison independence, residual qualifications, fail-closed controls, default-off normalization admission and zero-byte research placeholders. Deferred accounting and future product obligations remain deferred, not completed.
 
-Use authenticated implementation baseline B and historical Git blobs, then canonical destinations, provenance continuity and current verification. Tracked relocation permits disappearance of the old path; Git supplies historical preservation. Protect irreplaceable non-Git evidence through verified canonical continuity before removal. Preserve normal ownership, recovery, protected-document and unrelated-dirty-work safeguards.
+Use authenticated implementation baseline B and historical Git blobs, then canonical destinations, provenance continuity and current verification. Git preserves tracked history; protect irreplaceable non-Git evidence through verified canonical continuity before removal. Preserve normal ownership, recovery, protected-document and unrelated-dirty-work safeguards.
 
-Reuse prior verification only when its dependencies remain applicable. Changed workbook formulas/dependencies require native recalculation and independent saved-cache verification; changed presentation requires relevant readability inspection. Native Office work uses Office Bridge and existing access controls. Never claim later verification proves an earlier gate ran.
+Reuse verification only where dependencies remain applicable. Changed workbook formulas/dependencies require native recalculation and independent saved-cache verification; changed presentation requires readability inspection. Native Office work uses Office Bridge and existing access controls. Never claim later verification proves an earlier gate ran.
 
-Earlier publication records, deferred accounting obligations and historical evidence remain preserved without becoming a competing publication-session Endpoint. Instruction incorporation is not acceptance; DONE requires this migration Endpoint and current plan acceptance.
+Instruction incorporation is not acceptance; DONE requires this Session Endpoint and current plan acceptance.
