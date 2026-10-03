@@ -435,3 +435,61 @@ def test_cli_serializes_incoming_ambiguous_candidate_deferral(tmp_path: Path, fa
     assert incoming["candidate_locators"]
     assert admission["reconciliation"]["selected_count"] == 0
     assert _bytes_by_name(EXTRACTED) == before
+
+
+def test_canonical_filing_routes_reject_legacy_ingestion(tmp_path: Path):
+    extracted, source_root = _write_fixture(tmp_path)
+    out = tmp_path / "reconciled"
+    script = r"""
+import sys
+from pathlib import Path
+
+class BlockLegacyIngestion:
+    def find_spec(self, name, path=None, target=None):
+        if name == "legacy.ingestion" or name.startswith("legacy.ingestion."):
+            raise ImportError(f"blocked {name}")
+        if name in {"core.ingestion.manual_hk", "core.ingestion.excel_import"}:
+            raise ImportError(f"blocked {name}")
+        return None
+
+sys.meta_path.insert(0, BlockLegacyIngestion())
+from core.__main__ import main
+assert main(["validate-source", sys.argv[1], "--source-root", sys.argv[2]]) == 0
+assert main(["reconcile", sys.argv[1], "--source-root", sys.argv[2], "-o", sys.argv[3]]) == 0
+assert "legacy.ingestion.manual_hk" not in sys.modules
+assert "legacy.ingestion.excel_import" not in sys.modules
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(extracted), str(source_root), str(out)],
+        check=False,
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
+    assert (out / "standardized.json").is_file()
+
+
+def test_ingest_retains_legacy_adapter(tmp_path: Path):
+    demo = ROOT / "example" / "DEMO_HK_Standardized.json"
+    out = tmp_path / "ingested.json"
+    script = r"""
+import sys
+from core.__main__ import main
+rc = main(["ingest", sys.argv[1], "-o", sys.argv[2]])
+assert rc in (0, 1)
+assert "legacy.ingestion.manual_hk" in sys.modules
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(demo), str(out)],
+        check=False,
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
+    assert out.is_file()
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["ticker"] == "DEMO"
+    assert payload["company_name"] == "Demo Holdings Limited"
+    assert len(payload["periods"]) == 5

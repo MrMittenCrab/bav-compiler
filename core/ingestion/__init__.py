@@ -1,8 +1,6 @@
 """Ingestion adapters for manual and exported financial data."""
 
 from .base import BaseIngestionAdapter
-from .excel_import import ExcelExportAdapter
-from .manual_hk import HKManualDocumentAdapter
 from .reconciler import reconcile_financials
 
 __all__ = [
@@ -11,3 +9,15 @@ __all__ = [
     "HKManualDocumentAdapter",
     "reconcile_financials",
 ]
+
+
+def __getattr__(name):
+    if name == "ExcelExportAdapter":
+        from .excel_import import ExcelExportAdapter
+
+        return ExcelExportAdapter
+    if name == "HKManualDocumentAdapter":
+        from .manual_hk import HKManualDocumentAdapter
+
+        return HKManualDocumentAdapter
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

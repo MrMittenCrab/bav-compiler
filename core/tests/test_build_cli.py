@@ -233,3 +233,72 @@ def test_metadata_jurisdiction_string_fallback_builds(tmp_path, payload):
         json.loads(source.read_text(encoding="utf-8")), strict=True
     )
     assert restored.jurisdiction == jurisdiction
+
+
+def test_company_routes_reject_legacy_ingestion(tmp_path):
+    script = r"""
+import sys
+from pathlib import Path
+
+class BlockLegacyIngestion:
+    def find_spec(self, name, path=None, target=None):
+        if name == "legacy.ingestion" or name.startswith("legacy.ingestion."):
+            raise ImportError(f"blocked {name}")
+        if name in {"core.ingestion.manual_hk", "core.ingestion.excel_import"}:
+            raise ImportError(f"blocked {name}")
+        return None
+
+sys.meta_path.insert(0, BlockLegacyIngestion())
+from core import current_build
+from core.__main__ import main
+current_build.OUTPUT_ROOT = Path(sys.argv[1])
+assert main(["build", "Lululemon"]) == 0
+assert main(["check", "Lululemon"]) == 0
+assert main(["publish", "Lululemon"]) == 0
+assert "legacy.ingestion.manual_hk" not in sys.modules
+assert "legacy.ingestion.excel_import" not in sys.modules
+assert "core.ingestion.manual_hk" not in sys.modules
+assert "core.ingestion.excel_import" not in sys.modules
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(tmp_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+        cwd=str(Path(__file__).resolve().parents[2]),
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
+
+
+def test_excel_compatibility_build_uses_legacy_adapter(tmp_path, payload):
+    from openpyxl import Workbook
+
+    source = tmp_path / "Acme.xlsx"
+    wb = Workbook()
+    wb.remove(wb.active)
+    for name, key in (("Income Statement", "income_statement"),
+                      ("Balance Sheet", "balance_sheet"),
+                      ("Cash Flow", "cash_flow")):
+        ws = wb.create_sheet(name)
+        ws.append(["Concept", "Label", "2024-12-31", "2025-12-31"])
+        for item in payload[key]:
+            ws.append([item["concept"], item["label"],
+                       item["values"].get("2024-12-31"), item["values"].get("2025-12-31")])
+    wb.save(source)
+    script = r"""
+import sys
+from core.__main__ import main
+assert main(["build", sys.argv[1], "-o", sys.argv[2]]) == 0
+assert "legacy.ingestion.manual_hk" in sys.modules
+assert "legacy.ingestion.excel_import" in sys.modules
+"""
+    out = tmp_path / "build/output/Acme"
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(source), str(out)],
+        check=False,
+        capture_output=True,
+        text=True,
+        cwd=str(Path(__file__).resolve().parents[2]),
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
+    assert (tmp_path / "build/output/Acme_BAV_Trainer.xlsx").exists()

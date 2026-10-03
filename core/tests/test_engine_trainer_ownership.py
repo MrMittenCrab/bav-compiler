@@ -135,6 +135,8 @@ class BlockTrainer:
     def find_spec(self, name, path=None, target=None):
         if name == "legacy.trainer" or name.startswith("legacy.trainer."):
             raise ImportError(f"blocked {name}")
+        if name == "legacy.ingestion" or name.startswith("legacy.ingestion."):
+            raise ImportError(f"blocked {name}")
         if name == "core.trainer" or name.startswith("core.trainer."):
             raise ImportError(f"blocked {name}")
         return None
@@ -147,7 +149,10 @@ assert main(["build", "Lululemon"]) == 0
 assert main(["check", "Lululemon"]) == 0
 assert main(["publish", "Lululemon"]) == 0
 assert not any(name == "legacy.trainer" or name.startswith("legacy.trainer.") for name in sys.modules)
+assert not any(name == "legacy.ingestion" or name.startswith("legacy.ingestion.") for name in sys.modules)
 assert not any(name == "core.trainer" or name.startswith("core.trainer.") for name in sys.modules)
+assert "core.ingestion.manual_hk" not in sys.modules
+assert "core.ingestion.excel_import" not in sys.modules
 company = current_build.resolve_company("Lululemon")
 assert company.bav.is_file()
 assert not company.trainer.is_file()

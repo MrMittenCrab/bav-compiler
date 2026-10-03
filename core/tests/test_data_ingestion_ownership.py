@@ -45,6 +45,8 @@ DIRECTOR_INGEST = frozenset(
 PRIVATE_EXPORTS = {
     "reconciler": ("_merge_line_items",),
     "management_kpi_reconciliation": ("_select_ordinary_group",),
+    "manual_hk": ("_parse_date", "_load_historical_shares", "_load_structured_json"),
+    "excel_import": ("_parse_header", "_header_layout"),
 }
 REPRESENTATIVE = (
     ("modeler.data.interface", "StandardizedFinancials", ROOT / "modeler/data/interface.py"),
@@ -87,6 +89,8 @@ REPRESENTATIVE = (
     ("modeler.ingestion.management_kpi_enrichment", "assess_definition_equivalence", ROOT / "modeler/ingestion/management_kpi_enrichment.py"),
     ("modeler.ingestion.management_kpi_enrichment", "build_group_decisions", ROOT / "modeler/ingestion/management_kpi_enrichment.py"),
     ("director.ingestion.management_kpi_enrichment", "enrich_management_working_copies", ROOT / "director/ingestion/management_kpi_enrichment.py"),
+    ("legacy.ingestion.manual_hk", "HKManualDocumentAdapter", ROOT / "legacy/ingestion/manual_hk.py"),
+    ("legacy.ingestion.excel_import", "ExcelExportAdapter", ROOT / "legacy/ingestion/excel_import.py"),
 )
 FACADE_PAIRS = (
     ("modeler.data.interface", "core.data.interface", "StandardizedFinancials"),
@@ -129,6 +133,8 @@ FACADE_PAIRS = (
     ("modeler.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "assess_definition_equivalence"),
     ("modeler.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "build_group_decisions"),
     ("director.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "enrich_management_working_copies"),
+    ("legacy.ingestion.manual_hk", "core.ingestion.manual_hk", "HKManualDocumentAdapter"),
+    ("legacy.ingestion.excel_import", "core.ingestion.excel_import", "ExcelExportAdapter"),
 )
 
 ENRICHMENT_EXTRACTOR_COMPAT = (
@@ -232,6 +238,8 @@ def test_compatibility_exports_are_identity_equal():
             continue
         if facade_name == "core.ingestion.management_kpi_enrichment":
             continue
+        if facade_name in {"core.ingestion.manual_hk", "core.ingestion.excel_import"}:
+            continue
         for public in _public_names(canonical):
             assert getattr(facade, public) is getattr(canonical, public)
         stem = canonical_name.rsplit(".", 1)[-1]
@@ -255,6 +263,8 @@ def test_facade_and_canonical_import_orders():
         ("extractor.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "extract_comparison_window"),
         ("extractor.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "extract_spsf_prior_period_levels"),
         ("modeler.ingestion.management_kpi_enrichment", "core.ingestion.management_kpi_enrichment", "build_group_decisions"),
+        ("legacy.ingestion.manual_hk", "core.ingestion.manual_hk", "HKManualDocumentAdapter"),
+        ("legacy.ingestion.excel_import", "core.ingestion.excel_import", "ExcelExportAdapter"),
     )
     orders = (
         "import {facade} as facade\nimport {canonical} as canonical\n",
@@ -267,6 +277,12 @@ def test_facade_and_canonical_import_orders():
         "from modeler.ingestion.reconciler import _merge_line_items as canonical_merge\n"
         "from core.ingestion.reconciler import _merge_line_items as facade_merge\n"
         "assert facade_merge is canonical_merge\n"
+        "from legacy.ingestion.manual_hk import _parse_date as canonical_parse\n"
+        "from core.ingestion.manual_hk import _parse_date as facade_parse\n"
+        "assert facade_parse is canonical_parse\n"
+        "from legacy.ingestion.excel_import import _header_layout as canonical_layout\n"
+        "from core.ingestion.excel_import import _header_layout as facade_layout\n"
+        "assert facade_layout is canonical_layout\n"
     )
     for canonical, facade, attr in samples:
         for template in orders:
@@ -521,3 +537,137 @@ def test_relocated_implementations_do_not_import_legacy():
                 if module == "legacy" or module.startswith("legacy."):
                     blocked.append((str(file), module))
     assert not blocked
+
+
+def test_legacy_manual_ingestion_ownership_and_identity():
+    from legacy.ingestion.excel_import import (
+        TAB_MAP as canonical_tabs,
+        ExcelExportAdapter as canonical_excel,
+        _header_layout as canonical_layout,
+        _parse_header as canonical_header,
+    )
+    from legacy.ingestion.manual_hk import (
+        HKManualDocumentAdapter as canonical_hk,
+        _load_historical_shares as canonical_shares,
+        _load_structured_json as canonical_load,
+        _parse_date as canonical_parse,
+    )
+    from core.ingestion.excel_import import (
+        TAB_MAP as facade_tabs,
+        ExcelExportAdapter as facade_excel,
+        _header_layout as facade_layout,
+        _parse_header as facade_header,
+    )
+    from core.ingestion.manual_hk import (
+        HKManualDocumentAdapter as facade_hk,
+        _load_historical_shares as facade_shares,
+        _load_structured_json as facade_load,
+        _parse_date as facade_parse,
+    )
+    from core.ingestion import (
+        ExcelExportAdapter as pkg_excel,
+        HKManualDocumentAdapter as pkg_hk,
+    )
+
+    assert facade_hk is canonical_hk is pkg_hk
+    assert facade_excel is canonical_excel is pkg_excel
+    assert facade_parse is canonical_parse
+    assert facade_shares is canonical_shares
+    assert facade_load is canonical_load
+    assert facade_header is canonical_header
+    assert facade_layout is canonical_layout
+    assert facade_tabs is canonical_tabs
+    assert Path(canonical_hk.ingest.__code__.co_filename).resolve() == (
+        ROOT / "legacy/ingestion/manual_hk.py"
+    ).resolve()
+    assert Path(canonical_excel.ingest.__code__.co_filename).resolve() == (
+        ROOT / "legacy/ingestion/excel_import.py"
+    ).resolve()
+    assert Path(canonical_parse.__code__.co_filename).resolve() == (
+        ROOT / "legacy/ingestion/manual_hk.py"
+    ).resolve()
+
+
+def test_ordinary_ingestion_imports_do_not_load_legacy_adapters():
+    ordinary = (
+        "import core.ingestion.base\n"
+        "import core.ingestion.reconciler\n"
+        "import core.ingestion.filing_cli\n"
+        "import core.ingestion.filing_standardizer\n"
+        "from core.ingestion import BaseIngestionAdapter, reconcile_financials\n"
+        "from core.ingestion import __all__ as ingest_all\n"
+        "assert ingest_all == ["
+        "'BaseIngestionAdapter', 'ExcelExportAdapter', "
+        "'HKManualDocumentAdapter', 'reconcile_financials']\n"
+        "assert BaseIngestionAdapter is not None\n"
+        "assert reconcile_financials is not None\n"
+    )
+    blocked = (
+        "legacy.ingestion.manual_hk",
+        "legacy.ingestion.excel_import",
+        "core.ingestion.manual_hk",
+        "core.ingestion.excel_import",
+    )
+    script = (
+        ordinary
+        + "import sys\n"
+        + "loaded = [name for name in "
+        + repr(blocked)
+        + " if name in sys.modules]\n"
+        + "assert not loaded, loaded\n"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        check=False,
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
+
+
+def test_legacy_adapter_import_orders():
+    samples = (
+        ("legacy.ingestion.manual_hk", "core.ingestion.manual_hk", "HKManualDocumentAdapter"),
+        ("legacy.ingestion.excel_import", "core.ingestion.excel_import", "ExcelExportAdapter"),
+    )
+    orders = (
+        "import {facade} as facade\nimport {canonical} as canonical\n",
+        "import {canonical} as canonical\nimport {facade} as facade\n",
+    )
+    extras = (
+        "from core.ingestion import HKManualDocumentAdapter as pkg_hk\n"
+        "from core.ingestion import ExcelExportAdapter as pkg_excel\n"
+        "from legacy.ingestion.manual_hk import HKManualDocumentAdapter as can_hk\n"
+        "from legacy.ingestion.excel_import import ExcelExportAdapter as can_excel\n"
+        "assert pkg_hk is can_hk\n"
+        "assert pkg_excel is can_excel\n"
+        "from legacy.ingestion.manual_hk import _parse_date, _load_historical_shares, _load_structured_json\n"
+        "from core.ingestion.manual_hk import (\n"
+        "    _parse_date as facade_parse,\n"
+        "    _load_historical_shares as facade_shares,\n"
+        "    _load_structured_json as facade_load,\n"
+        ")\n"
+        "assert facade_parse is _parse_date\n"
+        "assert facade_shares is _load_historical_shares\n"
+        "assert facade_load is _load_structured_json\n"
+        "from legacy.ingestion.excel_import import _parse_header, _header_layout\n"
+        "from core.ingestion.excel_import import _parse_header as facade_header, _header_layout as facade_layout\n"
+        "assert facade_header is _parse_header\n"
+        "assert facade_layout is _header_layout\n"
+    )
+    for canonical, facade, attr in samples:
+        for template in orders:
+            script = (
+                template.format(canonical=canonical, facade=facade)
+                + f"assert facade.{attr} is canonical.{attr}\n"
+                + extras
+            )
+            result = subprocess.run(
+                [sys.executable, "-c", script],
+                check=False,
+                capture_output=True,
+                text=True,
+                cwd=str(ROOT),
+            )
+            assert result.returncode == 0, result.stderr or result.stdout

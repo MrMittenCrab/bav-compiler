@@ -1,3 +1,118 @@
+# RESULT.md — Step 10.11 Isolate Legacy manual ingestion
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 10.11 — Isolate Legacy manual ingestion
+**Work:** `ac3a1ebfb5df43c3ac215cddb71437fb`
+**Plan:** `7020abbb0a364d50b31f446b95d5cd64`
+**Finding:** Isolate Legacy manual ingestion
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. Controller files under `.git/autocycle` were read-only.
+
+TARGET SHA-256 `b3e4c9520e4d9f050206575a945d01f3f7c666a766eb74c6c9d67cd260c978e2` (44986).
+SESSION SHA-256 `e078206b1be8109dd49c6e51f111227e3a05f28f6aff6651ff2178630fb66f9e` (3979).
+IMPLEMENTATION SHA-256 `d4512f93b96e7b7c3229d9305e44b2d9e79799267a5cde77586b8452c9c0fd2e` (5311).
+
+This bounded isolation moves HK manual and Excel adapters to Legacy with retained compatibility entry points. Ordinary company build, check, publication and canonical filing ingest do not load those adapters. It does not close parent Completion and does not establish Session 10 acceptance.
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state` and authenticated as a Git commit. `implementation-baseline.json` head matched B. Leftover `latest-implementation` HEAD was not substituted for B.
+
+| Binding source | Value |
+|---|---|
+| `resume-state` `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD | `0296fc2988b8a48fecf66742c66b17d60f921ff4` |
+| Branch | `checkpoint/20260913-183303` |
+| `IMPLEMENTATION.md` `AUTOCYCLE_PLAN` work / plan | work `ac3a1ebfb5df43c3ac215cddb71437fb`, plan `7020abbb0a364d50b31f446b95d5cd64`, step `10.11` |
+| `work-state` allocated `10.11` | source = B, work_id = `ac3a1ebfb5df43c3ac215cddb71437fb`, status `opened` |
+| Current implementation attempt | `be41fda2409b4443a8f6c22904df3573` (phase `running`, plan_sha = B, `checkpoint_sha` absent) |
+| Live authentication state | implementation at B (`HEAD == B`) after nonempty matching work and attempt bindings |
+| `latest-implementation` leftover HEAD | `1a65ef34304f04903d4abd0a8bbdcdead40b154f` (ignored: `IMPLEMENT_BASE_SHA` populated and authenticated) |
+| Fail-closed | Not required |
+
+Historical tuples remain separately bound comparators and do not authorize this live attempt.
+
+Historical Git blobs at B were inspected before destination comparison:
+
+| Path at B | SHA-256 | Bytes |
+|---|---|---|
+| `core/ingestion/manual_hk.py` | `f141f6e4d78beb69d8420a055785bc479fd84fef0f508b9f67a46d9ee4fc7247` | 6455 |
+| `core/ingestion/excel_import.py` | `49b42034da96ad87813cd76c7d3358486053b343638b70a77f4dada528ec6654` | 5164 |
+
+## Ownership / path mappings
+
+| Responsibility | Destination | Notes |
+|---|---|---|
+| `HKManualDocumentAdapter`, `_parse_date`, `_load_historical_shares`, `_load_structured_json` | `legacy/ingestion/manual_hk.py` | Byte-identical to B `core/ingestion/manual_hk.py`. Relative `.excel_import` cooperation retained |
+| `ExcelExportAdapter`, `TAB_MAP`, `_parse_header`, `_header_layout` | `legacy/ingestion/excel_import.py` | Byte-identical to B `core/ingestion/excel_import.py` |
+| Compatibility façades | `core/ingestion/manual_hk.py`, `core/ingestion/excel_import.py` | Public names plus required private helpers; object identity preserved |
+| Package adapter exports | `core/ingestion/__init__.py` | `__all__` unchanged; `ExcelExportAdapter` / `HKManualDocumentAdapter` lazy via `__getattr__` |
+| CLI load sites | `core/__main__.py` `cmd_ingest` and Excel-input `-o` branch | Canonical `legacy.ingestion.manual_hk` loaded only on those routes |
+
+Adapters continue to consume Extractor documentary contracts, Modeler standardized/reconcile types, and Director `normalize_label`. Ordinary company and canonical filing routes do not import Legacy adapters.
+
+Inventory §§4.2 and 7.3 and `legacy/README.md` now distinguish retained compatibility entry points from active company execution.
+
+## Adapter results versus B
+
+Canonical destinations match the B adapter blobs exactly, so current adapter behavior is the B implementation. Measured representative results:
+
+| Case | Measured result |
+|---|---|
+| DEMO_HK JSON | ticker `DEMO`, 5 periods FY2021–FY2025, IS/BS/CF 11/14/6; provenance `structured_json`; Revenue 8500…12500; restructuring concept `restructuring_expense` FY2023 `-200`; `historical_shares` absent; checksums all True |
+| Historical shares + page | `scale_basis=financial_statement_units`, diluted WAS `{2023-12-31: 100.5, 2024-12-31: None}`, factor `{2024-12-31: 1.0}`; Revenue `source_page=12`, `concept=revenue` |
+| Merge two JSON docs | IS 12 rows including `other_income`; provenance two `structured_json` entries |
+| Reconciliation failure | `Profit for the year` FY2025 `None` → checksums `{income_statement: False, balance_sheet: True, cash_flow: True}`; empty manifest / missing file / PDF / Excel arity raise the same errors as B |
+| Excel descending + missing | periods `[2025-12-31, 2024-12-31]`; concept `revenue` / label `Revenue`; missing row values `{2025: None, 2024: 1.0}`; BS concept `""`; provenance `excel_export` |
+
+## Commands / inspections run
+
+| Check | Measured result |
+|---|---|
+| B authentication (resume-state, baseline JSON, work-state 10.11, branch, HEAD==B, attempt `be41fda2…`) | B = `0296fc2988b8a48fecf66742c66b17d60f921ff4`; HEAD == B; fail-closed not required |
+| Historical blob inspect vs destinations | `legacy/ingestion/manual_hk.py` and `excel_import.py` byte-identical to B blobs |
+| `/opt/anaconda3/bin/python -m pytest -q core/tests/test_build_cli.py core/tests/test_filing_cli.py core/tests/test_data_ingestion_ownership.py core/tests/test_engine_trainer_ownership.py core/tests/test_trainer.py core/tests/test_reference_integrity.py core/tests/test_current_build.py core/tests/test_publication.py core/tests/test_cross_company_robustness.py core/tests/test_lululemon_benchmark.py core/tests/test_fast_retailing_benchmark.py` | **588 passed** in 226.20s. No skip / xfail / deselect. 5 pre-existing Swig importlib warnings |
+| Ordinary ingestion imports / company and filing routes with Legacy adapters blocked | Fresh-process tests pass; `legacy.ingestion.*` and compatibility adapter modules absent |
+| Explicit `ingest` and Excel `-o` compatibility build | Load `legacy.ingestion.manual_hk` / `excel_import`; DEMO ingest writes 5-period JSON; Excel build writes Trainer |
+| Canonical vs façade identity / both import orders / private helpers | `is` identity for adapters, `TAB_MAP`, `_parse_date`, `_load_historical_shares`, `_load_structured_json`, `_parse_header`, `_header_layout` |
+| `git diff --check` | rc 0 |
+| `git diff --check 0296fc2988b8a48fecf66742c66b17d60f921ff4` | rc 0 |
+
+Workbook formulas, presentation and canonical source/extracted/reconciled inputs were not rewritten. Office Bridge was not required.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `legacy/ingestion/manual_hk.py` | `f141f6e4d78beb69d8420a055785bc479fd84fef0f508b9f67a46d9ee4fc7247` | 6455 |
+| `legacy/ingestion/excel_import.py` | `49b42034da96ad87813cd76c7d3358486053b343638b70a77f4dada528ec6654` | 5164 |
+| `legacy/ingestion/__init__.py` | `d85ba83eb0a420e79b03467f979f171ab59286b096644b5989ccaeafa2b76293` | 205 |
+| `core/ingestion/manual_hk.py` | `54861cbe4549a09e9c2b414a3e200a70761428d154d0d16a22692cf5866a21aa` | 239 |
+| `core/ingestion/excel_import.py` | `5495a48e6b852dfb1795d35ee3f9db276f4b3092d56f19480a759447edfe8447` | 201 |
+| `core/ingestion/__init__.py` | `0ccaf8ce3f3258069e3774edb312c7d2866a058dbc5a7532c2bd547de7d383f2` | 640 |
+| `core/__main__.py` | `72d8552f694e7bd2fdf1021b3b8197d2f5827b49688e0dee43eaab459247f052` | 19985 |
+| `core/tests/test_data_ingestion_ownership.py` | `e76f05af07b959f5de9435ea6951d6f918e9108503ac1ed054d7b00e7e5de2fa` | 35896 |
+| `core/tests/test_engine_trainer_ownership.py` | `423001ff499824cac21f21936330c19ef2b2467646ed71630bf27e5ab9ecf5f1` | 11954 |
+| `core/tests/test_build_cli.py` | `1f80dee0af28735d0daa98237e9bfcb991eb970d0f3ff40d270972ca79e09b71` | 12566 |
+| `core/tests/test_filing_cli.py` | `391b1af5e057b01d5016ee8d5fa4a88aab8a449cc7bff3dd9981b8ef9fbf450c` | 18020 |
+| `director/docs/MIGRATION_INVENTORY.md` | `ae7f1715aa405e963710a8234bb2ead4fcf7fa78b1116a47e7beae20b93468d9` | 121509 |
+| `legacy/README.md` | `c3964d3ac745bb58012068af35a615dca3f6293902b5c717db3bdf802ceab253` | 3620 |
+
+## Preservation
+
+Adapter date parsing, period order, label normalization, missing values, historical shares, concepts, source/page provenance, statement merging, checksums and failure behavior are unchanged. Completed component ownership, classification/normalization calculations and qualifications, compatibility exports, protected-input immutability, standardized-only ordinary preparation, public `bav` interfaces, optional Trainer independence, dormant forecasting and zero-byte research placeholders remain. Admission stays default-off and independent of ordinary reconciliation and comparison.
+
+## Remaining toward Completion
+
+Remaining Director relocation, other Legacy categories, Remove items, repository-wide test ownership migration and final migration verification remain unfinished. No algorithm/report redesign, new Extractor, reasoning engine, Trainer expansion or second-phase features.
+
+This bounded Legacy adapter isolation does not establish parent Completion or Session 10 acceptance.
+
+## Required plan change
+
+None.
+
+---
+
 # RESULT.md — Step 10.10 Split classification and normalization interpretation ownership
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

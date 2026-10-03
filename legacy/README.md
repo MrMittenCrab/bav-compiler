@@ -1,4 +1,19 @@
-# Legacy — the original "custom GPT" system (Gemini Gems)
+# Legacy — retained prior functionality
+
+This tree holds useful prior functionality outside the active BAV Compiler
+architecture. Ordinary company `python -m bav {build,check,publish}` and
+canonical filing validate/reconcile do not import this package.
+
+## Manual HK / Excel ingestion
+
+`legacy/ingestion/manual_hk.py` and `legacy/ingestion/excel_import.py` are the
+canonical transcribed HK JSON and Excel/Bloomberg/Wind adapters. They remain
+available through the retained compatibility entry points
+`core.ingestion.manual_hk` / `core.ingestion.excel_import` and the `ingest` /
+explicit Excel-input `-o` build commands. Those compatibility modules are not
+the active company execution path.
+
+## Original custom-GPT system (Gemini Gems)
 
 Before this repository was a Claude Code skill, it was four instruction sets run by hand as **Gemini Gems** — the custom-GPT pattern, anchored on Google's ecosystem:
 

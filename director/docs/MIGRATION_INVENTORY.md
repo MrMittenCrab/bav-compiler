@@ -123,7 +123,7 @@ Preserve public package name `bav` and company interfaces
 | `cmd_validate_source` | Director route over Extractor contract + Modeler bind | CLI | Director | Orchestrates already-extracted JSON | `test_filing_cli.py` |
 | `cmd_reconcile` | Director route; body Modeler | CLI | Director | Writes reconciled artifacts | `test_filing_reconciler.py` |
 | `cmd_ingest` argparse / route | `director/cli.py` `cmd_ingest` | CLI | Director | Route only | ingest tests |
-| `HKManualDocumentAdapter` | `legacy/ingestion/manual_hk.py` | `cmd_ingest` | Legacy | Transcribed HK ingest, not canonical company path | ingest tests |
+| `HKManualDocumentAdapter` | `legacy/ingestion/manual_hk.py` (Step 10.11 actual; `core.ingestion.manual_hk` remains a compatibility façade) | `cmd_ingest`, Excel-input `-o` build | Legacy | Transcribed HK ingest, not canonical company path. Ordinary `build`/`check`/`publish` do not load it | ingest tests; company routes reject Legacy adapters |
 | `core/current_build.py` `PROJECTS`, `resolve_company`, `build_company`, `check_company_output`, `prepare_company_input`, atomic exchange | `director/current_build.py` | CLI, `document.py`, tests | Director | “Company metadata selects evidence locations, never accounting behavior” | `test_current_build.py` |
 | `core/project_companies.json` | `director/project_companies.json` | `current_build.PROJECTS` | Director | Names/slugs/aliases/fixture paths | resolve Lululemon/LULU/FastRetailing/9983 |
 | `core/build_status.py` | `modeler/build_status.py` | `build_company` | Modeler | Mechanical family availability | `test_current_build.py` |
@@ -878,7 +878,7 @@ Remaining ingestion rows:
 | `reconciliation_provenance_payload` `selection_rule` / rank | Modeler fields on the same payload | Modeler | Analytical selection provenance | committed `provenance.json` |
 | `filing_standardizer.py` | `modeler/ingestion/filing_standardizer.py` | Modeler | Emit model-only `StandardizedFinancials` | Lulu/FR reconcile |
 | `note_handoff.py` | `director/ingestion/note_handoff.py` | Director | Appends already-authored note facts | prepare script |
-| `excel_import.py`, `manual_hk.py` | `legacy/ingestion/` | Legacy | Transcribed Excel/JSON adapters | ingest / demo tests |
+| `excel_import.py`, `manual_hk.py` | `legacy/ingestion/` (Step 10.11 actual; old paths are compatibility façades) | Legacy | Transcribed Excel/JSON adapters. Not loaded by ordinary company execution or canonical filing ingest | ingest / demo tests; ordinary import isolation |
 | `future_adapters.py` `HKEXAdapter`, `SECAdapter`, `SGXAdapter` | delete in place | Remove | `NotImplementedError`; TARGET forbids HKEX scrape; no production import | `rg` definition + `README-HK-TRAINER.md` mention only |
 | `base.py` / `reconciler.py` | `modeler/ingestion/` | Modeler | Shared checksum reconcile | build refuse-on-fail |
 | `management_kpi_enrichment.py` `inspect_source_pdf`, decoding, passage extraction, documentary records, printed/physical page binding | `extractor/ingestion/management_kpi_enrichment.py` | Extractor | Source-faithful PDF inspection of already-bound filings; not a new extractor | `test_management_kpi_enrichment.py` |
@@ -887,11 +887,23 @@ Remaining ingestion rows:
 
 **Step 10.9 actual destinations.** `filing_cli.py` and `note_handoff.py` now
 execute from `director/ingestion/`. Assigned reconcile/standardize/admit modules
-execute from `modeler/ingestion/`. `excel_import.py`, `manual_hk.py` and
-`future_adapters.py` remain at `core/ingestion/` (Remove / deferred mixed). Thin
-`core.ingestion` façades retain package `__all__` and explicit private imports
-(`reconciler._merge_line_items`, `management_kpi_reconciliation._select_ordinary_group`,
+execute from `modeler/ingestion/`. `future_adapters.py` remains at `core/ingestion/`
+(Remove / deferred mixed). Thin `core.ingestion` façades retain package `__all__`
+and explicit private imports (`reconciler._merge_line_items`,
+`management_kpi_reconciliation._select_ordinary_group`,
 and the split normalization-candidate and enrichment private helpers).
+**Step 10.11:** `excel_import.py` and `manual_hk.py` now execute from
+`legacy/ingestion/`, retaining names and relative adapter cooperation. Retained
+`core.ingestion.excel_import` / `core.ingestion.manual_hk` are delegation-only
+compatibility façades (public names plus `_parse_header` / `_header_layout` /
+`_parse_date` / `_load_historical_shares` / `_load_structured_json`). Package
+`core.ingestion` adapter exports (`ExcelExportAdapter`, `HKManualDocumentAdapter`)
+are lazy: importing ordinary compatibility modules does not initialize Legacy
+adapters. `core/__main__.py` loads `legacy.ingestion.manual_hk` only for
+`cmd_ingest` or the explicit Excel-input compatibility build branch. Ordinary
+company `build` / `check` / `publish` and canonical filing validate/reconcile
+do not depend on those adapters. Compatibility `core.ingestion.manual_hk` /
+`excel_import` remain importable; they are not active company execution.
 **Step 10.9.5:** `normalization_candidate_admission.py` is no longer a deferred
 mixed module at `core/ingestion/`; that path is now the compatibility façade over
 the Modeler / Director / Interpreter owners above.

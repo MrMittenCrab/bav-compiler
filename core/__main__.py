@@ -24,9 +24,6 @@ from modeler.ingestion.filing_standardizer import (
     reconciliation_provenance_payload,
     standardize_reconciled,
 )
-from .ingestion.manual_hk import HKManualDocumentAdapter
-
-
 def _serialize_line_items(items) -> list[dict]:
     return [
         {
@@ -68,6 +65,8 @@ def cmd_ingest(args: argparse.Namespace) -> int:
         else:
             dtype = DocumentType.ANNUAL_REPORT
         manifest.append(DocumentManifest(path=str(path), doc_type=dtype))
+
+    from legacy.ingestion.manual_hk import HKManualDocumentAdapter
 
     adapter = HKManualDocumentAdapter()
     data = adapter.ingest(manifest)
@@ -181,6 +180,8 @@ def cmd_build(args: argparse.Namespace) -> int:
         if path.suffix.lower() == ".json":
             data = standardized_from_payload(_load_build_json(path), strict=True)
         else:
+            from legacy.ingestion.manual_hk import HKManualDocumentAdapter
+
             adapter = HKManualDocumentAdapter()
             data = adapter.ingest([DocumentManifest(path=str(path), doc_type=DocumentType.EXCEL_EXPORT)])
 
