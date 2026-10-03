@@ -1,44 +1,45 @@
-# Step 10.13 — Relocate remaining Legacy functionality and references
-AUTOCYCLE_PLAN: {"finding_key": "Relocate remaining Legacy functionality and references", "kind": "work", "objective": "Relocate remaining Legacy functionality and references", "plan_id": "07c9bd93061c439fbe0a6046baf1520e", "predecessor_review_sha256": "fe1909d1f7584b501dc2ecd030c02fa97457b924f82e3b8ba31a8eabbba44fd6", "step_id": "10.13", "work_id": "01a325c7ed794dcbbcc0167a74c9d572"}
+# Step 10.14 — Execute inventory-designated Remove dispositions
+AUTOCYCLE_PLAN: {"finding_key": "Execute inventory-designated Remove dispositions", "kind": "work", "objective": "Execute inventory-designated Remove dispositions", "plan_id": "929ee92e950e43b5ae91c8a191dfbcdf", "predecessor_review_sha256": "da85d9a5559667dfac6635ff3251d93bf0fc6f141b49eaa7fd5ce04991ee222f", "step_id": "10.14", "work_id": "5aa7273b08304f909042b1d1efecd98e"}
 
 ## Completion
 
-Inventory-designated Legacy functionality and supporting assets reside under their assigned Legacy categories, with working references and preserved useful behavior, while ordinary BAV company execution remains independent of Legacy.
+Inventory-designated Remove material is removed, with required source evidence, retained Legacy behavior and public BAV interfaces preserved, and affected references and regressions verified.
 
 ## Bounded work
 
-Follow `director/docs/MIGRATION_INVENTORY.md` §§4.6–4.11, 10 and 13–14. Retain completed Trainer, ingestion and enrichment relocations; move only remaining Legacy material.
+Follow `director/docs/MIGRATION_INVENTORY.md` §§4.1, 4.6, 4.10, 4.12 and 13. Confirm current callers and contents before deleting each item.
 
-- Relocate coverage automation to `legacy/automation/` and `automation/autocycle-fixes/` to `legacy/autocycle-fixes/`. Preserve controller patches as historical assets; do not apply them or alter installed AutoCycle.
-- Relocate repository skills and their fixtures/references to `legacy/skills/`, plugin metadata to `legacy/plugin/`, and the packaging script to `legacy/build_plugin_zip.sh`. Retain one existing archive at `legacy/bav-pipeline-plugin.zip`.
-- Relocate retired release builders, benchmark/reference audit scripts and PDF text-cache extraction to `legacy/scripts/`; place `requirements-benchmark.txt` alongside its extraction helper.
-- Relocate historical workbook verifiers and `docs/native-excel-*.json` to `legacy/verification/`. Preserve SHA bindings and independent expectations; relocation does not refresh native verification.
-- Relocate the Trainer guide, GOOGL reference, historical Excel diagnosis/resume notes and `docs/superpowers/specs/` under `legacy/docs/`, preserving useful substructure.
-- Relocate the five inventory-listed HK/GOOGL example JSON/workbook assets to `legacy/example/`, preserving their bytes.
-- Update imports, repository-root discovery, resource paths, script defaults, packaging inputs, installation templates, test fixtures and current documentation links affected by these moves. Keep the packaged plugin’s expected internal layout.
-- Update `legacy/README.md` and the migration inventory with actual destinations and retained entry points. Preserve historical RESULT records and distinguish historical commands from current instructions.
+- Delete `scripts/build_fast_retailing_source_facts.py` and `core/ingestion/future_adapters.py`; update current documentation that presents them as available functionality.
+- Confirm `FIGURE_NAMES`, `FIGURE_PLOTTERS` and `_calendar_limit_block` are already removed; remove only remaining unused definitions, without changing live rendering.
+- Remove empty `benchmark/`, `release/` and `build/input/lululemon/evidence/stale-benchmark-reconciled/` directories after checking their contents.
+- Remove `build/input/fast_retailing/evidence/_extract/*.txt` after confirming they are regenerable caches and no retained workflow requires those copies.
+- Remove leftover generated `example/rowmap.json`, `example/DEMO_HK_Answer_Key.assumptions.json` and `example/DEMO_HK_Answer_Key.component_map.json`. Do not generalize deletion to canonical assumptions or retained fixtures.
+- Remove repository-owned `__pycache__/`, `.pytest_cache/` and `.DS_Store` artifacts within the inventoried areas. Exclude Git/controller state, environments and unrelated work; regenerated runtime caches need not remain absent after verification.
+- Update the inventory and `legacy/README.md` to record actual removals and retained destinations. Correct affected current references without rewriting historical records.
 
-Keep existing compatibility interfaces where required by public behavior. Do not add forwarding layers for retired script paths without a demonstrated caller. Leave canonical company inputs, outputs and archived local evidence at their existing locations.
+Retain required compatibility façades, the Director `validate_standardized` contract, one `legacy/bav-pipeline-plugin.zip`, retained Legacy assets and historical verification records. Do not introduce replacement adapters, forwarding layers or a `remove/` directory.
+
+Broader test ownership migration, remaining repository branding/alignment and final Session verification remain subsequent scope.
 
 ## Preservation
 
-Authenticate execution baseline B using populated `IMPLEMENT_BASE_SHA`, otherwise the normal baseline and bound-attempt mechanisms. Verify branch, ancestry and checkpoint bindings; fail closed if authentication is unavailable.
+Authenticate execution baseline B from populated `IMPLEMENT_BASE_SHA`, otherwise through the normal baseline and bound-attempt mechanisms. Verify branch, ancestry and checkpoint bindings; fail closed if authentication is unavailable.
 
-Inspect historical Git blobs at B before comparing canonical destinations. Record old-to-new mappings, byte identity for unchanged assets and explicit path/import changes for modified files. Git preserves tracked history; no duplicate legacy copies or migration receipts are required.
+Inspect tracked removal candidates through Git blobs at B, then current consumers and canonical destinations. Git preserves tracked history; deletion of obsolete material requires no duplicate, backup or receipt.
 
-Preserve non-Git irreplaceable evidence through verified canonical continuity before removing its old copy. Preserve source immutability, protected outputs, staged verification, sidecars, atomic replacement, rollback and provenance.
+Preserve local extracted/reconciled JSON, canonical company inputs and outputs, archived evidence, source manifests and required sidecars. Before removing any non-Git irreplaceable source copy, verify byte continuity and provenance at its intended canonical destination; otherwise block that removal. Do not remove restored source PDFs without verified canonical bytes.
 
-Preserve CLI aliases, patchable configuration, explicit JSON/Excel routes, optional Trainer behavior, analytical results, residual qualifications, dormant forecasting and zero-byte research placeholders. Retain normalization admission’s default-off behavior, fingerprint/adoption/treatment/authorization gates, once-only conversion, lifecycle rejection coverage and 11-observation round trips.
-
-Remove dispositions, broader test ownership migration, product-wide branding and final Session verification remain subsequent scope. Do not redesign Legacy, expand features or alter active analytical algorithms.
+Preserve public `bav` commands, aliases, patchable configuration, explicit JSON/Excel routes and optional Trainer behavior. Retain analytical results, source immutability, residual qualifications, dormant forecasting, zero-byte research placeholders and normalization admission’s existing gates and default-off behavior.
 
 ## Verification and recording
 
-- Run affected existing Trainer, ingestion, learner-presentation, cached-workbook verifier, reference-audit, CLI and company-orchestration tests. Update path assumptions without weakening assertions.
-- Check relocated Python/shell entry points and plugin packaging in disposable locations; inspect archive members and resource resolution. Do not install automation, launch services or invoke external coverage workflows.
-- Verify ordinary company build/check/publication routes still avoid Legacy imports. Reuse the reviewed representative comparison only while its dependencies remain unchanged; rerun affected representative paths if relocation changes their dependencies.
-- Preserve binary workbook assets exactly. Apply SESSION’s Office Bridge requirements if formulas/dependencies or presentation change; historical SHA-bound records do not substitute for current native verification.
-- Run `git diff --check` and the corresponding comparison against authenticated B.
-- Append relocation mappings, intentional edits, measured verification and remaining Session scope to `RESULT.md`. Preserve ownership/recovery, provider retry, human adoption, interruption, candidate validation, protected-document, unrelated-dirty-work and Review-cache safeguards.
+- Check retained active and Legacy consumers for broken imports, paths and resource discovery after removal.
+- Run affected existing ingestion ownership, filing CLI, build CLI, current-build, build-contract, reference-integrity and optional Trainer regressions. Preserve assertions establishing public interfaces and source provenance.
+- Reuse representative Lululemon/Fast Retailing verification only while its dependencies remain applicable; rerun affected build/check/publication paths if removal changes those dependencies.
+- Apply SESSION’s Office Bridge requirements if workbook formulas/dependencies or presentation change.
+- Run `git diff --check` and inspect the comparison against authenticated B.
+- Append actual removals, absence-of-use findings, preservation evidence, measured verification and remaining Session scope to `RESULT.md`. Do not rewrite historical records or certify a prospective next ID.
+
+Preserve ownership/recovery, provider retry, human adoption, interruption, candidate validation, protected-document, unrelated-dirty-work and Review-cache safeguards.
 
 Cursor must not modify TARGET.md, SESSION.md or IMPLEMENTATION.md.
