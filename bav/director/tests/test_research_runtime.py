@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sys
 import tempfile
 import threading
@@ -29,7 +30,7 @@ from bav.director.runtime import (
 )
 from bav.director.runtime.workspace import create_isolated_workspace
 from bav.director.runtime.contract import CURSOR_FORBIDDEN_FLAGS
-from bav.director.runtime.policy import fingerprint
+from bav.director.runtime.policy import capture_owned_paths, fingerprint, mutation_records
 
 ROOT = repository_root()
 FAKE_PROVIDER = Path(__file__).resolve().parent / "fixtures" / "runtime" / "fake_provider.py"
@@ -1291,3 +1292,382 @@ def test_capture_limits_unreadable_and_escaping_symlink(tmp_path):
     )
     assert change["change"] == "added"
     assert change.get("after_type") == "symlink"
+
+
+def test_owned_type_change_is_recorded(tmp_path):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+    runtime = ResearchRuntime(
+        model=MODEL,
+        provider_mode="synthetic",
+        provider_argv=[sys.executable, str(FAKE_PROVIDER)],
+        timeout_seconds=2,
+        retain_workspace=False,
+        extra_env={"BAV_FAKE_SCENARIO": "type_change"},
+    )
+    result = runtime.invoke(_request("planner", snapshot, "call-type-change"))
+    assert result.status == "ok"
+    changes = {(item["root"], item["path"]): item for item in result.capture.workspace_changes}
+    assert changes[("workspace", "snapshot.json")]["change"] == "type_changed"
+    assert changes[("workspace", "snapshot.json")]["before_type"] == "file"
+    assert changes[("workspace", "snapshot.json")]["after_type"] == "directory"
+    assert result.capture.capture_coverage["complete"] is True
+    if result.capture.workspace:
+        assert not Path(result.capture.workspace).exists()
+
+
+class _ExpireAfter:
+    def __init__(self, expire_after: int, limit: float = 2.0) -> None:
+        self.expire_after = expire_after
+        self.limit = limit
+        self.calls = 0
+
+    def __call__(self) -> float:
+        self.calls += 1
+        if self.calls >= self.expire_after:
+            return self.limit + 1.0
+        return 0.0
+
+
+def test_large_file_read_is_bounded_to_byte_allowance(tmp_path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    payload = b"A" * 35027
+    (workspace / "large.bin").write_bytes(payload)
+    (tmp_path / "home").mkdir()
+    (tmp_path / "config").mkdir()
+    (tmp_path / "data").mkdir()
+    reads: list[dict[str, int]] = []
+    result = capture_owned_paths(
+        {
+            "workspace": workspace,
+            "home": tmp_path / "home",
+            "config": tmp_path / "config",
+            "data": tmp_path / "data",
+        },
+        CaptureLimits(max_bytes_hashed=64, read_chunk_bytes=4096),
+        io_observer=reads.append,
+    )
+    file_reads = [item for item in reads if item["kind"] == "read"]
+    assert file_reads
+    assert all(item["requested"] <= 64 for item in file_reads)
+    assert sum(item["returned"] for item in file_reads) <= 64
+    assert result["bytes_read"] <= 64
+    assert result["bytes_hashed"] <= 64
+    assert result["bytes_read"] == result["bytes_hashed"]
+    assert result["complete"] is False
+    assert result["unchanged_not_established"] is True
+    assert "truncated" in result["limitations"]
+    observed = next(item for item in result["records"] if item["path"] == "large.bin")
+    assert observed.get("content_complete") is False
+    assert observed.get("fingerprint") is None
+    assert observed.get("limitation") == "truncated"
+    assert observed.get("bytes_read") == 64
+
+
+def test_shared_byte_accounting_empty_and_exact_boundary(tmp_path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    (workspace / "empty.bin").write_bytes(b"")
+    (workspace / "exact.bin").write_bytes(b"E" * 64)
+    for name in ("home", "config", "data"):
+        (tmp_path / name).mkdir()
+    roots = {
+        "workspace": workspace,
+        "home": tmp_path / "home",
+        "config": tmp_path / "config",
+        "data": tmp_path / "data",
+    }
+    reads: list[dict[str, int]] = []
+    first = capture_owned_paths(
+        roots,
+        CaptureLimits(max_bytes_hashed=64, read_chunk_bytes=16),
+        io_observer=reads.append,
+    )
+    empty = next(item for item in first["records"] if item["path"] == "empty.bin")
+    exact = next(item for item in first["records"] if item["path"] == "exact.bin")
+    assert empty.get("content_complete") is True
+    assert empty.get("fingerprint") == hashlib.sha256(b"").hexdigest()
+    assert empty.get("bytes_read") == 0
+    assert exact.get("content_complete") is True
+    assert exact.get("fingerprint") == hashlib.sha256(b"E" * 64).hexdigest()
+    assert exact.get("bytes_read") == 64
+    assert first["bytes_read"] == 64
+    assert first["complete"] is True
+    consumed = 0
+    for item in reads:
+        assert item["requested"] <= 64 - consumed
+        consumed += item["returned"]
+    assert all(item["requested"] <= 16 for item in reads)
+
+    (workspace / "more.bin").write_bytes(b"S" * 50)
+    shared_reads: list[dict[str, int]] = []
+    shared = capture_owned_paths(
+        roots,
+        CaptureLimits(max_bytes_hashed=64, read_chunk_bytes=16),
+        io_observer=shared_reads.append,
+    )
+    files = [item for item in shared["records"] if item["type"] == "file"]
+    complete_files = [item for item in files if item.get("content_complete")]
+    truncated_files = [item for item in files if item.get("limitation") == "truncated"]
+    assert complete_files
+    assert truncated_files
+    assert shared["bytes_read"] == 64
+    assert shared["complete"] is False
+    assert sum(item.get("bytes_read") or 0 for item in files) == 64
+    assert all(item.get("fingerprint") is None for item in truncated_files)
+
+
+def test_interrupted_read_marks_incomplete(tmp_path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    (workspace / "slow.bin").write_bytes(b"I" * 128)
+    for name in ("home", "config", "data"):
+        (tmp_path / name).mkdir()
+
+    class _ExpireAfterRead:
+        def __init__(self) -> None:
+            self.reads = 0
+
+        def observe(self, event: dict) -> None:
+            if event.get("kind") == "read":
+                self.reads += 1
+
+        def __call__(self) -> float:
+            return 3.0 if self.reads >= 1 else 0.0
+
+    clock = _ExpireAfterRead()
+    result = capture_owned_paths(
+        {
+            "workspace": workspace,
+            "home": tmp_path / "home",
+            "config": tmp_path / "config",
+            "data": tmp_path / "data",
+        },
+        CaptureLimits(max_bytes_hashed=128, read_chunk_bytes=16, max_elapsed_seconds=2.0),
+        clock=clock,
+        io_observer=clock.observe,
+    )
+    assert result["complete"] is False
+    assert result["unchanged_not_established"] is True
+    assert "elapsed" in result["limitations"]
+    observed = next(item for item in result["records"] if item["path"] == "slow.bin")
+    assert observed.get("content_complete") is False
+    assert observed.get("fingerprint") is None
+    assert observed.get("limitation") == "elapsed"
+    assert result["read_operations"] >= 1
+
+
+def test_directory_scan_errors_are_incomplete(tmp_path, monkeypatch):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    nested = workspace / "nested"
+    nested.mkdir()
+    (nested / "child.txt").write_text("visible", encoding="utf-8")
+    (workspace / "root.txt").write_text("root", encoding="utf-8")
+    for name in ("home", "config", "data"):
+        (tmp_path / name).mkdir()
+    roots = {
+        "workspace": workspace,
+        "home": tmp_path / "home",
+        "config": tmp_path / "config",
+        "data": tmp_path / "data",
+    }
+    real_scandir = os.scandir
+
+    def deny_root(path):
+        if Path(path) == workspace:
+            raise PermissionError("root denied")
+        return real_scandir(path)
+
+    monkeypatch.setattr(os, "scandir", deny_root)
+    root_denied = capture_owned_paths(roots)
+    assert root_denied["complete"] is False
+    assert root_denied["unchanged_not_established"] is True
+    assert any(item.startswith("unreadable:workspace") for item in root_denied["limitations"])
+    assert not any(item["path"] == "root.txt" for item in root_denied["records"])
+    unchanged = mutation_records(
+        root_denied["records"],
+        root_denied["records"],
+        before_complete=False,
+        after_complete=False,
+    )
+    assert all(item.get("definitive") is not True or item["change"] == "type_changed" for item in unchanged)
+
+    def deny_nested(path):
+        if Path(path) == nested:
+            raise PermissionError("nested denied")
+        return real_scandir(path)
+
+    monkeypatch.setattr(os, "scandir", deny_nested)
+    nested_denied = capture_owned_paths(roots)
+    assert nested_denied["complete"] is False
+    assert nested_denied["unchanged_not_established"] is True
+    assert any("unreadable:workspace/nested" in item for item in nested_denied["limitations"])
+
+    class MidIteration:
+        def __init__(self, real) -> None:
+            self._real = real
+            self._iter = iter(real)
+            self._count = 0
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            self._count += 1
+            if self._count > 1:
+                raise PermissionError("mid-iteration")
+            return next(self._iter)
+
+        def close(self) -> None:
+            self._real.close()
+
+    def fail_mid(path):
+        handle = real_scandir(path)
+        if Path(path) == workspace:
+            return MidIteration(handle)
+        return handle
+
+    monkeypatch.setattr(os, "scandir", fail_mid)
+    mid = capture_owned_paths(roots)
+    assert mid["complete"] is False
+    assert mid["unchanged_not_established"] is True
+    assert any(item.startswith("unreadable:workspace") for item in mid["limitations"])
+    assert mid["records"]
+
+
+def test_wide_directories_depth_records_and_clock(tmp_path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    for index in range(20):
+        (workspace / f"dir{index:02d}").mkdir()
+        (workspace / f"link{index:02d}").symlink_to(workspace / f"dir{index:02d}")
+    deep = workspace / "a" / "b" / "c" / "d"
+    deep.mkdir(parents=True)
+    (deep / "leaf.txt").write_text("leaf", encoding="utf-8")
+    for name in ("home", "config", "data"):
+        (tmp_path / name).mkdir()
+    roots = {
+        "workspace": workspace,
+        "home": tmp_path / "home",
+        "config": tmp_path / "config",
+        "data": tmp_path / "data",
+    }
+    wide = capture_owned_paths(roots, CaptureLimits(max_entries=8, max_records=32, max_depth=12))
+    assert wide["complete"] is False
+    assert wide["unchanged_not_established"] is True
+    assert wide["entries_seen"] == 8
+    assert all(item["type"] in {"directory", "symlink"} or item["path"] == "." for item in wide["records"])
+    assert not any(item.get("link") == str(ROOT / "TARGET.md") for item in wide["records"])
+
+    depth = capture_owned_paths(roots, CaptureLimits(max_depth=2, max_entries=256, max_records=256))
+    assert depth["complete"] is False
+    assert "truncated" in depth["limitations"]
+    paths = {item["path"] for item in depth["records"]}
+    assert "a/b/c/d/leaf.txt" not in paths
+    assert "a" in paths
+    assert depth["entries_seen"] > 0
+
+    records = capture_owned_paths(roots, CaptureLimits(max_records=3, max_entries=256))
+    assert records["complete"] is False
+    assert len(records["records"]) == 3
+    assert records["entries_seen"] >= 3
+
+    expired = capture_owned_paths(
+        roots,
+        CaptureLimits(max_entries=256, max_elapsed_seconds=2.0),
+        clock=_ExpireAfter(3),
+    )
+    assert expired["complete"] is False
+    assert "elapsed" in expired["limitations"]
+    assert expired["entries_seen"] < 40
+
+
+def test_symlink_replacement_special_files_and_concurrent_change(tmp_path, monkeypatch):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    victim = workspace / "victim.bin"
+    victim.write_bytes(b"original-bytes-not-target")
+    fifo = workspace / "pipe"
+    os.mkfifo(fifo)
+    for name in ("home", "config", "data"):
+        (tmp_path / name).mkdir()
+    roots = {
+        "workspace": workspace,
+        "home": tmp_path / "home",
+        "config": tmp_path / "config",
+        "data": tmp_path / "data",
+    }
+    real_open = os.open
+
+    def replace_then_open(path, flags, *args, **kwargs):
+        candidate = Path(path)
+        if candidate.name == "victim.bin" and candidate.is_file() and not candidate.is_symlink():
+            candidate.unlink()
+            candidate.symlink_to(ROOT / "TARGET.md")
+        return real_open(path, flags, *args, **kwargs)
+
+    monkeypatch.setattr(os, "open", replace_then_open)
+    result = capture_owned_paths(roots, CaptureLimits(read_chunk_bytes=16, max_bytes_hashed=10_000))
+    monkeypatch.setattr(os, "open", real_open)
+    victim_record = next(item for item in result["records"] if item["path"] == "victim.bin")
+    assert victim_record["type"] == "symlink"
+    assert victim_record.get("fingerprint") is None
+    assert "Build **BAV Compiler**" not in json.dumps(result)
+    pipe = next(item for item in result["records"] if item["path"] == "pipe")
+    assert pipe["type"] == "special"
+    assert pipe.get("limitation") == "special_file_skipped"
+    assert pipe.get("fingerprint") is None
+
+    moving = workspace / "moving.bin"
+    moving.write_bytes(b"X" * 80)
+    changed = {"done": False}
+    real_read = os.read
+
+    def rewrite_after_first(fd, size):
+        data = real_read(fd, size)
+        if not changed["done"]:
+            changed["done"] = True
+            moving.write_bytes(b"Y" * 120)
+        return data
+
+    monkeypatch.setattr(os, "read", rewrite_after_first)
+    concurrent = capture_owned_paths(
+        roots,
+        CaptureLimits(read_chunk_bytes=16, max_bytes_hashed=10_000),
+    )
+    moving_record = next(item for item in concurrent["records"] if item["path"] == "moving.bin")
+    assert moving_record.get("content_complete") is not True
+    assert moving_record.get("limitation") == "unstable"
+    assert concurrent["complete"] is False
+    assert concurrent["unchanged_not_established"] is True
+
+
+def test_adapter_incomplete_capture_survives_cleanup(tmp_path):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+    runtime = ResearchRuntime(
+        model=MODEL,
+        provider_mode="synthetic",
+        provider_argv=[sys.executable, str(FAKE_PROVIDER)],
+        timeout_seconds=2,
+        retain_workspace=False,
+        extra_env={"BAV_FAKE_SCENARIO": "owned_mutations"},
+        capture_limits=CaptureLimits(max_files=1, max_records=1, max_bytes_hashed=16, max_entries=2),
+    )
+    result = runtime.invoke(_request("planner", snapshot, "call-incomplete-cleanup"))
+    assert result.status == "ok"
+    coverage = result.capture.capture_coverage
+    assert coverage["complete"] is False
+    assert coverage["unchanged_not_established"] is True
+    assert result.capture.application_decisions
+    assert result.capture.native_observations["attribution"] == "provider_reported"
+    assert result.capture.call_id == "call-incomplete-cleanup"
+    assert not any(
+        item.get("definitive") is True and item["change"] in {"added", "removed"}
+        for item in result.capture.workspace_changes
+    )
+    if result.capture.workspace:
+        assert not Path(result.capture.workspace).exists()
+    assert runtime._child is None

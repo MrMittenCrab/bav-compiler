@@ -957,8 +957,18 @@ class ResearchRuntime:
         owned_after = capture_owned_paths(self._owned_roots(isolated), self.capture_limits)
         before_records = tuple(owned_before.get("records") or ())
         after_records = tuple(owned_after.get("records") or ())
-        changes = mutation_records(before_records, after_records)
+        before_complete = bool(owned_before.get("complete"))
+        after_complete = bool(owned_after.get("complete"))
+        changes = mutation_records(
+            before_records,
+            after_records,
+            before_complete=before_complete,
+            after_complete=after_complete,
+        )
         coverage = merge_capture_coverage(owned_before, owned_after)
+        if not before_complete or not after_complete:
+            coverage["complete"] = False
+            coverage["unchanged_not_established"] = True
         observation_state = _observation_state(
             observed=observed,
             output_bytes=output_bytes,

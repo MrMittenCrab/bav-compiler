@@ -1,3 +1,74 @@
+# RESULT.md — Step 12.1.10 Repair bounded mutation capture and scan-error coverage
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 12.1.10 — Repair bounded mutation capture and scan-error coverage
+**Work:** `e35d5703ccc14627a150a29b9e900502`
+**Plan:** `ab220dd4518348aab02838e6e7e903f5`
+**Finding:** Verify Debater benchmark sources and controlled runtime
+**Attempt:** `6d453d4593ec466da2e174ea5b195f54`
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. No AutoCycle edits, discovery, conversion, debate CLI, argument export, observation replay, ACP session, live provider calls, login/logout, credential-store reads, global configuration writes, or Debater publications. This record does not claim parent Completion, Session acceptance, controlled-backend acceptance, or end-to-end benchmark success.
+
+TARGET SHA-256 `9bfc5e439e5776cf3d1d89fd33363febe716a6744ad7d256942a24709ff3e77b` (60817).
+SESSION SHA-256 `ca72e1c149eb4cefd2f6c9f101be577fed5b8493975a8d19e2fce7c4e44fff94` (5897).
+IMPLEMENTATION SHA-256 `d82ce3d9a0964b790f505dc1d166ffb2563bd6ae6af35c8704e6271c1cdad698` (7191).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `66cb7f32b559699bae956ddbb167b834ef222fc6` was ignored. HEAD/branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Ancestry parent was read from the Git object store.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `12.1.10` source | `8bd2d14da4584b661d1475751185cac643cfaa37` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; parent `3383607808f2e912334475b91043ff9b93c40ede` is the Step 12.1.9 checkpoint / `reviewed_head` |
+| Bound running attempt | `6d453d4593ec466da2e174ea5b195f54`, `plan_sha` = B, phase `running`, `checkpoint_sha` absent |
+| `admitted_review` predecessor | `review_sha256` `cc8a173d00ba02e7e5efb60bb2e07aa8324f477ae23556659d14318e608ccc54`; `reviewed_head` `3383607808f2e912334475b91043ff9b93c40ede` |
+| `latest-implementation` leftover HEAD | `66cb7f32b559699bae956ddbb167b834ef222fc6` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `ab220dd4518348aab02838e6e7e903f5` |
+| Fail-closed | Not required |
+
+## Implemented repair
+
+Replaced whole-file `read_bytes()` in `_observe_owned_entry` with incremental `os.read` bounded before each request by the remaining byte allowance and `read_chunk_bytes`. Elapsed allowance is checked between chunks. `bytes_read` counts bytes actually returned by the OS. Full-content `fingerprint` is set only when `content_complete=true`; truncated, failed, or unstable observations omit it. Empty and exact-boundary files do not perform an unbudgeted lookahead. Eager `os.walk` was replaced with bounded `os.scandir` traversal: entry, depth, elapsed, record, and a pending-directory queue capped at `max_entries` are checked during enumeration, including directories and symlinks. Directory-open and mid-iteration failures, including after some entries were returned, set `complete=false` and `unchanged_not_established=true` with bounded root-relative diagnostics plus the generic `unreadable` token. Directory and type records remain so additions, removals, and type changes are visible. Symlink targets are not followed; special files are not read. Classification-to-open replacement is rejected with `O_NOFOLLOW|O_NONBLOCK` and post-open `fstat`. Adapter `mutation_records` now receive before/after completeness; unobserved entries are not definitive additions or removals, and incomplete coverage cannot establish an unchanged filesystem. Sanitized capture still survives cleanup on success and the retained failure paths. Installed launches remain closed. Snapshot-content, on-disk inventory, executable-identity, environment, source-collision, instruction-named evidence, typed dispatch, cumulative allowance, and checkpoint tests were retained.
+
+## Listed verification
+
+Local fake-provider processes, temporary directories, and labeled synthetic files. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Command | Measured result |
+|---|---|
+| `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` | **45 passed** in 3.68s |
+| `/opt/anaconda3/bin/python -m pytest -q` `bav/director/tests/test_current_build.py::test_public_namespace_and_compatibility` `…::test_public_help_is_bav_first_and_check_is_diagnostic` `bav/director/tests/test_readme.py` `bav/director/tests/test_research_handoff.py::test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 0.79s |
+
+Direct reproduction of the reviewed 35027-byte file / 64-byte allowance: one `os.read` requested 64, returned 64, `bytes_read=64`, `bytes_hashed=64`, `read_operations=1`, `content_complete=false`, no fingerprint, `complete=false`, `unchanged_not_established=true`. Shared-budget, empty/exact-boundary, interrupted-hash, root/nested/mid-iteration `PermissionError`, wide directory/symlink, depth, record, and clock-expiry cases were measured through the same suite. File→symlink replacement did not read TARGET body text; FIFOs were skipped without blocking; concurrent rewrite during hashing was `unstable`. Adapter incomplete before/after capture survived cleanup without definitive add/remove. Existing overwrite/add/remove/type-change and forged installed-verification tests still launched no installed process and staged no company context.
+
+Synthetic success is application-owned adapter behavior only, not installed-provider enforcement.
+
+## Preservation and plan changes
+
+Fast Retailing `publication_date` remains `null`; `financial_statement_approval.date` remains `2025-11-27`. Accepted financial inputs and neutral assumptions unchanged. Company outputs not rebuilt. Original filings, converter Markdown, assets, coverage limitations, probe artifacts, and historical controller receipts retained. No discovery or conversion replay. No new live provider call. `DEBATER.md` unchanged (`7578b44c…`, 62336).
+
+Required plan change: none.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `bav/director/runtime/adapter.py` | `2a71343abda82aa0a7c3f1af8c80b8d81fd28c27aa7fa5ef6a52d36a887b3613` | 47686 |
+| `bav/director/runtime/policy.py` | `dee3d8a1641c3b5942797c20537339df612b6867b7d1f07b795fe73241b618ed` | 43526 |
+| `bav/director/runtime/workspace.py` | `4dcb8e0261258869a8fa390929e65c8ca40f370b110dd32090fef20da48b3acc` | 5514 |
+| `bav/director/runtime/dispatch.py` | `008f4595435345bf7ddb728478116e3b6aa3fd7efbcc6f61da65d3ffa12d54de` | 7039 |
+| `bav/director/runtime/contract.py` | `5f75263ec5f91e3e4784b7f62bc0b88645203e46a4495ec6b68d8f73cfab6669` | 9355 |
+| `bav/director/tests/test_research_runtime.py` | `9e4b874238e22dbe13603caacfcf3fc663bad546f895591c6f3aff28f989435e` | 70045 |
+| `bav/director/tests/fixtures/runtime/fake_provider.py` | `4fd51d9f2f40d9e7d5c05eb48e33b2aa3d0d5f86887462791e41da3121cd9506` | 16409 |
+| `bav/director/docs/DEBATER.md` | `7578b44c6c56db0265fa50f0df9de68d6002d36f2327fa155c746a70a2c93f42` | 62336 |
+| `bav/director/docs/BENCHMARK.md` | `1363c7c8a840a8c5c435430b3472675285d6925c15aa0b16d1ecf2dfa9809e6f` | 58827 |
+
+## Remaining toward Completion
+
+Ordinary `python -m bav debate` intake/approvals, Extractor preparation/retrieval, Planner/Reviewer research, durable case integration, required readers, coherent JSON/Markdown exports, adversarial checks, and the real `--add`/resume benchmark remain outstanding. Controlled installed-runtime acceptance and Codex implementation remain unverified. Application dispatch denial and post-execution mutation detection do not constrain a provider's native tools. Missing installed mechanisms remain loaded-configuration identity and a policy-denial event. A later bounded real-runtime demonstration remains necessary before company transmission. Synthetic success cannot close parent Completion.
+
 # RESULT.md — Step 12.1.9 Repair full-content launch bindings and bounded mutation capture
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

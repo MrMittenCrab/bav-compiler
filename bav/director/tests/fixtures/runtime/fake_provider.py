@@ -360,6 +360,14 @@ def main() -> int:
         hidden.chmod(0)
         sys.stdout.write(json.dumps(_ok(role, observed, source_id)))
         return 0
+    if scenario == "type_change":
+        snap_path = workspace / "snapshot.json"
+        if snap_path.is_file() and not snap_path.is_symlink():
+            snap_path.unlink()
+            snap_path.mkdir()
+            (snap_path / "nested.txt").write_text("directory now", encoding="utf-8")
+        sys.stdout.write(json.dumps(_ok(role, observed, source_id)))
+        return 0
     if scenario == "denied_ops":
         payload = {
             "type": "result",

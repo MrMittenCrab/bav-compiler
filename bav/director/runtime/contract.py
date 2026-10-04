@@ -93,6 +93,8 @@ class CaptureLimits:
     max_elapsed_seconds: float = 2.0
     max_records: int = 256
     max_depth: int = 12
+    max_entries: int = 256
+    read_chunk_bytes: int = 4096
 
     def __post_init__(self) -> None:
         _require_finite_positive("max_files", self.max_files, integer=True)
@@ -100,6 +102,8 @@ class CaptureLimits:
         _require_finite_positive("max_elapsed_seconds", self.max_elapsed_seconds)
         _require_finite_positive("max_records", self.max_records, integer=True)
         _require_finite_positive("max_depth", self.max_depth, integer=True)
+        _require_finite_positive("max_entries", self.max_entries, integer=True)
+        _require_finite_positive("read_chunk_bytes", self.read_chunk_bytes, integer=True)
 
 
 @dataclass(frozen=True)
