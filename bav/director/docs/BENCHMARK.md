@@ -528,7 +528,9 @@ Retained 12.1.10 measurements: 35027-byte / 64-byte bounded read; shared empty/e
 
 ### Observation limits after the repair
 
-Default `CaptureLimits` unchanged: `max_files=256`, `max_records=256`, `max_bytes_hashed=1_000_000`, `max_elapsed_seconds=2.0`, `max_depth=12`, `max_entries=256`, `read_chunk_bytes=4096`. Directory fds are bounded by `max_entries`. Replacement detection depends on a failed `O_NOFOLLOW` re-open or an identity mismatch; an unobserved replacement that never races a check remains a coverage limitation. Root-path re-open uses `O_NOFOLLOW` only as a replacement probe and is not a traversal path. Incomplete coverage still cannot conclude that the owned filesystem is unchanged.
+Default `CaptureLimits` unchanged: `max_files=256`, `max_records=256`, `max_bytes_hashed=1_000_000`, `max_elapsed_seconds=2.0`, `max_depth=12`, `max_entries=256`, `read_chunk_bytes=4096`. Directory fds are bounded by `max_entries`. Replacement detection depends on a failed `O_NOFOLLOW` re-open or an identity mismatch; an unobserved replacement that never races a check remains a coverage limitation. Incomplete coverage still cannot conclude that the owned filesystem is unchanged.
+
+**Correction (Step 12.1.12):** The 12.1.11 claim that ancestor replacement was protected, and that a full-path root re-open with `O_NOFOLLOW` “is not a traversal path,” is not supported. Root acquisition and root identity probes still called `os.open` on the full pathname. `O_NOFOLLOW` protects only the final component, so replacing an ancestor above an owned root with an outside-root symlink before acquisition selected the outside directory, and later full-path probes followed the same substituted ancestor. The 12.1.11 tests replaced the owned root or a queued child, not an ancestor strictly above the root. Those sentences above record the 12.1.11 intent, not measured ancestor-safe root acquisition.
 
 ### Exact remaining mechanisms needed for installed acceptance
 
@@ -542,3 +544,42 @@ Still closed / unverified / outstanding:
 - Ordinary `python -m bav debate` intake/approvals, Extractor readers/preparation/retrieval, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic checks, and real evidence-addition/resumption.
 
 Synthetic traversal/metadata repair does not establish provider enforcement, parent Completion, or Session acceptance.
+
+## Step 12.1.12 — Repair ancestor-safe capture root acquisition
+
+Repaired root acquisition and replacement probing in `bav/director/runtime/policy.py`. Capture now opens the filesystem-root directory as a trust anchor, then acquires each subsequent path component relative to a held descriptor with `O_NOFOLLOW`. Ownership is not taken from an unchecked full-path open. A symlink that is a direct child of `/` is treated as a durable system prefix (`/tmp` → `private/tmp`, `/var` → `private/var` on this host); its textual target is walked from the same anchor with `O_NOFOLLOW`. User-created ancestor or root components that are symlinks are rejected before target metadata, enumeration, or content access. Root identity probes re-walk the stored component names from the anchor and compare `(st_dev, st_ino)` identities; they no longer open the full root pathname. Detected replacement, lost identity, or unavailable safe primitives set `complete=false` and `unchanged_not_established=true`. Child descriptor-relative traversal, post-read `fstat` validation, bounded diagnostics, and incomplete mutation comparison are unchanged. No `workspace.py` or `adapter.py` lifecycle change was required. Installed launches remain closed.
+
+### Measured repair
+
+Local fake-provider processes, temporary directories, and labeled synthetic files only. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Check | Command | Result |
+|---|---|---|
+| Ancestor-above-root acquisition and probe rejection, instrumented outside-target denial, adapter limitation retention, cleanup after partial/probe/exhaustion/interruption, retained prior capture and launch-closure tests | `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` | **51 passed** in 4.38s |
+| Affected Director CLI/help/readme/import-boundary | `/opt/anaconda3/bin/python -m pytest -q` `test_public_namespace_and_compatibility` `test_public_help_is_bav_first_and_check_is_diagnostic` `test_readme.py` `test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 0.85s |
+
+Synthetic measurements added in this step:
+
+- Replacing an ancestor strictly above an owned root with an outside-root symlink, using a matching descendant layout, before acquisition produced `replaced:` coverage, `complete=false`, `unchanged_not_established=true`. Instrumented `os.open` / `os.stat` / `os.lstat` / `os.fstat` / `os.scandir` / `os.read` accepted no outside-target descriptor and did not read target metadata, entries, or sentinel bytes.
+- Substituting an intermediate component during the descriptor walk, and substituting an ancestor after root acquisition immediately before replacement probing, produced the same incomplete coverage without outside-target access.
+- Adapter after-capture of a replaced isolated-root ancestor retained `replaced:` limitations after cleanup and published no definitive unobserved add/remove.
+- Directory fds and scanners were closed after partial ancestor-walk failure, probe-walk `ELOOP`, `max_entries` exhaustion, and clock interruption. The nested-directory control still completed.
+
+Retained 12.1.11 measurements: queued-child replacement; root replacement during final-component open; post-read `fstat` failure; bounded reads; shared empty/exact budget; scan-error coverage; wide/depth/record/clock limits; file→symlink classify-to-open; FIFO skip; concurrent rewrite `unstable`; forged installed-verification launches no process and stages no company context.
+
+### Observation limits after the repair
+
+Trust-anchor assumption: the filesystem root is a non-replaceable starting descriptor; only a symlink that is a direct child of `/` may be used as a system prefix, and only by walking its textual target from that same anchor. The implementation does not enumerate `/` or collect ancestor contents. Replacement detection still depends on a failed `O_NOFOLLOW` component open or an identity mismatch during a later probe; an unobserved replacement that never races a check remains a coverage limitation. Incomplete coverage still cannot conclude that the owned filesystem is unchanged. Synthetic ancestor repair does not establish provider enforcement.
+
+### Exact remaining mechanisms needed for installed acceptance
+
+Still closed / unverified / outstanding:
+
+- A supported BAV verification path that binds the actual installed executable, version, loaded configuration identity and a first-class policy-denial event.
+- Effective native Shell/Write/Read/MCP/retrieval enforcement on the installed CLI. Application dispatch denial and post-execution mutation detection do not constrain those native tools.
+- Controller-isolated `_GatedCursor` authentication.
+- Codex backend implementation behind the same adapter contract.
+- Company-corpus transmission on either backend.
+- Ordinary `python -m bav debate` intake/approvals, Extractor readers/preparation/retrieval, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic checks, and real evidence-addition/resumption.
+
+Synthetic ancestor-safe capture repair does not establish provider enforcement, parent Completion, or Session acceptance.

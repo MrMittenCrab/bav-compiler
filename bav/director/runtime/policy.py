@@ -115,6 +115,8 @@ _DIR_OPEN_FLAGS = (
     | getattr(os, "O_NOFOLLOW", 0)
 )
 _MAX_CAPTURE_DIAGNOSTICS = 32
+_MAX_PATH_COMPONENTS = 64
+_MAX_SYSTEM_PREFIX_FOLLOWS = 8
 _REPLACEMENT_ERRNOS = {
     errno.ELOOP,
     errno.ENOTDIR,
@@ -747,25 +749,93 @@ def _fd_identity(fd: int) -> tuple[int, int] | None:
     return (info.st_dev, info.st_ino)
 
 
+def _close_fd(fd: int | None) -> None:
+    if fd is None:
+        return
+    try:
+        os.close(fd)
+    except OSError:
+        pass
+
+
+def _single_component(name: str) -> bool:
+    return bool(name) and name not in {".", ".."} and os.sep not in name and "\0" not in name
+
+
+def _absolute_names(path: Path) -> tuple[str, ...] | None:
+    raw = os.path.abspath(os.fsdecode(os.fspath(path)))
+    if not os.path.isabs(raw):
+        return None
+    parts = Path(raw).parts
+    if not parts or parts[0] != os.sep:
+        return None
+    names: list[str] = []
+    for part in parts[1:]:
+        if not part or part == ".":
+            continue
+        if part == ".." or not _single_component(part):
+            return None
+        names.append(part)
+    return tuple(names)
+
+
+def _walk_error_kind(exc: OSError | None) -> str:
+    if exc is None:
+        return "unreadable"
+    if exc.errno == errno.ENOENT:
+        return "missing"
+    if _is_replacement_error(exc):
+        return "replaced"
+    return "unreadable"
+
+
+def _open_trust_anchor() -> tuple[int | None, tuple[int, int] | None, OSError | None]:
+    try:
+        fd = os.open(os.sep, _DIR_OPEN_FLAGS)
+    except OSError as exc:
+        return None, None, exc
+    identity = _fd_identity(fd)
+    if identity is None:
+        _close_fd(fd)
+        return None, None, OSError(errno.ENOTDIR, "trust anchor identity lost")
+    return fd, identity, None
+
+
+def _system_prefix_names(anchor_fd: int, name: str) -> tuple[str, ...] | None:
+    try:
+        target = os.readlink(name, dir_fd=anchor_fd)
+    except OSError:
+        return None
+    if not isinstance(target, str):
+        target = os.fsdecode(target)
+    if not target or "\0" in target:
+        return None
+    if os.path.isabs(target):
+        return _absolute_names(Path(target))
+    names: list[str] = []
+    for part in Path(target).parts:
+        if not part or part in {os.sep, "."}:
+            continue
+        if part == ".." or not _single_component(part):
+            return None
+        names.append(part)
+    return tuple(names) or None
+
+
 def _open_owned_directory(
-    path: Path | None = None,
     *,
-    dir_fd: int | None = None,
+    dir_fd: int,
     name: str | None = None,
 ) -> tuple[int | None, OSError | None]:
+    if name is not None and not _single_component(name) and name != ".":
+        return None, OSError(errno.EINVAL, "unsafe path component")
     try:
-        if dir_fd is not None:
-            fd = os.open(name if name is not None else ".", _DIR_OPEN_FLAGS, dir_fd=dir_fd)
-        else:
-            fd = os.open(path, _DIR_OPEN_FLAGS)
+        fd = os.open(name if name is not None else ".", _DIR_OPEN_FLAGS, dir_fd=dir_fd)
     except OSError as exc:
         return None, exc
     identity = _fd_identity(fd)
     if identity is None:
-        try:
-            os.close(fd)
-        except OSError:
-            pass
+        _close_fd(fd)
         return None, OSError(errno.ENOTDIR, "owned directory identity lost")
     return fd, None
 
@@ -774,6 +844,36 @@ def _child_relative(parent_relative: str, name: str) -> str:
     if not parent_relative or parent_relative == ".":
         return name
     return f"{parent_relative}/{name}"
+
+
+class _RootAcquisition:
+    __slots__ = (
+        "fd",
+        "parent_fd",
+        "identity",
+        "parent_identity",
+        "name",
+        "walk_names",
+        "walk_identities",
+    )
+
+    def __init__(
+        self,
+        fd: int,
+        parent_fd: int | None,
+        identity: tuple[int, int],
+        parent_identity: tuple[int, int] | None,
+        name: str,
+        walk_names: tuple[str, ...],
+        walk_identities: tuple[tuple[int, int], ...],
+    ) -> None:
+        self.fd = fd
+        self.parent_fd = parent_fd
+        self.identity = identity
+        self.parent_identity = parent_identity
+        self.name = name
+        self.walk_names = walk_names
+        self.walk_identities = walk_identities
 
 
 class _QueuedDirectory:
@@ -785,7 +885,8 @@ class _QueuedDirectory:
         "parent_fd",
         "identity",
         "depth",
-        "root_path",
+        "walk_names",
+        "walk_identities",
         "root_identity",
     )
 
@@ -798,7 +899,8 @@ class _QueuedDirectory:
         parent_fd: int | None,
         identity: tuple[int, int],
         depth: int,
-        root_path: Path | None = None,
+        walk_names: tuple[str, ...] = (),
+        walk_identities: tuple[tuple[int, int], ...] = (),
         root_identity: tuple[int, int] | None = None,
     ) -> None:
         self.root_name = root_name
@@ -808,7 +910,8 @@ class _QueuedDirectory:
         self.parent_fd = parent_fd
         self.identity = identity
         self.depth = depth
-        self.root_path = root_path
+        self.walk_names = walk_names
+        self.walk_identities = walk_identities
         self.root_identity = root_identity
 
 
@@ -910,26 +1013,148 @@ class _CaptureSession:
                 pass
 
 
+def _walk_budget(state: _CaptureSession, owned: list[int]) -> str | None:
+    if state.elapsed_exceeded():
+        state.note("elapsed")
+        state.stop = True
+        return "elapsed"
+    if len(owned) > _MAX_PATH_COMPONENTS:
+        state.note("truncated")
+        state.stop = True
+        return "truncated"
+    return None
+
+
+def _walk_names_from_anchor(
+    names: tuple[str, ...],
+    state: _CaptureSession,
+    *,
+    retain_parent: bool,
+) -> tuple[_RootAcquisition | None, str | None]:
+    if not names:
+        return None, "unreadable"
+    if len(names) > _MAX_PATH_COMPONENTS:
+        return None, "truncated"
+    if not _descriptor_traversal_supported():
+        return None, "unavailable"
+
+    owned: list[int] = []
+    success = False
+    final_fd: int | None = None
+    parent_out: int | None = None
+    try:
+        anchor, anchor_id, exc = _open_trust_anchor()
+        if anchor is None:
+            return None, "unavailable"
+        owned.append(anchor)
+        current = anchor
+        identities: list[tuple[int, int]] = []
+        follows = 0
+        for index, name in enumerate(names):
+            budget = _walk_budget(state, owned)
+            if budget:
+                return None, budget
+            child, child_exc = _open_owned_directory(dir_fd=current, name=name)
+            if child is None and child_exc is not None and _is_replacement_error(child_exc):
+                current_id = _fd_identity(current)
+                if (
+                    current_id == anchor_id
+                    and follows < _MAX_SYSTEM_PREFIX_FOLLOWS
+                ):
+                    prefix = _system_prefix_names(current, name)
+                    if prefix:
+                        follows += 1
+                        if len(prefix) + len(names) - index - 1 > _MAX_PATH_COMPONENTS:
+                            return None, "truncated"
+                        for prefix_name in prefix:
+                            budget = _walk_budget(state, owned)
+                            if budget:
+                                return None, budget
+                            prefix_fd, prefix_exc = _open_owned_directory(
+                                dir_fd=current, name=prefix_name
+                            )
+                            if prefix_fd is None:
+                                return None, _walk_error_kind(prefix_exc)
+                            prefix_identity = _fd_identity(prefix_fd)
+                            if prefix_identity is None:
+                                _close_fd(prefix_fd)
+                                return None, "replaced"
+                            owned.append(prefix_fd)
+                            identities.append(prefix_identity)
+                            current = prefix_fd
+                        continue
+                return None, "replaced"
+            if child is None:
+                return None, _walk_error_kind(child_exc)
+            identity = _fd_identity(child)
+            if identity is None:
+                _close_fd(child)
+                return None, "replaced"
+            owned.append(child)
+            identities.append(identity)
+            current = child
+        if not identities:
+            return None, "unreadable"
+        final_fd = owned[-1]
+        parent_fd = owned[-2] if len(owned) >= 2 else None
+        keep = {final_fd}
+        if retain_parent and parent_fd is not None:
+            keep.add(parent_fd)
+            parent_out = parent_fd
+        for fd in owned:
+            if fd not in keep:
+                _close_fd(fd)
+        owned = [fd for fd in owned if fd in keep]
+        success = True
+        return (
+            _RootAcquisition(
+                final_fd,
+                parent_out,
+                identities[-1],
+                identities[-2] if len(identities) >= 2 else None,
+                names[-1],
+                names,
+                tuple(identities),
+            ),
+            None,
+        )
+    finally:
+        if not success:
+            for fd in owned:
+                _close_fd(fd)
+
+
 def _probe_identity_mismatch(
     expected: tuple[int, int],
-    path: Path | None = None,
     *,
-    dir_fd: int | None = None,
-    name: str | None = None,
+    dir_fd: int,
+    name: str,
 ) -> bool:
-    probe, _exc = _open_owned_directory(path, dir_fd=dir_fd, name=name)
+    probe, _exc = _open_owned_directory(dir_fd=dir_fd, name=name)
     if probe is None:
         return True
     try:
         return _fd_identity(probe) != expected
     finally:
-        try:
-            os.close(probe)
-        except OSError:
-            pass
+        _close_fd(probe)
 
 
-def _queued_directory_replaced(item: _QueuedDirectory) -> bool:
+def _probe_walk_replaced(item: _QueuedDirectory, state: _CaptureSession) -> bool:
+    if not item.walk_names or not item.walk_identities:
+        return True
+    acquired, _kind = _walk_names_from_anchor(item.walk_names, state, retain_parent=False)
+    if acquired is None:
+        return True
+    try:
+        return acquired.walk_identities != item.walk_identities or (
+            item.root_identity is not None and acquired.identity != item.root_identity
+        )
+    finally:
+        _close_fd(acquired.fd)
+        _close_fd(acquired.parent_fd)
+
+
+def _queued_directory_replaced(item: _QueuedDirectory, state: _CaptureSession) -> bool:
     held = _fd_identity(item.dir_fd)
     if held is None or held != item.identity:
         return True
@@ -937,8 +1162,8 @@ def _queued_directory_replaced(item: _QueuedDirectory) -> bool:
         item.identity, dir_fd=item.parent_fd, name=item.name
     ):
         return True
-    if item.root_path is not None and item.root_identity is not None:
-        return _probe_identity_mismatch(item.root_identity, item.root_path)
+    if item.walk_names:
+        return _probe_walk_replaced(item, state)
     return False
 
 
@@ -1148,7 +1373,8 @@ def _queue_child_directory(
             item.dir_fd,
             identity,
             item.depth + 1,
-            root_path=item.root_path,
+            walk_names=item.walk_names,
+            walk_identities=item.walk_identities,
             root_identity=item.root_identity,
         )
     )
@@ -1191,29 +1417,42 @@ def _capture_owned_paths_bound(
             state.note("elapsed")
             state.stop = True
             break
-        fd, exc = _open_owned_directory(root)
-        if fd is None:
-            if exc is not None and exc.errno == errno.ENOENT:
+        names = _absolute_names(root)
+        if names is None:
+            state.note(f"unreadable:{root_name}")
+            continue
+        acquired, kind = _walk_names_from_anchor(names, state, retain_parent=True)
+        if acquired is None:
+            if kind == "missing":
                 state.note(f"missing:{root_name}")
-            elif exc is not None and _is_replacement_error(exc):
+            elif kind == "replaced":
                 state.note(f"replaced:{root_name}")
+            elif kind == "elapsed":
+                state.note("elapsed")
+                state.stop = True
+                break
+            elif kind == "truncated":
+                state.note("truncated")
+                state.stop = True
+                break
+            elif kind == "unavailable":
+                state.note("unsafe_traversal_unavailable")
+                state.stop = True
+                break
             else:
                 state.note(f"unreadable:{root_name}")
             continue
+        fd = acquired.fd
         if not state.consume_entry():
-            try:
-                os.close(fd)
-            except OSError:
-                pass
+            _close_fd(fd)
+            _close_fd(acquired.parent_fd)
             break
-        identity = _fd_identity(fd)
-        if identity is None or not state.retain_fd(fd):
-            try:
-                os.close(fd)
-            except OSError:
-                pass
-            if identity is None:
-                state.note(f"replaced:{root_name}")
+        if not state.retain_fd(fd):
+            _close_fd(fd)
+            _close_fd(acquired.parent_fd)
+            break
+        if acquired.parent_fd is not None and not state.retain_fd(acquired.parent_fd):
+            _close_fd(acquired.parent_fd)
             break
         root_record = {
             "root": root_name,
@@ -1231,13 +1470,14 @@ def _capture_owned_paths_bound(
             _QueuedDirectory(
                 root_name,
                 ".",
-                ".",
+                acquired.name,
                 fd,
-                None,
-                identity,
+                acquired.parent_fd,
+                acquired.identity,
                 0,
-                root_path=root,
-                root_identity=identity,
+                walk_names=acquired.walk_names,
+                walk_identities=acquired.walk_identities,
+                root_identity=acquired.identity,
             )
         )
 
@@ -1251,7 +1491,7 @@ def _capture_owned_paths_bound(
             state.note("truncated")
             continue
         diagnostic = _capture_diagnostic(item.root_name, item.relative)
-        if _queued_directory_replaced(item):
+        if _queued_directory_replaced(item, state):
             state.note(f"replaced:{diagnostic}")
             continue
         try:
@@ -1265,7 +1505,7 @@ def _capture_owned_paths_bound(
             continue
         state.retain_scanner(scanner)
         try:
-            if _queued_directory_replaced(item):
+            if _queued_directory_replaced(item, state):
                 state.note(f"replaced:{diagnostic}")
                 continue
             while True:
@@ -1288,7 +1528,7 @@ def _capture_owned_paths_bound(
                     continue
                 relative = _child_relative(item.relative, name)
                 kind = _kind_from_direntry(entry)
-                if kind in {"file", "directory"} and _queued_directory_replaced(item):
+                if kind in {"file", "directory"} and _queued_directory_replaced(item, state):
                     state.note(f"replaced:{diagnostic}")
                     break
                 if kind == "symlink":
@@ -1314,7 +1554,7 @@ def _capture_owned_paths_bound(
                         relative=relative,
                         state=state,
                     )
-                    if _queued_directory_replaced(item):
+                    if _queued_directory_replaced(item, state):
                         state.note(f"replaced:{diagnostic}")
                 else:
                     record = {
