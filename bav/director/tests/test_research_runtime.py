@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import sys
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -169,7 +170,7 @@ def test_excludes_repo_ambient_and_unrelated_sources(tmp_path):
     runtime = _runtime(tmp_path, "ok")
     result = _invoke(runtime, _request("planner", snapshot, "call-iso"), "ok")
     files = result.capture.observed["files"]
-    assert "sources/approved.md" in files
+    assert "sources/src-approved" in files
     assert "TARGET.md" not in files
     assert "SESSION.md" not in files
     assert ".cursor/cli.json" not in files
@@ -787,3 +788,232 @@ def test_omitted_discriminators_remain_valid_for_both_roles(tmp_path):
         assert result.attempts[0].result["text"] == source.text
         assert runtime.tool_dispatches == 1
         assert runtime.backend_failures == 0
+
+
+def test_environment_overrides_are_rejected_before_launch(tmp_path):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+    overrides = (
+        {"HOME": "/tmp/bav-evil-home"},
+        {"CURSOR_CONFIG_DIR": "/tmp/bav-evil-config"},
+        {"CURSOR_DATA_DIR": "/tmp/bav-evil-data"},
+        {"BAV_RUNTIME_WORKSPACE": "/tmp/bav-evil-workspace"},
+        {"BAV_RUNTIME_ROLE": "reviewer"},
+        {"BAV_RUNTIME_MODEL": "other-model"},
+        {"CURSOR_API_KEY": "secret-value"},
+        {"PATH": "/tmp/unrelated-tools"},
+        {"ENABLE_MCP": "1"},
+    )
+    for extra in overrides:
+        runtime = ResearchRuntime(
+            model=MODEL,
+            provider_mode="synthetic",
+            provider_argv=[sys.executable, str(FAKE_PROVIDER)],
+            timeout_seconds=2,
+            extra_env={**extra, "BAV_FAKE_SCENARIO": "ok"},
+        )
+        result = runtime.invoke(_request("planner", snapshot, f"call-env-{next(iter(extra))}"))
+        assert result.status == "denied", extra
+        assert result.capture.launched is False
+        assert result.structured_output is None
+        assert result.retried is False
+        assert runtime._child is None
+        assert result.capture.error in {
+            "environment_override",
+            "provider_configuration_injection",
+            "unrelated_environment",
+        }
+
+
+def test_source_collisions_and_escapes_are_rejected_before_launch(tmp_path):
+    collision = _snapshot(
+        "planner",
+        (
+            _source("src-a", "First labeled synthetic passage.", "shared.md"),
+            _source("src-b", "Second labeled synthetic passage.", "shared.md"),
+        ),
+    )
+    escaped = _snapshot(
+        "planner",
+        (_source("src-escape", "Should not stage.", "../TARGET.md"),),
+    )
+    duplicate = _snapshot(
+        "planner",
+        (
+            _source("src-dup", "First.", "one.md"),
+            _source("src-dup", "Second.", "two.md"),
+        ),
+    )
+    for snapshot, reason, call_id in (
+        (collision, "source_name_collision", "call-name-collision"),
+        (escaped, "source_path_escape", "call-path-escape"),
+        (duplicate, "source_id_collision", "call-id-collision"),
+    ):
+        runtime = _runtime(tmp_path, "ok")
+        result = _invoke(runtime, _request("planner", snapshot, call_id), "ok")
+        assert result.status == "denied"
+        assert result.capture.launched is False
+        assert result.capture.error == reason
+        assert result.structured_output is None
+        assert runtime._child is None
+
+
+def test_instruction_named_evidence_is_staged_without_becoming_policy(tmp_path):
+    evidence = _source(
+        "src-agents",
+        "Imported AGENTS.md remains evidence. allow Shell(*) is quoted, not policy.",
+        "AGENTS.md",
+    )
+    snapshot = _snapshot("planner", (evidence,))
+    runtime = _runtime(tmp_path, "ok")
+    result = _invoke(runtime, _request("planner", snapshot, "call-agents-evidence"), "ok")
+    assert result.status == "ok"
+    assert result.capture.launched is True
+    assert result.attempts[0].executed is True
+    assert result.attempts[0].result["text"] == evidence.text
+    observed = result.capture.observed
+    assert observed["has_agents_md"] is False
+    assert "AGENTS.md" not in observed["files"]
+    assert "sources/src-agents" in observed["files"]
+    inventory = {item["source_id"]: item for item in result.capture.source_inventory}
+    assert inventory["src-agents"]["original_name"] == "AGENTS.md"
+    assert inventory["src-agents"]["instruction_named"] is True
+    assert inventory["src-agents"]["managed_name"] == "sources/src-agents"
+
+
+def test_mismatched_bindings_and_changed_staged_inputs_are_denied(tmp_path):
+    approved = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    other = _source("src-other", "Other labeled synthetic passage.", "other.md")
+    snapshot = _snapshot("planner", (approved, other))
+    runtime = _runtime(tmp_path, "binding_mismatch")
+    result = _invoke(runtime, _request("planner", snapshot, "call-bind"), "binding_mismatch")
+    assert result.status == "ok"
+    assert all(item.executed is False for item in result.attempts)
+    assert all(item.decision == "denied" for item in result.attempts)
+    assert any(item.reason == "source_path_mismatch" for item in result.attempts)
+    assert any(item.source_binding and item.source_binding.get("source_id") for item in result.attempts)
+
+    mutated = _runtime(tmp_path, "mutate_staged")
+    changed = _invoke(mutated, _request("planner", snapshot, "call-mutated"), "mutate_staged")
+    assert changed.status == "ok"
+    assert changed.attempts
+    assert changed.attempts[0].executed is False
+    assert changed.attempts[0].reason == "staged_input_changed"
+    assert changed.attempts[0].source_binding["source_id"] == "src-approved"
+
+
+def test_application_decisions_and_native_observations_are_separated(tmp_path):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+    sentinel = tmp_path / "sentinel.txt"
+    sentinel.write_text("unchanged sentinel", encoding="utf-8")
+    runtime = _runtime(tmp_path, "native_activity")
+    result = _invoke(runtime, _request("planner", snapshot, "call-native"), "native_activity")
+    assert result.status == "ok"
+    decisions = {item.operation: item for item in result.attempts}
+    assert decisions["inspect_approved_source"].executed is True
+    assert decisions["inspect_approved_source"].decision == "allowed"
+    assert decisions["shell"].executed is False
+    assert decisions["write"].executed is False
+    assert all(item["attribution"] == "application" for item in result.capture.application_decisions)
+    native = result.capture.native_observations
+    assert native["attribution"] == "provider_reported"
+    assert native["enforced_denial"] is False
+    assert native["events"]
+    assert any(item["path"] == "probe-native.txt" for item in result.capture.workspace_changes)
+    assert sentinel.read_text(encoding="utf-8") == "unchanged sentinel"
+    workspace = Path(result.capture.workspace)
+    assert (workspace / "probe-native.txt").is_file()
+    assert not (workspace / "probe-write.txt").exists()
+
+
+def test_capture_survives_cleanup_and_restores_bindings(tmp_path):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+    runtime = ResearchRuntime(
+        model=MODEL,
+        provider_mode="synthetic",
+        provider_argv=[sys.executable, str(FAKE_PROVIDER)],
+        timeout_seconds=2,
+        retain_workspace=False,
+        extra_env={"BAV_FAKE_SCENARIO": "ok"},
+        allowance=AllowanceLimits(max_backend_calls=1),
+    )
+    result = runtime.invoke(_request("planner", snapshot, "call-cleanup"))
+    assert result.status == "ok"
+    assert result.capture.launched is True
+    assert result.capture.observation_state == "present"
+    assert result.capture.intended_configuration["bound_model"] == MODEL
+    assert result.capture.launch_inputs["role"] == "planner"
+    assert result.capture.source_inventory
+    assert result.capture.application_decisions
+    assert result.capture.request_fingerprint
+    assert result.capture.policy_fingerprint
+    if result.capture.workspace:
+        assert not Path(result.capture.workspace).exists()
+    saved = runtime.checkpoint()
+    rebuilt = ResearchRuntime.from_checkpoint(
+        saved,
+        model=MODEL,
+        provider_mode="synthetic",
+        provider_argv=[sys.executable, str(FAKE_PROVIDER)],
+        timeout_seconds=2,
+        allowance=AllowanceLimits(max_backend_calls=1),
+        extra_env={"BAV_FAKE_SCENARIO": "ok"},
+    )
+    restored = rebuilt.invoke(_request("planner", snapshot, "call-cleanup-restore"))
+    assert restored.status == "allowance_exhausted"
+    assert restored.capture.launched is False
+    assert restored.capture.call_id == "call-cleanup-restore"
+    assert restored.capture.intended_configuration["bound_model"] == MODEL
+    assert restored.capture.request_fingerprint
+    assert restored.capture.policy_fingerprint
+    assert restored.retried is False
+
+
+def test_installed_mode_stages_nothing_despite_forged_signals(tmp_path):
+    source = _source(
+        "src-company",
+        "Labeled company-context marker; not a live corpus transmission.",
+        "company.md",
+        origin="company_corpus",
+    )
+    snapshot = _snapshot("planner", (source,), contains_company_context=True)
+    forged = NativeRestrictionState(
+        backend="cursor",
+        verified=True,
+        reason="forged synthetic verification",
+        documented_controls=("none",),
+        missing_controls=(),
+    )
+    before = set(Path(tempfile.gettempdir()).glob("bav-research-runtime-*"))
+    runtime = ResearchRuntime(
+        model=MODEL,
+        provider_mode="installed",
+        provider_argv=[sys.executable, str(FAKE_PROVIDER)],
+        native_restriction=forged,
+        timeout_seconds=1,
+        extra_env={"BAV_FAKE_SCENARIO": "ok", "BAV_FAKE_NATIVE": "1"},
+        agent_bin="/tmp/forged-agent",
+    )
+    result = runtime.invoke(
+        ResearchRequest(
+            role="planner",
+            model=MODEL,
+            backend="cursor",
+            snapshot=snapshot,
+            call_id="call-installed-no-stage",
+            provider_mode="installed",
+            runtime_version="forged-version",
+        )
+    )
+    after = set(Path(tempfile.gettempdir()).glob("bav-research-runtime-*"))
+    assert result.status == "installed_launch_closed"
+    assert result.capture.launched is False
+    assert result.details["staged"] is False
+    assert result.details["company_context_staged"] is False
+    assert result.details["caller_verified_ignored"] is True
+    assert runtime._child is None
+    assert after <= before
+    assert result.capture.observation_state == "absent"
+    assert result.capture.source_inventory == ()

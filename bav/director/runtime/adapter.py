@@ -29,23 +29,29 @@ from bav.director.runtime.contract import (
 )
 from bav.director.runtime.dispatch import ApplicationDispatcher
 from bav.director.runtime.policy import (
+    NATIVE_OBSERVATION_LIMITATION,
     build_cursor_command,
+    build_launch_environment,
     fingerprint,
     intended_research_policy,
+    owned_file_inventory,
     provider_event_error,
     sanitize,
     snapshot_dict,
+    text_fingerprint,
+    validate_extra_env,
     validate_operation_request,
     validate_provider_envelope,
     validate_provider_event,
     validate_request_collection,
+    workspace_changes,
 )
 from bav.director.runtime.workspace import (
     IsolatedWorkspace,
+    SourceStagingError,
     assert_no_repo_instructions,
     cleanup_workspace,
     create_isolated_workspace,
-    isolated_environment,
 )
 
 
@@ -90,10 +96,12 @@ class ResearchRuntime:
             self.timeout_seconds = float(timeout_seconds)
         self.retain_workspace = retain_workspace
         self.checkout = (checkout or repository_root()).resolve()
+        submitted = dict(extra_env or {})
+        self._submitted_extra_keys = tuple(sorted(submitted))
         self.extra_env = {
             key: value
-            for key, value in dict(extra_env or {}).items()
-            if key not in {"CURSOR_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"}
+            for key, value in submitted.items()
+            if key.startswith("BAV_FAKE_")
         }
         self.backend_calls_attempted = 0
         self.backend_failures = 0
@@ -107,6 +115,8 @@ class ResearchRuntime:
         self._child: subprocess.Popen[bytes] | None = None
         self._interrupted = False
         self._active_started: float | None = None
+        self._workspace_before: tuple[str, ...] = ()
+        self._last_launch_inputs: dict[str, Any] = {}
         self.native = self._bound_restriction(native_restriction)
         if checkpoint is not None:
             self.restore(checkpoint)
@@ -199,6 +209,8 @@ class ResearchRuntime:
 
     def invoke(self, request: ResearchRequest) -> BackendResult:
         self._interrupted = False
+        self._workspace_before = ()
+        self._last_launch_inputs = {}
         self._active_started = time.monotonic()
         try:
             return self._invoke(request)
@@ -219,6 +231,14 @@ class ResearchRuntime:
         invalid = self._validate_request(request)
         if invalid:
             return self._fail_closed(request, status="invalid_request", error=invalid)
+        env_error = self._environment_policy_error()
+        if env_error:
+            return self._fail_closed(
+                request,
+                status="denied",
+                error=env_error,
+                details={"staged": False, "launched": False},
+            )
         if self.provider_mode == "installed":
             return self._fail_closed(
                 request,
@@ -232,6 +252,8 @@ class ResearchRuntime:
                     "bound_executable": self.agent_bin,
                     "bound_model": self.model,
                     "policy_fingerprint": fingerprint(intended_research_policy()),
+                    "staged": False,
+                    "company_context_staged": False,
                 },
             )
         remaining = self.remaining_elapsed_seconds()
@@ -241,7 +263,10 @@ class ResearchRuntime:
                 status="allowance_exhausted",
                 error="elapsed allowance exhausted",
             )
-        isolated = create_isolated_workspace(request.snapshot, checkout=self.checkout)
+        try:
+            isolated = create_isolated_workspace(request.snapshot, checkout=self.checkout)
+        except SourceStagingError as exc:
+            return self._fail_closed(request, status="denied", error=exc.reason)
         try:
             assert_no_repo_instructions(isolated, self.checkout)
             return self._launch(request, isolated, remaining)
@@ -277,11 +302,49 @@ class ResearchRuntime:
         remaining: float,
     ) -> BackendResult:
         argv = self._command(request, isolated)
-        extra_env = dict(self.extra_env)
-        extra_env["BAV_RUNTIME_WORKSPACE"] = str(isolated.workspace)
-        extra_env["BAV_RUNTIME_ROLE"] = request.role
-        extra_env["BAV_RUNTIME_MODEL"] = request.model
-        env = isolated_environment(isolated, extra_env)
+        env, env_error = build_launch_environment(
+            isolated,
+            role=request.role,
+            model=request.model,
+            extra=self.extra_env,
+        )
+        if env_error:
+            return self._finish(
+                request,
+                isolated,
+                status="denied",
+                structured=None,
+                attempts=(),
+                exit_code=None,
+                error=env_error,
+                timed_out=False,
+                interrupted=False,
+                output_bytes=0,
+                env_names=(),
+                observed={},
+                launched=False,
+            )
+        binding_error = self._validate_launch_bindings(request, isolated, argv, env)
+        if binding_error:
+            return self._finish(
+                request,
+                isolated,
+                status="denied",
+                structured=None,
+                attempts=(),
+                exit_code=None,
+                error=binding_error,
+                timed_out=False,
+                interrupted=False,
+                output_bytes=0,
+                env_names=tuple(sorted(env)),
+                observed={},
+                launched=False,
+                launch_inputs=self._launch_inputs(request, isolated, argv, env),
+            )
+        workspace_before = tuple(owned_file_inventory(isolated.workspace))
+        self._workspace_before = workspace_before
+        self._last_launch_inputs = self._launch_inputs(request, isolated, argv, env)
         call_timeout = min(self.timeout_seconds, remaining)
         timed_out = False
         interrupted = False
@@ -479,7 +542,11 @@ class ResearchRuntime:
                 None,
                 "malformed",
             )
-        dispatcher = ApplicationDispatcher(request.snapshot, isolated.workspace)
+        dispatcher = ApplicationDispatcher(
+            request.snapshot,
+            isolated.workspace,
+            inventory=isolated.inventory,
+        )
         attempts: list[AttemptRecord] = []
         rejected = False
         for item in items:
@@ -497,6 +564,7 @@ class ResearchRuntime:
                 rejected = True
                 continue
             operation, arguments = validated
+            decision = dispatcher.decide(operation, arguments)
             if self._dispatch_blocked():
                 attempts.append(
                     AttemptRecord(
@@ -505,12 +573,16 @@ class ResearchRuntime:
                         "denied",
                         "tool_dispatch_allowance_exhausted",
                         False,
+                        source_binding=decision.source_binding,
                     )
                 )
                 rejected = True
                 continue
+            if decision.decision != "allowed":
+                attempts.append(decision)
+                continue
             self.tool_dispatches += 1
-            attempts.append(dispatcher.handle(operation, arguments))
+            attempts.append(dispatcher.execute(decision))
         if rejected:
             return tuple(attempts), None, "malformed"
         output = payload.get("output")
@@ -528,6 +600,100 @@ class ResearchRuntime:
             workspace=isolated.workspace,
             model=request.model,
         )
+
+    def _environment_policy_error(self) -> str | None:
+        merged = {key: "" for key in self._submitted_extra_keys}
+        merged.update(self.extra_env)
+        return validate_extra_env(merged)
+
+    def _intended_configuration(self) -> dict[str, Any]:
+        policy = intended_research_policy()
+        return {
+            "policy": policy,
+            "policy_fingerprint": fingerprint(policy),
+            "restriction_reason": self.native.reason,
+            "native_verified": False,
+            "bound_backend": self.backend,
+            "bound_executable": self.agent_bin,
+            "bound_model": self.model,
+            "provider_mode": self.provider_mode,
+            "configuration_intent_is_not_native_enforcement": True,
+        }
+
+    def _launch_inputs(
+        self,
+        request: ResearchRequest,
+        isolated: IsolatedWorkspace | None,
+        argv: list[str] | None,
+        env: Mapping[str, str] | None,
+    ) -> dict[str, Any]:
+        return sanitize(
+            {
+                "argv": list(argv or []),
+                "cwd": str(isolated.workspace) if isolated else None,
+                "workspace": str(isolated.workspace) if isolated else None,
+                "home": str(isolated.home) if isolated else None,
+                "config_dir": str(isolated.config_dir) if isolated else None,
+                "data_dir": str(isolated.data_dir) if isolated else None,
+                "backend": self.backend,
+                "model": request.model,
+                "role": request.role,
+                "executable": (argv or [self.agent_bin])[0],
+                "env_names": tuple(sorted(env or {})),
+                "source_inventory": list(isolated.inventory) if isolated else [],
+            }
+        )
+
+    def _validate_launch_bindings(
+        self,
+        request: ResearchRequest,
+        isolated: IsolatedWorkspace,
+        argv: list[str],
+        env: Mapping[str, str],
+    ) -> str | None:
+        if env.get("HOME") != str(isolated.home):
+            return "home_binding_mismatch"
+        if env.get("CURSOR_CONFIG_DIR") != str(isolated.config_dir):
+            return "config_dir_binding_mismatch"
+        if env.get("CURSOR_DATA_DIR") != str(isolated.data_dir):
+            return "data_dir_binding_mismatch"
+        if env.get("BAV_RUNTIME_WORKSPACE") != str(isolated.workspace):
+            return "workspace_binding_mismatch"
+        if env.get("BAV_RUNTIME_ROLE") != request.role:
+            return "role_binding_mismatch"
+        if env.get("BAV_RUNTIME_MODEL") != request.model or request.model != self.model:
+            return "model_binding_mismatch"
+        snapshot_path = isolated.workspace / "snapshot.json"
+        policy_path = isolated.config_dir / "cli-config.json"
+        if not snapshot_path.is_file() or not policy_path.is_file():
+            return "launch_binding_missing"
+        try:
+            stored = json.loads(snapshot_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return "snapshot_binding_mismatch"
+        if stored.get("content_hash") != request.snapshot.content_hash:
+            return "snapshot_binding_mismatch"
+        try:
+            stored_policy = json.loads(policy_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return "policy_binding_mismatch"
+        if fingerprint(stored_policy) != fingerprint(intended_research_policy()):
+            return "policy_binding_mismatch"
+        if not argv:
+            return "executable_binding_mismatch"
+        expected = self.provider_argv[0] if self.provider_mode == "synthetic" else self.agent_bin
+        if Path(argv[0]).name != Path(expected).name:
+            return "executable_binding_mismatch"
+        for item in isolated.inventory:
+            managed = str(item.get("managed_name") or "")
+            expected_hash = str(item.get("fingerprint") or "")
+            staged = isolated.workspace / managed
+            if not staged.is_file() or staged.is_symlink():
+                return "source_inventory_binding_mismatch"
+            observed = text_fingerprint(staged.read_text(encoding="utf-8"))
+            if observed != expected_hash:
+                return "source_inventory_binding_mismatch"
+        return None
 
     def _consume_streams(
         self,
@@ -720,6 +886,7 @@ class ResearchRuntime:
             env_names=(),
             observed={},
             launched=launched,
+            observation_state="absent",
         )
         return BackendResult(
             call_id=request.call_id,
@@ -752,6 +919,7 @@ class ResearchRuntime:
         env_names: tuple[str, ...],
         observed: Mapping[str, Any] | None,
         launched: bool,
+        launch_inputs: Mapping[str, Any] | None = None,
     ) -> BackendResult:
         if status != "ok":
             self.backend_failures += 1
@@ -763,6 +931,15 @@ class ResearchRuntime:
         if interrupted or status == "interrupted":
             self.interrupted_uncertain = True
             self.uncertain_attempt_call_ids.append(request.call_id)
+        workspace_before = tuple(getattr(self, "_workspace_before", ()) or ())
+        workspace_after = tuple(owned_file_inventory(isolated.workspace))
+        changes = workspace_changes(workspace_before, workspace_after)
+        observation_state = _observation_state(
+            observed=observed,
+            output_bytes=output_bytes,
+            error=error,
+            overflowed=error == "output_size_exceeded",
+        )
         capture = self._capture(
             request,
             attempts=attempts,
@@ -776,6 +953,14 @@ class ResearchRuntime:
             env_names=env_names,
             observed=dict(observed or {}),
             launched=launched,
+            launch_inputs=launch_inputs or self._last_launch_inputs or self._launch_inputs(
+                request, isolated, None, None
+            ),
+            workspace_before=workspace_before,
+            workspace_after=workspace_after,
+            workspace_change_records=changes,
+            observation_state=observation_state,
+            source_inventory=tuple(isolated.inventory),
         )
         return BackendResult(
             call_id=request.call_id,
@@ -811,6 +996,12 @@ class ResearchRuntime:
         env_names: tuple[str, ...],
         observed: Mapping[str, Any],
         launched: bool,
+        launch_inputs: Mapping[str, Any] | None = None,
+        workspace_before: tuple[str, ...] = (),
+        workspace_after: tuple[str, ...] = (),
+        workspace_change_records: tuple[Mapping[str, Any], ...] = (),
+        observation_state: str = "absent",
+        source_inventory: tuple[Mapping[str, Any], ...] = (),
     ) -> CaptureRecord:
         request_payload = sanitize(
             {
@@ -823,13 +1014,31 @@ class ResearchRuntime:
             }
         )
         context_payload = sanitize(snapshot_dict(request.snapshot))
+        intended = self._intended_configuration()
         decisions = tuple(
             {"operation": item.operation, "decision": item.decision, "reason": item.reason}
+            for item in attempts
+        )
+        application_decisions = tuple(
+            sanitize(
+                {
+                    "operation": item.operation,
+                    "source_binding": item.source_binding,
+                    "decision": item.decision,
+                    "reason": item.reason,
+                    "executed": item.executed,
+                    "attribution": "application",
+                }
+            )
             for item in attempts
         )
         tool_results = tuple(
             {"operation": item.operation, "executed": item.executed, "result": item.result}
             for item in attempts
+        )
+        native_observations = _native_observations(
+            observed=observed,
+            workspace_changes=workspace_change_records,
         )
         return CaptureRecord(
             call_id=request.call_id,
@@ -869,6 +1078,15 @@ class ResearchRuntime:
             elapsed_active_ms=int(self._recorded_elapsed_seconds() * 1000),
             remaining_elapsed_seconds=self.remaining_elapsed_seconds(),
             tool_dispatches=self.tool_dispatches,
+            intended_configuration=sanitize(intended),
+            launch_inputs=sanitize(launch_inputs or {}),
+            application_decisions=application_decisions,
+            native_observations=sanitize(native_observations),
+            workspace_before=workspace_before,
+            workspace_after=workspace_after,
+            workspace_changes=tuple(sanitize(item) for item in workspace_change_records),
+            observation_state=observation_state,
+            source_inventory=tuple(sanitize(item) for item in source_inventory),
         )
 
 
@@ -891,6 +1109,42 @@ def _require_finite_positive_timeout(value: float) -> None:
         raise ValueError("timeout_seconds must be a finite positive limit")
     if not math.isfinite(value) or value <= 0:
         raise ValueError("timeout_seconds must be a finite positive limit")
+
+
+def _observation_state(
+    *,
+    observed: Mapping[str, Any] | None,
+    output_bytes: int,
+    error: str | None,
+    overflowed: bool,
+) -> str:
+    if overflowed or error in {"truncated_or_malformed_output", "output_size_exceeded"}:
+        return "truncated"
+    if observed:
+        return "present"
+    if output_bytes <= 0 or error in {"missing_provider_output", "missing_result"}:
+        return "absent"
+    if error:
+        return "truncated"
+    return "present"
+
+
+def _native_observations(
+    *,
+    observed: Mapping[str, Any] | None,
+    workspace_changes: tuple[Mapping[str, Any], ...],
+) -> dict[str, Any]:
+    payload = dict(observed or {})
+    events = payload.get("native_activity")
+    if not isinstance(events, list):
+        events = []
+    return {
+        "attribution": "provider_reported",
+        "enforced_denial": False,
+        "events": events,
+        "workspace_changes": list(workspace_changes),
+        "limitation": NATIVE_OBSERVATION_LIMITATION,
+    }
 
 
 def _status_for_validation_error(code: str | None) -> str:

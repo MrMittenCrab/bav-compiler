@@ -267,6 +267,55 @@ def main() -> int:
             events = [*events, malformed]
         _write_ndjson(events)
         return 0
+    if scenario == "native_activity":
+        (workspace / "probe-native.txt").write_text("native write after start", encoding="utf-8")
+        payload = _ok(role, observed, source_id)
+        payload["observed"]["native_activity"] = [
+            {
+                "operation": "shell",
+                "command": "uname",
+                "reported_executed": True,
+            }
+        ]
+        payload["observed"]["wrote"] = "probe-native.txt"
+        payload["requests"] = [
+            {"operation": "inspect_approved_source", "arguments": {"source_id": source_id}},
+            {"operation": "shell", "arguments": {"command": "uname"}},
+            {"operation": "write", "arguments": {"path": "probe-native.txt"}},
+        ]
+        sys.stdout.write(json.dumps(payload))
+        return 0
+    if scenario == "mutate_staged":
+        sources_dir = workspace / "sources"
+        if sources_dir.is_dir():
+            for path in sources_dir.iterdir():
+                if path.is_file() and not path.is_symlink():
+                    path.write_text(path.read_text(encoding="utf-8") + "\nMUTATED", encoding="utf-8")
+        payload = _ok(role, observed, source_id)
+        payload["requests"] = [
+            {"operation": "inspect_approved_source", "arguments": {"source_id": source_id}}
+        ]
+        sys.stdout.write(json.dumps(payload))
+        return 0
+    if scenario == "binding_mismatch":
+        other = source_ids[1] if len(source_ids) > 1 else "src-other"
+        payload = _ok(role, observed, source_id)
+        payload["requests"] = [
+            {
+                "operation": "inspect_approved_source",
+                "arguments": {"source_id": source_id, "path": "approved.md"},
+            },
+            {
+                "operation": "inspect_approved_source",
+                "arguments": {"source_id": source_id, "path": f"sources/{other}"},
+            },
+            {
+                "operation": "inspect_approved_source",
+                "arguments": {"source_id": other, "path": f"sources/{source_id}"},
+            },
+        ]
+        sys.stdout.write(json.dumps(payload))
+        return 0
     if scenario == "denied_ops":
         payload = {
             "type": "result",

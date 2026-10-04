@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 from pathlib import Path
 from typing import Any, Mapping
@@ -30,6 +31,53 @@ _INSTRUCTION_MARKERS = (
     "grant permission",
     "system prompt",
     "ignore previous",
+)
+INSTRUCTION_FILENAMES = frozenset(
+    {
+        "TARGET.md",
+        "SESSION.md",
+        "IMPLEMENTATION.md",
+        "AGENTS.md",
+        "RESULT.md",
+    }
+)
+PROTECTED_ENV_KEYS = frozenset(
+    {
+        "HOME",
+        "CURSOR_CONFIG_DIR",
+        "CURSOR_DATA_DIR",
+        "BAV_RUNTIME_WORKSPACE",
+        "BAV_RUNTIME_ROLE",
+        "BAV_RUNTIME_MODEL",
+        "PATH",
+        "LANG",
+        "LC_ALL",
+    }
+)
+PROVIDER_CONFIG_KEYS = frozenset(
+    {
+        "CURSOR_API_KEY",
+        "OPENAI_API_KEY",
+        "ANTHROPIC_API_KEY",
+        "CODEX_API_KEY",
+    }
+)
+PROVIDER_CONFIG_PREFIXES = ("CURSOR_", "OPENAI_", "ANTHROPIC_", "CODEX_")
+UNRELATED_TOOL_ENV = frozenset(
+    {
+        "PATH",
+        "PYTHONPATH",
+        "NODE_OPTIONS",
+        "NODE_PATH",
+        "LD_PRELOAD",
+        "DYLD_INSERT_LIBRARIES",
+        "DYLD_LIBRARY_PATH",
+    }
+)
+ALLOWED_EXTRA_ENV_PREFIX = "BAV_FAKE_"
+NATIVE_OBSERVATION_LIMITATION = (
+    "Detecting an already executed action is not prevention. "
+    "No event, missing artifact or DNS failure establishes policy denial."
 )
 
 
@@ -230,11 +278,117 @@ def is_within(path: Path, root: Path) -> bool:
         return False
 
 
-def validate_approved_path(
+def text_fingerprint(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def managed_source_name(source_id: str) -> str:
+    safe = re.sub(r"[^A-Za-z0-9._-]+", "_", source_id).strip("._") or "source"
+    if safe in INSTRUCTION_FILENAMES or safe.lower() in {name.lower() for name in INSTRUCTION_FILENAMES}:
+        safe = f"evidence-{safe}"
+    return f"sources/{safe}"
+
+
+def validate_source_relative_name(relative_name: str) -> str | None:
+    if not relative_name or relative_name.startswith("~"):
+        return "source_path_escape"
+    candidate = Path(relative_name)
+    if candidate.is_absolute() or ".." in candidate.parts:
+        return "source_path_escape"
+    return None
+
+
+def instruction_named(relative_name: str) -> bool:
+    return Path(relative_name).name in INSTRUCTION_FILENAMES
+
+
+def validate_extra_env(extra: Mapping[str, str] | None) -> str | None:
+    if not extra:
+        return None
+    for key in extra:
+        if key in PROTECTED_ENV_KEYS:
+            return "environment_override"
+        if key in PROVIDER_CONFIG_KEYS or key in UNRELATED_TOOL_ENV:
+            return "environment_override"
+        if any(key.startswith(prefix) for prefix in PROVIDER_CONFIG_PREFIXES):
+            return "provider_configuration_injection"
+        if _SECRET_KEY.search(key):
+            return "provider_configuration_injection"
+        if not key.startswith(ALLOWED_EXTRA_ENV_PREFIX):
+            return "unrelated_environment"
+    return None
+
+
+def build_launch_environment(
+    isolated: Any,
+    *,
+    role: str,
+    model: str,
+    extra: Mapping[str, str] | None = None,
+) -> tuple[dict[str, str], str | None]:
+    error = validate_extra_env(extra)
+    if error:
+        return {}, error
+    path_entries = [item for item in (os.environ.get("PATH") or "").split(os.pathsep) if item]
+    env = {
+        "PATH": os.pathsep.join(path_entries) or "/usr/bin:/bin",
+        "HOME": str(isolated.home),
+        "CURSOR_CONFIG_DIR": str(isolated.config_dir),
+        "CURSOR_DATA_DIR": str(isolated.data_dir),
+        "LANG": "C",
+        "LC_ALL": "C",
+        "BAV_RUNTIME_WORKSPACE": str(isolated.workspace),
+        "BAV_RUNTIME_ROLE": role,
+        "BAV_RUNTIME_MODEL": model,
+    }
+    for key, value in dict(extra or {}).items():
+        if key.startswith(ALLOWED_EXTRA_ENV_PREFIX):
+            env[key] = value
+    return env, None
+
+
+def owned_file_inventory(root: Path) -> list[str]:
+    names: list[str] = []
+    if not root.exists():
+        return names
+    for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
+        current = Path(dirpath)
+        kept: list[str] = []
+        for dirname in dirnames:
+            child = current / dirname
+            if child.is_symlink():
+                continue
+            kept.append(dirname)
+        dirnames[:] = kept
+        for filename in filenames:
+            path = current / filename
+            try:
+                relative = str(path.relative_to(root))
+            except ValueError:
+                continue
+            if path.is_symlink():
+                names.append(f"{relative}#symlink")
+                continue
+            if path.is_file():
+                names.append(relative)
+    return sorted(names)
+
+
+def workspace_changes(before: tuple[str, ...], after: tuple[str, ...]) -> tuple[dict[str, str], ...]:
+    before_set = set(before)
+    after_set = set(after)
+    changes: list[dict[str, str]] = []
+    for name in sorted(after_set - before_set):
+        changes.append({"path": name, "change": "added"})
+    for name in sorted(before_set - after_set):
+        changes.append({"path": name, "change": "removed"})
+    return tuple(changes)
+
+
+def validate_path_safety(
     raw_path: str,
     *,
     workspace: Path,
-    approved_names: set[str],
 ) -> tuple[Path | None, str | None]:
     if not raw_path or raw_path.startswith("~"):
         return None, "unapproved_path"
@@ -251,7 +405,10 @@ def validate_approved_path(
             return None, "symlink_escape"
     except OSError:
         return None, "path_stat_failure"
-    target = literal.resolve()
+    try:
+        target = literal.resolve()
+    except OSError:
+        return None, "path_stat_failure"
     if not is_within(target, workspace):
         return None, "symlink_or_traversal_escape"
     try:
@@ -259,8 +416,26 @@ def validate_approved_path(
             return None, "symlink_escape"
     except OSError:
         return None, "path_stat_failure"
+    return target, None
+
+
+def validate_approved_path(
+    raw_path: str,
+    *,
+    workspace: Path,
+    approved_names: set[str] | None = None,
+    expected_relative: str | None = None,
+) -> tuple[Path | None, str | None]:
+    target, error = validate_path_safety(raw_path, workspace=workspace)
+    if error or target is None:
+        return None, error
     relative = str(target.relative_to(workspace.resolve()))
-    if relative not in approved_names and candidate.name not in approved_names:
+    if expected_relative is not None:
+        if relative != expected_relative and Path(raw_path).as_posix() != expected_relative:
+            return None, "source_path_mismatch"
+        return target, None
+    names = approved_names or set()
+    if relative not in names:
         return None, "unapproved_source"
     return target, None
 

@@ -1,8 +1,8 @@
-# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 / 12.1.6 / 12.1.7 record
+# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 / 12.1.6 / 12.1.7 / 12.1.8 record
 
 Label: **corpus-bound**. This is not a verified latest-market assessment and not an end-to-end Debater acceptance.
 
-Step 12.1.1 corrects Fast Retailing date provenance and replaces Cursor “effective traces” with evidence classifications. Step 12.1.2 records the Cursor isolation and observation route from official docs plus installed help/binary strings, without setting `CURSOR_CONFIG_DIR`, writing configuration, or repeating a provider call. Step 12.1.3 diagnoses Cursor authentication from the installed controller check and one ordinary `agent status --format json` run; it does not replay the observation, ACP session, or a reasoning-provider call. Step 12.1.4 implements the Director research runtime adapter and exercises it with local fake-provider processes only. Step 12.1.5 repairs BAV-owned envelope/argument validation, bounded stream capture, cumulative elapsed limits, allowance checkpoint/restore and installed launch guards; synthetic adapter success is still not installed-provider enforcement. Step 12.1.6 repairs whole-stream provider-error validation so an error anywhere in a stream defeats a later or earlier success-shaped result. Step 12.1.7 applies the same provider-event validation to single-object envelopes and every stream event, and rejects non-string `type`/`subtype` values without crashing. Completed discovery, both conversions, original filings, prepared representations, assets and coverage limitations are preserved. Fast Retailing publication date remains unknown; 2025-11-27 remains only the separately sourced financial-statement approval date. Ordinary CLI authentication does not establish controller-isolated authentication or effective research permissions.
+Step 12.1.1 corrects Fast Retailing date provenance and replaces Cursor “effective traces” with evidence classifications. Step 12.1.2 records the Cursor isolation and observation route from official docs plus installed help/binary strings, without setting `CURSOR_CONFIG_DIR`, writing configuration, or repeating a provider call. Step 12.1.3 diagnoses Cursor authentication from the installed controller check and one ordinary `agent status --format json` run; it does not replay the observation, ACP session, or a reasoning-provider call. Step 12.1.4 implements the Director research runtime adapter and exercises it with local fake-provider processes only. Step 12.1.5 repairs BAV-owned envelope/argument validation, bounded stream capture, cumulative elapsed limits, allowance checkpoint/restore and installed launch guards; synthetic adapter success is still not installed-provider enforcement. Step 12.1.6 repairs whole-stream provider-error validation so an error anywhere in a stream defeats a later or earlier success-shaped result. Step 12.1.7 applies the same provider-event validation to single-object envelopes and every stream event, and rejects non-string `type`/`subtype` values without crashing. Step 12.1.8 implements BAV-owned launch enforcement and inspectable capture on the synthetic path: authoritative launch inputs, managed source staging, fingerprint-bound dispatch and separately attributed native observations. Completed discovery, both conversions, original filings, prepared representations, assets and coverage limitations are preserved. Fast Retailing publication date remains unknown; 2025-11-27 remains only the separately sourced financial-statement approval date. Ordinary CLI authentication does not establish controller-isolated authentication or effective research permissions. Application denial does not constrain installed native tools.
 
 Exact proposition (unapproved scope):
 
@@ -391,5 +391,42 @@ Still closed / unverified / outstanding:
 - Effective native Shell/Write/Read/MCP/retrieval enforcement on the installed CLI.
 - Controller-isolated `_GatedCursor` authentication.
 - Codex backend implementation.
+- Company-corpus transmission on either backend.
+- Ordinary `python -m bav debate` intake/approvals, Extractor readers/preparation/retrieval, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic checks, and real evidence-addition/resumption.
+
+## Step 12.1.8 — Application-owned launch enforcement and observation capture
+
+Extended `bav/director/runtime/` without a second runtime framework. BAV launch inputs are authoritative. Isolated HOME, `CURSOR_CONFIG_DIR`, `CURSOR_DATA_DIR`, workspace, role and model cannot be replaced through `extra_env`. Provider-configuration keys and unrelated tool variables are rejected before subprocess start. Approved sources stage under unique managed names; original names remain metadata. Imported `AGENTS.md` is evidence, not a workspace instruction file. Source-name collisions and path escapes fail before launch. Application inspect binds to source identity and content fingerprint; a basename or another source's path cannot grant access. Changed staged bytes are denied before dispatch. Application allow/deny records are captured before execute. Provider-reported native activity and owned-workspace mutations are recorded separately with `enforced_denial=false`. Capture retains intended configuration fingerprints, actual launch inputs, owned-path before/after changes and explicit absent/truncated observation state through cleanup and allowance restore. Installed mode still stages nothing and launches no process. Codex remains unimplemented.
+
+### Measured application enforcement
+
+Local fake-provider processes and labeled synthetic files only. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Check | Command | Result |
+|---|---|---|
+| Launch policy, staging, fingerprint-bound dispatch, native-observation attribution, cleanup/restore, installed closure | `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` | **32 passed** in 2.79s |
+| Affected Director CLI/help/readme/import-boundary | `/opt/anaconda3/bin/python -m pytest -q` `test_public_namespace_and_compatibility` `test_public_help_is_bav_first_and_check_is_diagnostic` `test_readme.py` `test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 0.75s |
+
+Measured through `ResearchRuntime.invoke`:
+
+- Environment/configuration overrides (`HOME`, config/data dirs, workspace, role, model, `PATH`, API key, unrelated `ENABLE_MCP`) returned `status=denied`, `launched=false`, no child.
+- Colliding original names, `../` source paths and duplicate source IDs returned `source_name_collision` / `source_path_escape` / `source_id_collision` before launch.
+- `AGENTS.md` evidence was staged as `sources/src-agents`; workspace-root `AGENTS.md` remained absent; inspect executed as evidence.
+- Basename and cross-source paths returned `source_path_mismatch` with `executed=false`. Mutated staged bytes returned `staged_input_changed` before dispatch.
+- Approved inspect executed; shell/write were application-denied; a tmp sentinel file was unchanged.
+- A fake native workspace write and reported shell event were captured as `attribution=provider_reported`, `enforced_denial=false`. This is post-execution detection, not prevention.
+- After `retain_workspace=false`, capture still held intended configuration, launch inputs, source inventory and fingerprints; restored allowance then failed closed without relaunch.
+- Installed mode with forged `verified=true`, synthetic observations and a changed executable declaration created no `bav-research-runtime-*` directory and launched no process.
+
+Synthetic success establishes application-owned enforcement and capture only. It does not establish native Cursor/Codex enforcement, parent Completion, or end-to-end Debater acceptance.
+
+### Exact remaining mechanisms needed for installed acceptance
+
+Still closed / unverified / outstanding:
+
+- A supported BAV verification path that binds the actual installed executable, version, loaded configuration identity and a first-class policy-denial event.
+- Effective native Shell/Write/Read/MCP/retrieval enforcement on the installed CLI. Application dispatch denial does not constrain those native tools.
+- Controller-isolated `_GatedCursor` authentication.
+- Codex backend implementation behind the same adapter contract.
 - Company-corpus transmission on either backend.
 - Ordinary `python -m bav debate` intake/approvals, Extractor readers/preparation/retrieval, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic checks, and real evidence-addition/resumption.

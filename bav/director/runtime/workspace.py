@@ -3,25 +3,31 @@
 from __future__ import annotations
 
 import json
-import os
 import tempfile
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Mapping
 
 from bav.director.repository import repository_root
 from bav.director.runtime.contract import ApprovedSnapshot
-from bav.director.runtime.policy import intended_research_policy, snapshot_dict
-
-
-REPO_INSTRUCTION_NAMES = frozenset(
-    {
-        "TARGET.md",
-        "SESSION.md",
-        "IMPLEMENTATION.md",
-        "AGENTS.md",
-        "RESULT.md",
-    }
+from bav.director.runtime.policy import (
+    INSTRUCTION_FILENAMES,
+    build_launch_environment,
+    instruction_named,
+    intended_research_policy,
+    managed_source_name,
+    owned_file_inventory,
+    snapshot_dict,
+    validate_source_relative_name,
 )
+
+
+REPO_INSTRUCTION_NAMES = INSTRUCTION_FILENAMES
+
+
+class SourceStagingError(Exception):
+    def __init__(self, reason: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
 
 
 class IsolatedWorkspace:
@@ -32,6 +38,7 @@ class IsolatedWorkspace:
         self.data_dir = root / "cursor-data"
         self.home = root / "home"
         self.sources = self.workspace / "sources"
+        self.inventory: list[dict[str, object]] = []
 
     def paths(self) -> dict[str, str]:
         return {
@@ -68,41 +75,69 @@ def create_isolated_workspace(
         json.dumps(policy, indent=2) + "\n",
         encoding="utf-8",
     )
-    for source in snapshot.sources:
-        name = Path(source.relative_name).name
-        if name in REPO_INSTRUCTION_NAMES:
-            continue
-        (isolated.sources / name).write_text(source.text, encoding="utf-8")
+    try:
+        isolated.inventory = _stage_sources(isolated, snapshot)
+    except SourceStagingError:
+        _cleanup(isolated.root)
+        raise
+    (isolated.workspace / "source_inventory.json").write_text(
+        json.dumps({"sources": isolated.inventory}, indent=2) + "\n",
+        encoding="utf-8",
+    )
     return isolated
+
+
+def _stage_sources(
+    isolated: IsolatedWorkspace,
+    snapshot: ApprovedSnapshot,
+) -> list[dict[str, object]]:
+    seen_ids: set[str] = set()
+    seen_originals: set[str] = set()
+    seen_managed: set[str] = set()
+    inventory: list[dict[str, object]] = []
+    for source in snapshot.sources:
+        if not source.source_id or source.source_id in seen_ids:
+            raise SourceStagingError("source_id_collision")
+        escape = validate_source_relative_name(source.relative_name)
+        if escape:
+            raise SourceStagingError(escape)
+        managed = managed_source_name(source.source_id)
+        original = Path(source.relative_name).as_posix()
+        if original in seen_originals or managed in seen_managed:
+            raise SourceStagingError("source_name_collision")
+        seen_ids.add(source.source_id)
+        seen_originals.add(original)
+        seen_managed.add(managed)
+        destination = isolated.workspace / managed
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(source.text, encoding="utf-8")
+        inventory.append(
+            {
+                "source_id": source.source_id,
+                "managed_name": managed,
+                "original_name": original,
+                "fingerprint": source.fingerprint,
+                "instruction_named": instruction_named(source.relative_name),
+            }
+        )
+    return inventory
 
 
 def isolated_environment(
     isolated: IsolatedWorkspace,
     extra: Mapping[str, str] | None = None,
+    *,
+    role: str = "planner",
+    model: str = "",
 ) -> dict[str, str]:
-    path_entries = []
-    for item in (os.environ.get("PATH") or "").split(os.pathsep):
-        if item:
-            path_entries.append(item)
-    env = {
-        "PATH": os.pathsep.join(path_entries) or "/usr/bin:/bin",
-        "HOME": str(isolated.home),
-        "CURSOR_CONFIG_DIR": str(isolated.config_dir),
-        "CURSOR_DATA_DIR": str(isolated.data_dir),
-        "LANG": "C",
-        "LC_ALL": "C",
-    }
-    if extra:
-        env.update(extra)
+    env, error = build_launch_environment(isolated, role=role, model=model, extra=extra)
+    if error:
+        raise SourceStagingError(error)
     return env
 
 
 def workspace_file_names(isolated: IsolatedWorkspace) -> list[str]:
-    names = []
-    for path in isolated.workspace.rglob("*"):
-        if path.is_file():
-            names.append(str(path.relative_to(isolated.workspace)))
-    return sorted(names)
+    return owned_file_inventory(isolated.workspace)
 
 
 def assert_no_repo_instructions(isolated: IsolatedWorkspace, checkout: Path) -> None:

@@ -217,6 +217,7 @@ class AttemptRecord:
     reason: str
     executed: bool
     result: Mapping[str, Any] | None = None
+    source_binding: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -248,6 +249,15 @@ class CaptureRecord:
     elapsed_active_ms: int = 0
     remaining_elapsed_seconds: float = 0.0
     tool_dispatches: int = 0
+    intended_configuration: Mapping[str, Any] = field(default_factory=dict)
+    launch_inputs: Mapping[str, Any] = field(default_factory=dict)
+    application_decisions: tuple[Mapping[str, Any], ...] = ()
+    native_observations: Mapping[str, Any] = field(default_factory=dict)
+    workspace_before: tuple[str, ...] = ()
+    workspace_after: tuple[str, ...] = ()
+    workspace_changes: tuple[Mapping[str, Any], ...] = ()
+    observation_state: str = "absent"
+    source_inventory: tuple[Mapping[str, Any], ...] = ()
 
 
 @dataclass(frozen=True)
