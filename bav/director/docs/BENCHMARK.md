@@ -1,8 +1,8 @@
-# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 / 12.1.6 / 12.1.7 / 12.1.8 record
+# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 / 12.1.6 / 12.1.7 / 12.1.8 / 12.1.9 record
 
 Label: **corpus-bound**. This is not a verified latest-market assessment and not an end-to-end Debater acceptance.
 
-Step 12.1.1 corrects Fast Retailing date provenance and replaces Cursor “effective traces” with evidence classifications. Step 12.1.2 records the Cursor isolation and observation route from official docs plus installed help/binary strings, without setting `CURSOR_CONFIG_DIR`, writing configuration, or repeating a provider call. Step 12.1.3 diagnoses Cursor authentication from the installed controller check and one ordinary `agent status --format json` run; it does not replay the observation, ACP session, or a reasoning-provider call. Step 12.1.4 implements the Director research runtime adapter and exercises it with local fake-provider processes only. Step 12.1.5 repairs BAV-owned envelope/argument validation, bounded stream capture, cumulative elapsed limits, allowance checkpoint/restore and installed launch guards; synthetic adapter success is still not installed-provider enforcement. Step 12.1.6 repairs whole-stream provider-error validation so an error anywhere in a stream defeats a later or earlier success-shaped result. Step 12.1.7 applies the same provider-event validation to single-object envelopes and every stream event, and rejects non-string `type`/`subtype` values without crashing. Step 12.1.8 implements BAV-owned launch enforcement and inspectable capture on the synthetic path: authoritative launch inputs, managed source staging, fingerprint-bound dispatch and separately attributed native observations. Completed discovery, both conversions, original filings, prepared representations, assets and coverage limitations are preserved. Fast Retailing publication date remains unknown; 2025-11-27 remains only the separately sourced financial-statement approval date. Ordinary CLI authentication does not establish controller-isolated authentication or effective research permissions. Application denial does not constrain installed native tools.
+Step 12.1.1 corrects Fast Retailing date provenance and replaces Cursor “effective traces” with evidence classifications. Step 12.1.2 records the Cursor isolation and observation route from official docs plus installed help/binary strings, without setting `CURSOR_CONFIG_DIR`, writing configuration, or repeating a provider call. Step 12.1.3 diagnoses Cursor authentication from the installed controller check and one ordinary `agent status --format json` run; it does not replay the observation, ACP session, or a reasoning-provider call. Step 12.1.4 implements the Director research runtime adapter and exercises it with local fake-provider processes only. Step 12.1.5 repairs BAV-owned envelope/argument validation, bounded stream capture, cumulative elapsed limits, allowance checkpoint/restore and installed launch guards; synthetic adapter success is still not installed-provider enforcement. Step 12.1.6 repairs whole-stream provider-error validation so an error anywhere in a stream defeats a later or earlier success-shaped result. Step 12.1.7 applies the same provider-event validation to single-object envelopes and every stream event, and rejects non-string `type`/`subtype` values without crashing. Step 12.1.8 implements BAV-owned launch enforcement and inspectable capture on the synthetic path: authoritative launch inputs, managed source staging, fingerprint-bound dispatch and separately attributed native observations. Step 12.1.9 repairs full-content snapshot/inventory/executable launch bindings and bounded before/after mutation capture, still on the synthetic path only. Completed discovery, both conversions, original filings, prepared representations, assets and coverage limitations are preserved. Fast Retailing publication date remains unknown; 2025-11-27 remains only the separately sourced financial-statement approval date. Ordinary CLI authentication does not establish controller-isolated authentication or effective research permissions. Application denial does not constrain installed native tools.
 
 Exact proposition (unapproved scope):
 
@@ -426,6 +426,45 @@ Still closed / unverified / outstanding:
 
 - A supported BAV verification path that binds the actual installed executable, version, loaded configuration identity and a first-class policy-denial event.
 - Effective native Shell/Write/Read/MCP/retrieval enforcement on the installed CLI. Application dispatch denial does not constrain those native tools.
+- Controller-isolated `_GatedCursor` authentication.
+- Codex backend implementation behind the same adapter contract.
+- Company-corpus transmission on either backend.
+- Ordinary `python -m bav debate` intake/approvals, Extractor readers/preparation/retrieval, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic checks, and real evidence-addition/resumption.
+
+## Step 12.1.9 — Full-content launch bindings and bounded mutation capture
+
+Repaired `bav/director/runtime/` without a second runtime framework. Immediately before launch the adapter recomputes the staged snapshot content binding (proposition, scope, permissions, sources and remaining context). A retained declared `content_hash` cannot conceal altered content; malformed, missing or unexpected snapshot fields fail closed. On-disk `source_inventory.json` is validated against the approved snapshot identities, managed paths, original-name metadata and fingerprints, and staged source bytes are hashed. Added, removed, substituted or escaping inventory entries are rejected; mutable in-memory inventory is not approval. Executable binding uses the approved resolved path and content identity, including the synthetic interpreter/script pair. Same-basename substitutions, replaced bytes and symlink retargeting are rejected before `Popen`. Cwd, isolated HOME/config/data/workspace, policy content, backend/model, role and minimal environment bindings remain. Mutation capture now records fingerprinted before/after state for workspace, configuration, home and data: additions, removals, existing-file overwrites and type changes. Traversal is bounded (default 256 files / 256 records / 1,000,000 hashed bytes / 2.0 s / depth 12); symlinks outside owned paths are recorded without following; special files are not read. Unreadable, unstable, omitted or truncated coverage sets `capture_coverage.complete=false` and `unchanged_not_established=true`. Incomplete observation cannot establish an unchanged filesystem. Application prevention, provider-reported activity and post-execution mutations remain separately attributed. Installed launches remain closed. Codex remains unimplemented.
+
+### Measured binding and capture
+
+Local fake-provider processes and labeled synthetic files only. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Check | Command | Result |
+|---|---|---|
+| Snapshot/inventory/executable bindings, owned-path overwrite capture, limits/unreadable/escape diagnostics, retained environment/source/dispatch/installed-closure tests | `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` | **37 passed** in 3.75s |
+| Affected Director CLI/help/readme/import-boundary | `/opt/anaconda3/bin/python -m pytest -q` `test_public_namespace_and_compatibility` `test_public_help_is_bav_first_and_check_is_diagnostic` `test_readme.py` `test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 0.79s |
+
+Measured through `ResearchRuntime.invoke`:
+
+- Staged snapshot with altered proposition/scope/permissions and the original declared `content_hash` returned `status=denied`, `error=snapshot_content_mismatch`, `launched=false`, no child, no dispatch.
+- Removed, substituted, extra and corrupt on-disk `source_inventory.json` returned `source_inventory_binding_mismatch` or `source_inventory_malformed` before launch. An in-memory-only forged inventory entry did not block a valid disk inventory.
+- Same-basename executable substitution, replaced script bytes and symlink retargeting returned `executable_binding_mismatch` before process creation. An unchanged synthetic interpreter/script control still launched and returned `ok`.
+- Provider overwrites of existing `snapshot.json`, staged source and `cli-config.json` were classified `overwritten` with distinct before/after fingerprints. Home/data/workspace additions and inventory removal were classified `added`/`removed`. Records survived `retain_workspace=false` cleanup.
+- `CaptureLimits(max_files=2, max_records=2, max_bytes_hashed=64)` produced `capture_coverage.complete=false`, `limitations` containing `truncated`, and `unchanged_not_established=true`.
+- An unreadable chmod-0 workspace file was recorded with `limitation=unreadable` and no fingerprint. An escaping symlink to `TARGET.md` was recorded as `type=symlink` without reading the target; captured records did not contain TARGET body text.
+
+Synthetic success establishes repaired application-owned bindings and bounded observation only. It does not establish native Cursor/Codex enforcement, parent Completion, or end-to-end Debater acceptance.
+
+### Observation limits
+
+Default `CaptureLimits`: `max_files=256`, `max_records=256`, `max_bytes_hashed=1_000_000`, `max_elapsed_seconds=2.0`, `max_depth=12`. Capture does not follow escaping symlinks or read special files. Incomplete coverage is explicit and does not prove an unchanged owned filesystem.
+
+### Exact remaining mechanisms needed for installed acceptance
+
+Still closed / unverified / outstanding:
+
+- A supported BAV verification path that binds the actual installed executable, version, loaded configuration identity and a first-class policy-denial event.
+- Effective native Shell/Write/Read/MCP/retrieval enforcement on the installed CLI. Application dispatch denial and post-execution mutation detection do not constrain those native tools.
 - Controller-isolated `_GatedCursor` authentication.
 - Codex backend implementation behind the same adapter contract.
 - Company-corpus transmission on either backend.

@@ -87,6 +87,22 @@ class AllowanceLimits:
 
 
 @dataclass(frozen=True)
+class CaptureLimits:
+    max_files: int = 256
+    max_bytes_hashed: int = 1_000_000
+    max_elapsed_seconds: float = 2.0
+    max_records: int = 256
+    max_depth: int = 12
+
+    def __post_init__(self) -> None:
+        _require_finite_positive("max_files", self.max_files, integer=True)
+        _require_finite_positive("max_bytes_hashed", self.max_bytes_hashed, integer=True)
+        _require_finite_positive("max_elapsed_seconds", self.max_elapsed_seconds)
+        _require_finite_positive("max_records", self.max_records, integer=True)
+        _require_finite_positive("max_depth", self.max_depth, integer=True)
+
+
+@dataclass(frozen=True)
 class AllowanceCheckpoint:
     schema_version: int = ALLOWANCE_CHECKPOINT_VERSION
     backend_calls_attempted: int = 0
@@ -253,11 +269,12 @@ class CaptureRecord:
     launch_inputs: Mapping[str, Any] = field(default_factory=dict)
     application_decisions: tuple[Mapping[str, Any], ...] = ()
     native_observations: Mapping[str, Any] = field(default_factory=dict)
-    workspace_before: tuple[str, ...] = ()
-    workspace_after: tuple[str, ...] = ()
+    workspace_before: tuple[Mapping[str, Any], ...] = ()
+    workspace_after: tuple[Mapping[str, Any], ...] = ()
     workspace_changes: tuple[Mapping[str, Any], ...] = ()
     observation_state: str = "absent"
     source_inventory: tuple[Mapping[str, Any], ...] = ()
+    capture_coverage: Mapping[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)

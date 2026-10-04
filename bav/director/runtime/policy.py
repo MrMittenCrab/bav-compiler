@@ -6,6 +6,8 @@ import hashlib
 import json
 import os
 import re
+import stat
+import time
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -15,6 +17,7 @@ from bav.director.runtime.contract import (
     CURSOR_FORBIDDEN_FLAGS,
     PROHIBITED_OPERATIONS,
     ApprovedSnapshot,
+    CaptureLimits,
 )
 
 _ERROR_INDICATOR_KEYS = ("error", "errors", "isError", "is_error", "failed", "failure")
@@ -79,6 +82,23 @@ NATIVE_OBSERVATION_LIMITATION = (
     "Detecting an already executed action is not prevention. "
     "No event, missing artifact or DNS failure establishes policy denial."
 )
+SNAPSHOT_CONTENT_FIELDS = (
+    "role",
+    "proposition",
+    "scope",
+    "sources",
+    "current_evidence",
+    "permissions",
+    "user_notes",
+    "prior_review",
+    "candidate_argument",
+    "selected_excerpts",
+    "modeler_results",
+    "counterevidence",
+    "search_coverage",
+    "contains_company_context",
+)
+OWNED_ROOT_NAMES = ("workspace", "home", "config", "data")
 
 
 def canonical_json(value: Any) -> str:
@@ -106,6 +126,14 @@ def sanitize(value: Any) -> Any:
 def source_contains_instructions(text: str) -> bool:
     lowered = text.lower()
     return any(marker in lowered for marker in _INSTRUCTION_MARKERS)
+
+
+def _jsonable(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {str(key): _jsonable(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_jsonable(item) for item in value]
+    return value
 
 
 def snapshot_dict(snapshot: ApprovedSnapshot) -> dict[str, Any]:
@@ -138,6 +166,141 @@ def snapshot_dict(snapshot: ApprovedSnapshot) -> dict[str, Any]:
         "contains_company_context": snapshot.contains_company_context,
         "content_hash": snapshot.content_hash,
     }
+
+
+def snapshot_content_payload(data: Any) -> dict[str, Any] | str:
+    if not isinstance(data, Mapping):
+        return "snapshot_content_malformed"
+    unexpected = set(data) - set(SNAPSHOT_CONTENT_FIELDS) - {"content_hash"}
+    if unexpected:
+        return "snapshot_unexpected_content"
+    missing = [key for key in SNAPSHOT_CONTENT_FIELDS if key not in data]
+    if missing:
+        return "snapshot_missing_content"
+    payload = {key: _jsonable(data[key]) for key in SNAPSHOT_CONTENT_FIELDS}
+    sources = payload.get("sources")
+    if not isinstance(sources, list):
+        return "snapshot_content_malformed"
+    for item in sources:
+        if not isinstance(item, Mapping):
+            return "snapshot_content_malformed"
+        required = ("source_id", "origin", "label", "text", "fingerprint", "relative_name")
+        if any(field not in item for field in required):
+            return "snapshot_missing_content"
+    return payload
+
+
+def recompute_snapshot_content_hash(data: Any) -> tuple[str | None, str | None]:
+    payload = snapshot_content_payload(data)
+    if isinstance(payload, str):
+        return None, payload
+    return fingerprint(payload), None
+
+
+def approved_source_inventory(snapshot: ApprovedSnapshot) -> list[dict[str, Any]]:
+    inventory: list[dict[str, Any]] = []
+    for source in snapshot.sources:
+        inventory.append(
+            {
+                "source_id": source.source_id,
+                "managed_name": managed_source_name(source.source_id),
+                "original_name": Path(source.relative_name).as_posix(),
+                "fingerprint": source.fingerprint,
+                "instruction_named": instruction_named(source.relative_name),
+            }
+        )
+    return inventory
+
+
+def validate_staged_snapshot(stored: Any, snapshot: ApprovedSnapshot) -> str | None:
+    payload = snapshot_content_payload(stored)
+    if isinstance(payload, str):
+        return payload
+    approved = snapshot_content_payload(snapshot_dict(snapshot))
+    if isinstance(approved, str):
+        return approved
+    recomputed, error = recompute_snapshot_content_hash(stored)
+    approved_hash, approved_error = recompute_snapshot_content_hash(snapshot_dict(snapshot))
+    if error or approved_error:
+        return error or approved_error
+    if payload != approved or recomputed != approved_hash:
+        return "snapshot_content_mismatch"
+    declared = stored.get("content_hash") if isinstance(stored, Mapping) else None
+    if declared != snapshot.content_hash:
+        return "snapshot_binding_mismatch"
+    return None
+
+
+def validate_on_disk_source_inventory(
+    isolated: Any,
+    snapshot: ApprovedSnapshot,
+) -> tuple[tuple[dict[str, Any], ...], str | None]:
+    path = isolated.workspace / "source_inventory.json"
+    try:
+        if not path.exists() or path.is_symlink() or not path.is_file():
+            return (), "source_inventory_binding_mismatch"
+        stored = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return (), "source_inventory_malformed"
+    items = stored.get("sources") if isinstance(stored, Mapping) else None
+    if not isinstance(items, list):
+        return (), "source_inventory_malformed"
+    approved = approved_source_inventory(snapshot)
+    approved_by_id = {item["source_id"]: item for item in approved}
+    seen: set[str] = set()
+    normalized: list[dict[str, Any]] = []
+    for item in items:
+        if not isinstance(item, Mapping):
+            return (), "source_inventory_malformed"
+        source_id = item.get("source_id")
+        managed = item.get("managed_name")
+        original = item.get("original_name")
+        declared = item.get("fingerprint")
+        if not isinstance(source_id, str) or source_id in seen:
+            return (), "source_inventory_binding_mismatch"
+        if not isinstance(managed, str) or not isinstance(original, str):
+            return (), "source_inventory_binding_mismatch"
+        if not isinstance(declared, str):
+            return (), "source_inventory_binding_mismatch"
+        escape = validate_source_relative_name(managed)
+        if escape:
+            return (), escape
+        expected = approved_by_id.get(source_id)
+        if expected is None:
+            return (), "source_inventory_binding_mismatch"
+        if (
+            managed != expected["managed_name"]
+            or original != expected["original_name"]
+            or declared != expected["fingerprint"]
+            or bool(item.get("instruction_named")) != bool(expected["instruction_named"])
+        ):
+            return (), "source_inventory_binding_mismatch"
+        staged = isolated.workspace / managed
+        try:
+            if staged.is_symlink() or not staged.is_file():
+                return (), "source_inventory_binding_mismatch"
+            if not is_within(staged, isolated.workspace):
+                return (), "source_path_escape"
+            observed = text_fingerprint(staged.read_text(encoding="utf-8"))
+        except OSError:
+            return (), "source_inventory_binding_mismatch"
+        source = next(item for item in snapshot.sources if item.source_id == source_id)
+        if observed != source.fingerprint or observed != expected["fingerprint"]:
+            return (), "source_inventory_binding_mismatch"
+        seen.add(source_id)
+        normalized.append(dict(expected))
+    if seen != {item["source_id"] for item in approved}:
+        return (), "source_inventory_binding_mismatch"
+    sources_dir = isolated.workspace / "sources"
+    if sources_dir.exists():
+        expected_names = {Path(item["managed_name"]).name for item in approved}
+        try:
+            for child in sources_dir.iterdir():
+                if child.name not in expected_names:
+                    return (), "source_inventory_binding_mismatch"
+        except OSError:
+            return (), "source_inventory_binding_mismatch"
+    return tuple(normalized), None
 
 
 def has_error_indicator(value: Mapping[str, Any]) -> bool:
@@ -383,6 +546,374 @@ def workspace_changes(before: tuple[str, ...], after: tuple[str, ...]) -> tuple[
     for name in sorted(before_set - after_set):
         changes.append({"path": name, "change": "removed"})
     return tuple(changes)
+
+
+def file_content_fingerprint(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        while True:
+            chunk = handle.read(1024 * 1024)
+            if not chunk:
+                break
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def bind_path_identity(path: str | Path) -> dict[str, Any]:
+    raw = Path(path)
+    record: dict[str, Any] = {
+        "declared": str(raw),
+        "resolved": None,
+        "content_hash": None,
+        "symlink": False,
+        "symlink_target": None,
+        "present": False,
+    }
+    try:
+        record["symlink"] = raw.is_symlink()
+        if record["symlink"]:
+            record["symlink_target"] = os.readlink(raw)
+        if not raw.exists() and not record["symlink"]:
+            return record
+        resolved = raw.resolve()
+        record["resolved"] = str(resolved)
+        if resolved.is_file() and not resolved.is_symlink():
+            record["content_hash"] = file_content_fingerprint(resolved)
+            record["present"] = True
+    except OSError:
+        return record
+    return record
+
+
+def bind_approved_invocation(
+    *,
+    provider_mode: str,
+    provider_argv: list[str],
+    agent_bin: str,
+) -> dict[str, Any]:
+    if provider_mode == "synthetic":
+        argv = list(provider_argv)
+        interpreter = bind_path_identity(argv[0]) if argv else None
+        script = bind_path_identity(argv[1]) if len(argv) > 1 else None
+        return {
+            "kind": "synthetic",
+            "argv": argv,
+            "interpreter": interpreter,
+            "script": script,
+        }
+    return {
+        "kind": "installed",
+        "argv": [agent_bin],
+        "executable": bind_path_identity(agent_bin),
+    }
+
+
+def validate_invocation_binding(
+    approved: Mapping[str, Any] | None,
+    argv: list[str],
+) -> str | None:
+    if not approved or not argv:
+        return "executable_binding_mismatch"
+    if list(argv) != list(approved.get("argv") or []):
+        return "executable_binding_mismatch"
+    kind = approved.get("kind")
+    if kind == "synthetic":
+        current_interpreter = bind_path_identity(argv[0])
+        expected_interpreter = approved.get("interpreter") or {}
+        if _identity_changed(expected_interpreter, current_interpreter):
+            return "executable_binding_mismatch"
+        if len(argv) > 1:
+            current_script = bind_path_identity(argv[1])
+            expected_script = approved.get("script") or {}
+            if _identity_changed(expected_script, current_script):
+                return "executable_binding_mismatch"
+        return None
+    if kind == "installed":
+        current = bind_path_identity(argv[0])
+        expected = approved.get("executable") or {}
+        if _identity_changed(expected, current):
+            return "executable_binding_mismatch"
+        return None
+    return "executable_binding_mismatch"
+
+
+def _identity_changed(expected: Mapping[str, Any], observed: Mapping[str, Any]) -> bool:
+    if not expected.get("present") or not observed.get("present"):
+        return True
+    for key in ("resolved", "content_hash", "symlink", "symlink_target"):
+        if expected.get(key) != observed.get(key):
+            return True
+    return False
+
+
+def _entry_kind(path: Path) -> str:
+    try:
+        if path.is_symlink():
+            return "symlink"
+        info = path.lstat()
+    except OSError:
+        return "unreadable"
+    mode = info.st_mode
+    if stat.S_ISREG(mode):
+        return "file"
+    if stat.S_ISDIR(mode):
+        return "directory"
+    if stat.S_ISFIFO(mode) or stat.S_ISCHR(mode) or stat.S_ISBLK(mode) or stat.S_ISSOCK(mode):
+        return "special"
+    return "other"
+
+
+def _safe_relative(path: Path, root: Path) -> str | None:
+    try:
+        return path.relative_to(root).as_posix()
+    except ValueError:
+        return None
+
+
+def _observe_owned_entry(
+    path: Path,
+    *,
+    root_name: str,
+    relative: str,
+    limits: CaptureLimits,
+    bytes_hashed: int,
+) -> tuple[dict[str, Any], int, str | None]:
+    record: dict[str, Any] = {
+        "root": root_name,
+        "path": relative,
+        "type": _entry_kind(path),
+    }
+    kind = record["type"]
+    if kind == "symlink":
+        try:
+            record["link"] = os.readlink(path)
+        except OSError:
+            record["limitation"] = "unreadable"
+        return record, bytes_hashed, record.get("limitation")
+    if kind == "special":
+        record["limitation"] = "special_file_skipped"
+        return record, bytes_hashed, "special_file_skipped"
+    if kind != "file":
+        return record, bytes_hashed, None
+    remaining = limits.max_bytes_hashed - bytes_hashed
+    if remaining <= 0:
+        record["limitation"] = "truncated"
+        return record, bytes_hashed, "truncated"
+    try:
+        data = path.read_bytes()
+    except OSError:
+        record["limitation"] = "unreadable"
+        return record, bytes_hashed, "unreadable"
+    used = min(len(data), remaining)
+    record["size"] = len(data)
+    if len(data) > remaining:
+        record["limitation"] = "truncated"
+        record["fingerprint"] = hashlib.sha256(data[:remaining]).hexdigest()
+        return record, bytes_hashed + used, "truncated"
+    record["fingerprint"] = hashlib.sha256(data).hexdigest()
+    return record, bytes_hashed + used, None
+
+
+def capture_owned_paths(
+    roots: Mapping[str, Path],
+    limits: CaptureLimits | None = None,
+) -> dict[str, Any]:
+    limits = limits or CaptureLimits()
+    started = time.monotonic()
+    records: list[dict[str, Any]] = []
+    limitations: list[str] = []
+    files_seen = 0
+    bytes_hashed = 0
+    complete = True
+    unstable = False
+
+    def _time_exceeded() -> bool:
+        return (time.monotonic() - started) >= limits.max_elapsed_seconds
+
+    for root_name in OWNED_ROOT_NAMES:
+        root = roots.get(root_name)
+        if root is None:
+            continue
+        if _time_exceeded():
+            complete = False
+            limitations.append("elapsed")
+            break
+        if not root.exists():
+            complete = False
+            limitations.append(f"missing:{root_name}")
+            continue
+        try:
+            walker = os.walk(root, followlinks=False)
+        except OSError:
+            complete = False
+            limitations.append(f"unreadable:{root_name}")
+            continue
+        for dirpath, dirnames, filenames in walker:
+            current = Path(dirpath)
+            depth = len(Path(dirpath).relative_to(root).parts) if Path(dirpath) != root else 0
+            if depth > limits.max_depth or _time_exceeded():
+                complete = False
+                limitations.append("truncated" if depth > limits.max_depth else "elapsed")
+                dirnames[:] = []
+                continue
+            kept: list[str] = []
+            for dirname in dirnames:
+                child = current / dirname
+                relative = _safe_relative(child, root)
+                if relative is None:
+                    complete = False
+                    limitations.append("omitted")
+                    continue
+                kind = _entry_kind(child)
+                if kind == "symlink":
+                    files_seen += 1
+                    record, bytes_hashed, limitation = _observe_owned_entry(
+                        child,
+                        root_name=root_name,
+                        relative=relative,
+                        limits=limits,
+                        bytes_hashed=bytes_hashed,
+                    )
+                    if limitation:
+                        complete = False
+                        limitations.append(limitation)
+                    if len(records) < limits.max_records:
+                        records.append(record)
+                    else:
+                        complete = False
+                        limitations.append("truncated")
+                    continue
+                kept.append(dirname)
+            dirnames[:] = kept
+            for filename in filenames:
+                if _time_exceeded() or files_seen >= limits.max_files or len(records) >= limits.max_records:
+                    complete = False
+                    limitations.append("truncated" if files_seen >= limits.max_files or len(records) >= limits.max_records else "elapsed")
+                    dirnames[:] = []
+                    filenames = []
+                    break
+                path = current / filename
+                relative = _safe_relative(path, root)
+                if relative is None:
+                    complete = False
+                    limitations.append("omitted")
+                    continue
+                files_seen += 1
+                before_hash = bytes_hashed
+                record, bytes_hashed, limitation = _observe_owned_entry(
+                    path,
+                    root_name=root_name,
+                    relative=relative,
+                    limits=limits,
+                    bytes_hashed=bytes_hashed,
+                )
+                if limitation:
+                    complete = False
+                    limitations.append(limitation)
+                if bytes_hashed == before_hash and record.get("type") == "file" and record.get("limitation") == "unreadable":
+                    unstable = True
+                if len(records) < limits.max_records:
+                    records.append(record)
+                else:
+                    complete = False
+                    limitations.append("truncated")
+    unique_limitations = tuple(dict.fromkeys(limitations))
+    if unstable and "unstable" not in unique_limitations:
+        unique_limitations = unique_limitations + ("unstable",)
+        complete = False
+    return {
+        "records": tuple(records),
+        "complete": complete,
+        "limitations": unique_limitations,
+        "files_seen": files_seen,
+        "bytes_hashed": bytes_hashed,
+        "elapsed_ms": int((time.monotonic() - started) * 1000),
+        "unchanged_not_established": not complete,
+    }
+
+
+def mutation_records(
+    before: tuple[Mapping[str, Any], ...],
+    after: tuple[Mapping[str, Any], ...],
+) -> tuple[dict[str, Any], ...]:
+    before_map = {(item.get("root"), item.get("path")): item for item in before}
+    after_map = {(item.get("root"), item.get("path")): item for item in after}
+    changes: list[dict[str, Any]] = []
+    for key in sorted(set(before_map) | set(after_map), key=lambda item: (str(item[0]), str(item[1]))):
+        previous = before_map.get(key)
+        current = after_map.get(key)
+        root, relative = key
+        if previous is None and current is not None:
+            changes.append(
+                {
+                    "root": root,
+                    "path": relative,
+                    "change": "added",
+                    "after_type": current.get("type"),
+                    "after_fingerprint": current.get("fingerprint"),
+                }
+            )
+            continue
+        if current is None and previous is not None:
+            changes.append(
+                {
+                    "root": root,
+                    "path": relative,
+                    "change": "removed",
+                    "before_type": previous.get("type"),
+                    "before_fingerprint": previous.get("fingerprint"),
+                }
+            )
+            continue
+        if previous is None or current is None:
+            continue
+        if previous.get("type") != current.get("type"):
+            changes.append(
+                {
+                    "root": root,
+                    "path": relative,
+                    "change": "type_changed",
+                    "before_type": previous.get("type"),
+                    "after_type": current.get("type"),
+                    "before_fingerprint": previous.get("fingerprint"),
+                    "after_fingerprint": current.get("fingerprint"),
+                }
+            )
+            continue
+        before_token = previous.get("fingerprint") or previous.get("link")
+        after_token = current.get("fingerprint") or current.get("link")
+        if before_token != after_token:
+            changes.append(
+                {
+                    "root": root,
+                    "path": relative,
+                    "change": "overwritten",
+                    "before_type": previous.get("type"),
+                    "after_type": current.get("type"),
+                    "before_fingerprint": previous.get("fingerprint"),
+                    "after_fingerprint": current.get("fingerprint"),
+                }
+            )
+    return tuple(changes)
+
+
+def merge_capture_coverage(
+    before: Mapping[str, Any],
+    after: Mapping[str, Any],
+) -> dict[str, Any]:
+    limitations = tuple(
+        dict.fromkeys(list(before.get("limitations") or ()) + list(after.get("limitations") or ()))
+    )
+    complete = bool(before.get("complete")) and bool(after.get("complete"))
+    return {
+        "complete": complete,
+        "limitations": limitations,
+        "files_seen": after.get("files_seen", 0),
+        "bytes_hashed": after.get("bytes_hashed", 0),
+        "elapsed_ms": int(before.get("elapsed_ms") or 0) + int(after.get("elapsed_ms") or 0),
+        "unchanged_not_established": (not complete) or bool(before.get("unchanged_not_established"))
+        or bool(after.get("unchanged_not_established")),
+    }
 
 
 def validate_path_safety(

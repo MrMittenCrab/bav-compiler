@@ -1,3 +1,72 @@
+# RESULT.md — Step 12.1.9 Repair full-content launch bindings and bounded mutation capture
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 12.1.9 — Repair full-content launch bindings and bounded mutation capture
+**Work:** `e35d5703ccc14627a150a29b9e900502`
+**Plan:** `5b987d4eb94b427ba59766c0afdf5236`
+**Finding:** Verify Debater benchmark sources and controlled runtime
+**Attempt:** `46dd91184f4f4d81b6e7ee6cd750cb7c`
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. No AutoCycle edits, discovery, conversion, debate CLI, argument export, observation replay, ACP session, live provider calls, login/logout, credential-store reads, global configuration writes, or Debater publications. This record does not claim parent Completion, Session acceptance, controlled-backend acceptance, or end-to-end benchmark success.
+
+TARGET SHA-256 `9bfc5e439e5776cf3d1d89fd33363febe716a6744ad7d256942a24709ff3e77b` (60817).
+SESSION SHA-256 `ca72e1c149eb4cefd2f6c9f101be577fed5b8493975a8d19e2fce7c4e44fff94` (5897).
+IMPLEMENTATION SHA-256 `6e09afc00e1d24f09813cf422741bc55efaa93d60ead7729ba23efebeb0b9073` (7167).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `c2de9425aca2dfe693b826abac018e49a8bb707d` was ignored. HEAD/branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Ancestry parent was read from the Git object store.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `12.1.9` source | `66cb7f32b559699bae956ddbb167b834ef222fc6` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; parent `0c6a5ad80c8f0dbbeef556eb40b1527a3662a8c9` is the Step 12.1.8 checkpoint / `reviewed_head` |
+| Bound running attempt | `46dd91184f4f4d81b6e7ee6cd750cb7c`, `plan_sha` = B, phase `running`, `checkpoint_sha` absent |
+| `admitted_review` predecessor | `review_sha256` `9463a125af7680f33bbe87ff30f43f9914dd92f0a58efe178dcb99cb337e9212`; `reviewed_head` `0c6a5ad80c8f0dbbeef556eb40b1527a3662a8c9` |
+| `latest-implementation` leftover HEAD | `c2de9425aca2dfe693b826abac018e49a8bb707d` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `5b987d4eb94b427ba59766c0afdf5236` |
+| Fail-closed | Not required |
+
+## Implemented repair
+
+Extended the existing adapter, workspace, policy and capture contracts. Before launch the staged snapshot is recomputed against the approved invocation content; a retained declared `content_hash` cannot conceal altered proposition, scope, permissions, sources or other context. Malformed, missing or unexpected snapshot fields fail closed. On-disk `source_inventory.json` is checked for identities, managed paths, original-name metadata and fingerprints, and staged source bytes are hashed. Added, removed, substituted or escaping inventory entries are rejected. Mutable in-memory inventory is not approval. Executable binding uses the approved resolved path and content identity, including the synthetic interpreter/script pair. Same-basename substitutions, replaced bytes and symlink retargeting are rejected before process creation. Cwd, isolated HOME/config/data/workspace, policy, backend/model, role and minimal environment bindings remain. Mutation capture records fingerprinted before/after state across owned workspace, configuration, home and data, classifying additions, removals, overwrites and type changes. Capture is bounded and records symlink/type observations without following escaping targets or reading special files. Incomplete coverage is explicit and cannot establish an unchanged filesystem. Sanitized launch inputs, configuration fingerprints, application decisions, native observations and mutation records survive cleanup. Application prevention, provider-reported activity and post-execution changes remain separately attributed. Cumulative allowances, checkpoint restore, Planner/Reviewer contexts, whole-response validation, finite cleanup and no automatic retry are unchanged. Installed mode still launches no process and stages no company context. Codex remains unimplemented.
+
+## Listed verification
+
+Local fake-provider processes and labeled synthetic files. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Command | Measured result |
+|---|---|
+| `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` | **37 passed** in 3.75s |
+| `/opt/anaconda3/bin/python -m pytest -q` `bav/director/tests/test_current_build.py::test_public_namespace_and_compatibility` `…::test_public_help_is_bav_first_and_check_is_diagnostic` `bav/director/tests/test_readme.py` `bav/director/tests/test_research_handoff.py::test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 0.79s |
+
+Synthetic path measured: stale snapshot content with retained `content_hash` rejected before launch; on-disk inventory remove/alter/add/corrupt rejected, in-memory-only forgery not treated as disk approval; same-basename executable, replaced bytes and symlink retarget rejected, unchanged synthetic control launched; existing snapshot/source/policy overwrites and home/data/workspace add/remove classified with before/after fingerprints after cleanup; capture limits, unreadable entries and escaping symlinks set `unchanged_not_established=true` rather than “no changes”; retained environment/source/instruction/dispatch/allowance/installed-closure tests still passed, including no `bav-research-runtime-*` workspace under forged installed verification. Synthetic success is application-owned adapter behavior only, not installed-provider enforcement.
+
+## Preservation and plan changes
+
+Fast Retailing `publication_date` remains `null`; `financial_statement_approval.date` remains `2025-11-27`. Accepted financial inputs and neutral assumptions unchanged. Company outputs not rebuilt. Original filings, converter Markdown, assets, coverage limitations, probe artifacts, and historical controller receipts retained. No discovery or conversion replay. No new live provider call. `DEBATER.md` unchanged (`7578b44c…`, 62336).
+
+Required plan change: none.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `bav/director/runtime/adapter.py` | `57faf877acdee4a7d094004d3c4acb4cdb2fa614cf31b365213e7cf485176ead` | 47291 |
+| `bav/director/runtime/policy.py` | `2d2844322bf6408149865a67b79294492c60a13cec19bf3cbb62477eae7ed4c8` | 35027 |
+| `bav/director/runtime/workspace.py` | `4dcb8e0261258869a8fa390929e65c8ca40f370b110dd32090fef20da48b3acc` | 5514 |
+| `bav/director/runtime/dispatch.py` | `008f4595435345bf7ddb728478116e3b6aa3fd7efbcc6f61da65d3ffa12d54de` | 7039 |
+| `bav/director/runtime/contract.py` | `bd8bb0bd087f7ca818baad72686dcdb65fee7095abdc57d7747289fda64ebb65` | 9125 |
+| `bav/director/tests/test_research_runtime.py` | `c280d719eaf8f24c1ce045c14c59b3926aff8a531c50a8f4fd49a9da8bb58e60` | 55249 |
+| `bav/director/tests/fixtures/runtime/fake_provider.py` | `94bd83081cda6ae9802a4bf367238538f413feaaeca6730244fc3cfb1752323d` | 16032 |
+| `bav/director/docs/DEBATER.md` | `7578b44c6c56db0265fa50f0df9de68d6002d36f2327fa155c746a70a2c93f42` | 62336 |
+| `bav/director/docs/BENCHMARK.md` | `16b401392735d8bee1a61150f99a7f1dea54981ef0903c6169c4d80665aedad5` | 53603 |
+
+## Remaining toward Completion
+
+Ordinary `python -m bav debate` intake/approvals, Extractor preparation/retrieval, Planner/Reviewer research, durable case integration, required readers, coherent JSON/Markdown exports, adversarial checks, and the real `--add`/resume benchmark remain outstanding. Controlled installed-runtime acceptance and Codex implementation remain unverified. Application dispatch denial and post-execution mutation detection do not constrain a provider's native tools. Missing installed mechanisms remain loaded-configuration identity and a policy-denial event. A later bounded real-runtime demonstration remains necessary before company transmission. Synthetic success cannot close parent Completion.
+
 # RESULT.md — Step 12.1.8 Implement BAV-owned runtime enforcement and observation capture
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

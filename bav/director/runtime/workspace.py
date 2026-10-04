@@ -11,8 +11,8 @@ from bav.director.repository import repository_root
 from bav.director.runtime.contract import ApprovedSnapshot
 from bav.director.runtime.policy import (
     INSTRUCTION_FILENAMES,
+    approved_source_inventory,
     build_launch_environment,
-    instruction_named,
     intended_research_policy,
     managed_source_name,
     owned_file_inventory,
@@ -94,7 +94,6 @@ def _stage_sources(
     seen_ids: set[str] = set()
     seen_originals: set[str] = set()
     seen_managed: set[str] = set()
-    inventory: list[dict[str, object]] = []
     for source in snapshot.sources:
         if not source.source_id or source.source_id in seen_ids:
             raise SourceStagingError("source_id_collision")
@@ -111,16 +110,7 @@ def _stage_sources(
         destination = isolated.workspace / managed
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_text(source.text, encoding="utf-8")
-        inventory.append(
-            {
-                "source_id": source.source_id,
-                "managed_name": managed,
-                "original_name": original,
-                "fingerprint": source.fingerprint,
-                "instruction_named": instruction_named(source.relative_name),
-            }
-        )
-    return inventory
+    return approved_source_inventory(snapshot)
 
 
 def isolated_environment(

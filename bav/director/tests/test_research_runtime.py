@@ -19,6 +19,7 @@ from bav.director.runtime import (
     AllowanceLimits,
     ApprovedSnapshot,
     ApprovedSource,
+    CaptureLimits,
     NativeRestrictionState,
     ResearchRequest,
     ResearchRuntime,
@@ -26,6 +27,7 @@ from bav.director.runtime import (
     cursor_unverified_restrictions,
     synthetic_controlled_restrictions,
 )
+from bav.director.runtime.workspace import create_isolated_workspace
 from bav.director.runtime.contract import CURSOR_FORBIDDEN_FLAGS
 from bav.director.runtime.policy import fingerprint
 
@@ -1017,3 +1019,275 @@ def test_installed_mode_stages_nothing_despite_forged_signals(tmp_path):
     assert after <= before
     assert result.capture.observation_state == "absent"
     assert result.capture.source_inventory == ()
+
+
+def _stage_then(mutator):
+    def wrapped(snapshot, checkout=None):
+        isolated = create_isolated_workspace(snapshot, checkout=checkout)
+        mutator(isolated)
+        return isolated
+
+    return wrapped
+
+
+def test_altered_snapshot_content_is_rejected_before_launch(tmp_path, monkeypatch):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+
+    def mutate(isolated):
+        path = isolated.workspace / "snapshot.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["proposition"] = "Altered proposition retaining the declared hash."
+        data["scope"] = {"markets": ["china_mainland"]}
+        data["permissions"] = {"allow": ["shell"]}
+        path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        "bav.director.runtime.adapter.create_isolated_workspace",
+        _stage_then(mutate),
+    )
+    runtime = _runtime(tmp_path, "ok")
+    result = _invoke(runtime, _request("planner", snapshot, "call-stale-hash"), "ok")
+    assert result.status == "denied"
+    assert result.capture.launched is False
+    assert result.capture.error == "snapshot_content_mismatch"
+    assert result.structured_output is None
+    assert result.attempts == ()
+    assert runtime._child is None
+    assert result.capture.launch_inputs["role"] == "planner"
+    assert result.capture.policy_fingerprint
+
+
+def test_on_disk_inventory_mutations_are_rejected_before_launch(tmp_path, monkeypatch):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+
+    def remove_inventory(isolated):
+        (isolated.workspace / "source_inventory.json").unlink()
+
+    def alter_inventory(isolated):
+        path = isolated.workspace / "source_inventory.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["sources"][0]["fingerprint"] = "0" * 64
+        data["sources"][0]["original_name"] = "substituted.md"
+        path.write_text(json.dumps(data), encoding="utf-8")
+
+    def add_inventory(isolated):
+        path = isolated.workspace / "source_inventory.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["sources"].append(
+            {
+                "source_id": "src-extra",
+                "managed_name": "sources/src-extra",
+                "original_name": "extra.md",
+                "fingerprint": "1" * 64,
+                "instruction_named": False,
+            }
+        )
+        path.write_text(json.dumps(data), encoding="utf-8")
+        (isolated.workspace / "sources" / "src-extra").write_text("extra", encoding="utf-8")
+
+    def corrupt_inventory(isolated):
+        (isolated.workspace / "source_inventory.json").write_text("{not-json", encoding="utf-8")
+
+    def memory_only(isolated):
+        isolated.inventory.append(
+            {
+                "source_id": "src-forged",
+                "managed_name": "sources/src-forged",
+                "original_name": "forged.md",
+                "fingerprint": "2" * 64,
+                "instruction_named": False,
+            }
+        )
+
+    cases = (
+        (remove_inventory, "source_inventory_binding_mismatch", "call-inv-removed"),
+        (alter_inventory, "source_inventory_binding_mismatch", "call-inv-altered"),
+        (add_inventory, "source_inventory_binding_mismatch", "call-inv-added"),
+        (corrupt_inventory, "source_inventory_malformed", "call-inv-corrupt"),
+    )
+    for mutator, error, call_id in cases:
+        monkeypatch.setattr(
+            "bav.director.runtime.adapter.create_isolated_workspace",
+            _stage_then(mutator),
+        )
+        runtime = _runtime(tmp_path, "ok")
+        result = _invoke(runtime, _request("planner", snapshot, call_id), "ok")
+        assert result.status == "denied", (call_id, result.capture.error)
+        assert result.capture.launched is False
+        assert result.capture.error == error
+        assert result.structured_output is None
+        assert result.attempts == ()
+        assert runtime._child is None
+        assert result.capture.call_id == call_id
+
+    monkeypatch.setattr(
+        "bav.director.runtime.adapter.create_isolated_workspace",
+        _stage_then(memory_only),
+    )
+    allowed = _invoke(_runtime(tmp_path, "ok"), _request("planner", snapshot, "call-inv-memory"), "ok")
+    assert allowed.status == "ok"
+    assert allowed.capture.launched is True
+
+
+def test_executable_identity_rejects_same_name_bytes_and_symlink(tmp_path):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+    control = _runtime(tmp_path, "ok")
+    ok = _invoke(control, _request("planner", snapshot, "call-exec-control"), "ok")
+    assert ok.status == "ok"
+    assert ok.capture.launched is True
+
+    same_name_dir = tmp_path / "same-name"
+    same_name_dir.mkdir()
+    substitute = same_name_dir / FAKE_PROVIDER.name
+    substitute.write_text("print('same-basename substitute')\n", encoding="utf-8")
+    swapped = ResearchRuntime(
+        model=MODEL,
+        provider_mode="synthetic",
+        provider_argv=[sys.executable, str(FAKE_PROVIDER)],
+        timeout_seconds=2,
+        extra_env={"BAV_FAKE_SCENARIO": "ok"},
+    )
+    swapped.provider_argv = [sys.executable, str(substitute)]
+    swapped_result = swapped.invoke(_request("planner", snapshot, "call-exec-basename"))
+    assert swapped_result.status == "denied"
+    assert swapped_result.capture.launched is False
+    assert swapped_result.capture.error == "executable_binding_mismatch"
+    assert swapped._child is None
+
+    copied = tmp_path / "copied-provider.py"
+    copied.write_bytes(FAKE_PROVIDER.read_bytes())
+    replaced = ResearchRuntime(
+        model=MODEL,
+        provider_mode="synthetic",
+        provider_argv=[sys.executable, str(copied)],
+        timeout_seconds=2,
+        extra_env={"BAV_FAKE_SCENARIO": "ok"},
+    )
+    copied.write_bytes(copied.read_bytes() + b"\n# replaced-bytes\n")
+    replaced_result = replaced.invoke(_request("planner", snapshot, "call-exec-bytes"))
+    assert replaced_result.status == "denied"
+    assert replaced_result.capture.launched is False
+    assert replaced_result.capture.error == "executable_binding_mismatch"
+
+    link = tmp_path / "provider-link"
+    link.symlink_to(FAKE_PROVIDER)
+    linked = ResearchRuntime(
+        model=MODEL,
+        provider_mode="synthetic",
+        provider_argv=[sys.executable, str(link)],
+        timeout_seconds=2,
+        extra_env={"BAV_FAKE_SCENARIO": "ok"},
+    )
+    evil = tmp_path / "evil-provider.py"
+    evil.write_text("print('retargeted')\n", encoding="utf-8")
+    link.unlink()
+    link.symlink_to(evil)
+    retargeted = linked.invoke(_request("planner", snapshot, "call-exec-symlink"))
+    assert retargeted.status == "denied"
+    assert retargeted.capture.launched is False
+    assert retargeted.capture.error == "executable_binding_mismatch"
+    assert linked._child is None
+
+
+def test_owned_overwrites_and_path_changes_are_fingerprinted(tmp_path):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+    runtime = ResearchRuntime(
+        model=MODEL,
+        provider_mode="synthetic",
+        provider_argv=[sys.executable, str(FAKE_PROVIDER)],
+        timeout_seconds=2,
+        retain_workspace=False,
+        extra_env={"BAV_FAKE_SCENARIO": "owned_mutations"},
+    )
+    result = runtime.invoke(_request("planner", snapshot, "call-owned-mutate"))
+    assert result.status == "ok"
+    changes = {(item["root"], item["path"]): item for item in result.capture.workspace_changes}
+    assert changes[("workspace", "snapshot.json")]["change"] == "overwritten"
+    assert changes[("workspace", "snapshot.json")]["before_fingerprint"]
+    assert changes[("workspace", "snapshot.json")]["after_fingerprint"]
+    assert (
+        changes[("workspace", "snapshot.json")]["before_fingerprint"]
+        != changes[("workspace", "snapshot.json")]["after_fingerprint"]
+    )
+    assert changes[("workspace", "sources/src-approved")]["change"] == "overwritten"
+    assert changes[("config", "cli-config.json")]["change"] == "overwritten"
+    assert changes[("home", "added-home.txt")]["change"] == "added"
+    assert changes[("data", "added-data.txt")]["change"] == "added"
+    assert changes[("workspace", "added-workspace.txt")]["change"] == "added"
+    assert changes[("workspace", "source_inventory.json")]["change"] == "removed"
+    assert result.capture.capture_coverage["complete"] is True
+    assert result.capture.capture_coverage["unchanged_not_established"] is False
+    if result.capture.workspace:
+        assert not Path(result.capture.workspace).exists()
+
+
+def test_capture_limits_unreadable_and_escaping_symlink(tmp_path):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+    limited = ResearchRuntime(
+        model=MODEL,
+        provider_mode="synthetic",
+        provider_argv=[sys.executable, str(FAKE_PROVIDER)],
+        timeout_seconds=2,
+        retain_workspace=True,
+        extra_env={"BAV_FAKE_SCENARIO": "ok"},
+        capture_limits=CaptureLimits(max_files=2, max_records=2, max_bytes_hashed=64),
+    )
+    limited_result = limited.invoke(_request("planner", snapshot, "call-capture-limit"))
+    assert limited_result.status == "ok"
+    coverage = limited_result.capture.capture_coverage
+    assert coverage["complete"] is False
+    assert "truncated" in coverage["limitations"]
+    assert coverage["unchanged_not_established"] is True
+    assert limited_result.capture.workspace_changes or coverage["unchanged_not_established"]
+
+    unread = _runtime(tmp_path, "unreadable_entry")
+    unread_result = _invoke(
+        unread, _request("planner", snapshot, "call-unreadable"), "unreadable_entry"
+    )
+    assert unread_result.status == "ok"
+    unread_coverage = unread_result.capture.capture_coverage
+    assert unread_coverage["complete"] is False
+    assert "unreadable" in unread_coverage["limitations"]
+    assert unread_coverage["unchanged_not_established"] is True
+    unread_paths = {item["path"] for item in unread_result.capture.workspace_after}
+    assert "unreadable.bin" in unread_paths
+    hidden = next(
+        item for item in unread_result.capture.workspace_after if item["path"] == "unreadable.bin"
+    )
+    assert hidden.get("limitation") == "unreadable"
+    assert hidden.get("fingerprint") is None
+
+    escape = ResearchRuntime(
+        model=MODEL,
+        provider_mode="synthetic",
+        provider_argv=[sys.executable, str(FAKE_PROVIDER)],
+        timeout_seconds=2,
+        retain_workspace=True,
+        extra_env={
+            "BAV_FAKE_SCENARIO": "escape_symlink",
+            "BAV_FAKE_ESCAPE_TARGET": str(ROOT / "TARGET.md"),
+        },
+    )
+    escape_result = escape.invoke(_request("planner", snapshot, "call-escape-link"))
+    assert escape_result.status == "ok"
+    link = next(
+        item
+        for item in escape_result.capture.workspace_after
+        if item["path"] == "escape-link"
+    )
+    assert link["type"] == "symlink"
+    assert link.get("fingerprint") is None
+    dumped = json.dumps(escape_result.capture.workspace_after)
+    assert "Build **BAV Compiler**" not in dumped
+    change = next(
+        item
+        for item in escape_result.capture.workspace_changes
+        if item["path"] == "escape-link"
+    )
+    assert change["change"] == "added"
+    assert change.get("after_type") == "symlink"

@@ -21,6 +21,7 @@ from bav.director.runtime.contract import (
     AllowanceLimits,
     AttemptRecord,
     BackendResult,
+    CaptureLimits,
     CaptureRecord,
     NativeRestrictionState,
     ResearchRequest,
@@ -30,21 +31,25 @@ from bav.director.runtime.contract import (
 from bav.director.runtime.dispatch import ApplicationDispatcher
 from bav.director.runtime.policy import (
     NATIVE_OBSERVATION_LIMITATION,
+    bind_approved_invocation,
     build_cursor_command,
     build_launch_environment,
+    capture_owned_paths,
     fingerprint,
     intended_research_policy,
-    owned_file_inventory,
+    merge_capture_coverage,
+    mutation_records,
     provider_event_error,
     sanitize,
     snapshot_dict,
-    text_fingerprint,
     validate_extra_env,
+    validate_invocation_binding,
+    validate_on_disk_source_inventory,
     validate_operation_request,
     validate_provider_envelope,
     validate_provider_event,
     validate_request_collection,
-    workspace_changes,
+    validate_staged_snapshot,
 )
 from bav.director.runtime.workspace import (
     IsolatedWorkspace,
@@ -76,6 +81,7 @@ class ResearchRuntime:
         checkout: Path | None = None,
         extra_env: Mapping[str, str] | None = None,
         checkpoint: AllowanceCheckpoint | None = None,
+        capture_limits: CaptureLimits | None = None,
     ) -> None:
         if backend != "cursor":
             raise ValueError("only the Cursor backend is implemented; Codex is not selected")
@@ -115,8 +121,14 @@ class ResearchRuntime:
         self._child: subprocess.Popen[bytes] | None = None
         self._interrupted = False
         self._active_started: float | None = None
-        self._workspace_before: tuple[str, ...] = ()
+        self._owned_before: dict[str, Any] = {}
         self._last_launch_inputs: dict[str, Any] = {}
+        self.capture_limits = capture_limits or CaptureLimits()
+        self._approved_invocation = bind_approved_invocation(
+            provider_mode=self.provider_mode,
+            provider_argv=self.provider_argv,
+            agent_bin=self.agent_bin,
+        )
         self.native = self._bound_restriction(native_restriction)
         if checkpoint is not None:
             self.restore(checkpoint)
@@ -209,7 +221,7 @@ class ResearchRuntime:
 
     def invoke(self, request: ResearchRequest) -> BackendResult:
         self._interrupted = False
-        self._workspace_before = ()
+        self._owned_before = {}
         self._last_launch_inputs = {}
         self._active_started = time.monotonic()
         try:
@@ -342,8 +354,7 @@ class ResearchRuntime:
                 launched=False,
                 launch_inputs=self._launch_inputs(request, isolated, argv, env),
             )
-        workspace_before = tuple(owned_file_inventory(isolated.workspace))
-        self._workspace_before = workspace_before
+        self._owned_before = capture_owned_paths(self._owned_roots(isolated), self.capture_limits)
         self._last_launch_inputs = self._launch_inputs(request, isolated, argv, env)
         call_timeout = min(self.timeout_seconds, remaining)
         timed_out = False
@@ -639,10 +650,19 @@ class ResearchRuntime:
                 "model": request.model,
                 "role": request.role,
                 "executable": (argv or [self.agent_bin])[0],
+                "approved_invocation": self._approved_invocation,
                 "env_names": tuple(sorted(env or {})),
                 "source_inventory": list(isolated.inventory) if isolated else [],
             }
         )
+
+    def _owned_roots(self, isolated: IsolatedWorkspace) -> dict[str, Path]:
+        return {
+            "workspace": isolated.workspace,
+            "home": isolated.home,
+            "config": isolated.config_dir,
+            "data": isolated.data_dir,
+        }
 
     def _validate_launch_bindings(
         self,
@@ -663,36 +683,38 @@ class ResearchRuntime:
             return "role_binding_mismatch"
         if env.get("BAV_RUNTIME_MODEL") != request.model or request.model != self.model:
             return "model_binding_mismatch"
+        if str(isolated.workspace) != env.get("BAV_RUNTIME_WORKSPACE"):
+            return "cwd_binding_mismatch"
+        if not isolated.workspace.is_absolute() or not isolated.home.is_absolute():
+            return "cwd_binding_mismatch"
         snapshot_path = isolated.workspace / "snapshot.json"
         policy_path = isolated.config_dir / "cli-config.json"
-        if not snapshot_path.is_file() or not policy_path.is_file():
+        if (
+            not snapshot_path.is_file()
+            or snapshot_path.is_symlink()
+            or not policy_path.is_file()
+            or policy_path.is_symlink()
+        ):
             return "launch_binding_missing"
         try:
             stored = json.loads(snapshot_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
-            return "snapshot_binding_mismatch"
-        if stored.get("content_hash") != request.snapshot.content_hash:
-            return "snapshot_binding_mismatch"
+            return "snapshot_content_malformed"
+        snapshot_error = validate_staged_snapshot(stored, request.snapshot)
+        if snapshot_error:
+            return snapshot_error
         try:
             stored_policy = json.loads(policy_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             return "policy_binding_mismatch"
         if fingerprint(stored_policy) != fingerprint(intended_research_policy()):
             return "policy_binding_mismatch"
-        if not argv:
-            return "executable_binding_mismatch"
-        expected = self.provider_argv[0] if self.provider_mode == "synthetic" else self.agent_bin
-        if Path(argv[0]).name != Path(expected).name:
-            return "executable_binding_mismatch"
-        for item in isolated.inventory:
-            managed = str(item.get("managed_name") or "")
-            expected_hash = str(item.get("fingerprint") or "")
-            staged = isolated.workspace / managed
-            if not staged.is_file() or staged.is_symlink():
-                return "source_inventory_binding_mismatch"
-            observed = text_fingerprint(staged.read_text(encoding="utf-8"))
-            if observed != expected_hash:
-                return "source_inventory_binding_mismatch"
+        executable_error = validate_invocation_binding(self._approved_invocation, argv)
+        if executable_error:
+            return executable_error
+        _inventory, inventory_error = validate_on_disk_source_inventory(isolated, request.snapshot)
+        if inventory_error:
+            return inventory_error
         return None
 
     def _consume_streams(
@@ -931,9 +953,12 @@ class ResearchRuntime:
         if interrupted or status == "interrupted":
             self.interrupted_uncertain = True
             self.uncertain_attempt_call_ids.append(request.call_id)
-        workspace_before = tuple(getattr(self, "_workspace_before", ()) or ())
-        workspace_after = tuple(owned_file_inventory(isolated.workspace))
-        changes = workspace_changes(workspace_before, workspace_after)
+        owned_before = getattr(self, "_owned_before", {}) or {}
+        owned_after = capture_owned_paths(self._owned_roots(isolated), self.capture_limits)
+        before_records = tuple(owned_before.get("records") or ())
+        after_records = tuple(owned_after.get("records") or ())
+        changes = mutation_records(before_records, after_records)
+        coverage = merge_capture_coverage(owned_before, owned_after)
         observation_state = _observation_state(
             observed=observed,
             output_bytes=output_bytes,
@@ -956,11 +981,12 @@ class ResearchRuntime:
             launch_inputs=launch_inputs or self._last_launch_inputs or self._launch_inputs(
                 request, isolated, None, None
             ),
-            workspace_before=workspace_before,
-            workspace_after=workspace_after,
+            workspace_before=before_records,
+            workspace_after=after_records,
             workspace_change_records=changes,
             observation_state=observation_state,
             source_inventory=tuple(isolated.inventory),
+            capture_coverage=coverage,
         )
         return BackendResult(
             call_id=request.call_id,
@@ -997,11 +1023,12 @@ class ResearchRuntime:
         observed: Mapping[str, Any],
         launched: bool,
         launch_inputs: Mapping[str, Any] | None = None,
-        workspace_before: tuple[str, ...] = (),
-        workspace_after: tuple[str, ...] = (),
+        workspace_before: tuple[Mapping[str, Any], ...] = (),
+        workspace_after: tuple[Mapping[str, Any], ...] = (),
         workspace_change_records: tuple[Mapping[str, Any], ...] = (),
         observation_state: str = "absent",
         source_inventory: tuple[Mapping[str, Any], ...] = (),
+        capture_coverage: Mapping[str, Any] | None = None,
     ) -> CaptureRecord:
         request_payload = sanitize(
             {
@@ -1087,6 +1114,7 @@ class ResearchRuntime:
             workspace_changes=tuple(sanitize(item) for item in workspace_change_records),
             observation_state=observation_state,
             source_inventory=tuple(sanitize(item) for item in source_inventory),
+            capture_coverage=sanitize(capture_coverage or {"complete": False, "unchanged_not_established": True}),
         )
 
 

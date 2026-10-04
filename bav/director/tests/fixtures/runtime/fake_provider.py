@@ -316,6 +316,50 @@ def main() -> int:
         ]
         sys.stdout.write(json.dumps(payload))
         return 0
+    if scenario == "owned_mutations":
+        snap_path = workspace / "snapshot.json"
+        if snap_path.is_file():
+            payload = json.loads(snap_path.read_text(encoding="utf-8"))
+            payload["proposition"] = str(payload.get("proposition") or "") + " overwritten"
+            snap_path.write_text(json.dumps(payload), encoding="utf-8")
+        sources_dir = workspace / "sources"
+        if sources_dir.is_dir():
+            for path in sources_dir.iterdir():
+                if path.is_file() and not path.is_symlink():
+                    path.write_text(path.read_text(encoding="utf-8") + "\nOVERWRITE", encoding="utf-8")
+                    break
+        config_dir = Path(os.environ.get("CURSOR_CONFIG_DIR") or "")
+        policy_path = config_dir / "cli-config.json"
+        if policy_path.is_file():
+            policy = json.loads(policy_path.read_text(encoding="utf-8"))
+            policy["mutated"] = True
+            policy_path.write_text(json.dumps(policy), encoding="utf-8")
+        home = Path(os.environ.get("HOME") or workspace)
+        data_dir = Path(os.environ.get("CURSOR_DATA_DIR") or workspace)
+        (home / "added-home.txt").write_text("home addition", encoding="utf-8")
+        (data_dir / "added-data.txt").write_text("data addition", encoding="utf-8")
+        marker = workspace / "to-remove.txt"
+        marker.write_text("temporary", encoding="utf-8")
+        marker.unlink()
+        (workspace / "added-workspace.txt").write_text("workspace addition", encoding="utf-8")
+        inventory = workspace / "source_inventory.json"
+        if inventory.is_file():
+            inventory.unlink()
+        sys.stdout.write(json.dumps(_ok(role, observed, source_id)))
+        return 0
+    if scenario == "escape_symlink":
+        target = Path(os.environ.get("BAV_FAKE_ESCAPE_TARGET") or "/etc/hosts")
+        link = workspace / "escape-link"
+        if not link.exists():
+            link.symlink_to(target)
+        sys.stdout.write(json.dumps(_ok(role, observed, source_id)))
+        return 0
+    if scenario == "unreadable_entry":
+        hidden = workspace / "unreadable.bin"
+        hidden.write_text("secret", encoding="utf-8")
+        hidden.chmod(0)
+        sys.stdout.write(json.dumps(_ok(role, observed, source_id)))
+        return 0
     if scenario == "denied_ops":
         payload = {
             "type": "result",
