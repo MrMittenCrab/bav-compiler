@@ -220,6 +220,53 @@ def main() -> int:
             ]
         )
         return 0
+    if scenario == "ok_omitted_discriminators":
+        payload = _ok(role, observed, source_id)
+        payload.pop("type", None)
+        payload.pop("subtype", None)
+        sys.stdout.write(json.dumps(payload))
+        return 0
+    if scenario == "stream_ok_omitted_discriminators":
+        result = _ok(role, observed, source_id)
+        result.pop("subtype", None)
+        _write_ndjson(
+            [
+                {"text": "init companion without type or subtype"},
+                _approved_request(source_id),
+                result,
+            ]
+        )
+        return 0
+    if scenario == "single_error_envelope":
+        payload = _ok(role, observed, source_id)
+        field = os.environ.get("BAV_FAKE_ERROR_FIELD", "type")
+        payload[field] = "error"
+        sys.stdout.write(json.dumps(payload))
+        return 0
+    if scenario == "malformed_discriminator":
+        field = os.environ.get("BAV_FAKE_DISC_FIELD", "type")
+        shape = os.environ.get("BAV_FAKE_DISC_SHAPE", "list")
+        place = os.environ.get("BAV_FAKE_DISC_PLACE", "single")
+        values = {
+            "list": ["error"],
+            "object": {"code": "error"},
+            "number": 1,
+            "boolean": True,
+            "null": None,
+        }
+        malformed = {field: values[shape], "observed": observed}
+        if place == "single":
+            payload = _ok(role, observed, source_id)
+            payload[field] = values[shape]
+            sys.stdout.write(json.dumps(payload))
+            return 0
+        events = [_approved_request(source_id), _ok(role, observed, source_id)]
+        if place == "before":
+            events = [malformed, *events]
+        else:
+            events = [*events, malformed]
+        _write_ndjson(events)
+        return 0
     if scenario == "denied_ops":
         payload = {
             "type": "result",

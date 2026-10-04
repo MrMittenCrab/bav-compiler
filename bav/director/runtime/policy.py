@@ -103,9 +103,24 @@ def has_error_indicator(value: Mapping[str, Any]) -> bool:
     return False
 
 
+def validate_provider_event(event: Mapping[str, Any]) -> str | None:
+    for field in ("type", "subtype"):
+        if field not in event:
+            continue
+        value = event[field]
+        if not isinstance(value, str):
+            return "invalid_provider_discriminator"
+        if field == "type" and value in _PROVIDER_ERROR_TYPES:
+            return "provider_error_event"
+        if field == "subtype" and value in _PROVIDER_ERROR_SUBTYPES:
+            return "provider_error_event"
+    return None
+
+
 def provider_event_error(event: Mapping[str, Any]) -> str | None:
-    if event.get("type") in _PROVIDER_ERROR_TYPES or event.get("subtype") in _PROVIDER_ERROR_SUBTYPES:
-        return "provider_error_event"
+    control = validate_provider_event(event)
+    if control:
+        return control
     if has_error_indicator(event):
         return "provider_error_indicator"
     output = event.get("output")
@@ -122,6 +137,9 @@ def validate_provider_envelope(
 ) -> str | None:
     if payload is None:
         return "missing_result"
+    control = validate_provider_event(payload)
+    if control:
+        return control
     unsuccessful = exit_code not in (0, None)
     output = payload.get("output")
     has_success_shape = isinstance(output, Mapping) and "kind" in output

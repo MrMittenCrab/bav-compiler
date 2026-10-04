@@ -1,3 +1,73 @@
+# RESULT.md — Step 12.1.7 Unify provider event validation and failure accounting
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 12.1.7 — Unify provider event validation and failure accounting
+**Work:** `e35d5703ccc14627a150a29b9e900502`
+**Plan:** `ced63d1a4b0748b4a1d008f4dc5aa71f`
+**Finding:** Verify Debater benchmark sources and controlled runtime
+**Attempt:** `ce91564ece624ffda0e2a9fe56ac1123`
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. No AutoCycle edits, discovery, conversion, debate CLI, argument export, observation replay, ACP session, live provider calls, login/logout, credential-store reads, global configuration writes, or Debater publications. This record does not claim parent Completion, Session acceptance, controlled-backend acceptance, or end-to-end benchmark success.
+
+TARGET SHA-256 `9bfc5e439e5776cf3d1d89fd33363febe716a6744ad7d256942a24709ff3e77b` (60817).
+SESSION SHA-256 `ca72e1c149eb4cefd2f6c9f101be577fed5b8493975a8d19e2fce7c4e44fff94` (5897).
+IMPLEMENTATION SHA-256 `150ab5321a3005240a893ff43d1522eaeb6d1e0c38aec453f795db4586a62379` (6016).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `471e3c48ded7dba84bb4b8227069744b8fbfbcf8` was ignored. HEAD/branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Ancestry parent was read from the Git object store.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `12.1.7` source | `501c286799c398fe28c1047d981df5e74dc42c28` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; parent `99372bdbe744a7128b5921de5c47b734e2aa1ffa` is the Step 12.1.6 checkpoint / `reviewed_head` |
+| Bound running attempt | `ce91564ece624ffda0e2a9fe56ac1123`, `plan_sha` = B, phase `running`, `checkpoint_sha` absent |
+| `admitted_review` predecessor | `review_sha256` `419b1d41497570b1b5d41a8625fefc5734aad73dc80f38d0fff89a2b100ca5d2`; `reviewed_head` `99372bdbe744a7128b5921de5c47b734e2aa1ffa` |
+| `latest-implementation` leftover HEAD | `471e3c48ded7dba84bb4b8227069744b8fbfbcf8` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `ced63d1a4b0748b4a1d008f4dc5aa71f` |
+| Fail-closed | Not required |
+
+## Implemented repair
+
+Shared `validate_provider_event` in `bav/director/runtime/policy.py` now validates present `type`/`subtype` before membership tests. Adapter applies it to single-object responses and, through `provider_event_error`, to every stream event before result selection or dispatch.
+
+Pre-repair `ResearchRuntime.invoke` subprocess paths: single-object `type=error` and `subtype=error` with success-shaped `output.kind` and a valid approved request at exit 0 returned `status=ok`, dispatched, and recorded 0 failures. Stream `type=["error"]` / `type={...}` raised uncaught `TypeError`. Single-object list and stream number discriminators were silently accepted.
+
+Post-repair same bytes: no uncaught exception; no accepted structured result; 0 dispatches; 1 attempted call; 1 recorded backend failure; sanitized call-bound diagnostics; no retry. `type=error` / `subtype=error` return `provider_error_event`. Non-string discriminators return `invalid_provider_discriminator`. Checkpoint/restore retains consumed allowance. Valid envelopes that omit optional discriminators and quoted “error” wording still succeed. Existing protocol/output indicators, unsuccessful-exit, missing-result, malformed/truncated/non-object rejection, bounded capture, Planner/Reviewer contexts, installed-launch closure and the Cursor-only adapter contract are unchanged. Codex remains unimplemented.
+
+## Listed verification
+
+Local fake-provider processes and labeled synthetic files. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Command | Measured result |
+|---|---|
+| `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` | **25 passed** in 2.59s |
+| `/opt/anaconda3/bin/python -m pytest -q` `bav/director/tests/test_current_build.py::test_public_namespace_and_compatibility` `…::test_public_help_is_bav_first_and_check_is_diagnostic` `bav/director/tests/test_readme.py` `bav/director/tests/test_research_handoff.py::test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 0.77s |
+
+Synthetic path measured: single-object `type=error` and `subtype=error`; list/object/number/boolean/null discriminators for both fields in single objects and stream events before and after a valid result; retained whole-stream error-order/indicator/malformed/non-object regressions; valid single-object and stream controls for Planner and Reviewer including omitted discriminators and quoted error wording; checkpoint restore after rejection. Synthetic success is adapter behavior only, not installed-provider enforcement.
+
+## Preservation and plan changes
+
+Fast Retailing `publication_date` remains `null`; `financial_statement_approval.date` remains `2025-11-27`. Accepted financial inputs and neutral assumptions unchanged. Company outputs not rebuilt. Original filings, converter Markdown, assets, coverage limitations, probe artifacts, and historical controller receipts retained. No discovery or conversion replay. No new live provider call. `DEBATER.md` unchanged (`7578b44c…`, 62336).
+
+Required plan change: none.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `bav/director/runtime/adapter.py` | `dc14955521d9ed3f616679f5973868cb12299b076b9af8af5eb105d6b22e7003` | 36001 |
+| `bav/director/runtime/policy.py` | `74c297f6f77435b1e7c87ed822e2f7666dd7fc0ba15fe9ecf80c48c7b42b848b` | 9698 |
+| `bav/director/tests/test_research_runtime.py` | `d3cad03061a0b2bd3983958754a48410e2fab476768d64aad98c939a2ca425cb` | 33560 |
+| `bav/director/tests/fixtures/runtime/fake_provider.py` | `23acb267e14f5576258327b5aec193049de7232ad5536b7dd2c338d7863f156f` | 11618 |
+| `bav/director/docs/DEBATER.md` | `7578b44c6c56db0265fa50f0df9de68d6002d36f2327fa155c746a70a2c93f42` | 62336 |
+| `bav/director/docs/BENCHMARK.md` | `b7dbbf8289db14a55de08b9cb94bec193a0573815e10537a2146a5835f287ec3` | 43332 |
+
+## Remaining toward Completion
+
+Ordinary `python -m bav debate` intake/approvals, Extractor preparation/retrieval, Planner/Reviewer research, durable case integration, required readers, coherent JSON/Markdown exports, adversarial checks, and the real `--add`/resume benchmark remain outstanding. Controlled installed-runtime acceptance and Codex implementation remain unverified. A later bounded real-runtime demonstration remains necessary before company transmission. Isolated Cursor authentication cannot be independently re-checked without replaying the consumed observation. Effective installed-provider permissions remain unestablished. Synthetic success cannot close parent Completion.
+
 # RESULT.md — Step 12.1.6 Repair whole-stream provider error validation
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

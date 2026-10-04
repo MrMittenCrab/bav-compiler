@@ -677,3 +677,113 @@ def test_successful_stream_and_single_object_dispatch_both_roles(tmp_path):
     assert single_result.known_result is True
     assert single_result.attempts[0].executed is True
     assert single.tool_dispatches == 1
+
+
+_DISC_SHAPES = ("list", "object", "number", "boolean", "null")
+_DISC_FIELDS = ("type", "subtype")
+_DISC_PLACES = ("single", "before", "after")
+
+
+def _assert_rejected_call(runtime, result, call_id, error_codes):
+    assert result.status in {"malformed", "execution_failure"}
+    assert result.structured_output is None
+    assert result.known_result is False
+    assert result.retried is False
+    assert result.attempts == ()
+    assert runtime.tool_dispatches == 0
+    assert runtime.backend_calls_attempted == 1
+    assert runtime.backend_failures == 1
+    assert result.capture.launched is True
+    assert result.capture.call_id == call_id
+    assert result.capture.error in error_codes
+    assert result.capture.observed.get("CURSOR_API_KEY") != result.capture.error
+    dumped = json.dumps(result.capture.observed)
+    assert "CURSOR_API_KEY" not in dumped or "[redacted]" in dumped
+
+
+def test_single_object_error_envelopes_are_rejected(tmp_path):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+    for field in _DISC_FIELDS:
+        runtime = _runtime(tmp_path, "single_error_envelope")
+        runtime.extra_env["BAV_FAKE_ERROR_FIELD"] = field
+        call_id = f"call-single-{field}-error"
+        result = _invoke(
+            runtime,
+            _request("planner", snapshot, call_id),
+            "single_error_envelope",
+        )
+        _assert_rejected_call(runtime, result, call_id, {"provider_error_event"})
+        saved = runtime.checkpoint()
+        assert saved.backend_calls_attempted == 1
+        assert saved.backend_failures == 1
+        rebuilt = ResearchRuntime.from_checkpoint(
+            saved,
+            model=MODEL,
+            provider_mode="synthetic",
+            provider_argv=[sys.executable, str(FAKE_PROVIDER)],
+            timeout_seconds=3.0,
+            allowance=AllowanceLimits(max_backend_calls=1),
+            extra_env={"BAV_FAKE_SCENARIO": "ok"},
+        )
+        assert rebuilt.backend_calls_attempted == 1
+        assert rebuilt.backend_failures == 1
+        restored = rebuilt.invoke(_request("planner", snapshot, f"{call_id}-restore"))
+        assert restored.status == "allowance_exhausted"
+        assert restored.capture.launched is False
+        assert restored.structured_output is None
+        assert restored.retried is False
+        assert rebuilt.backend_calls_attempted == 1
+
+
+def test_malformed_discriminators_are_rejected_without_crash(tmp_path):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+    for field in _DISC_FIELDS:
+        for shape in _DISC_SHAPES:
+            for place in _DISC_PLACES:
+                runtime = _runtime(tmp_path, "malformed_discriminator")
+                runtime.extra_env["BAV_FAKE_DISC_FIELD"] = field
+                runtime.extra_env["BAV_FAKE_DISC_SHAPE"] = shape
+                runtime.extra_env["BAV_FAKE_DISC_PLACE"] = place
+                call_id = f"call-disc-{place}-{field}-{shape}"
+                result = _invoke(
+                    runtime,
+                    _request("planner", snapshot, call_id),
+                    "malformed_discriminator",
+                )
+                _assert_rejected_call(
+                    runtime,
+                    result,
+                    call_id,
+                    {"invalid_provider_discriminator"},
+                )
+
+
+def test_omitted_discriminators_remain_valid_for_both_roles(tmp_path):
+    source = _source(
+        "src-approved",
+        "Approved synthetic passage noting an error in a prior table.",
+        "approved.md",
+    )
+    for role, scenario in (
+        ("planner", "ok_omitted_discriminators"),
+        ("reviewer", "ok_omitted_discriminators"),
+        ("planner", "stream_ok_omitted_discriminators"),
+        ("reviewer", "stream_ok_omitted_discriminators"),
+    ):
+        snapshot = _snapshot(role, (source,))
+        runtime = _runtime(tmp_path, scenario)
+        result = _invoke(
+            runtime,
+            _request(role, snapshot, f"call-omit-{role}-{scenario}"),
+            scenario,
+        )
+        assert result.status == "ok"
+        assert result.known_result is True
+        assert result.retried is False
+        assert result.structured_output["kind"] == f"{role}_proposal"
+        assert result.attempts[0].executed is True
+        assert result.attempts[0].result["text"] == source.text
+        assert runtime.tool_dispatches == 1
+        assert runtime.backend_failures == 0

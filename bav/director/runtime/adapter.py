@@ -37,6 +37,7 @@ from bav.director.runtime.policy import (
     snapshot_dict,
     validate_operation_request,
     validate_provider_envelope,
+    validate_provider_event,
     validate_request_collection,
 )
 from bav.director.runtime.workspace import (
@@ -917,6 +918,9 @@ def _parse_provider_output(stdout: bytes) -> tuple[dict[str, Any] | None, str | 
         return _select_validated_stream_result(events)
     if not isinstance(payload, dict):
         return None, "provider_output_not_object"
+    control = validate_provider_event(payload)
+    if control:
+        return None, control
     return payload, None
 
 
@@ -947,7 +951,10 @@ def _select_validated_stream_result(
         error = provider_event_error(event)
         if error:
             return None, error
-    final = next((item for item in reversed(events) if item.get("type") == "result"), None)
+    final = next(
+        (item for item in reversed(events) if item.get("type") == "result"),
+        None,
+    )
     if final is None:
         return None, "missing_result"
     return _combine_stream_result(events, final), None

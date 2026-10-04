@@ -1,8 +1,8 @@
-# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 / 12.1.6 record
+# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 / 12.1.6 / 12.1.7 record
 
 Label: **corpus-bound**. This is not a verified latest-market assessment and not an end-to-end Debater acceptance.
 
-Step 12.1.1 corrects Fast Retailing date provenance and replaces Cursor “effective traces” with evidence classifications. Step 12.1.2 records the Cursor isolation and observation route from official docs plus installed help/binary strings, without setting `CURSOR_CONFIG_DIR`, writing configuration, or repeating a provider call. Step 12.1.3 diagnoses Cursor authentication from the installed controller check and one ordinary `agent status --format json` run; it does not replay the observation, ACP session, or a reasoning-provider call. Step 12.1.4 implements the Director research runtime adapter and exercises it with local fake-provider processes only. Step 12.1.5 repairs BAV-owned envelope/argument validation, bounded stream capture, cumulative elapsed limits, allowance checkpoint/restore and installed launch guards; synthetic adapter success is still not installed-provider enforcement. Step 12.1.6 repairs whole-stream provider-error validation so an error anywhere in a stream defeats a later or earlier success-shaped result. Completed discovery, both conversions, original filings, prepared representations, assets and coverage limitations are preserved. Fast Retailing publication date remains unknown; 2025-11-27 remains only the separately sourced financial-statement approval date. Ordinary CLI authentication does not establish controller-isolated authentication or effective research permissions.
+Step 12.1.1 corrects Fast Retailing date provenance and replaces Cursor “effective traces” with evidence classifications. Step 12.1.2 records the Cursor isolation and observation route from official docs plus installed help/binary strings, without setting `CURSOR_CONFIG_DIR`, writing configuration, or repeating a provider call. Step 12.1.3 diagnoses Cursor authentication from the installed controller check and one ordinary `agent status --format json` run; it does not replay the observation, ACP session, or a reasoning-provider call. Step 12.1.4 implements the Director research runtime adapter and exercises it with local fake-provider processes only. Step 12.1.5 repairs BAV-owned envelope/argument validation, bounded stream capture, cumulative elapsed limits, allowance checkpoint/restore and installed launch guards; synthetic adapter success is still not installed-provider enforcement. Step 12.1.6 repairs whole-stream provider-error validation so an error anywhere in a stream defeats a later or earlier success-shaped result. Step 12.1.7 applies the same provider-event validation to single-object envelopes and every stream event, and rejects non-string `type`/`subtype` values without crashing. Completed discovery, both conversions, original filings, prepared representations, assets and coverage limitations are preserved. Fast Retailing publication date remains unknown; 2025-11-27 remains only the separately sourced financial-statement approval date. Ordinary CLI authentication does not establish controller-isolated authentication or effective research permissions.
 
 Exact proposition (unapproved scope):
 
@@ -341,6 +341,47 @@ Local fake-provider processes and labeled synthetic files only. No live reasonin
 Covered through actual `ResearchRuntime.invoke` subprocess paths: error before result; error after result; earlier error-bearing result then success; separate `success=false` and `is_error=true` events; otherwise valid operation requests in those rejected streams (zero dispatches); malformed/truncated and non-object records beside a valid result; successful stream and single-object controls for Planner and Reviewer.
 
 Synthetic success establishes repaired adapter stream validation only. It does not establish native Cursor/Codex enforcement, parent Completion, or end-to-end Debater acceptance.
+
+### Exact remaining runtime limitations
+
+Still closed / unverified / outstanding:
+
+- Installed Cursor launch (no supported BAV verification path binding executable, version, loaded configuration identity and a policy-denial event).
+- Effective native Shell/Write/Read/MCP/retrieval enforcement on the installed CLI.
+- Controller-isolated `_GatedCursor` authentication.
+- Codex backend implementation.
+- Company-corpus transmission on either backend.
+- Ordinary `python -m bav debate` intake/approvals, Extractor readers/preparation/retrieval, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic checks, and real evidence-addition/resumption.
+
+## Step 12.1.7 — Unified provider-event validation and failure accounting
+
+Shared `validate_provider_event` in `policy.py` now runs on single-object responses and every stream event before result selection or dispatch. `type=error` / `subtype=error` reject even when `output.kind` and approved operation requests are present at exit 0. Present `type`/`subtype` values must be strings; list, object, number, boolean and null yield `invalid_provider_discriminator` instead of a `TypeError` or silent accept. Omitted optional discriminators remain valid. Quoted wording such as “error in the prior table” is not a control signal. Existing protocol/output indicators, unsuccessful exits, missing-result, malformed/truncated/non-object rejection, bounded capture, cumulative failure accounting, allowance restore and installed-launch closure are unchanged. Codex remains unimplemented. Installed launches remain closed.
+
+Pre-repair `ResearchRuntime.invoke` subprocess measurements (exit 0, success-shaped output, otherwise valid approved request):
+
+| Case | Measured pre-repair |
+|---|---|
+| Single-object `type=error` | `status=ok`, structured accepted, 1 dispatch, 0 failures |
+| Single-object `subtype=error` | `status=ok`, structured accepted, 1 dispatch, 0 failures |
+| Stream `type=["error"]` before result | uncaught `TypeError: unhashable type: 'list'`; 0 failures recorded |
+| Stream `type={...}` after result | uncaught `TypeError: unhashable type: 'dict'` |
+| Single-object `type=["error"]` | `status=ok` (ignored) |
+| Stream `type=1` before result | `status=ok` (ignored) |
+
+Post-repair same paths: no uncaught exception; no accepted result; 0 dispatches; 1 attempted call; 1 recorded backend failure; sanitized call-bound diagnostics; no retry. Error envelopes return `provider_error_event`. Malformed discriminators return `invalid_provider_discriminator`. Checkpoint/restore after rejection retains consumed call/failure allowance (`max_backend_calls=1` then `allowance_exhausted` without relaunch).
+
+### Measured synthetic results
+
+Local fake-provider processes and labeled synthetic files only. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Check | Command | Result |
+|---|---|---|
+| Unified event validation, malformed discriminators, retained stream/success controls | `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` | **25 passed** in 2.59s |
+| Affected Director CLI/help/readme/import-boundary | `/opt/anaconda3/bin/python -m pytest -q` `test_public_namespace_and_compatibility` `test_public_help_is_bav_first_and_check_is_diagnostic` `test_readme.py` `test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 0.77s |
+
+Covered through actual `ResearchRuntime.invoke` subprocess paths: single-object `type=error` and `subtype=error` with success-shaped output; list/object/number/boolean/null discriminators for both fields in single objects and in stream events before and after a valid result; retained whole-stream error-order, error-indicator, malformed-record and non-object regressions; valid single-object and stream controls for Planner and Reviewer, including omitted optional discriminators and quoted error wording.
+
+Synthetic success establishes repaired adapter validation only. It does not establish native Cursor/Codex enforcement, parent Completion, or end-to-end Debater acceptance.
 
 ### Exact remaining runtime limitations
 
