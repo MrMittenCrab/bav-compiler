@@ -1,8 +1,8 @@
-# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 prerequisite record
+# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 prerequisite record
 
 Label: **corpus-bound**. This is not a verified latest-market assessment and not an end-to-end Debater acceptance.
 
-Step 12.1.1 corrects Fast Retailing date provenance and replaces Cursor “effective traces” with evidence classifications. Completed discovery, both conversions, original filings, prepared representations, assets and coverage limitations are preserved. No conversion or provider call was repeated.
+Step 12.1.1 corrects Fast Retailing date provenance and replaces Cursor “effective traces” with evidence classifications. Step 12.1.2 records the Cursor isolation and observation route from official docs plus installed help/binary strings, without setting `CURSOR_CONFIG_DIR`, writing configuration, or repeating a provider call. Completed discovery, both conversions, original filings, prepared representations, assets and coverage limitations are preserved. Fast Retailing publication date remains unknown; 2025-11-27 remains only the separately sourced financial-statement approval date.
 
 Exact proposition (unapproved scope):
 
@@ -19,12 +19,12 @@ The ordinary CLI research run, linked `argument.json` / `argument.md` pair, isol
 | Binding | Value |
 |---|---|
 | Branch | `checkpoint/20260913-183303` |
-| `IMPLEMENT_BASE_SHA` / plan SHA / `implementation-baseline.json` head / HEAD / allocated `12.1.1` source | `cdaeb1151cc1e7a60597ec7076d4fa6893b5ee4d` |
-| Ancestry | B is HEAD; parent `4e057dd4613930206726eb8d858d81fb2c81ffce` is the Step 12.1 checkpoint / `reviewed_head` |
-| Attempt | `a65e6784a3b74ee5aae4aab1533d12f5`, phase `running`, `plan_sha` = B, `checkpoint_sha` absent |
-| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `45b1ace4cadc433fac821627251ca69d` |
-| Predecessor review | `d9fff30ccfed32290b3b4e3e59349f55b187b2e935c0e0f6c5d4a5b83c0dedfc` |
-| `latest-implementation` leftover HEAD | `e4632a6782be2c1de705ed838bc95a26d6b0e909` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Step 12.1.2 `IMPLEMENT_BASE_SHA` / plan SHA / `implementation-baseline.json` head / HEAD / allocated `12.1.2` source | `d78b447706997eb7fe59ebaca16e44ed7dd185da` |
+| Ancestry | B is HEAD; parent `ab16ca39042ee28c2981b854e043494d6b050a8e` is the Step 12.1.1 checkpoint / `reviewed_head` |
+| Attempt | `9797ae0a14d34ccdbfbefe8c0cf5a218`, phase `running`, `plan_sha` = B, `checkpoint_sha` absent |
+| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `4c7098b778cd40889f51b9e5398b15b9` |
+| Predecessor review | `12034e178bf88c94eddb8f24e944f9c97e35a383aab39b9570cf895cf193adc5` |
+| `latest-implementation` leftover HEAD | `cdaeb1151cc1e7a60597ec7076d4fa6893b5ee4d` (ignored; `IMPLEMENT_BASE_SHA` populated) |
 | `DEBATER.md` | SHA-256 `27d6615addee99fd43ea5f5aa39d57daeeb7490809e47ccc2736c0979a883503` (61460 bytes); supersedes earlier Debater briefs; unchanged |
 
 Git CLI was not required; HEAD and branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Commit parent was read from the Git object store.
@@ -135,7 +135,7 @@ Roles are retrieval/context only. None of these prove the acquisition propositio
 
 ## Runtime
 
-Consulted: Cursor headless, permissions and configuration pages; installed `agent --help`; Codex noninteractive page (sandbox `read-only` / `workspace-write` / `danger-full-access`). The Codex URL `https://developers.openai.com/codex/security` currently serves the Codex Security product, not the CLI sandbox page. No provider call was made in Step 12.1.1. The prior two-call allowance is consumed.
+Consulted: Cursor configuration, permissions, output-format and headless pages (retrieved 2026-10-04T04:42:13Z; fingerprints in `docs_retrieval/manifest.json`); installed `agent --help`; Codex noninteractive page (sandbox `read-only` / `workspace-write` / `danger-full-access`). The Codex URL `https://developers.openai.com/codex/security` currently serves the Codex Security product, not the CLI sandbox page. No provider call was made in Step 12.1.1 or 12.1.2. The prior two-call allowance is consumed. `CURSOR_CONFIG_DIR` was not set.
 
 | Runtime | Current inspection (no secrets) | Historical / configured model |
 |---|---|---|
@@ -151,18 +151,37 @@ Official docs and installed help:
 - `--print` has access to write and shell. `--sandbox enabled|disabled` **overrides config**. `--workspace` sets the workspace and **defaults to the current working directory**. `--force` / `--yolo` were not used.
 - `--output-format json` retains a final envelope. Headless docs show `stream-json` `tool_call` started/completed events as the documented tool-event format.
 - Official pages do **not** state whether `--workspace PATH` loads `PATH/.cursor/cli.json` as the project file, or how global and project permission lists merge. A file’s existence, mtime or current symlink cannot prove historical loading.
+- `CURSOR_CONFIG_DIR` is documented only as a “custom directory path.” `XDG_CONFIG_HOME` is documented as `$XDG_CONFIG_HOME/cursor/cli-config.json`. Official pages do not state isolation of project policy, MCP, plugins or authentication.
 
 Present configuration inspected on 2026-10-04 (fingerprints in `cursor_config_diagnosis.json`):
 
 | File | Relevant fields | Classification |
 |---|---|---|
-| `~/.cursor/cli-config.json` | `sandbox.mode=disabled`, `sandbox.networkAccess=user_config_with_defaults`, `permissions.deny=[]`, 135 allow entries across Shell/Write/Mcp/WebSearch/WebFetch | **Present** global file. Not historical effective configuration. Allow paths outside this repository are omitted from this record. |
+| `~/.cursor/cli-config.json` | `sandbox.mode=disabled`, `sandbox.networkAccess=user_config_with_defaults`, `permissions.deny=[]`, **132** allow entries across Shell/Write/Mcp/WebSearch/WebFetch. SHA-256 `37949a57…` (7755). Step 12.1.1 recorded `2bfeb4a7…` / 135 allows | **Present** global file; hash changed since 12.1.1 without this step writing it. Not historical effective configuration. Allow paths outside this repository are omitted from this record. |
 | Project `.cursor/cli.json` | Allow `Shell(*)` `Read(**/*)` `Write(**/*)`; deny selected git mutations; `sandbox` absent | **Present** coding-agent project file. Handbook isolates research from this file. Existence ≠ loaded for the probe. |
 | Probe `.cursor/cli.json` | Allow `Read(SYNTHETIC_CONTEXT.txt)`; deny Shell/Write/Mcp/WebFetch/WebSearch and listed unrelated reads; `sandbox` absent | **Retained intended** workspace file. Existence ≠ historical loading. |
 
 Invocation workspace versus working directory: the Step 12.1 implementer command used `--workspace` equal to `runtime_probe`. The working directory of that process is **not recorded** in retained probe artifacts. The agent envelope records neither workspace nor loaded config.
 
-Historical effective Cursor configuration: **unknown**.
+Historical effective Cursor configuration: **unknown**. Prospective route description does not repair that gap.
+
+### Step 12.1.2 — isolation and observation route
+
+One concrete candidate route, with each element classified. **Not a verified controlled runtime.** No configuration was written and no probe was proposed or executed.
+
+| Element | Specified route | Classification |
+|---|---|---|
+| Configuration location | Isolated `CURSOR_CONFIG_DIR` directory containing only a research `cli-config.json` (`$CURSOR_CONFIG_DIR/cli-config.json` is the installed-binary join; official docs omit the filename). Do not use `~/.cursor/cli-config.json` as the research file. | Documented override; locally observed path formula in `index.js`; runtime unverified. This step did not set the variable. |
+| Launch context | Record **startup cwd** as a dedicated directory **outside this checkout git tree**, with `--workspace` to the same directory. `--print --output-format stream-json --sandbox enabled --trust`. No `--force`. The existing `runtime_probe` path is inside this git tree and cannot isolate by placement alone. | Documented `--workspace`/cwd default; locally observed binary: project `cli.json` collected from git-root→cwd **before** workspace `chdir`. `--workspace` alone is insufficient. |
+| Policy controls | Documented tokens: Shell, Read, Write, WebFetch, Mcp. Deny precedes allow. Intended research policy remains allow-only synthetic Read and deny of Shell/Write/Mcp/WebFetch/unrelated reads. | Documented. `WebSearch(*)` appears in the present global allow list but is **not** on the retrieved permissions page. |
+| Authentication | Existing login or `CURSOR_API_KEY` is provider transport, not research-file access. Credentials were not copied. | Documented transport. Isolation of the auth store by `CURSOR_CONFIG_DIR` is unverified. `CURSOR_DATA_DIR` is a separate binary-observed default to `~/.cursor`. |
+| Observation artifacts | Capture full `stream-json` NDJSON, stderr, exit status, recorded cwd/env names, and filesystem side effects. | Documented: system init (`cwd`, `model`, `apiKeySource`, `permissionMode`); `tool_call` started/completed success; terminal `result`. Locally observed: consumed `json` envelope has none of those events. |
+
+**Observable versus unobservable.** `stream-json` can record tool requests and some success outcomes. It does **not** name loaded config paths, merged allow/deny lists, or a policy-denial event. Event output alone does not establish policy loading or enforcement. `permissionMode` is not documented as configuration identity.
+
+**Intended versus effective.** A future authorized run could treat written isolated files as intended configuration. Effective identity has **no documented field**. A `tool_call.completed.success` or an independent filesystem artifact can contradict an intended deny; absence of a tool call cannot distinguish non-attempt from silent deny. Missing mechanisms: loaded-configuration identity and a first-class policy-denial event. Those gaps leave the effective-permission route **unsupported**. Company corpus must not be transmitted.
+
+Hidden `--disable-project-configs` exists in the installed binary and is absent from official help/docs. It is not part of the route.
 
 ### Cursor call 1 — evidence classifications (no “effective traces”)
 
@@ -184,7 +203,7 @@ Final envelope (`cursor-call1.json`, SHA-256 `e0d42d8eaa30b4a363c8bd7a8f2fbea282
 
 `--force`, unrestricted execution and global-config edits were not used in this correction and are not authorized. Company material was not used as prompt context.
 
-The Step 12.1 claim that workspace deny rules were “not effective” for shell, unrelated reads, web and MCP is **not retained**: those actions are model-reported. The independently observed write artifact does not establish the rest. The assertion that only a human permission choice can resolve this is **removed**. The precise missing mechanism is a retained effective-configuration record and a Cursor tool-event capture (documented candidate: `--output-format stream-json`). That mechanism must be established before any separately bounded synthetic probe. This is a capability-observation gap, not a verified human-only permission decision.
+The Step 12.1 claim that workspace deny rules were “not effective” for shell, unrelated reads, web and MCP is **not retained**: those actions are model-reported. The independently observed write artifact does not establish the rest. The assertion that only a human permission choice can resolve this is **removed**. Step 12.1.2 examined the documented `stream-json` candidate: it can record tool start/complete/success, but still provides no loaded-configuration identity and no policy-denial event. Historical loading remains unknown. This is a capability-observation gap, not a verified human-only permission decision.
 
 ### Codex call 1 — command events preserved
 
@@ -221,5 +240,5 @@ No company rebuild, certification, or Office run. `build/input/` is Git-ignored;
 3. Fast Retailing available source is a CFS, not a full strategy report; Note 6 Japan/PRC table was lost in Markdown.
 4. Lululemon has no Greater China definition and no Japan revenue series; Fast Retailing Greater China ≠ PRC and is Fast Retailing/UNIQLO mix, not Lululemon.
 5. No independently supplied filing Markdown.
-6. Cursor historical effective configuration is **unknown**. The consumed JSON envelope has no tool events and no loaded-config record. One independently observed write artifact exists; shell/read/web/MCP claims remain model-reported. Missing mechanism: effective-configuration / tool-event capture (documented candidate `stream-json`) before any further probe. This is not a verified human-only permission choice. Codex command events show a research-boundary violation; DNS failure is not policy denial. Company corpus must not be transmitted on these captured paths.
+6. Cursor historical effective configuration is **unknown**. Prospective isolation intent (`CURSOR_CONFIG_DIR` plus recorded startup cwd outside this checkout, `stream-json` plus filesystem capture) does not repair that gap and does not establish effective permissions. The consumed JSON envelope has no tool events and no loaded-config record. One independently observed write artifact exists; shell/read/web/MCP claims remain model-reported. `--workspace` alone cannot isolate project policy. Missing mechanisms remain loaded-configuration identity and a policy-denial event. This is not a verified human-only permission choice. Codex command events show a research-boundary violation; DNS failure is not policy denial. Company corpus must not be transmitted on these captured paths.
 7. Source preparation succeeded for two PDFs; that is not Debater acceptance.

@@ -1,3 +1,80 @@
+# RESULT.md — Step 12.1.2 Establish Cursor configuration isolation and observation route
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 12.1.2 — Establish Cursor configuration isolation and observation route
+**Work:** `e35d5703ccc14627a150a29b9e900502`
+**Plan:** `4c7098b778cd40889f51b9e5398b15b9`
+**Finding:** Verify Debater benchmark sources and controlled runtime
+**Attempt:** `9797ae0a14d34ccdbfbefe8c0cf5a218`
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. No AutoCycle edits, discovery, conversion, debate CLI, argument export, provider calls, configuration writes, or Debater publications. This record does not claim parent Completion, Session acceptance, or end-to-end benchmark success.
+
+TARGET SHA-256 `9bfc5e439e5776cf3d1d89fd33363febe716a6744ad7d256942a24709ff3e77b` (60817).
+SESSION SHA-256 `614f2e081b472ae75ef13e78b34120311181327c8f6a534bd3cfd35621344b8a` (4472).
+IMPLEMENTATION SHA-256 `d7d2932ceb1a7af339835e39ce42139d6f58d1c2493966714e31574e0418abc2` (7089).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `cdaeb1151…` was ignored. HEAD/branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Ancestry parent was read from the Git object store.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `12.1.2` source | `d78b447706997eb7fe59ebaca16e44ed7dd185da` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; parent `ab16ca39042ee28c2981b854e043494d6b050a8e` is the Step 12.1.1 checkpoint / `reviewed_head` |
+| Bound running attempt | `9797ae0a14d34ccdbfbefe8c0cf5a218`, `plan_sha` = B, phase `running`, `checkpoint_sha` absent |
+| `admitted_review` predecessor | `review_sha256` `12034e178bf88c94eddb8f24e944f9c97e35a383aab39b9570cf895cf193adc5`; `reviewed_head` `ab16ca39042ee28c2981b854e043494d6b050a8e` |
+| `latest-implementation` leftover HEAD | `cdaeb1151cc1e7a60597ec7076d4fa6893b5ee4d` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Fail-closed | Not required |
+
+## Listed inspections (once)
+
+Documentation retrieval is public read-only inspection, not a reasoning-provider call. `CURSOR_CONFIG_DIR` was not set.
+
+| Command | Measured result |
+|---|---|
+| `/usr/bin/readlink /Users/lizhiguo/.local/bin/agent` | `/Users/lizhiguo/.local/share/cursor-agent/versions/2026.10.01-e373342/cursor-agent` |
+| `agent --version` | `2026.10.01-e373342` |
+| `agent --help` | Print has write/shell; `--sandbox` overrides config; `--workspace` defaults to cwd; `--output-format` `text\|json\|stream-json`; `--force` unused; `CURSOR_CONFIG_DIR` **absent** from help |
+| curl configuration | HTTP success; HTML SHA-256 `acd0ef6a0a312b4167242ded52c32314d53f674229d0b26cb7e1ee733050e336` (379115); retrieved `2026-10-04T04:42:13Z` |
+| curl permissions | HTTP success; HTML SHA-256 `5b7169c0153814825daf880ee59946a27cf9b7423ad381fcf3b65cc7825c92d9` (288030) |
+| curl output-format | HTTP success; HTML SHA-256 `4a72e1cd6a6eeb124a4072ae75ee2ad257718be5d86ade4d84fa9ed81335a493` (403328) |
+| curl headless | HTTP success; HTML SHA-256 `748ef099a6b8336b3baa969d86f9b23e70c5ca10055388b9b56c27cef4131d4c` (344641) |
+
+Official configuration page: global `~/.cursor/cli-config.json`; project permissions only in `<project>/.cursor/cli.json`; `CURSOR_CONFIG_DIR` = custom directory path; `XDG_CONFIG_HOME` → `$XDG_CONFIG_HOME/cursor/cli-config.json`. Permissions page documents Shell, Read, Write, WebFetch, Mcp; deny precedes allow; relative paths scoped to current workspace. It does **not** document WebSearch. Output-format page: `json` is a final envelope; `stream-json` emits system init (`cwd`, `model`, `apiKeySource`, `permissionMode`) and `tool_call` started/completed success. No loaded-config identity. No policy-denial subtype.
+
+Present global `cli-config.json` SHA-256 `37949a57e416bc25b487c8d43cac024edfca48267e11de1f9db0c897076bc6fe` (7755; 132 allows). Differs from the Step 12.1.1 fingerprint `2bfeb4a7…` / 135 allows. This step did not write it. Project and probe `cli.json` hashes unchanged (`20497dfd…`, `3ccf0421…`).
+
+Installed `index.js` (8,200,126 bytes; strings only, not executed): `CURSOR_CONFIG_DIR` non-empty → that directory; `cli-config.json` is joined onto it. Project `.cursor/cli.json` files are collected from git-root→`process.cwd()` **before** workspace `chdir`. `--workspace` is not that collector. Hidden `--disable-project-configs` is absent from official help/docs and is not part of the route.
+
+## Route assessment
+
+Isolation **intent** can be specified: dedicated `CURSOR_CONFIG_DIR`, recorded startup cwd **outside this checkout git tree**, matching `--workspace`, documented deny tokens, `stream-json` plus filesystem capture. Provider transport/authentication remains distinct from research access.
+
+Effective-permission establishment remains **unsupported**. Documented observation cannot name loaded configuration or distinguish policy denial from tool failure or non-attempt. `--workspace` or directory placement inside this git tree cannot isolate the coding-agent project file. Historical loading remains **unknown**; this inspection does not repair it. No synthetic probe was proposed or executed. Company corpus must not be transmitted.
+
+Consumed `cursor-call1.json` SHA-256 `e0d42d8eaa30b4a363c8bd7a8f2fbea282de2e5a8d4362b63d32a228c15cea3c` still has no tool events and no loaded-config record. Prior evidence classifications are retained.
+
+## Preservation and plan changes
+
+Fast Retailing `publication_date` remains `null`; `financial_statement_approval.date` remains `2025-11-27`. Original/prepared hashes unchanged (`25a85db8…` / `632babd6…`). Accepted financial inputs and neutral assumptions unchanged (re-hashed). Company outputs not rebuilt. `DEBATER.md` unchanged (`27d6615add…`, 61460). Original filings, converter Markdown, assets, coverage limitations, and probe artifacts retained. No discovery or conversion replay.
+
+Required plan change: none.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| FR research `manifest.json` | `9a3d1cf0d884f293347d28ffd1ebc2312db4dcb1d477e61ff5d27e98046d63db` | 4257 |
+| Snapshot `manifest.json` | `9bff584e64b0974fbdb6ad23cc14ebdb315ce593d1119a7b291007d3f0a976a3` | 4249 |
+| `cursor_config_diagnosis.json` | `9cd9176b18d80eafe1bf4232dfbfbf6f95b5dcde44fa2d792cffdee4cd9bbd63` | 19543 |
+| `bav/director/docs/BENCHMARK.md` | `697d2f97b0c347cf91326fe25a174ffc05f7c69e7326512f48e563b3cd87f0f9` | 24344 |
+| Docs retrieval `manifest.json` | `b9bc893af973f3de4ce05e0f40323b67bc90fce933ac63879fc0e4c47c59a547` | 1279 |
+
+## Remaining toward Completion
+
+Ordinary `python -m bav debate` intake/approvals, Extractor preparation/retrieval, Planner/Reviewer, durable budgets/state, required readers, coherent JSON/Markdown exports, adversarial checks, and the real `--add`/resume benchmark remain outstanding. Prerequisite verification alone does not satisfy the Session 12 Endpoint. Cursor company-data transmission remains blocked while effective permissions cannot be established and historical enforcement is unknown.
+
 # RESULT.md — Step 12.1.1 Correct prerequisite provenance and diagnose Cursor configuration
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
