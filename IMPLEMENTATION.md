@@ -1,4 +1,4 @@
-# Step 12.1.3 — Diagnose Cursor authentication without repeating the probe
+# Step 12.1.4 — Implement the Director research runtime boundary
 
 ## Completion
 
@@ -6,35 +6,44 @@ The replacement Debater specification is recorded, and a reproducible benchmark 
 
 INPUT_STATUS: COMPLETE
 
-AUTOCYCLE_PLAN: {"evidence_routes": [{"commands": [["/Users/lizhiguo/.local/bin/agent", "status", "--help"], ["/Users/lizhiguo/.local/bin/agent", "status", "--format", "json"], ["/usr/bin/sed", "-n", "320,420p", "/Users/lizhiguo/.autocycle/cursor_observation.py"]], "evidence": [{"observation": "Bound authorization was consumed; authentication was unavailable, with no dispatched observation, protocol events or artifacts. This establishes neither permission enforcement nor a required human action.", "path": ".git/autocycle/cursor-observations/c5f8ffc137e242f893892f1248a73949/receipt.json", "sha256": "3277ecabf0421cbd964abd0a7811220c4ab4c2882d1439b5465debf1038caa20"}, {"observation": "Preserves configuration-isolation candidates and unresolved runtime enforcement; authentication diagnosis does not establish effective research permissions.", "path": "build/input/research_snapshots/2026-10-04-debater-asia-benchmark/cursor_config_diagnosis.json", "sha256": "9cd9176b18d80eafe1bf4232dfbfbf6f95b5dcde44fa2d792cffdee4cd9bbd63"}], "fact": "Whether a supported isolated Cursor invocation demonstrably enforces the required research permissions, or which exact capability prevents it."}], "finding_key": "Verify Debater benchmark sources and controlled runtime", "kind": "work", "minor": 3, "objective": "Diagnose Cursor authentication without repeating the probe", "plan_id": "f4d3b4b670f54c6eb88f0fb6e2927a36", "predecessor_review_sha256": "3956a6be8fc2ce8db77cbf20d65ab0c7fd73f8c52f8fccf1a53e398429a66046", "step_id": "12.1.3", "work_id": "e35d5703ccc14627a150a29b9e900502"}
+AUTOCYCLE_PLAN: {"finding_key": "Verify Debater benchmark sources and controlled runtime", "kind": "work", "minor": 4, "objective": "Implement the Director research runtime boundary", "plan_id": "b068f42ab5fc41e992cc3ac6789ea5d2", "predecessor_review_sha256": "1854311f988114a47c4e29f3e13219675dc2c636962c124bf8f3936af1e344ef", "step_id": "12.1.4", "work_id": "e35d5703ccc14627a150a29b9e900502"}
 
-## Bounded diagnosis
+## Bounded implementation
 
-Preserve the Review criterion: Parent Completion requires reproducible controlled-runtime prerequisites or established missing dependencies; the unavailable authentication observation does not resolve enforcement.
+Implement a thin target-owned runtime adapter under `bav/director/`, then immediately exercise its isolation, dispatch restrictions and evidence capture with local synthetic fixtures. Preserve work identity `e35d5703ccc14627a150a29b9e900502`. Controlled runtime enforcement remains an implementation and acceptance obligation; no independent prerequisite is established for this bounded work.
 
-- Authenticate baseline, branch, ancestry and attempt binding through existing controller records. Preserve ownership, recovery and unrelated-work safeguards.
-- Before Implement, require controller admission of the exact finite route above. Availability admission establishes executable support, not authentication or enforcement. Do not substitute an unadmitted wrapper or command.
-- Inspect the installed controller authentication check read-only. Determine its launch context, credential-store dependency, timeout, accepted status fields and failure handling without importing or executing controller internals.
-- Run the documented account-status command once, with a finite 15-second allowance and no automatic retry. This permits account metadata transport only, with no prompt, model session or research tools.
-- Retain only sanitized authentication state, exit outcome, timeout/parse failure and relevant version information. Do not retain account identifiers, credentials or raw account responses.
-- Distinguish ordinary CLI authentication from authentication under the controller’s isolated launch context. Success in the ordinary context does not establish controller authentication.
-- Determine whether the receipt distinguishes absent authentication from timeout, malformed output or another execution failure. Preserve ambiguity where the controller collapses these outcomes.
-- Identify any existing supported read-only mechanism for testing the controller context. Do not execute an additional mechanism outside the admitted command list.
-- Stop after this diagnosis. If the isolated check cannot be reached independently without replaying the observation or changing infrastructure, report that exact verification-capability gap for Review. Do not infer that login is required or that controlled execution is impossible.
+- Authenticate the implementation baseline, branch, ancestry and attempt binding through normal controller records. Preserve ownership, recovery and unrelated-work safeguards.
+- Reuse retained runtime documentation and installed-tool findings. Verify any additional required interface through supported read-only inspection; do not assume undocumented flags or protocol capabilities.
+- Define one compact backend request/result contract for separate Planner and Reviewer contexts, explicit model/version, finite allowance, validated structured output and execution failures. Implement the Cursor path first; do not silently select Codex or another model.
+- Construct each context from an explicit approved snapshot. Launch in a dedicated workspace outside the checkout’s instruction/configuration ancestry, with startup cwd and workspace aligned and isolated runtime configuration. Do not inherit coding-agent policy, chat history or unrelated MCP configuration.
+- Keep credentials out of snapshots and diagnostics. Use existing supported authentication without reading or copying credential stores or changing global configuration.
+- Enforce restrictions before execution: no arbitrary agent shell, project writes, unrelated reads, MCP tools or agent-initiated external retrieval. Provider transport/authentication does not authorize research access.
+- Accept only typed application requests with validated operation names, arguments, approved source references and paths. Director dispatches allowlisted application functions; provider output and imported content cannot execute code or grant permissions.
+- Do not treat this application dispatcher as control over provider-native tools. Configure supported native restrictions and fail closed wherever a prohibited native capability cannot be controlled. Workspace placement, prompts and retrospective event inspection alone are insufficient.
+- Keep application-controlled Extractor conversion separate from provider tool authority. Do not implement a replacement parser, general sandbox platform or research loop in this continuation.
+- Bound calls, output size and elapsed execution; count attempted calls and failures. Preserve known results and uncertain outcomes without automatic retries. Terminate only owned child processes.
+- Capture sanitized request/context and policy fingerprints, runtime/model identity, call IDs, attempted operations, decisions with reasons, tool results, exit/error state and timeout. Missing or unbound results remain unknown; reject malformed or unsuccessful provider output.
 
-## Limits
+## Immediate synthetic verification
 
-- Authorization `20261004-073832-000000028` and the prior two-call allowance remain consumed. No repeated observation, ACP session, synthetic probe or reasoning-provider call.
-- No login/logout, credential-store reads or copying, environment/configuration changes, installations, updates, provider/model switching, new billing or company-corpus transmission.
-- Do not alter AutoCycle, add a verifier, introduce a sandbox platform, relax isolation or use unrestricted execution.
-- Authentication success cannot close the permission fact. Historical enforcement remains unknown; missing events and ordinary failures are not policy denials.
+- Use local fake-provider processes and labeled synthetic files through the actual adapter launch and dispatch paths. These tests make no live reasoning-provider calls.
+- Verify approved context delivery and typed dispatch, separate role contexts, and exclusion of repository instructions, ambient configuration and unrelated source content.
+- Exercise outside-root reads, traversal/symlink escapes, writes, shell, MCP, fetch/search, unknown operations and source-contained instructions. Assert rejection before application execution and call-bound denial records.
+- Exercise malformed/truncated output, missing results, provider errors, timeout, allowance exhaustion and interrupted execution. Verify no plausible research result or automatic repeat is produced.
+- Test that unsupported or unverified native restrictions prevent company-context launch. Synthetic success establishes adapter behavior only, not installed-provider enforcement.
+- Run focused adapter tests and concretely affected Director regressions. Do not rebuild workbooks, run Office or repeat full certification.
 
-## Record and preserve
+## Evidence and limits
 
-- Update `cursor_config_diagnosis.json` and `bav/director/docs/BENCHMARK.md` with measured authentication findings, their launch-context limits and remaining verification needs. Reconcile affected snapshot references.
-- Record commands, measured outcomes and artifact hashes in `RESULT.md`; preserve historical entries and controller receipts. Leave parent Completion and Session acceptance to Review.
-- Preserve completed discovery, both conversions, originals, prepared filings, assets, source identities and coverage limitations. Do not replay preparation.
-- Preserve Fast Retailing’s unknown publication date and separately sourced financial-statement approval date.
-- Preserve the full admitted handbook, accepted financial inputs, neutral assumptions, company outputs and six-component ownership. No workbook rebuilds or Office execution.
-- Carry forward unfinished Extractor adapters/retrieval, ordinary debate CLI and approvals, Planner/Reviewer, readers, durable budgets/state, coherent JSON/Markdown exports, semantic checks and the real evidence-addition/resumption benchmark as Session Endpoint obligations.
-- Cursor must not modify `TARGET.md`, `SESSION.md` or `IMPLEMENTATION.md`.
+- Update `bav/director/docs/BENCHMARK.md` with implemented controls, measured synthetic results and remaining real-runtime acceptance requirements. Record changed artifacts, commands and outcomes in `RESULT.md`.
+- Preserve historical Controller receipts and uncertainty. The CAPTURED observation establishes authentication/protocol activity, not semantic acceptance; completed calls without results or denial reasons and unchanged fixtures do not prove enforcement.
+- Do not repeat consumed Controller observations, authentication diagnosis, ACP probes or prior provider calls. No new live provider call or company-corpus transmission is authorized by this continuation.
+- A later bounded real-runtime demonstration remains necessary before controlled-backend acceptance and company transmission. Report any concrete unsupported capability discovered without treating unfinished project controls as an external prerequisite.
+- Do not modify AutoCycle, relax implementation-provider restrictions, use unrestricted execution, install or upgrade tools, create new billing, or change global agent configuration.
+- Cursor must not modify `TARGET.md`, `SESSION.md` or `IMPLEMENTATION.md`. Leave Completion and implementation acceptance to Review.
+
+## Preserved unfinished scope
+
+Preserve the full admitted handbook, completed discovery and conversions, originals/assets, source identities and coverage limitations. Fast Retailing’s publication date remains unknown and distinct from its financial-statement approval date. Do not replay preparation or alter accepted financial inputs, neutral assumptions, company outputs or six-component ownership.
+
+Extractor preparation/retrieval and required readers, ordinary debate CLI and approvals, Planner/Reviewer, durable case state and budgets, coherent JSON/Markdown exports, semantic checks, controlled real-backend acceptance and the real evidence-addition/resumption benchmark remain Session Endpoint obligations.
