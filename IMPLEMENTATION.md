@@ -1,45 +1,48 @@
-# Step 12.1.16 — Repair contextual retrieval and source-integrity cache reuse
+# Step 12.1.17 — Implement ordinary proposition intake and scope/proof approval
 
 ## Completion
 
 The replacement Debater specification is recorded, and a reproducible benchmark prerequisite record establishes the available company sources, conversion behavior and controlled runtime capabilities, distinguishing verified routes from exact missing dependencies or human decisions without claiming end-to-end Debater acceptance.
 
-AUTOCYCLE_PLAN: {"finding_key": "Verify Debater benchmark sources and controlled runtime", "kind": "work", "milestone_step": "Repair contextual passage selection and cache invalidation so retrieved evidence retains adjacent qualifications and current source-integrity limitations; add focused regressions.", "minor": 16, "objective": "Repair contextual retrieval and source-integrity cache reuse", "plan_id": "b2478b338c704359b5feb308afaa62cf", "predecessor_review_sha256": "4992f71968bfc80831ead3cc1f7ba805c76d0fefb9d1dde248fcf2383a45baaf", "step_id": "12.1.16", "work_id": "e35d5703ccc14627a150a29b9e900502"}
+AUTOCYCLE_PLAN: {"finding_key": "Verify Debater benchmark sources and controlled runtime", "kind": "work", "milestone_step": "Implement ordinary proposition intake and scope/proof approval using the prepared corpus, preserving installed-transmission closure.", "minor": 17, "objective": "Implement ordinary proposition intake and scope/proof approval", "plan_id": "ee3c57a9e2e940b1a9861f197678be52", "predecessor_review_sha256": "907e724cb6057adfca6833b5f2836bc73624f140d455dc0048872eec341667b8", "step_id": "12.1.17", "work_id": "e35d5703ccc14627a150a29b9e900502"}
 
-Continue parent work `e35d5703ccc14627a150a29b9e900502`. Repair the local evidence path while preserving completed preparation and installed-transmission closure.
+Continue parent work `e35d5703ccc14627a150a29b9e900502`. Deliver a local, noninteractive intake-to-approval path against the retained corpus; approval must not open installed transmission.
 
 ## Bounded work
 
 - Authenticate the implementation baseline, branch, ancestry and attempt binding through normal controller records before editing. Preserve unrelated work and recovery safeguards.
-- Repair passage selection in `bav/extractor/research/index.py` so context follows the selected block’s actual neighboring paragraphs, including qualifications within the same section. Unrelated section openings cannot substitute for adjacent context.
-- Preserve exact selected wording, headings, table headers, units and relevant footnotes. Keep selection and context locators accurate, including any appended text; do not invent PDF page mappings.
-- Bound context without silently dropping qualifications. When necessary context cannot be retained within the bound, expose an explicit limitation with the affected selection.
-- Repair `retrieve.py` so current bundle verification and inventory coverage checks precede cache acceptance. Changed, missing or unreadable source representations must not return previously cached evidence as currently valid.
-- Preserve current integrity failures and coverage limitations on both cached and uncached paths. Exclude evidence from failed bundles while permitting independently valid sources to remain searchable.
-- Repair snapshot/cache identity in `snapshot.py` and retrieval as needed so relevant changes in verified source state, bundle limitations and retrieval semantics invalidate obsolete results. Declared manifest hashes alone cannot establish present integrity.
-- Retire incompatible cached results through a small version/key change or equivalent validation. Preserve unchanged valid-result reuse across questions and cases without reconversion.
-- Retain source lineage, exact representation fingerprints, candidate-only semantics, sources actually checked and honest stale-result reporting.
+- Add ordinary `python -m bav debate "PROPOSITION"` routing, case selection, `--list`, `--status`, unchanged resume, `--approve` and meaning-only `--exclude`. Validate conflicting options and intended case before mutation; reject unimplemented operations explicitly.
+- Keep Director responsible for CLI, persistence, approvals, allowances and terminal formatting; put proposition and proof-plan contracts in Debater. Reuse Extractor’s prepared inventory and contextual retrieval without importing the company publication pipeline.
+- Preserve original proposition wording and strength. Clear propositions need no artificial meaning decomposition; materially unclear submissions request resubmission without creating a case. Present genuine alternative meanings as numbered choices.
+- Implement a bounded local planning path without provider calls. Keep benchmark entities, source selection and supplied research context in explicit configuration or fixtures, not company-specific reasoning branches. Do not present deterministic planning as researched semantic judgment.
+- Inspect the registered corpus and display a compact proposed scope and linked proof plan before substantive causal research. Distinguish proposed obligations, source candidates and coverage limitations from established premises.
+- For the benchmark, display the exact hypothetical acquisition proposition, Japan and Greater China separately, realistic continued independence, and a proposed growth measure for approval. Explain the focus markets’ relationship to Asia; retain issuer definitions and missing coverage.
+- Leave unnecessary numerical parameters unresolved during qualitative planning. Do not invent uplift, closing dates or forecasts, substitute store count for growth, weaken “would”, or require acquisition valuation.
+- Include the proposed mechanism, transfer bridge, counterfactual comparison, discriminating questions, permitted local actions and any limited fallback. Avoid treating two company descriptions as a sufficient linked argument.
+- Persist versioned case state under the existing case input namespace with safe slugs, stable descriptive titles, conservative proposition matching, exact-title precedence and unambiguous fragment selection. Serialize mutations and save atomically.
+- Keep one pending item. Separate meaning approval from proof-plan approval; exclusions may remove displayed meanings only. An atomic exclusion-and-approval must not approve a newly generated proof plan.
+- Bind approval to the displayed revision, actions, relevant input fingerprints, provider boundary and allowance. Recheck before consumption; changed inputs require displaying a revised item and a subsequent approval. Repeated or concurrent approval cannot repeat actions.
+- Save approved scope and plan locally, then report the installed-runtime blocker without launching a provider or assigning a research verdict. Plan approval is neither transmission authorization nor evidence that a premise is true.
+- Preserve cumulative allowances across restart and backend configuration changes; do not reset budgets or silently switch providers. Record local preparation separately from research work.
+- Use a deterministic result envelope and only populated `Case:`, `Status:` and `Next:` terminal fields. Omit Status before assessment; keep continuation indentation and colon rules. List/status are read-only, and unchanged waiting resumes reuse saved state.
 
 ## Focused verification
 
-- Reproduce the reviewed paragraph defect with a labeled synthetic source: “Revenue increased 20%.” followed by a separate paragraph excluding Japan and attributing the increase entirely to currency. The selected evidence must retain both qualifications.
-- Cover preceding qualifications, same-section neighboring paragraphs, section boundaries, table units/footnotes and bounded-context limitations; assert exact text and locator consistency.
-- Populate a cache, then change prepared bytes without updating declared hashes. Requery using both a refreshed inventory and the previously loaded inventory; reject stale evidence and report the current mismatch.
-- Cover original-content mismatch, missing prepared content, changed inventory coverage gaps and bundle limitations, plus unchanged valid cache reuse. Confirm cached and uncached results preserve equivalent evidence and limitations.
-- Run `bav/extractor/tests/test_research_corpus.py`, affected filing-loader/company-interface regressions, and `bav/director/tests/test_research_runtime.py` plus `bav/director/tests/test_runtime_verification.py`.
-- Exercise repaired retrieval against the retained two-company snapshot without modifying source bundles. Inspect returned context, locators, limitations and repeat-query reuse.
-- Update `bav/director/docs/BENCHMARK.md` with measured retrieval evidence and remaining coverage gaps. Record commands and outcomes in `RESULT.md`, preserving historical records.
+- Exercise submission, displayed scope/proof plans, successive approvals, restart and unchanged resume through the ordinary CLI with the retained two-company corpus. Record actual case titles, commands, snapshot bindings and limitations.
+- Cover clear, ambiguous and rejected propositions; differently worded and negated claims; title collisions and ambiguous fragments; invalid exclusions and conflicting options.
+- Cover changed source/plan/allowance/provider bindings, consumed approvals, concurrent mutation and interrupted saves. Verify rejected operations leave case authority unchanged.
+- Assert zero provider launches and company transmission throughout intake and approval, including approved plans and attempted backend changes. Synthetic fixtures cannot establish installed-runtime acceptance.
+- Run focused new intake/approval tests, corpus regressions, existing runtime gate tests and affected CLI/company-interface regressions.
+- Update `bav/director/docs/BENCHMARK.md` and `RESULT.md` with measured behavior and exact unfinished scope. Intake-only success does not establish the research benchmark.
 
 ## Boundaries and remaining scope
 
-Reuse completed discovery, conversion, registration and direct-Markdown preparation. Do not repeat Developer-folder discovery, reconvert unchanged filings, or alter originals, assets, accepted financial inputs, neutral assumptions or company outputs.
+Reuse completed discovery, conversion and registration. Preserve originals, assets, accepted financial inputs, neutral assumptions, company outputs, source lineage and unknown dates. Retain Lululemon’s garbled-text limitation, Fast Retailing’s CFS-only and damaged/missing-table coverage, and separate market gaps.
 
-Preserve Lululemon’s garbled body-text limitation, Fast Retailing’s CFS-only coverage and damaged/missing tables, unknown publication dates, and separate Japan/Greater China assessments. Technical coverage failures are not negative company evidence.
+Missing-original rejection and unreadable-manifest failure isolation remain deferred source-integrity defects requiring focused repair and acceptance. Do not claim them resolved or broaden this step into retrieval hardening; technical failures cannot become negative company evidence.
 
-Preserve approved-path restrictions, six-component ownership, existing runtime authorization bindings, cumulative allowances and launch gates. No provider calls, company transmission, Controller probes, authentication replay, credential-store access, global configuration changes, new billing, relaxed permissions, AutoCycle changes, Office or workbook rebuilds.
+Installed native-tool enforcement and controlled-runtime acceptance remain blocking unfinished parent obligations before company transmission. Preserve launch gates, approved-path restrictions and BAV runtime ownership. No live provider calls, Controller probes, credential access, global configuration changes, new billing, relaxed permissions, AutoCycle changes, Office or workbook rebuilds.
 
-Installed native-tool enforcement and controlled-runtime acceptance remain blocking unfinished parent obligations before company transmission. Synthetic tests and local retrieval do not establish that acceptance or close Completion. Nonblocking runtime refinements remain deferred for reconsideration at final acceptance.
-
-The incorporated thin-product priority persists. Ordinary proposition intake and scope/proof approval follow this retrieval repair; linked questions, remaining readers, supported Modeler calculations, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic acceptance and real evidence addition/resumption remain required subsequent work.
+Linked-argument research, remaining readers, supported Modeler calculations, separate Planner/Reviewer contexts, coherent JSON/Markdown exports, semantic acceptance and real evidence addition/resumption remain required subsequent work. This continuation does not close parent Completion or the Session Endpoint.
 
 Cursor must not modify `TARGET.md`, `SESSION.md` or `IMPLEMENTATION.md`.
