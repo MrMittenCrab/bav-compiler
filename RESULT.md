@@ -1,3 +1,77 @@
+# RESULT.md — Step 12.1.16 Repair contextual retrieval and source-integrity cache reuse
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 12.1.16 — Repair contextual retrieval and source-integrity cache reuse
+**Work:** `e35d5703ccc14627a150a29b9e900502`
+**Plan:** `b2478b338c704359b5feb308afaa62cf`
+**Finding:** Verify Debater benchmark sources and controlled runtime
+**Attempt:** `32ca3d4b509042aba467711789b0e041`
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. No AutoCycle edits, Developer-folder rediscovery, reconversion, debate CLI, argument export, observation replay, ACP session, live provider calls, login/logout, credential-store reads, global configuration writes, or Debater publications. This record does not claim parent Completion, Session acceptance, controlled-backend acceptance, or end-to-end benchmark success.
+
+TARGET SHA-256 `9bfc5e439e5776cf3d1d89fd33363febe716a6744ad7d256942a24709ff3e77b` (60817).
+SESSION SHA-256 `1b5cbd15249f28817c4c9655a1ff3f6b989c7082dd13adad9023bb9adabde1ec` (6676).
+IMPLEMENTATION SHA-256 `b6c24c4240086e64278a2f41cc4290b6709006c6b9aef5c5494e8721b5a096b1` (6210).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `ee1ebd8aa6879be280532442f50a253c2fa07e0d` was ignored. HEAD/branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Ancestry parent was read from the Git object store (`zlib` inflate of `b94586f9…`).
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `12.1.16` source | `b94586f9bdddb8cf3e55a704a14954be396f9b80` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; parent `b8ec8e2a4464e468fe3053aac58e3195d08fe2ef` is the Step 12.1.15 checkpoint / `reviewed_head` |
+| Bound running attempt | `32ca3d4b509042aba467711789b0e041`, `plan_sha` = B, phase `running`, `checkpoint_sha` absent |
+| `admitted_review` predecessor | `review_sha256` `4992f71968bfc80831ead3cc1f7ba805c76d0fefb9d1dde248fcf2383a45baaf`; `reviewed_head` `b8ec8e2a4464e468fe3053aac58e3195d08fe2ef` |
+| `latest-implementation` leftover HEAD | `ee1ebd8aa6879be280532442f50a253c2fa07e0d` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `b2478b338c704359b5feb308afaa62cf` |
+| Fail-closed | Not required |
+
+## Implemented path
+
+Passage context now uses the selected block’s same-section neighboring paragraphs, including preceding and following qualifications. Other-section openings are not used as adjacent context. Selection locators follow LF Markdown lines and include appended footnotes; lone CR is retained in the line. Oversized necessary neighbors are bounded and mark `bounded_context_omitted_qualification` rather than dropping the qualifier silently.
+
+Retrieval verifies current bundle bytes and inventory integrity before accepting a cache. Snapshot identity includes observed hashes, verification problems and limitations (`verified-source-v2`). Cache keys include `contextual-integrity-v2`. Failed bundles are excluded from hits; independently valid sources remain searchable. Unchanged valid results reuse across queries without reconversion.
+
+Completed preparation and source bundles were not modified. Installed-transmission closure is unchanged.
+
+## Listed verification
+
+No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification. Synthetic adjacent-qualification fixtures are labeled tests.
+
+| Command | Measured result |
+|---|---|
+| `/opt/anaconda3/bin/python -m pytest -q bav/extractor/tests/test_research_corpus.py` | **17 passed** in 3.43s |
+| `/opt/anaconda3/bin/python -m pytest -q` `bav/extractor/tests/test_filing_json.py` `bav/director/tests/test_filing_cli.py` `test_public_namespace_and_compatibility` `test_public_help_is_bav_first_and_check_is_diagnostic` `bav/director/tests/test_research_runtime.py` `bav/director/tests/test_runtime_verification.py` plus the corpus file | **187 passed** in 11.00s |
+
+Synthetic “Revenue increased 20%.” retains the Japan-exclusion and currency-attribution paragraph, the preceding “Except as noted below” qualification, table units/footnotes, and does not attach the unrelated Europe section. Changed prepared bytes without hash updates are rejected on both a previously loaded inventory and a refreshed inventory (`prepared_hash_mismatch`, `stale=True`). Original-hash mismatch, missing prepared content, declared coverage gaps and bundle limitations were exercised; valid companion sources remained searchable. Cached and uncached valid results matched.
+
+Retained two-company snapshot (bundles unmodified): fingerprint `12aefb71e066b44069dcf874f7a1e7e240f7e268a64fada7ec45a60a31db8c55`; inventory 0.009 s. FR strategy `document.md:583` with same-section context `579–591`; Greater China definition `1212–1214`; revenue table `1230–1242` (650,232 / 19.1); LULU director table `2986–2997` containing LF line 2995 (Isabel Mahe / Apple Greater China). Repeat `fr-segment-strategy` `reused=True` in 0.022 s, key `05bfc71a…`. Both documents checked. `physical_pdf_page=None`. LULU Japan term still not found in converted Markdown. No reconversion.
+
+## Preservation and plan changes
+
+Fast Retailing `publication_date` remains `null`; `financial_statement_approval.date` remains `2025-11-27`. Accepted financial inputs and neutral assumptions unchanged. Company outputs not rebuilt. Original filings, converter Markdown, assets, coverage limitations, probe artifacts, and historical controller receipts retained. No discovery or conversion replay. No new live provider call. `DEBATER.md` unchanged (`7578b44c…`, 62336).
+
+Required plan change: none.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `bav/extractor/research/index.py` | `d660219b1951de9acb9c229db2a3317a0a1d517fac40f978507e62f600dba320` | 14702 |
+| `bav/extractor/research/retrieve.py` | `ca79ffa7bbbe9ab1c2966b254657ccb7729567db55a711d12f03ed67acddd24e` | 12968 |
+| `bav/extractor/research/snapshot.py` | `ac178e55d0afdb607679cee8bd33a5ef15bb87d6231d97508b87df2530877f33` | 3828 |
+| `bav/extractor/research/contracts.py` | `f806aef11f33dbece187c696ad9ff21977ad3f469bbc56c97c6a675551e9789a` | 4403 |
+| `bav/extractor/tests/test_research_corpus.py` | `4f294c0700405a0a2965ecca9a0b3764a0c707367177367001dfc38a3ab1f8c1` | 30072 |
+| `bav/extractor/tests/fixtures/research/adjacent_qualifications.md` | `f6dc1bdd893084a079d2299faa78cc0d1ded76b1eb79f734048a2a6b7f84c3c6` | 543 |
+| `bav/director/docs/DEBATER.md` | `7578b44c6c56db0265fa50f0df9de68d6002d36f2327fa155c746a70a2c93f42` | 62336 |
+| `bav/director/docs/BENCHMARK.md` | `d4946ba555369e470244f4dd17f8af27911382104469872e2729e71acb5d5661` | 92918 |
+
+## Remaining toward Completion
+
+Installed native-tool enforcement and controlled-runtime acceptance remain blocking unfinished parent obligations. Ordinary `python -m bav debate` intake/approvals, remaining readers and Modeler integration, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic acceptance, and the real `--add`/resume benchmark remain subsequent required work. Local retrieval repair does not establish the real benchmark or Session Endpoint.
+
 # RESULT.md — Step 12.1.15 Prepare reusable approved corpus and contextual retrieval
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

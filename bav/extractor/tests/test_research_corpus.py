@@ -34,18 +34,24 @@ from bav.extractor.research.contracts import (
     PreparationRequest,
     SnapshotInventory,
 )
-from bav.extractor.research.index import index_document_markdown
+from bav.extractor.research.contracts import InventoryRecord
+from bav.extractor.research.index import (
+    BOUNDED_CONTEXT_LIMITATION,
+    CONTEXT_CHARS,
+    index_document_markdown,
+)
 from bav.extractor.research.paths import PathDenied, sha256_file, sha256_text
 from bav.extractor.research.prepare import prepare_source
 from bav.extractor.research.retrieve import query_snapshot
 from bav.extractor.research.snapshot import load_snapshot_inventory
-from bav.extractor.research.store import DOCUMENT_NAME, MANIFEST_NAME, find_reusable_bundle
+from bav.extractor.research.store import DOCUMENT_NAME, MANIFEST_NAME, find_reusable_bundle, load_inventory_record
 
 ROOT = repository_root()
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "research"
 FAKE_MARKER = FIXTURES / "fake_marker.py"
 SYNTHETIC_MD = FIXTURES / "synthetic_filing.md"
 GARBLED_MD = FIXTURES / "garbled_body.md"
+ADJACENT_MD = FIXTURES / "adjacent_qualifications.md"
 FAKE_MARKER.chmod(0o755)
 
 
@@ -99,7 +105,8 @@ def test_markdown_bypass_preserves_bytes_and_structure(tmp_path: Path):
         "Greater China" in row for row in table.table["rows"]
     )
     assert table.table["footnotes"]
-    assert table.context
+    assert "Greater China" in table.context
+    assert "hiring delays" not in table.context
 
 
 def test_ambiguous_import_stays_case_local(tmp_path: Path):
@@ -530,3 +537,220 @@ def test_retained_two_company_snapshot_retrieval(tmp_path: Path):
     reused = query_approved_corpus(queries["fr-segment-strategy"], cache_dir=cache, repository=ROOT)
     assert reused.reused is True
     assert reused.result_key == fr_strategy.result_key
+
+
+def _query(text: str, snapshot_id: str = "synth", query_id: str = "q-rev") -> CorpusQuery:
+    return CorpusQuery(query_id, text, "either", ("Japan",), snapshot_id)
+
+
+def test_adjacent_qualifications_and_section_boundaries(tmp_path: Path):
+    bundle = prepare_source(
+        PreparationRequest(
+            source_path=ADJACENT_MD,
+            company_slug="lululemon",
+            document_id="adjacent-qualifications",
+            issuer="Test Issuer",
+        ),
+        input_root=tmp_path,
+    )
+    passages, _ = index_document_markdown(
+        bundle.bundle_dir / DOCUMENT_NAME,
+        document_id=bundle.document_id,
+        source_fingerprint=bundle.original_sha256,
+        representation_fingerprint=bundle.prepared_sha256,
+    )
+    selected = next(item for item in passages if item.text.strip() == "Revenue increased 20%.")
+    assert "The increase excludes Japan" in selected.context
+    assert "entirely attributable to currency" in selected.context
+    assert "Except as noted below" in selected.context
+    assert "Store openings in Europe" not in selected.context
+    document_lines = (bundle.bundle_dir / DOCUMENT_NAME).read_text(encoding="utf-8").splitlines()
+    reconstructed = "\n".join(document_lines[selected.start_line - 1 : selected.end_line]).rstrip()
+    assert reconstructed == selected.text
+    assert selected.context_start_line is not None
+    assert selected.context_end_line is not None
+    context_span = "\n".join(
+        document_lines[selected.context_start_line - 1 : selected.context_end_line]
+    )
+    assert "The increase excludes Japan" in context_span
+    assert "Store openings in Europe" not in context_span
+
+    table = next(item for item in passages if item.kind == "table")
+    assert table.table is not None
+    assert table.table["headers"][0] == "Market"
+    assert table.table["units"] and "yen" in table.table["units"].lower()
+    assert any("Japan is excluded" in note for note in table.table["footnotes"])
+    assert "Notes: Units are percent change" in table.text
+    assert "The increase excludes Japan" in table.context
+    assert "Store openings in Europe" not in table.context
+    table_reconstructed = "\n".join(document_lines[table.start_line - 1 : table.end_line]).rstrip()
+    assert table.text == table_reconstructed
+
+
+def test_bounded_context_exposes_omitted_qualification(tmp_path: Path):
+    qualifier = (
+        "The increase excludes Japan and is entirely attributable to currency. "
+        + ("Additional withheld qualification. " * 80)
+    )
+    assert len(qualifier) > CONTEXT_CHARS
+    source = tmp_path / "bounded.md"
+    source.write_text(
+        "# Results\n\nRevenue increased 20%.\n\n" + qualifier + "\n",
+        encoding="utf-8",
+    )
+    bundle = prepare_source(
+        PreparationRequest(
+            source_path=source,
+            company_slug="lululemon",
+            document_id="bounded-context",
+            issuer="Test Issuer",
+        ),
+        input_root=tmp_path,
+    )
+    passages, _ = index_document_markdown(
+        bundle.bundle_dir / DOCUMENT_NAME,
+        document_id=bundle.document_id,
+        source_fingerprint=bundle.original_sha256,
+        representation_fingerprint=bundle.prepared_sha256,
+    )
+    selected = next(item for item in passages if "Revenue increased 20%." in item.text)
+    assert BOUNDED_CONTEXT_LIMITATION in selected.limitations
+    assert "excludes Japan" in selected.context
+    assert selected.context != qualifier
+
+
+def test_cache_rejects_changed_bytes_and_reports_mismatch(tmp_path: Path):
+    first = prepare_source(
+        PreparationRequest(
+            source_path=ADJACENT_MD,
+            company_slug="lululemon",
+            document_id="cache-integrity",
+            issuer="Test Issuer",
+        ),
+        input_root=tmp_path,
+    )
+    snapshot_id = "cache-integrity"
+    manifest_dir = tmp_path / "research_snapshots" / snapshot_id
+    manifest_dir.mkdir(parents=True)
+    selected_path = str((first.bundle_dir / MANIFEST_NAME).resolve())
+    (manifest_dir / "manifest.json").write_text(
+        json.dumps({"selected_corpus": [selected_path]}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    loaded = load_snapshot_inventory(snapshot_id, input_root=tmp_path, repository=tmp_path)
+    cache = tmp_path / "cache"
+    query = _query("Revenue increased 20%.", snapshot_id)
+    initial = query_snapshot(loaded, query, cache_dir=cache)
+    assert initial.reused is False
+    assert any("Revenue increased 20%." in hit.passage.text for hit in initial.hits)
+    uncached = query_snapshot(loaded, query)
+    assert {(hit.passage.text, hit.passage.limitations) for hit in uncached.hits} == {
+        (hit.passage.text, hit.passage.limitations) for hit in initial.hits
+    }
+    assert uncached.coverage_gaps == initial.coverage_gaps
+
+    reused = query_snapshot(loaded, query, cache_dir=cache)
+    assert reused.reused is True
+    assert reused.stale is False
+    assert reused.coverage_gaps == initial.coverage_gaps
+    assert {(hit.passage.text, tuple(hit.passage.limitations)) for hit in reused.hits} == {
+        (hit.passage.text, tuple(hit.passage.limitations)) for hit in initial.hits
+    }
+
+    document = first.bundle_dir / DOCUMENT_NAME
+    document.write_text(document.read_text(encoding="utf-8") + "\nChanged prepared bytes.\n", encoding="utf-8")
+    previously_loaded = query_snapshot(loaded, query, cache_dir=cache)
+    assert previously_loaded.reused is False
+    assert previously_loaded.stale is True
+    assert any("prepared_hash_mismatch" in gap for gap in previously_loaded.coverage_gaps)
+    assert all("Changed prepared bytes" not in hit.passage.text for hit in previously_loaded.hits)
+    assert all("Revenue increased 20%." not in hit.passage.text for hit in previously_loaded.hits)
+
+    refreshed = load_snapshot_inventory(snapshot_id, input_root=tmp_path, repository=tmp_path)
+    assert refreshed.snapshot_fingerprint != loaded.snapshot_fingerprint
+    refreshed_result = query_snapshot(refreshed, query, cache_dir=cache)
+    assert refreshed_result.reused is False
+    assert refreshed_result.stale is True
+    assert any("prepared_hash_mismatch" in gap for gap in refreshed_result.coverage_gaps)
+    assert all("Revenue increased 20%." not in hit.passage.text for hit in refreshed_result.hits)
+
+
+def test_cache_integrity_gaps_and_valid_companion_source(tmp_path: Path):
+    valid = prepare_source(
+        PreparationRequest(
+            source_path=ADJACENT_MD,
+            company_slug="lululemon",
+            document_id="valid-companion",
+            issuer="Test Issuer",
+        ),
+        input_root=tmp_path,
+    )
+    broken = prepare_source(
+        PreparationRequest(
+            source_path=SYNTHETIC_MD,
+            company_slug="fast_retailing",
+            document_id="broken-source",
+            issuer="FAST RETAILING CO., LTD.",
+        ),
+        input_root=tmp_path,
+    )
+    cache = tmp_path / "mixed-cache"
+    mixed = SnapshotInventory(
+        snapshot_id="mixed",
+        snapshot_fingerprint="mixed-declared",
+        records=(
+            load_inventory_record(valid.bundle_dir),
+            load_inventory_record(broken.bundle_dir),
+        ),
+        coverage_gaps=(),
+    )
+    query = _query("Revenue increased 20%.", "mixed", "q-mixed")
+    first = query_snapshot(mixed, query, cache_dir=cache)
+    assert first.reused is False
+    assert any(hit.passage.document_id == "valid-companion" for hit in first.hits)
+
+    original = broken.bundle_dir / "original.md"
+    original.write_bytes(original.read_bytes() + b"\nchanged-original\n")
+    original_mismatch = query_snapshot(mixed, query, cache_dir=cache)
+    assert original_mismatch.reused is False
+    assert any("original_hash_mismatch" in gap for gap in original_mismatch.coverage_gaps)
+    assert any(hit.passage.document_id == "valid-companion" for hit in original_mismatch.hits)
+    assert all(hit.passage.document_id != "broken-source" for hit in original_mismatch.hits)
+
+    (broken.bundle_dir / DOCUMENT_NAME).unlink()
+    missing = query_snapshot(mixed, query, cache_dir=cache)
+    assert missing.reused is False
+    assert any("prepared_document_missing" in gap for gap in missing.coverage_gaps)
+    assert any(hit.passage.document_id == "valid-companion" for hit in missing.hits)
+
+    declared_gap = SnapshotInventory(
+        snapshot_id="mixed",
+        snapshot_fingerprint="mixed-declared",
+        records=(load_inventory_record(valid.bundle_dir),),
+        coverage_gaps=("valid-companion:prepared_hash_mismatch",),
+    )
+    gap_result = query_snapshot(declared_gap, query, cache_dir=cache)
+    assert gap_result.reused is False
+    assert "valid-companion:prepared_hash_mismatch" in gap_result.coverage_gaps
+    assert all(hit.passage.document_id != "valid-companion" for hit in gap_result.hits)
+
+    limited = SnapshotInventory(
+        snapshot_id="limited",
+        snapshot_fingerprint="limited-declared",
+        records=(
+            InventoryRecord(
+                **{
+                    **load_inventory_record(valid.bundle_dir).__dict__,
+                    "limitations": ("cfs_only_strategy_coverage",),
+                }
+            ),
+        ),
+        coverage_gaps=("cfs_only_strategy_coverage",),
+    )
+    limited_first = query_snapshot(limited, _query("Revenue increased 20%.", "limited", "q-lim"), cache_dir=cache)
+    assert "cfs_only_strategy_coverage" in limited_first.coverage_gaps
+    limited_uncached = query_snapshot(limited, _query("Revenue increased 20%.", "limited", "q-lim"))
+    assert limited_uncached.coverage_gaps == limited_first.coverage_gaps
+    assert {(hit.passage.text, hit.passage.limitations) for hit in limited_uncached.hits} == {
+        (hit.passage.text, hit.passage.limitations) for hit in limited_first.hits
+    }

@@ -1,4 +1,4 @@
-# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 / 12.1.6 / 12.1.7 / 12.1.8 / 12.1.9 / 12.1.10 / 12.1.11 / 12.1.12 / 12.1.13 / 12.1.14 / 12.1.15 record
+# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 / 12.1.6 / 12.1.7 / 12.1.8 / 12.1.9 / 12.1.10 / 12.1.11 / 12.1.12 / 12.1.13 / 12.1.14 / 12.1.15 / 12.1.16 record
 
 Label: **corpus-bound**. This is not a verified latest-market assessment and not an end-to-end Debater acceptance.
 
@@ -749,3 +749,34 @@ Repeat of `fr-segment-strategy` reused result key `caa2123ab36e85e6739f3235ef8a5
 - Useful FR strategy/definition/revenue passages were returned without waiting for complete Lululemon strategy coverage.
 
 This local retrieval path is not the real debate benchmark, not installed-runtime acceptance, and not parent Completion.
+
+## Step 12.1.16 — Contextual passage selection and source-integrity cache reuse
+
+No source bundles were modified. Original and prepared hashes remain `82e00f90…` / `c28354c8…` (LULU) and `25a85db8…` / `632babd6…` (FR). Publication dates remain unknown. Lululemon garbled-body and Fast Retailing CFS-only / Note 6 D / merged Greater China row limitations are unchanged. Japan and Greater China remain separate query markets.
+
+### Retrieval semantics
+
+- Passage context is the selected block’s same-section neighboring paragraphs, including preceding and following qualifications. Other-section openings are not used as substitute context.
+- Markdown locators follow LF line breaks. Lone CR in converted Lululemon text stays inside the line and is not treated as a line break. Selection locators include appended table footnotes.
+- When a necessary neighboring qualification cannot be retained within the 1800-character context bound, the selection records `bounded_context_omitted_qualification`.
+- Cache acceptance now requires `contextual-integrity-v2`, the current snapshot fingerprint, and a live integrity fingerprint. Declared manifest hashes alone do not establish present integrity. Failed bundles contribute coverage gaps and are excluded from hits; independently valid sources remain searchable.
+- Snapshot fingerprint `12aefb71e066b44069dcf874f7a1e7e240f7e268a64fada7ec45a60a31db8c55` (was `d7edc48c…` under declared-hash identity). Inventory elapsed 0.009 s.
+
+### Measured two-company retrieval (bundles not modified)
+
+Temporary cache only. Hits remain candidates. `physical_pdf_page` remains unset; printed labels were not invented.
+
+| Query | Hits / first elapsed | Locator and same-section context | Extra coverage |
+|---|---|---|---|
+| `fr-segment-strategy` | 537 / 0.224 s | FR `document.md:583` — “frame and form the Group's strategy.” Context lines `579–591` are the Note 6 description around that sentence, not an unrelated heading. | `lulu-fy2025-annual-report:market_term_not_found:Japan` |
+| `fr-greater-china-definition` | 24 / 0.226 s | FR `document.md:1212–1214` — “Greater China: Mainland China, Hong Kong, Taiwan.” Context `1214–1226` keeps the classification note and following regional labels. | none beyond inventory |
+| `fr-greater-china-revenue-decline` | 12 / 0.248 s | FR table `document.md:1230–1242` includes merged row **650,232** / **19.1**. Context `1228–1255` keeps neighboring regional rows and notes. | none beyond inventory |
+| `lulu-readable-greater-china-director` | 154 / 0.234 s | LULU director table `document.md:2986–2997` contains LF line **2995** “Isabel Mahe … Managing Director of Greater China” (Apple Inc.; not a Lululemon market definition). Context heading `2984`. | none beyond inventory |
+
+Repeat of `fr-segment-strategy`: elapsed 0.022 s, `reused=True`, `stale=False`, result key `05bfc71a41171c0e148ad0b8ae4194cc6cbf71ded130675ff6217626809f1229`. Both company documents were checked. No reconversion.
+
+Synthetic adjacent-qualification fixture (not company evidence): “Revenue increased 20%.” retains the following paragraph excluding Japan and attributing the increase to currency, plus the preceding “Except as noted below” qualification, and does not attach the unrelated Europe section.
+
+Changed prepared bytes without updating declared hashes: both a previously loaded inventory and a refreshed inventory reject cached hits, report `prepared_hash_mismatch`, and leave independently valid sources searchable.
+
+This step does not establish installed-runtime acceptance, ordinary `debate` intake, or end-to-end benchmark success.

@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from dataclasses import dataclass
 from pathlib import Path
 
 from bav.extractor.research.contracts import (
@@ -17,6 +18,7 @@ from bav.extractor.research.contracts import (
 )
 from bav.extractor.research.index import index_document_markdown, passage_to_dict
 from bav.extractor.research.paths import sha256_text
+from bav.extractor.research.snapshot import inspect_bundle_state
 from bav.extractor.research.store import DOCUMENT_NAME, verify_bundle_hashes
 
 TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9,%.'-]{1,}")
@@ -27,10 +29,26 @@ PHRASES = (
     "uniqlo japan",
     "hong kong",
 )
+CACHE_VERSION = "contextual-integrity-v2"
+INTEGRITY_PROBLEMS = frozenset(
+    {
+        "prepared_hash_mismatch",
+        "original_hash_mismatch",
+        "prepared_document_missing",
+    }
+)
 
 
-def result_key(query: CorpusQuery, snapshot_fingerprint: str) -> str:
-    payload = f"{query.snapshot_id}|{query.query_id}|{query.text}|{query.polarity}|{','.join(query.markets)}|{snapshot_fingerprint}"
+def result_key(
+    query: CorpusQuery,
+    snapshot_fingerprint: str,
+    integrity_fingerprint: str | None = None,
+) -> str:
+    payload = (
+        f"{CACHE_VERSION}|{query.snapshot_id}|{query.query_id}|{query.text}|"
+        f"{query.polarity}|{','.join(query.markets)}|{snapshot_fingerprint}|"
+        f"{integrity_fingerprint or ''}"
+    )
     return sha256_text(payload)
 
 
@@ -41,26 +59,47 @@ def query_snapshot(
     cache_dir: Path | None = None,
     previous_snapshot_fingerprint: str | None = None,
 ) -> RetrievalResult:
-    key = result_key(query, inventory.snapshot_fingerprint)
+    integrity = _current_integrity(inventory)
+    coverage = tuple(dict.fromkeys([*inventory.coverage_gaps, *integrity.coverage_gaps]))
+    failed = set(integrity.failed_document_ids)
+    failed.update(_failed_ids_from_gaps(coverage))
+    key = result_key(query, inventory.snapshot_fingerprint, integrity.fingerprint)
     stale = bool(
         previous_snapshot_fingerprint
         and previous_snapshot_fingerprint != inventory.snapshot_fingerprint
-    )
-    if cache_dir is not None:
+    ) or bool(failed)
+    if cache_dir is not None and not stale:
         cached = cache_dir / f"{key}.json"
-        if cached.is_file() and not stale:
+        if cached.is_file():
             payload = json.loads(cached.read_text(encoding="utf-8"))
-            if payload.get("snapshot_fingerprint") == inventory.snapshot_fingerprint:
-                return _result_from_payload(payload, reused=True, stale=False)
+            if _cache_acceptable(payload, inventory, integrity, failed):
+                result = _result_from_payload(payload, reused=True, stale=False)
+                return RetrievalResult(
+                    query=result.query,
+                    snapshot_fingerprint=inventory.snapshot_fingerprint,
+                    result_key=key,
+                    hits=tuple(
+                        hit
+                        for hit in result.hits
+                        if hit.passage.document_id not in failed
+                    ),
+                    sources_checked=tuple(record.document_id for record in inventory.records)
+                    or result.sources_checked,
+                    coverage_gaps=tuple(dict.fromkeys([*coverage, *result.coverage_gaps])),
+                    reused=True,
+                    stale=False,
+                )
     tokens = _tokens(query.text)
     hits: list[RetrievalHit] = []
     sources_checked: list[str] = []
-    coverage = list(inventory.coverage_gaps)
+    live_coverage = list(coverage)
     for record in inventory.records:
         sources_checked.append(record.document_id)
+        if record.document_id in failed:
+            continue
         ok, problems = verify_bundle_hashes(record.bundle_dir)
         if not ok:
-            coverage.extend(f"{record.document_id}:{item}" for item in problems)
+            live_coverage.extend(f"{record.document_id}:{item}" for item in problems)
             continue
         passages = _passages_for(record)
         for passage in passages:
@@ -75,7 +114,7 @@ def query_snapshot(
                     candidate_only=True,
                 )
             )
-        coverage.extend(_market_coverage(record, passages, query.markets))
+        live_coverage.extend(_market_coverage(record, passages, query.markets))
     hits.sort(key=lambda item: (-item.score, item.passage.start_line, item.passage.passage_id))
     result = RetrievalResult(
         query=query,
@@ -83,17 +122,75 @@ def query_snapshot(
         result_key=key,
         hits=tuple(hits),
         sources_checked=tuple(sources_checked),
-        coverage_gaps=tuple(dict.fromkeys(coverage)),
+        coverage_gaps=tuple(dict.fromkeys(live_coverage)),
         reused=False,
         stale=stale,
     )
-    if cache_dir is not None and not stale:
+    if cache_dir is not None and not result.stale:
         cache_dir.mkdir(parents=True, exist_ok=True)
         (cache_dir / f"{key}.json").write_text(
-            json.dumps(_result_to_payload(result), indent=2) + "\n",
+            json.dumps(_result_to_payload(result, integrity.fingerprint), indent=2) + "\n",
             encoding="utf-8",
         )
     return result
+
+
+@dataclass(frozen=True)
+class _IntegrityState:
+    fingerprint: str
+    coverage_gaps: tuple[str, ...]
+    failed_document_ids: frozenset[str]
+
+
+def _current_integrity(inventory: SnapshotInventory) -> _IntegrityState:
+    gaps: list[str] = []
+    failed: set[str] = set()
+    parts = [CACHE_VERSION]
+    for record in inventory.records:
+        observed_prepared, observed_original, ok, problems = inspect_bundle_state(record.bundle_dir)
+        if not ok:
+            failed.add(record.document_id)
+            gaps.extend(f"{record.document_id}:{item}" for item in problems)
+        parts.extend(
+            (
+                record.document_id,
+                record.original_sha256,
+                record.prepared_sha256,
+                observed_original,
+                observed_prepared,
+                "|".join(problems),
+                "|".join(record.limitations),
+            )
+        )
+    fingerprint = sha256_text("|".join(parts))
+    return _IntegrityState(fingerprint, tuple(dict.fromkeys(gaps)), frozenset(failed))
+
+
+def _failed_ids_from_gaps(gaps: tuple[str, ...]) -> set[str]:
+    failed: set[str] = set()
+    for gap in gaps:
+        for problem in INTEGRITY_PROBLEMS:
+            if gap == problem or gap.endswith(f":{problem}") or f":{problem}:" in gap:
+                failed.add(gap.split(":", 1)[0])
+                break
+    return failed
+
+
+def _cache_acceptable(
+    payload: dict,
+    inventory: SnapshotInventory,
+    integrity: _IntegrityState,
+    failed: set[str],
+) -> bool:
+    if payload.get("cache_version") != CACHE_VERSION:
+        return False
+    if payload.get("snapshot_fingerprint") != inventory.snapshot_fingerprint:
+        return False
+    if payload.get("integrity_fingerprint") != integrity.fingerprint:
+        return False
+    if failed:
+        return False
+    return True
 
 
 def _passages_for(record: InventoryRecord) -> tuple[Passage, ...]:
@@ -170,8 +267,16 @@ def _market_coverage(
     return tuple(gaps)
 
 
-def _result_to_payload(result: RetrievalResult) -> dict:
+def _optional_int(value) -> int | None:
+    if value is None or value == "":
+        return None
+    return int(value)
+
+
+def _result_to_payload(result: RetrievalResult, integrity_fingerprint: str) -> dict:
     return {
+        "cache_version": CACHE_VERSION,
+        "integrity_fingerprint": integrity_fingerprint,
         "query": {
             "query_id": result.query.query_id,
             "text": result.query.text,
@@ -231,6 +336,8 @@ def _result_from_payload(payload: dict, *, reused: bool, stale: bool) -> Retriev
                     limitations=tuple(passage_payload.get("limitations") or ()),
                     source_fingerprint=passage_payload.get("source_fingerprint") or "",
                     representation_fingerprint=passage_payload.get("representation_fingerprint") or "",
+                    context_start_line=_optional_int((locator.get("context_markdown_lines") or [None, None])[0]),
+                    context_end_line=_optional_int((locator.get("context_markdown_lines") or [None, None])[1]),
                 ),
                 score=int(item.get("score") or 0),
                 polarity=item.get("polarity") or query.polarity,

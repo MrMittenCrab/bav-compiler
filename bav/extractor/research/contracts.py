@@ -114,6 +114,8 @@ class Passage:
     limitations: tuple[str, ...]
     source_fingerprint: str
     representation_fingerprint: str
+    context_start_line: int | None = None
+    context_end_line: int | None = None
 
 
 @dataclass(frozen=True)
