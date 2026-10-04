@@ -1,0 +1,71 @@
+{
+  "label": "configuration fixture — company names and benchmark queries, not company evidence",
+  "snapshot_id": "2026-10-04-debater-asia-benchmark",
+  "companies": [
+    {
+      "slug": "lululemon",
+      "registry_name": "Lululemon"
+    },
+    {
+      "slug": "fast_retailing",
+      "registry_name": "FastRetailing"
+    }
+  ],
+  "markets": [
+    "Japan",
+    "Greater China",
+    "China Mainland",
+    "PRC",
+    "Rest of World"
+  ],
+  "do_not_substitute": [
+    "China Mainland is not Greater China",
+    "PRC is not Greater China",
+    "Rest of World is not Japan",
+    "UNIQLO is not Fast Retailing as a whole"
+  ],
+  "queries": [
+    {
+      "id": "fr-segment-strategy",
+      "text": "UNIQLO Japan reportable operating segments used to frame and form the Group's strategy",
+      "polarity": "supporting",
+      "markets": ["Japan"]
+    },
+    {
+      "id": "fr-greater-china-definition",
+      "text": "Greater China Mainland China Hong Kong Taiwan customer location",
+      "polarity": "supporting",
+      "markets": ["Greater China"]
+    },
+    {
+      "id": "fr-greater-china-revenue-decline",
+      "text": "Greater China 650,232 19.1 677,063 21.8 decline",
+      "polarity": "contrary",
+      "markets": ["Greater China"]
+    },
+    {
+      "id": "fr-prc-not-greater-china",
+      "text": "PRC geographic information external revenue",
+      "polarity": "either",
+      "markets": ["PRC", "Greater China"]
+    },
+    {
+      "id": "lulu-garbled-strategy",
+      "text": "China Mainland net revenue growth international",
+      "polarity": "supporting",
+      "markets": ["China Mainland"]
+    },
+    {
+      "id": "lulu-readable-greater-china-director",
+      "text": "Greater China Apple Inc Managing Director",
+      "polarity": "either",
+      "markets": ["Greater China"]
+    },
+    {
+      "id": "lulu-japan-store",
+      "text": "Japan company-operated stores",
+      "polarity": "either",
+      "markets": ["Japan"]
+    }
+  ]
+}

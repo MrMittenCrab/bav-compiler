@@ -1,4 +1,4 @@
-# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 / 12.1.6 / 12.1.7 / 12.1.8 / 12.1.9 / 12.1.10 / 12.1.11 / 12.1.12 / 12.1.13 / 12.1.14 record
+# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 / 12.1.6 / 12.1.7 / 12.1.8 / 12.1.9 / 12.1.10 / 12.1.11 / 12.1.12 / 12.1.13 / 12.1.14 / 12.1.15 record
 
 Label: **corpus-bound**. This is not a verified latest-market assessment and not an end-to-end Debater acceptance.
 
@@ -686,3 +686,66 @@ Still closed / unverified / outstanding:
 - Ordinary `python -m bav debate` intake/approvals, Extractor readers/preparation/retrieval, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic checks, and real evidence-addition/resumption.
 
 Synthetic verification success does not establish native enforcement, parent Completion, or Session acceptance.
+
+## Step 12.1.15 — Callable local preparation-to-retrieval path
+
+Director/Debater can now prepare, inventory and query an explicit approved snapshot without a reasoning provider. Company names and benchmark queries live in `bav/director/project_companies.json` and `bav/extractor/research/fixtures/asia_benchmark_queries.json`. Hits remain candidates, not accepted evidence. No Developer-folder rediscovery and no reconversion of the retained filings were performed. Adapter fixtures under `bav/extractor/tests/fixtures/research/` are labeled tests and are not a new installed conversion demonstration.
+
+### Callable interfaces
+
+| Owner | Entry | Role |
+|---|---|---|
+| Director | `bav.director.research_corpus.prepare_approved_source` | Typed `PreparationRequest` for an explicit approved path; resolves company slugs through the existing registry |
+| Director | `bav.director.research_corpus.inventory_approved_snapshot` | Load snapshot `2026-10-04-debater-asia-benchmark` |
+| Director | `bav.director.research_corpus.query_approved_corpus` | Deterministic lexical/heading retrieval; cache keyed by query + snapshot fingerprint |
+| Director | `bav.director.research_corpus.configured_corpus_queries` | Load fixture queries (not company evidence) |
+| Extractor | `bav.extractor.research.prepare_source` | Markdown bypass or one-shot allowlisted PDF conversion |
+| Extractor | `bav.extractor.research.inspect_installed_converter` / `build_conversion_command` / `convert_pdf` | Recheck help; construct `--mode fast --disable_ocr --output_format markdown --disable_tqdm`; no retry |
+| Extractor | `bav.extractor.research.load_snapshot_inventory` / `query_snapshot` | Approved-path inventory and retrieval |
+
+Installed converter recheck (this step, no conversion run): `/Users/lizhiguo/.venvs/marker/bin/marker_single --help` lists the required flags; `--version` is unsupported (`No such option '--version'`). Package versions via the marker venv: `marker-pdf 2.0.0`, `surya-ocr 0.22.1`. Constructed command:
+
+```text
+/Users/lizhiguo/.venvs/marker/bin/marker_single <input.pdf> --output_dir <dir> --mode fast --disable_ocr --output_format markdown --disable_tqdm
+```
+
+Environment for inspect/convert: `HF_HUB_OFFLINE=1`, `TRANSFORMERS_OFFLINE=1`. Profile id: `marker-pdf:2.0.0:mode=fast,disable_ocr,output_format=markdown,HF_HUB_OFFLINE=1,TRANSFORMERS_OFFLINE=1:ocr=False:llm=False`. Timeout 600 s. Help inspect elapsed 5.83 s. Historical FR/LULU conversions remain the conversion evidence (35.01 s real total in Step 12.1); this step did not replay them.
+
+### Retained snapshot inventory
+
+`inventory_approved_snapshot()` elapsed 0.009 s. Snapshot fingerprint `d7edc48c622aa30717e293605dbdbd9d4c985303be41f6599931caae42f2ac82`.
+
+| Document | Original | Prepared `document.md` | Publication date | Representation |
+|---|---|---|---|---|
+| `lulu-fy2025-annual-report` (`LULU_FY2025_Annual_Report.pdf`) | `82e00f90…` | `c28354c81e42…` | unknown | converted_markdown |
+| `fastretailing-cfs-2025` (`Fastretailing_CFS2025.pdf`) | `25a85db8…` | `632babd69fcf…` | unknown | converted_markdown |
+
+Both records reuse the recorded offline text-layer profile. Existing bundle `company_slug` fields are empty; registry slugs remain `lululemon` / `fast_retailing`. Physical PDF page maps were not attached to these live indexer line ranges (`physical_pdf_page=None`). Printed page labels were not invented.
+
+### Local queries (candidates only)
+
+Cache directory was temporary. First call `reused=False`; immediate repeat `reused=True` with the same `result_key`. Each query checked both registered documents. All hits `candidate_only=True`.
+
+| Query id | Markets / polarity | Hits / first elapsed | Retrieved locator (Markdown lines) | Extra coverage |
+|---|---|---|---|---|
+| `fr-segment-strategy` | Japan / supporting | 557 / 0.057 s | FR `document.md:583` — “each of which is used to frame and form the Group's strategy.” Source `25a85db8…` / prepared `632babd6…` | `lulu-fy2025-annual-report:market_term_not_found:Japan` |
+| `fr-greater-china-definition` | Greater China / supporting | 25 / 0.055 s | FR `document.md:1212` and footnote `1214–1217` — “Greater China: Mainland China, Hong Kong, Taiwan” | none beyond inventory |
+| `fr-greater-china-revenue-decline` | Greater China / contrary | 12 / 0.055 s | FR table `document.md:1230–1240` includes merged row `document.md:1232` “Greater China South Korea…” **650,232** / **19.1** | none beyond inventory |
+| `fr-prc-not-greater-china` | PRC, Greater China / either | 71 / 0.056 s | Heading/table fragments at Note 6 D (`597`, `607`, `611–615`); **PRC figures absent** from converted Markdown | `*:market_term_not_found:PRC` on both documents |
+| `lulu-garbled-strategy` | China Mainland / supporting | 73 / 0.058 s | No readable Lululemon China Mainland strategy passage. Hits are FR lexical candidates, not LULU strategy | `*:market_term_not_found:China Mainland` on both documents |
+| `lulu-readable-greater-china-director` | Greater China / either | 166 / 0.060 s | LULU `document.md:2995` — “Isabel Mahe … Managing Director of Greater China” (Apple Inc.; not a Lululemon market definition) | none beyond inventory |
+| `lulu-japan-store` | Japan / either | 39 / 0.057 s | No Lululemon Japan store passage in converted Markdown | `lulu-fy2025-annual-report:market_term_not_found:Japan` |
+
+Repeat of `fr-segment-strategy` reused result key `caa2123ab36e85e6739f3235ef8a5f4a8af099d3185f28fe805f639455b59437`.
+
+### Exact coverage gaps (unchanged corpus facts)
+
+- Lululemon Form 10-K body remains garbled (`custom encoding`). Item 1 / Item 7 strategy and China Mainland commentary were not recovered as readable Markdown. Strategy fixtures are not this corpus.
+- Fast Retailing coverage remains CFS notes, not a full annual/integrated report or strategy/MD&A.
+- Note 6 D Japan/PRC/Overseas FY2025 external-revenue figures remain present in the original PDF physical page 10 and **absent** from converted Markdown.
+- Note 22 Greater China FY2025 650,232 (19.1%) is present but the Greater China row label is merged with the following region.
+- Publication dates remain unknown. Fast Retailing financial-statement approval 2025-11-27 is not a publication date.
+- Japan, Greater China, China Mainland and PRC are queried and reported separately. China Mainland was not found as a readable market term in either converted document. PRC was not found in converted Markdown.
+- Useful FR strategy/definition/revenue passages were returned without waiting for complete Lululemon strategy coverage.
+
+This local retrieval path is not the real debate benchmark, not installed-runtime acceptance, and not parent Completion.
