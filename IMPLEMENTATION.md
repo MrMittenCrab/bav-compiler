@@ -1,48 +1,44 @@
-# Step 12.1.14 — Implement BAV-owned installed-runtime verification
+# Step 12.1.15 — Prepare reusable approved corpus and contextual retrieval
 
 ## Completion
 
 The replacement Debater specification is recorded, and a reproducible benchmark prerequisite record establishes the available company sources, conversion behavior and controlled runtime capabilities, distinguishing verified routes from exact missing dependencies or human decisions without claiming end-to-end Debater acceptance.
 
-AUTOCYCLE_PLAN: {"finding_key": "Verify Debater benchmark sources and controlled runtime", "kind": "work", "milestone_step": "Implement the BAV-owned installed-runtime verification path with synthetic enforcement tests, preserving closed company transmission and existing authorization boundaries.", "minor": 14, "objective": "Implement BAV-owned installed-runtime verification", "plan_id": "5eba5c999f504eada7d1ecaaf24cf427", "predecessor_review_sha256": "96c8c2772c80d1fbf150ce9e48bc5a8aeccff1ba61a6d55cc654f1c393f66f13", "step_id": "12.1.14", "work_id": "e35d5703ccc14627a150a29b9e900502"}
+AUTOCYCLE_PLAN: {"finding_key": "Verify Debater benchmark sources and controlled runtime", "inputs": [{"commitment": "Record the temporary thin-product-path priority in SESSION.md and implement reusable local Extractor preparation and contextual retrieval now within the open parent work. Preserve installed-runtime enforcement and acceptance as blocking unfinished obligations before company transmission; defer only nonblocking refinement. Ordinary proposition intake, linked questions, supported calculations, argument review, coherent exports and the real addition/resumption benchmark remain subsequent required scope.", "id": "20261004-160114-000000031"}], "kind": "work", "milestone_step": "Implement reusable approved-corpus preparation and contextual retrieval for the thin Debater path within the open parent work, preserving installed-transmission closure and unresolved runtime acceptance.", "minor": 15, "objective": "Prepare reusable approved corpus and contextual retrieval", "plan_id": "0f57ac5a9615455e9d95990ee1e20c68", "predecessor_review_sha256": "62e9835af9b88b4f37a7f9904d149e4a0f0daaf51ce8901276bd8a833c12eb1a", "step_id": "12.1.15", "work_id": "e35d5703ccc14627a150a29b9e900502"}
+
+Continue parent work `e35d5703ccc14627a150a29b9e900502`. Deliver a callable local preparation-to-retrieval path for Director/Debater without invoking a reasoning provider.
 
 ## Bounded work
 
-Continue parent work `e35d5703ccc14627a150a29b9e900502`. Implement a verification-only path under `bav/director/runtime/` that can support later authorized installed-Cursor acceptance. Exercise it now through local synthetic fixtures; ordinary installed research and company transmission remain closed.
-
 - Authenticate the implementation baseline, branch, ancestry and attempt binding through normal controller records before editing. Preserve unfinished work and recovery safeguards.
-- Add a small `verification.py` alongside `adapter.py`, with typed verification requests/results in `contract.py`. Integrate workspace preparation, command construction, bounded process execution and evidence retention through existing runtime owners.
-- Separate verification from `ResearchRequest`: accept only BAV-generated synthetic challenges and temporary canaries, never caller-supplied propositions, source text, arbitrary prompts or arbitrary commands. A false `contains_company_context` declaration must not admit research content.
-- Require an explicit bounded verification authorization bound to backend, executable identity/version, model, policy, synthetic challenge inventory and allowance. Missing or changed bindings fail before launch. Implement this gate without inventing authorization for a live call in this attempt.
-- Inspect installed help and current official Cursor documentation before selecting native permission controls or event formats. Keep BAV policy intent separate from the provider configuration actually consumed. Unsupported configuration loading, authentication or denial evidence produces a specific unavailable/unverified result; do not invent flags or event fields.
-- Prepare the provider-native configuration in the dedicated workspace/HOME/configuration/data boundary. Restrict native shell, writes, unrelated reads, MCP and external retrieval; retain only necessary provider transport/authentication. Do not import coding-agent policy or AutoCycle machinery.
-- Implement a finite challenge set for prohibited native operations and an allowed synthetic-context control. Challenges use invocation-owned canaries; never target actual private files, credentials, unrelated services or project mutations. Application dispatch rejection is separate evidence.
-- Bind retained evidence to the launched executable/version, actual model, configuration identity, challenge, call and authorization. Distinguish intended configuration, observed loaded configuration, attempted operations, explicit policy denial and observed effects.
-- Evaluate each required control separately. Missing attempts, ambiguous events, model assurances, DNS failures, absent mutations or configuration files alone cannot establish enforcement. Error, timeout, interruption, partial coverage or contradictory successful prohibited activity prevents verification success.
-- Keep synthetic verification results explicitly synthetic and incapable of authorizing installed execution. Caller-provided `verified` flags, imported receipts and historical Controller observations are not launch authority.
-- Preserve the ordinary installed-research gate before company staging. This continuation introduces the verification path, not automatic promotion to company research or provider switching.
+- Inspect existing company registry, financial loaders and the recorded benchmark snapshot. Reuse completed discovery and conversion; do not repeat Developer-folder discovery or reconvert unchanged filings.
+- Implement small typed preparation, inventory and query contracts under `bav/extractor/`, with a narrow Director application entry for explicit approved inputs. Keep company names and benchmark queries in configuration or fixtures.
+- Accept readable Markdown directly, preserving original bytes, headings, tables, footnotes and assets. Record uncertain issuer/version/date and partial coverage; retain ambiguous imports case-locally.
+- Add the reusable PDF adapter around the verified installed `marker_single` command. Recheck local version/help before command construction; use an allowlisted executable, argument list, explicit paths, captured diagnostics and finite allowance. Preserve the recorded offline, text-layer profile; no OCR, downloads, enrichment, installation or automatic retries.
+- Reuse the retained PDF derivatives only after checking original/prepared hashes, converter/profile identity and limitations. Missing converter capability must leave direct Markdown and valid existing preparations usable.
+- Store versioned bundles under company `research_sources/`, outside strict accounting JSON inputs. Preserve existing bundles and originals; stage and atomically register new preparations. Key reuse by original hash, converter/profile version and prepared hash, retaining original filenames and representation lineage.
+- Index exact bounded passages with headings, stable line/offset locators, neighboring context, table headers, units and relevant footnotes. Include physical/printed page references only when independently established. Record oversized or unreadable sections as coverage limitations rather than silently truncating qualifications.
+- Implement deterministic lexical/heading retrieval over an explicit approved snapshot, returning exact selections, context, source/representation fingerprints, locators, limitations and sources actually checked. Support queries seeking supporting and contrary observations; hits remain candidates, not accepted evidence or answers.
+- Expose reusable results keyed to query and source snapshot so questions and cases share preparation. Changed content creates a new version and identifies stale dependent results without rewriting originals or accepted financial inputs.
+- Restrict reads to registered approved sources and explicitly supplied paths. Reject traversal and symlink escapes; imported text cannot authorize tools or change policy. No runtime scans of Developer or Downloads, crawler, vector service or provider transmission.
+- Exercise local retrieval against the retained two-company snapshot. Preserve Lululemon’s garbled body-text limitation, Fast Retailing’s CFS-only coverage and damaged/missing tables, and unknown publication dates. Do not promote strategy fixtures, generated arguments or benchmark prose into real company evidence.
+- Keep Japan, Greater China, China Mainland and issuer-specific definitions distinct. Report inaccessible strategy coverage explicitly; useful available passages need not wait for complete coverage.
 
-## Verification
+## Verification and records
 
-Extend `bav/director/tests/test_research_runtime.py` and `fixtures/runtime/fake_provider.py`, adding a focused verification test module if useful.
-
-- Exercise the verification path through local fake processes with explicit native-event fixtures, including a successful allowed control and denials for every required prohibited operation.
-- Reject missing or mismatched loaded-configuration identity, forged/stale evidence, changed executable/model/policy/challenge bindings, replayed authorization and synthetic-to-installed promotion.
-- Reject success narratives without denial events, absent challenges, application-only denials, DNS errors, incomplete capture and a successful forbidden operation followed by a denial.
-- Verify missing authorization and attempts to supply company context stage nothing and launch nothing. Verify synthetic tests cannot invoke an installed provider.
-- Exercise timeout, interruption, malformed/error envelopes, output limits, cumulative allowances, checkpoint restoration and owned-child cleanup through the verification path.
-- Retain existing descriptor cleanup, ancestor-safe capture, inventory, environment, source-instruction, payload validation and typed-dispatch coverage without further capture redesign.
-- Run `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` and any added verification test module.
-- Run the affected regressions in `test_current_build.py::test_public_namespace_and_compatibility`, `test_current_build.py::test_public_help_is_bav_first_and_check_is_diagnostic`, `test_readme.py`, and `test_research_handoff.py::test_modeler_import_boundary_excludes_downstream_owners` under `bav/director/tests/`.
+- Add focused Extractor tests for Markdown bypass, adapter argument/timeout/failure behavior, atomic registration, same-content reuse across consumers, changed versions, contextual passages/tables, source lineage, contrary queries, technical coverage gaps and approved-path enforcement.
+- Label synthetic converter and corpus fixtures as tests. Reuse historical real conversion evidence with its original attribution; do not report adapter fixtures as a new installed conversion demonstration.
+- Run focused new tests, affected filing-loader/company-interface regressions, and existing `test_research_runtime.py` and `test_runtime_verification.py` to verify installed-launch closure remains intact. Avoid workbook rebuilds, Office and full certification.
+- Update `bav/director/docs/BENCHMARK.md` with callable interfaces, actual local queries, retrieved locators, reuse measurements and exact coverage gaps. Record measured commands/results in `RESULT.md` without rewriting historical records.
 
 ## Boundaries and remaining scope
 
-No live provider calls, Controller probes, authentication/ACP replay, credential-store access, global configuration changes, installations, upgrades, new billing, relaxed permissions, new sandbox platform or AutoCycle modifications. Cursor remains preferred; Codex is not silently substituted.
+Installed native-tool enforcement and controlled-runtime acceptance remain blocking unfinished parent obligations. Complete bounded BAV-owned enforcement and authorized installed acceptance before company transmission; synthetic verification cannot establish either. This continuation neither defers the parent work nor closes Completion.
 
-Preserve `DEBATER.md`, completed source discovery/conversion, originals, assets, provenance and coverage limitations. Fast Retailing publication date remains unknown and distinct from financial-statement approval. Preserve company commands, accepted financial inputs, neutral assumptions and six-component ownership. Do not repeat source preparation, workbook builds, Office verification or full certification.
+Preserve existing runtime validation, authorization bindings, capture, cumulative allowances and launch gates. No live provider calls, Controller probes, authentication replay, credential-store access, global configuration changes, new billing, relaxed permissions, provider substitution or AutoCycle changes.
 
-Controlled installed-runtime acceptance requires a later bounded authorized BAV demonstration. Codex integration, required Extractor preparation/readers/retrieval, ordinary debate CLI and approvals, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic checks and the real two-company evidence-addition/resumption benchmark remain outstanding.
+Preserve `DEBATER.md`, six-component ownership, company commands, financial inputs, neutral assumptions, originals, converter assets and provenance. Nonblocking runtime refinement remains recorded for later reconsideration and final acceptance.
 
-Update `bav/director/docs/BENCHMARK.md` with the implemented verification entry point, evidence semantics, measured synthetic coverage and exact remaining installed-runtime dependencies. Record commands and measured outcomes in `RESULT.md` without rewriting historical records. Synthetic success does not establish native enforcement, parent Completion or Session acceptance.
+Ordinary debate intake/approvals, remaining readers and Modeler integration, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic acceptance and real evidence addition/resumption remain required subsequent work. Local retrieval success does not establish the real benchmark or Session Endpoint.
 
 Cursor must not modify `TARGET.md`, `SESSION.md` or `IMPLEMENTATION.md`.
