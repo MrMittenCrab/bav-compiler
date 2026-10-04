@@ -593,3 +593,87 @@ def test_invalid_modes_and_false_company_context_keep_installed_closed(tmp_path)
     )
     assert mismatched.status == "invalid_request"
     assert mismatched.capture.launched is False
+
+
+def _assert_rejected_stream(runtime, result, call_id, error_codes):
+    assert result.status in {"malformed", "execution_failure"}
+    assert result.structured_output is None
+    assert result.known_result is False
+    assert result.retried is False
+    assert result.attempts == ()
+    assert runtime.tool_dispatches == 0
+    assert runtime.backend_calls_attempted == 1
+    assert runtime.backend_failures == 1
+    assert result.capture.launched is True
+    assert result.capture.call_id == call_id
+    assert result.capture.error in error_codes
+    assert result.capture.observed.get("CURSOR_API_KEY") != result.capture.error
+    dumped = json.dumps(result.capture.observed)
+    assert "CURSOR_API_KEY" not in dumped or "[redacted]" in dumped
+
+
+def test_stream_error_anywhere_defeats_success_result(tmp_path):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+    cases = (
+        ("stream_error_then_result", {"provider_error_event", "provider_error_indicator"}),
+        ("stream_result_then_error", {"provider_error_event", "provider_error_indicator"}),
+        (
+            "stream_error_result_then_success",
+            {
+                "provider_error_event",
+                "provider_error_indicator",
+                "conflicting_success_error_signals",
+            },
+        ),
+        ("stream_success_false_event", {"provider_error_indicator"}),
+        ("stream_is_error_event", {"provider_error_indicator"}),
+    )
+    for scenario, errors in cases:
+        runtime = _runtime(tmp_path, scenario)
+        call_id = f"call-{scenario}"
+        result = _invoke(runtime, _request("planner", snapshot, call_id), scenario)
+        _assert_rejected_stream(runtime, result, call_id, errors)
+
+
+def test_stream_malformed_and_nonobject_records_are_rejected(tmp_path):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+    cases = (
+        ("stream_malformed_then_result", {"truncated_or_malformed_output"}),
+        ("stream_nonobject_then_result", {"provider_output_not_object"}),
+    )
+    for scenario, errors in cases:
+        runtime = _runtime(tmp_path, scenario)
+        call_id = f"call-{scenario}"
+        result = _invoke(runtime, _request("planner", snapshot, call_id), scenario)
+        _assert_rejected_stream(runtime, result, call_id, errors)
+
+
+def test_successful_stream_and_single_object_dispatch_both_roles(tmp_path):
+    source = _source(
+        "src-approved",
+        "Approved synthetic passage noting an error in a prior table.",
+        "approved.md",
+    )
+    for role, scenario in (("planner", "stream_ok"), ("reviewer", "stream_ok")):
+        snapshot = _snapshot(role, (source,))
+        runtime = _runtime(tmp_path, scenario)
+        result = _invoke(runtime, _request(role, snapshot, f"call-stream-{role}"), scenario)
+        assert result.status == "ok"
+        assert result.known_result is True
+        assert result.retried is False
+        assert result.structured_output["kind"] == f"{role}_proposal"
+        assert result.structured_output["payload"]["excerpt"]
+        assert result.attempts[0].executed is True
+        assert result.attempts[0].result["text"] == source.text
+        assert runtime.tool_dispatches == 1
+        assert runtime.backend_failures == 0
+        assert result.capture.observed["role"] == role
+    single = _runtime(tmp_path, "ok")
+    planner = _snapshot("planner", (source,))
+    single_result = _invoke(single, _request("planner", planner, "call-single-ok"), "ok")
+    assert single_result.status == "ok"
+    assert single_result.known_result is True
+    assert single_result.attempts[0].executed is True
+    assert single.tool_dispatches == 1

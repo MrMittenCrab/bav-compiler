@@ -1,3 +1,73 @@
+# RESULT.md — Step 12.1.6 Repair whole-stream provider error validation
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 12.1.6 — Repair whole-stream provider error validation
+**Work:** `e35d5703ccc14627a150a29b9e900502`
+**Plan:** `820c80ac158942a1af12093f5d0daf9a`
+**Finding:** Verify Debater benchmark sources and controlled runtime
+**Attempt:** `42163d7760344ef29e5c75ca3893cbc2`
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. No AutoCycle edits, discovery, conversion, debate CLI, argument export, observation replay, ACP session, live provider calls, login/logout, credential-store reads, global configuration writes, or Debater publications. This record does not claim parent Completion, Session acceptance, controlled-backend acceptance, or end-to-end benchmark success.
+
+TARGET SHA-256 `9bfc5e439e5776cf3d1d89fd33363febe716a6744ad7d256942a24709ff3e77b` (60817).
+SESSION SHA-256 `ca72e1c149eb4cefd2f6c9f101be577fed5b8493975a8d19e2fce7c4e44fff94` (5897).
+IMPLEMENTATION SHA-256 `6874c8bf418a8536c3de00dea27b853c936ea2f1fedf92a3d75df7b2d7691f69` (5638).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `03e82d2dbfb4f77183662d4b89f9d2ac83bda6a9` was ignored. HEAD/branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Ancestry parent was read from the Git object store.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `12.1.6` source | `471e3c48ded7dba84bb4b8227069744b8fbfbcf8` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; parent `b05c5a9cafa8d59a6dc3a5602264051f161407eb` is the Step 12.1.5 checkpoint / `reviewed_head` |
+| Bound running attempt | `42163d7760344ef29e5c75ca3893cbc2`, `plan_sha` = B, phase `running`, `checkpoint_sha` absent |
+| `admitted_review` predecessor | `review_sha256` `6148b55b7910414c539be46c4beb6e7b6b338b0a4963041d881db31b154f4ef4`; `reviewed_head` `b05c5a9cafa8d59a6dc3a5602264051f161407eb` |
+| `latest-implementation` leftover HEAD | `03e82d2dbfb4f77183662d4b89f9d2ac83bda6a9` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `820c80ac158942a1af12093f5d0daf9a` |
+| Fail-closed | Not required |
+
+## Implemented repair
+
+Whole-stream validation now runs in `bav/director/runtime/adapter.py` before a result is selected or any application dispatch occurs. Error-indicator handling is shared with `policy.py` (`has_error_indicator`, `provider_event_error`), including Cursor `is_error`.
+
+Pre-repair in-memory reproduction of an error event followed by a success-shaped result at exit 0: `parse_error=None`, `envelope_error=None`, `WOULD_ACCEPT True`. Post-repair same bytes: `parse_error=provider_error_event`, `parsed=None`, `WOULD_ACCEPT False`.
+
+An error anywhere in the stream (`type=error` / `subtype=error`, or existing envelope indicators on the protocol or applicable output envelope) defeats a success-shaped result regardless of event order or exit zero. Malformed, truncated and non-object stream records are rejected rather than dropped. Quoted source wording is not a control signal. Failed streams return no structured research result, keep sanitized call-bound diagnostics, consume call/failure allowance, and do not retry. Valid single-object and successful NDJSON streams still dispatch. Bounded capture, cumulative accounting, allowance restoration and installed-launch closure are preserved. Codex remains unimplemented. Installed launches remain closed.
+
+## Listed verification
+
+Local fake-provider processes and labeled synthetic files. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Command | Measured result |
+|---|---|
+| `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` | **22 passed** in 1.79s |
+| `/opt/anaconda3/bin/python -m pytest -q` `bav/director/tests/test_current_build.py::test_public_namespace_and_compatibility` `…::test_public_help_is_bav_first_and_check_is_diagnostic` `bav/director/tests/test_readme.py` `bav/director/tests/test_research_handoff.py::test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 0.73s |
+
+Synthetic path measured: error before result; error after result; earlier error-bearing result then success; separate `success=false` and `is_error=true` events; otherwise valid requests in rejected streams with zero dispatches; malformed/truncated and non-object records beside a valid result; successful stream and single-object controls for Planner and Reviewer. Synthetic success is adapter behavior only, not installed-provider enforcement.
+
+## Preservation and plan changes
+
+Fast Retailing `publication_date` remains `null`; `financial_statement_approval.date` remains `2025-11-27`. Accepted financial inputs and neutral assumptions unchanged. Company outputs not rebuilt. Original filings, converter Markdown, assets, coverage limitations, probe artifacts, and historical controller receipts retained. No discovery or conversion replay. No new live provider call. `DEBATER.md` unchanged (`7578b44c…`, 62336).
+
+Required plan change: none.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `bav/director/runtime/adapter.py` | `a44583d03074de9c694c6ad81c77d222a82e1ac4ebf25e7204ed3b00c613c571` | 35857 |
+| `bav/director/runtime/policy.py` | `6204ee349aeac90ae5a2f4386a1c6aff3b25c6e4c101c0bb58a5a6fe1cf9e2bc` | 9156 |
+| `bav/director/tests/test_research_runtime.py` | `74879f366091f7510d737eb42c4559d8206fc69b17045dec341054cf5a053a79` | 29002 |
+| `bav/director/tests/fixtures/runtime/fake_provider.py` | `62dadccc4c8fa08d88c695ca10e2ff1e5897fd65cca059a0f2526d5ed23060c5` | 9848 |
+| `bav/director/docs/DEBATER.md` | `7578b44c6c56db0265fa50f0df9de68d6002d36f2327fa155c746a70a2c93f42` | 62336 |
+| `bav/director/docs/BENCHMARK.md` | `9ab066f15991df097a53be43883ce8b86803ad2c2bc5451e7c2bf72e572e7ec5` | 39027 |
+
+## Remaining toward Completion
+
+Ordinary `python -m bav debate` intake/approvals, Extractor preparation/retrieval, Planner/Reviewer research, durable case integration, required readers, coherent JSON/Markdown exports, adversarial checks, and the real `--add`/resume benchmark remain outstanding. Controlled installed-runtime acceptance and Codex implementation remain unverified. A later bounded real-runtime demonstration remains necessary before company transmission. Isolated Cursor authentication cannot be independently re-checked without replaying the consumed observation. Effective installed-provider permissions remain unestablished. Synthetic success cannot close parent Completion.
+
 # RESULT.md — Step 12.1.5 Repair BAV runtime validation, launch guards and cumulative limits
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

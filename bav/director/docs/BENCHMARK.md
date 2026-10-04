@@ -1,8 +1,8 @@
-# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 record
+# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 / 12.1.6 record
 
 Label: **corpus-bound**. This is not a verified latest-market assessment and not an end-to-end Debater acceptance.
 
-Step 12.1.1 corrects Fast Retailing date provenance and replaces Cursor “effective traces” with evidence classifications. Step 12.1.2 records the Cursor isolation and observation route from official docs plus installed help/binary strings, without setting `CURSOR_CONFIG_DIR`, writing configuration, or repeating a provider call. Step 12.1.3 diagnoses Cursor authentication from the installed controller check and one ordinary `agent status --format json` run; it does not replay the observation, ACP session, or a reasoning-provider call. Step 12.1.4 implements the Director research runtime adapter and exercises it with local fake-provider processes only. Step 12.1.5 repairs BAV-owned envelope/argument validation, bounded stream capture, cumulative elapsed limits, allowance checkpoint/restore and installed launch guards; synthetic adapter success is still not installed-provider enforcement. Completed discovery, both conversions, original filings, prepared representations, assets and coverage limitations are preserved. Fast Retailing publication date remains unknown; 2025-11-27 remains only the separately sourced financial-statement approval date. Ordinary CLI authentication does not establish controller-isolated authentication or effective research permissions.
+Step 12.1.1 corrects Fast Retailing date provenance and replaces Cursor “effective traces” with evidence classifications. Step 12.1.2 records the Cursor isolation and observation route from official docs plus installed help/binary strings, without setting `CURSOR_CONFIG_DIR`, writing configuration, or repeating a provider call. Step 12.1.3 diagnoses Cursor authentication from the installed controller check and one ordinary `agent status --format json` run; it does not replay the observation, ACP session, or a reasoning-provider call. Step 12.1.4 implements the Director research runtime adapter and exercises it with local fake-provider processes only. Step 12.1.5 repairs BAV-owned envelope/argument validation, bounded stream capture, cumulative elapsed limits, allowance checkpoint/restore and installed launch guards; synthetic adapter success is still not installed-provider enforcement. Step 12.1.6 repairs whole-stream provider-error validation so an error anywhere in a stream defeats a later or earlier success-shaped result. Completed discovery, both conversions, original filings, prepared representations, assets and coverage limitations are preserved. Fast Retailing publication date remains unknown; 2025-11-27 remains only the separately sourced financial-statement approval date. Ordinary CLI authentication does not establish controller-isolated authentication or effective research permissions.
 
 Exact proposition (unapproved scope):
 
@@ -314,3 +314,41 @@ Still closed / unverified:
 - Controller-isolated `_GatedCursor` authentication (ordinary `agent status` remains a different process context).
 - Codex backend implementation and any Codex research path.
 - Company-corpus transmission on either backend.
+
+## Step 12.1.6 — Whole-stream provider error validation
+
+Repaired under `bav/director/runtime/adapter.py`, sharing protocol/output error-indicator handling with `policy.py`. Bounded capture, cumulative allowance accounting, checkpoint restore and installed-launch closure from Step 12.1.5 are unchanged. `DEBATER.md` handbook body and architecture clarification are unchanged.
+
+Before the repair, `_parse_provider_output` kept the last `type=result` event and silently dropped non-object stream records. An in-memory reproduction of an error event followed by a success-shaped `output.kind` result at exit 0 returned `parse_error=None`, `envelope_error=None`, and `WOULD_ACCEPT True`. After the repair the same bytes return `parse_error=provider_error_event`, `parsed=None`, and `WOULD_ACCEPT False`.
+
+Repaired stream controls:
+
+- Every provider event is validated before a final result is selected. `type=error` / `subtype=error` events and existing envelope indicators (`error`, `errors`, `isError`, `is_error`, `failed`, `failure`, `success=false`, `ok=false`) on the protocol envelope or applicable `output` envelope defeat the stream.
+- Quoted source wording such as “error in the prior table” is not a control signal.
+- Malformed, truncated and non-object stream records are rejected rather than dropped. Missing-result and unsuccessful-exit handling remain.
+- Whole-stream validation completes before application dispatch. Failed streams return no structured research result, keep sanitized call-bound diagnostics, consume call/failure allowance, and do not retry.
+- Valid single-object and successful NDJSON streams still dispatch `inspect_approved_source` for Planner and Reviewer.
+
+### Measured synthetic results
+
+Local fake-provider processes and labeled synthetic files only. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Check | Command | Result |
+|---|---|---|
+| Whole-stream error/order/malformed/non-object plus retained success/dispatch | `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` | **22 passed** in 1.79s |
+| Affected Director CLI/help/readme/import-boundary | `/opt/anaconda3/bin/python -m pytest -q` `test_public_namespace_and_compatibility` `test_public_help_is_bav_first_and_check_is_diagnostic` `test_readme.py` `test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 0.73s |
+
+Covered through actual `ResearchRuntime.invoke` subprocess paths: error before result; error after result; earlier error-bearing result then success; separate `success=false` and `is_error=true` events; otherwise valid operation requests in those rejected streams (zero dispatches); malformed/truncated and non-object records beside a valid result; successful stream and single-object controls for Planner and Reviewer.
+
+Synthetic success establishes repaired adapter stream validation only. It does not establish native Cursor/Codex enforcement, parent Completion, or end-to-end Debater acceptance.
+
+### Exact remaining runtime limitations
+
+Still closed / unverified / outstanding:
+
+- Installed Cursor launch (no supported BAV verification path binding executable, version, loaded configuration identity and a policy-denial event).
+- Effective native Shell/Write/Read/MCP/retrieval enforcement on the installed CLI.
+- Controller-isolated `_GatedCursor` authentication.
+- Codex backend implementation.
+- Company-corpus transmission on either backend.
+- Ordinary `python -m bav debate` intake/approvals, Extractor readers/preparation/retrieval, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic checks, and real evidence-addition/resumption.

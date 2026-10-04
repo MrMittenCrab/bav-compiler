@@ -32,6 +32,7 @@ from bav.director.runtime.policy import (
     build_cursor_command,
     fingerprint,
     intended_research_policy,
+    provider_event_error,
     sanitize,
     snapshot_dict,
     validate_operation_request,
@@ -376,7 +377,7 @@ class ResearchRuntime:
             return self._finish(
                 request,
                 isolated,
-                status="malformed",
+                status=_status_for_validation_error(parse_error),
                 structured=None,
                 attempts=(),
                 exit_code=exit_code,
@@ -392,18 +393,10 @@ class ResearchRuntime:
             parsed, exit_code=exit_code, expected_role=request.role
         )
         if envelope_error:
-            status = (
-                "execution_failure"
-                if envelope_error
-                in {"unsuccessful_provider_exit", "provider_error_indicator"}
-                else "malformed"
-            )
-            if envelope_error == "conflicting_success_error_signals":
-                status = "malformed"
             return self._finish(
                 request,
                 isolated,
-                status=status,
+                status=_status_for_validation_error(envelope_error),
                 structured=None,
                 attempts=(),
                 exit_code=exit_code,
@@ -899,6 +892,16 @@ def _require_finite_positive_timeout(value: float) -> None:
         raise ValueError("timeout_seconds must be a finite positive limit")
 
 
+def _status_for_validation_error(code: str | None) -> str:
+    if code in {
+        "unsuccessful_provider_exit",
+        "provider_error_indicator",
+        "provider_error_event",
+    }:
+        return "execution_failure"
+    return "malformed"
+
+
 def _parse_provider_output(stdout: bytes) -> tuple[dict[str, Any] | None, str | None]:
     if not stdout:
         return None, "missing_provider_output"
@@ -907,33 +910,63 @@ def _parse_provider_output(stdout: bytes) -> tuple[dict[str, Any] | None, str | 
         return None, "missing_provider_output"
     try:
         payload = json.loads(text)
-        if isinstance(payload, dict):
-            return payload, None
-        return None, "provider_output_not_object"
     except json.JSONDecodeError:
-        events: list[dict[str, Any]] = []
-        for line in text.splitlines():
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                item = json.loads(line)
-            except json.JSONDecodeError:
-                return None, "truncated_or_malformed_output"
-            if isinstance(item, dict):
-                events.append(item)
-        if not events:
+        events, parse_error = _parse_provider_stream(text)
+        if parse_error or events is None:
+            return None, parse_error or "truncated_or_malformed_output"
+        return _select_validated_stream_result(events)
+    if not isinstance(payload, dict):
+        return None, "provider_output_not_object"
+    return payload, None
+
+
+def _parse_provider_stream(
+    text: str,
+) -> tuple[list[dict[str, Any]] | None, str | None]:
+    events: list[dict[str, Any]] = []
+    for line in text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            item = json.loads(line)
+        except json.JSONDecodeError:
             return None, "truncated_or_malformed_output"
-        final = next((item for item in reversed(events) if item.get("type") == "result"), None)
-        if final is None:
-            return None, "missing_result"
-        combined = dict(final)
-        combined["requests"] = [
-            event.get("request") or event
-            for event in events
-            if event.get("type") == "request" or "operation" in event
-        ]
-        return combined, None
+        if not isinstance(item, dict):
+            return None, "provider_output_not_object"
+        events.append(item)
+    if not events:
+        return None, "truncated_or_malformed_output"
+    return events, None
+
+
+def _select_validated_stream_result(
+    events: list[dict[str, Any]],
+) -> tuple[dict[str, Any] | None, str | None]:
+    for event in events:
+        error = provider_event_error(event)
+        if error:
+            return None, error
+    final = next((item for item in reversed(events) if item.get("type") == "result"), None)
+    if final is None:
+        return None, "missing_result"
+    return _combine_stream_result(events, final), None
+
+
+def _combine_stream_result(
+    events: list[dict[str, Any]],
+    final: Mapping[str, Any],
+) -> dict[str, Any]:
+    combined = dict(final)
+    collected: list[Any] = []
+    for event in events:
+        if event.get("type") == "request":
+            collected.append(event.get("request") or event)
+        elif event.get("type") != "result" and "operation" in event:
+            collected.append(event.get("request") or event)
+    if collected:
+        combined["requests"] = collected
+    return combined
 
 
 def _safe_observed(stdout: bytes) -> dict[str, Any]:

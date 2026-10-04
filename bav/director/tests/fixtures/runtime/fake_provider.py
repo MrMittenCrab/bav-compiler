@@ -55,9 +55,27 @@ def _ok(role: str, observed: dict, source_id: str) -> dict:
         ],
         "output": {
             "kind": f"{role}_proposal",
-            "payload": {"source_id": source_id, "note": "synthetic"},
+            "payload": {
+                "source_id": source_id,
+                "note": "synthetic",
+                "excerpt": "Management disclosed an error in the prior table.",
+            },
         },
     }
+
+
+def _approved_request(source_id: str) -> dict:
+    return {
+        "type": "request",
+        "operation": "inspect_approved_source",
+        "arguments": {"source_id": source_id},
+    }
+
+
+def _write_ndjson(events: list[dict]) -> None:
+    for event in events:
+        sys.stdout.write(json.dumps(event, separators=(",", ":")) + "\n")
+    sys.stdout.flush()
 
 
 def main() -> int:
@@ -137,6 +155,70 @@ def main() -> int:
     if scenario == "slow_ok":
         time.sleep(float(os.environ.get("BAV_FAKE_SLEEP", "0.35")))
         sys.stdout.write(json.dumps(_ok(role, observed, source_id)))
+        return 0
+    if scenario == "stream_error_then_result":
+        _write_ndjson(
+            [
+                {"type": "error", "error": "provider_failed"},
+                _approved_request(source_id),
+                _ok(role, observed, source_id),
+            ]
+        )
+        return 0
+    if scenario == "stream_result_then_error":
+        _write_ndjson(
+            [
+                _ok(role, observed, source_id),
+                _approved_request(source_id),
+                {"type": "error", "error": "late_provider_failure"},
+            ]
+        )
+        return 0
+    if scenario == "stream_error_result_then_success":
+        earlier = _ok(role, observed, source_id)
+        earlier["error"] = "earlier_result_failed"
+        _write_ndjson(
+            [
+                earlier,
+                _approved_request(source_id),
+                _ok(role, observed, source_id),
+            ]
+        )
+        return 0
+    if scenario == "stream_success_false_event":
+        _write_ndjson(
+            [
+                {"type": "assistant", "success": False},
+                _approved_request(source_id),
+                _ok(role, observed, source_id),
+            ]
+        )
+        return 0
+    if scenario == "stream_is_error_event":
+        _write_ndjson(
+            [
+                {"type": "assistant", "is_error": True},
+                _approved_request(source_id),
+                _ok(role, observed, source_id),
+            ]
+        )
+        return 0
+    if scenario == "stream_malformed_then_result":
+        sys.stdout.write('{"type":"assistant","text":"truncated"\n')
+        _write_ndjson([_approved_request(source_id), _ok(role, observed, source_id)])
+        return 0
+    if scenario == "stream_nonobject_then_result":
+        sys.stdout.write("[1,2,3]\n")
+        _write_ndjson([_approved_request(source_id), _ok(role, observed, source_id)])
+        return 0
+    if scenario == "stream_ok":
+        _write_ndjson(
+            [
+                {"type": "system", "subtype": "init"},
+                _approved_request(source_id),
+                _ok(role, observed, source_id),
+            ]
+        )
         return 0
     if scenario == "denied_ops":
         payload = {

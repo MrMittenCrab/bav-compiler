@@ -16,7 +16,9 @@ from bav.director.runtime.contract import (
     ApprovedSnapshot,
 )
 
-_ERROR_INDICATOR_KEYS = ("error", "errors", "isError", "failed", "failure")
+_ERROR_INDICATOR_KEYS = ("error", "errors", "isError", "is_error", "failed", "failure")
+_PROVIDER_ERROR_TYPES = frozenset({"error"})
+_PROVIDER_ERROR_SUBTYPES = frozenset({"error"})
 
 _SECRET_KEY = re.compile(r"(api[_-]?key|token|password|authorization|secret|credential)", re.I)
 _INSTRUCTION_MARKERS = (
@@ -90,7 +92,7 @@ def snapshot_dict(snapshot: ApprovedSnapshot) -> dict[str, Any]:
     }
 
 
-def _has_error_indicator(value: Mapping[str, Any]) -> bool:
+def has_error_indicator(value: Mapping[str, Any]) -> bool:
     if value.get("success") is False or value.get("ok") is False:
         return True
     for key in _ERROR_INDICATOR_KEYS:
@@ -99,6 +101,17 @@ def _has_error_indicator(value: Mapping[str, Any]) -> bool:
             continue
         return True
     return False
+
+
+def provider_event_error(event: Mapping[str, Any]) -> str | None:
+    if event.get("type") in _PROVIDER_ERROR_TYPES or event.get("subtype") in _PROVIDER_ERROR_SUBTYPES:
+        return "provider_error_event"
+    if has_error_indicator(event):
+        return "provider_error_indicator"
+    output = event.get("output")
+    if isinstance(output, Mapping) and has_error_indicator(output):
+        return "provider_error_indicator"
+    return None
 
 
 def validate_provider_envelope(
@@ -112,8 +125,8 @@ def validate_provider_envelope(
     unsuccessful = exit_code not in (0, None)
     output = payload.get("output")
     has_success_shape = isinstance(output, Mapping) and "kind" in output
-    error_indicated = unsuccessful or _has_error_indicator(payload)
-    if isinstance(output, Mapping) and _has_error_indicator(output):
+    error_indicated = unsuccessful or has_error_indicator(payload)
+    if isinstance(output, Mapping) and has_error_indicator(output):
         error_indicated = True
     if has_success_shape and error_indicated:
         return "conflicting_success_error_signals"
