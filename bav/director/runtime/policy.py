@@ -452,6 +452,28 @@ def intended_research_policy() -> dict[str, Any]:
     }
 
 
+def intended_verification_policy() -> dict[str, Any]:
+    """BAV policy intent for verification. Not a claim of loaded provider config."""
+    return {
+        "permissions": {
+            "allow": ["Read(SYNTHETIC_CONTEXT.txt)"],
+            "deny": [
+                "Shell(*)",
+                "Write(*)",
+                "Mcp(*)",
+                "WebFetch(*)",
+                "WebSearch(*)",
+                "Read(UNRELATED_CANARY.txt)",
+                "Read(SHELL_CANARY.txt)",
+                "Read(WRITE_CANARY.txt)",
+                "Read(MCP_CANARY.txt)",
+                "Read(FETCH_CANARY.txt)",
+            ],
+        },
+        "sandbox": {"mode": "enabled", "networkAccess": "untrusted"},
+    }
+
+
 def policy_fingerprint(policy: Mapping[str, Any], restriction_reason: str) -> str:
     return fingerprint({"policy": policy, "restriction": restriction_reason})
 

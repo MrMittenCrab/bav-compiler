@@ -1022,6 +1022,62 @@ def test_capture_survives_cleanup_and_restores_bindings(tmp_path):
     assert restored.retried is False
 
 
+def test_synthetic_verification_cannot_open_installed_research(tmp_path):
+    from bav.director.runtime import (
+        REQUIRED_VERIFICATION_CHALLENGES,
+        VerificationRequest,
+        issue_synthetic_authorization,
+    )
+
+    runtime = _runtime(tmp_path, "verify_ok")
+    result = runtime.verify(
+        VerificationRequest(
+            call_id="verify-then-research",
+            backend="cursor",
+            model=MODEL,
+            authorization=issue_synthetic_authorization(
+                backend=runtime.backend,
+                executable_identity=runtime._approved_invocation,
+                executable_version="fake-provider-1",
+                model=runtime.model,
+                allowance=runtime.allowance,
+            ),
+            challenge_ids=REQUIRED_VERIFICATION_CHALLENGES,
+        )
+    )
+    assert result.status == "synthetic_verified"
+    assert result.authorizes_installed_execution is False
+    source = _source("src-company", "Labeled company-context marker.", "company.md", origin="company_corpus")
+    snapshot = _snapshot("planner", (source,), contains_company_context=True)
+    before = set(Path(tempfile.gettempdir()).glob("bav-research-runtime-*"))
+    installed = ResearchRuntime(
+        model=MODEL,
+        provider_mode="installed",
+        native_restriction=NativeRestrictionState(
+            backend="cursor",
+            verified=True,
+            reason="synthetic verification receipt",
+            documented_controls=("none",),
+            missing_controls=(),
+        ),
+        timeout_seconds=1,
+    )
+    closed = installed.invoke(
+        ResearchRequest(
+            role="planner",
+            model=MODEL,
+            backend="cursor",
+            snapshot=snapshot,
+            call_id="call-no-promotion",
+            provider_mode="installed",
+        )
+    )
+    after = set(Path(tempfile.gettempdir()).glob("bav-research-runtime-*"))
+    assert closed.status == "installed_launch_closed"
+    assert closed.capture.launched is False
+    assert after <= before
+
+
 def test_installed_mode_stages_nothing_despite_forged_signals(tmp_path):
     source = _source(
         "src-company",

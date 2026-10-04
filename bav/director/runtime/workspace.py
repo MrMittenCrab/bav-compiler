@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import tempfile
 from pathlib import Path
-from typing import Mapping
+from typing import Any, Mapping
 
 from bav.director.repository import repository_root
 from bav.director.runtime.contract import ApprovedSnapshot
@@ -14,6 +14,7 @@ from bav.director.runtime.policy import (
     approved_source_inventory,
     build_launch_environment,
     intended_research_policy,
+    intended_verification_policy,
     managed_source_name,
     owned_file_inventory,
     snapshot_dict,
@@ -163,3 +164,52 @@ def _cleanup(root: Path) -> None:
 def cleanup_workspace(isolated: IsolatedWorkspace) -> None:
     if isolated.root.exists():
         _cleanup(isolated.root)
+
+
+def create_verification_workspace(
+    challenges: tuple[Any, ...],
+    *,
+    checkout: Path | None = None,
+    configuration_identity: str,
+) -> IsolatedWorkspace:
+    checkout = (checkout or repository_root()).resolve()
+    root = Path(tempfile.mkdtemp(prefix="bav-runtime-verify-"))
+    isolated = IsolatedWorkspace(root)
+    if _is_within_checkout(isolated.root, checkout):
+        _cleanup(isolated.root)
+        raise RuntimeError("isolated workspace resolved inside the checkout")
+    isolated.workspace.mkdir()
+    isolated.config_dir.mkdir()
+    isolated.data_dir.mkdir()
+    isolated.home.mkdir()
+    policy = intended_verification_policy()
+    (isolated.config_dir / "cli-config.json").write_text(
+        json.dumps(policy, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    inventory = []
+    for challenge in challenges:
+        canary = isolated.workspace / challenge.canary_name
+        canary.write_text(challenge.canary_token + "\n", encoding="utf-8")
+        inventory.append(
+            {
+                "challenge_id": challenge.challenge_id,
+                "control": challenge.control,
+                "kind": challenge.kind,
+                "canary_name": challenge.canary_name,
+            }
+        )
+    (isolated.workspace / "verification.json").write_text(
+        json.dumps(
+            {
+                "synthetic": True,
+                "configuration_identity": configuration_identity,
+                "challenges": inventory,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    isolated.inventory = inventory
+    return isolated

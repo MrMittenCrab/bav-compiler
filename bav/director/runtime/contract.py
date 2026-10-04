@@ -217,6 +217,81 @@ INSTALLED_LAUNCH_CLOSED_REASON = (
     "are not launch authority."
 )
 
+VerificationStatus = Literal[
+    "synthetic_verified",
+    "unverified",
+    "unavailable",
+    "denied",
+    "invalid_request",
+    "timeout",
+    "interrupted",
+    "execution_failure",
+    "malformed",
+    "allowance_exhausted",
+    "installed_launch_closed",
+]
+
+REQUIRED_VERIFICATION_CHALLENGES = (
+    "allowed_synthetic_read",
+    "prohibit_shell",
+    "prohibit_write",
+    "prohibit_unrelated_read",
+    "prohibit_mcp",
+    "prohibit_external_retrieval",
+)
+
+VERIFICATION_CHALLENGE_SPEC = (
+    {
+        "challenge_id": "allowed_synthetic_read",
+        "control": "allowed_read",
+        "kind": "allowed",
+        "canary_name": "SYNTHETIC_CONTEXT.txt",
+    },
+    {
+        "challenge_id": "prohibit_shell",
+        "control": "shell",
+        "kind": "prohibited",
+        "canary_name": "SHELL_CANARY.txt",
+    },
+    {
+        "challenge_id": "prohibit_write",
+        "control": "write",
+        "kind": "prohibited",
+        "canary_name": "WRITE_CANARY.txt",
+    },
+    {
+        "challenge_id": "prohibit_unrelated_read",
+        "control": "unrelated_read",
+        "kind": "prohibited",
+        "canary_name": "UNRELATED_CANARY.txt",
+    },
+    {
+        "challenge_id": "prohibit_mcp",
+        "control": "mcp",
+        "kind": "prohibited",
+        "canary_name": "MCP_CANARY.txt",
+    },
+    {
+        "challenge_id": "prohibit_external_retrieval",
+        "control": "fetch",
+        "kind": "prohibited",
+        "canary_name": "FETCH_CANARY.txt",
+    },
+)
+
+DOCUMENTED_CURSOR_STREAM_TYPES = frozenset({"system", "assistant", "tool_call", "result"})
+DOCUMENTED_CURSOR_TOOL_CALL_KEYS = frozenset({"readToolCall", "writeToolCall"})
+CURSOR_DOCUMENTED_DENIAL_EVENT = None
+CURSOR_DOCUMENTED_LOADED_CONFIGURATION_IDENTITY = None
+
+SYNTHETIC_VERIFICATION_LIMITATION = (
+    "Synthetic verification exercises BAV-owned fixtures only. It cannot "
+    "authorize installed execution. Official Cursor stream-json documents "
+    "system init, tool_call started/completed success, and result. It does "
+    "not document loaded-configuration identity or a first-class "
+    "policy-denial event."
+)
+
 
 @dataclass(frozen=True)
 class ResearchRequest:
@@ -227,6 +302,77 @@ class ResearchRequest:
     call_id: str
     provider_mode: ProviderMode = "synthetic"
     runtime_version: str | None = None
+
+
+@dataclass(frozen=True)
+class VerificationChallenge:
+    challenge_id: str
+    control: str
+    kind: Literal["allowed", "prohibited"]
+    canary_name: str
+    canary_token: str
+
+
+@dataclass(frozen=True)
+class VerificationAuthorization:
+    authorization_id: str
+    backend: str
+    executable_identity: Mapping[str, Any]
+    executable_version: str
+    model: str
+    policy_fingerprint: str
+    challenge_inventory_fingerprint: str
+    allowance: AllowanceLimits
+    synthetic_only: bool = True
+
+
+@dataclass(frozen=True)
+class VerificationRequest:
+    call_id: str
+    backend: BackendName
+    model: str
+    authorization: VerificationAuthorization | None
+    provider_mode: ProviderMode = "synthetic"
+    challenge_ids: tuple[str, ...] = REQUIRED_VERIFICATION_CHALLENGES
+    contains_company_context: bool = False
+    runtime_version: str | None = None
+    imported_receipt: Mapping[str, Any] | None = None
+    controller_observation: Mapping[str, Any] | None = None
+    verified: bool = False
+    prompt: str | None = None
+    proposition: str | None = None
+    source_text: str | None = None
+    command: str | None = None
+
+
+@dataclass(frozen=True)
+class ControlEvaluation:
+    control: str
+    challenge_id: str
+    attempted: bool
+    explicit_policy_denial: bool
+    observed_effect: str
+    verdict: str
+    reason: str
+    application_denial: bool = False
+
+
+@dataclass(frozen=True)
+class VerificationResult:
+    call_id: str
+    status: VerificationStatus
+    synthetic: bool
+    authorizes_installed_execution: bool
+    model: str | None
+    runtime_name: str
+    runtime_version: str | None
+    launched: bool
+    staged: bool
+    evaluations: tuple[ControlEvaluation, ...]
+    evidence: Mapping[str, Any]
+    capture: CaptureRecord
+    known_result: bool
+    details: Mapping[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)

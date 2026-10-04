@@ -132,6 +132,7 @@ class ResearchRuntime:
         self.native = self._bound_restriction(native_restriction)
         if checkpoint is not None:
             self.restore(checkpoint)
+        self._consumed_authorizations: set[str] = set()
 
     def _bound_restriction(
         self, supplied: NativeRestrictionState | None
@@ -218,6 +219,14 @@ class ResearchRuntime:
             self.tool_dispatches >= self.allowance.max_tool_dispatches
             or self.remaining_elapsed_seconds() <= 0
         )
+
+    def verify(self, request: Any) -> Any:
+        from bav.director.runtime.contract import VerificationRequest
+        from bav.director.runtime.verification import run_verification
+
+        if not isinstance(request, VerificationRequest):
+            raise TypeError("verify accepts VerificationRequest only")
+        return run_verification(self, request)
 
     def invoke(self, request: ResearchRequest) -> BackendResult:
         self._interrupted = False

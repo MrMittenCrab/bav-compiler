@@ -1,3 +1,77 @@
+# RESULT.md — Step 12.1.14 Implement BAV-owned installed-runtime verification
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 12.1.14 — Implement BAV-owned installed-runtime verification
+**Work:** `e35d5703ccc14627a150a29b9e900502`
+**Plan:** `5eba5c999f504eada7d1ecaaf24cf427`
+**Finding:** Verify Debater benchmark sources and controlled runtime
+**Attempt:** `7a6ef5454f034d3bbdd8f1bb1ee431e5`
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. No AutoCycle edits, discovery, conversion, debate CLI, argument export, observation replay, ACP session, live provider calls, login/logout, credential-store reads, global configuration writes, or Debater publications. This record does not claim parent Completion, Session acceptance, controlled-backend acceptance, or end-to-end benchmark success.
+
+TARGET SHA-256 `9bfc5e439e5776cf3d1d89fd33363febe716a6744ad7d256942a24709ff3e77b` (60817).
+SESSION SHA-256 `ca72e1c149eb4cefd2f6c9f101be577fed5b8493975a8d19e2fce7c4e44fff94` (5897).
+IMPLEMENTATION SHA-256 `993728d5d1e0e8ca4855c4e5e9d294f679fd3f82696a6c5abe203dd33978ada5` (7591).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `55ce9888295ca9161c73e95e9821f779ed6126ec` was ignored. HEAD/branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Ancestry parent was read from the Git object store.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `12.1.14` source | `959652227e5ca54c0c3411e014197222a79eb6e8` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; parent `e88c2661b4b0984d6d8217db0640498f5ac224b0` is the Step 12.1.13 checkpoint / `reviewed_head` |
+| Bound running attempt | `7a6ef5454f034d3bbdd8f1bb1ee431e5`, `plan_sha` = B, phase `running`, `checkpoint_sha` absent |
+| `admitted_review` predecessor | `review_sha256` `96c8c2772c80d1fbf150ce9e48bc5a8aeccff1ba61a6d55cc654f1c393f66f13`; `reviewed_head` `e88c2661b4b0984d6d8217db0640498f5ac224b0` |
+| `latest-implementation` leftover HEAD | `55ce9888295ca9161c73e95e9821f779ed6126ec` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `5eba5c999f504eada7d1ecaaf24cf427` |
+| Fail-closed | Not required |
+
+## Implemented path
+
+Added `bav/director/runtime/verification.py` and typed verification request/result/authorization objects. `ResearchRuntime.verify()` runs only BAV-generated synthetic challenges and invocation-owned canaries. Authorization is bound to backend, executable identity/version, model, policy fingerprint, challenge inventory and allowance; missing, changed or replayed bindings fail before launch. Official Cursor help/docs were inspected; BAV policy intent is written into an isolated `cli-config.json` and is not treated as loaded-configuration identity. Documented stream types remain `system` / `tool_call` success / `result`. There is still no documented policy-denial event or loaded-configuration identity field. Synthetic `synthetic_verified` cannot authorize installed execution. Ordinary installed `invoke` remains closed before company staging. This attempt issued no live-call authorization.
+
+## Listed verification
+
+Local fake-provider processes, temporary directories, and invocation-owned canaries. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Command | Measured result |
+|---|---|
+| `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py bav/director/tests/test_runtime_verification.py` | **63 passed** in 5.77s |
+| `/opt/anaconda3/bin/python -m pytest -q` `bav/director/tests/test_current_build.py::test_public_namespace_and_compatibility` `…::test_public_help_is_bav_first_and_check_is_diagnostic` `bav/director/tests/test_readme.py` `bav/director/tests/test_research_handoff.py::test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 1.02s |
+
+Synthetic measurements: allowed-read control plus denials for shell/write/unrelated-read/MCP/fetch; missing authorization and company-context attempts staged and launched nothing; forged `verified` flags, imported receipts, Controller observations, changed executable/model/policy/challenge bindings and replayed authorization failed before launch; success-without-denial, absent challenges, application-only denials, DNS errors, incomplete capture, missing/mismatched loaded-config identity and prohibited-success-then-denial returned `unverified`; timeout, interruption, malformed/error envelopes, overflow, cumulative allowance and checkpoint restoration were exercised on the verification path; synthetic success did not open installed research.
+
+Existing descriptor cleanup, ancestor-safe capture, inventory, environment, source-instruction, payload validation and typed-dispatch coverage remain.
+
+## Preservation and plan changes
+
+Fast Retailing `publication_date` remains `null`; `financial_statement_approval.date` remains `2025-11-27`. Accepted financial inputs and neutral assumptions unchanged. Company outputs not rebuilt. Original filings, converter Markdown, assets, coverage limitations, probe artifacts, and historical controller receipts retained. No discovery or conversion replay. No new live provider call. `DEBATER.md` unchanged (`7578b44c…`, 62336).
+
+Required plan change: none.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `bav/director/runtime/adapter.py` | `1a9900146fae59d720077e6f4e346a88be98806929bbbe0df95095062b870663` | 48103 |
+| `bav/director/runtime/policy.py` | `9d467b54de891135f7e95ccb375c780926df888c8138b29c8a8455615fef3103` | 60856 |
+| `bav/director/runtime/workspace.py` | `9d7d4437e9c5fee50f810d1499238c51eab2ac01e710a7b4902d22f8e37b72bb` | 7174 |
+| `bav/director/runtime/dispatch.py` | `008f4595435345bf7ddb728478116e3b6aa3fd7efbcc6f61da65d3ffa12d54de` | 7039 |
+| `bav/director/runtime/contract.py` | `dbd40fdc3454da02cc54719a4a0c87943630bbc3a9ef86afa8524c1046503783` | 13300 |
+| `bav/director/runtime/verification.py` | `dcf64f9a09d9b83ea26be131a35bb4705ab47b2bbb922efb681bfe4182e23931` | 40543 |
+| `bav/director/runtime/__init__.py` | `86fcd2216ee6eb09993176df895fefba5a991104b01136b566eb8b73ab8dfb7c` | 1571 |
+| `bav/director/tests/test_research_runtime.py` | `18645bd7093d0875ae734d7f045f006f9f084ecbde719bbb052acad82a068800` | 110367 |
+| `bav/director/tests/test_runtime_verification.py` | `42d8e8a6a9a93f325c59690660668fe50c7ae538866a3d408bffaeb1e60bac7f` | 18930 |
+| `bav/director/tests/fixtures/runtime/fake_provider.py` | `1f91f0c99c388b2b0b54b5f611c25f0260750d78f2e5c3a21244e78962aa19ee` | 26145 |
+| `bav/director/docs/DEBATER.md` | `7578b44c6c56db0265fa50f0df9de68d6002d36f2327fa155c746a70a2c93f42` | 62336 |
+| `bav/director/docs/BENCHMARK.md` | `081b179461673e4ead42426d8edc545d160d5a7c9f15936eebc171e0d7e7243e` | 82558 |
+
+## Remaining toward Completion
+
+Ordinary `python -m bav debate` intake/approvals, Extractor preparation/retrieval, Planner/Reviewer research, durable case integration, required readers, coherent JSON/Markdown exports, adversarial checks, and the real `--add`/resume benchmark remain outstanding. Controlled installed-runtime acceptance still requires a later bounded authorized BAV demonstration; official Cursor still has no loaded-configuration identity or first-class policy-denial event. Codex remains unimplemented. Synthetic verification cannot close parent Completion.
+
 # RESULT.md — Step 12.1.13 Make capture descriptor acquisition exception-safe
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

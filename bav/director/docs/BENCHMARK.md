@@ -1,4 +1,4 @@
-# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 / 12.1.6 / 12.1.7 / 12.1.8 / 12.1.9 / 12.1.10 record
+# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 / 12.1.6 / 12.1.7 / 12.1.8 / 12.1.9 / 12.1.10 / 12.1.11 / 12.1.12 / 12.1.13 / 12.1.14 record
 
 Label: **corpus-bound**. This is not a verified latest-market assessment and not an end-to-end Debater acceptance.
 
@@ -624,3 +624,65 @@ Still closed / unverified / outstanding:
 - Ordinary `python -m bav debate` intake/approvals, Extractor readers/preparation/retrieval, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic checks, and real evidence-addition/resumption.
 
 Synthetic exception-safe acquisition cleanup does not establish provider enforcement, parent Completion, or Session acceptance.
+
+## Step 12.1.14 — BAV-owned installed-runtime verification path
+
+Implemented a verification-only entry point in `bav/director/runtime/verification.py`, with typed `VerificationRequest` / `VerificationResult` / `VerificationAuthorization` in `contract.py`. `ResearchRuntime.verify()` is the caller surface. Workspace preparation, command construction, bounded process execution, capture, allowance checkpoint/restore and owned-child cleanup reuse the existing runtime owners. Ordinary `ResearchRuntime.invoke()` installed research remains closed before company staging.
+
+Consulted before selecting controls and event formats (no live provider call):
+
+- Official Cursor headless page `https://cursor.com/docs/cli/headless` (retrieved 2026-10-05): `--print`, `--output-format stream-json`, documented events `system`/`tool_call` started-completed **success**/`result`. Documented tool-call keys shown: `readToolCall`, `writeToolCall`.
+- Official Cursor permissions page `https://cursor.com/docs/cli/reference/permissions` (retrieved 2026-10-05): tokens `Shell`, `Read`, `Write`, `WebFetch`, `Mcp`; deny precedes allow; global `~/.cursor/cli-config.json` or project `.cursor/cli.json`. `WebSearch(*)` is not on this page.
+- Installed `agent --help` and `--version` **2026.10.01-e373342**. `--sandbox` overrides config. `--force`/`--yolo` unused. No loaded-configuration identity flag and no policy-denial event are documented.
+
+BAV policy intent (`intended_verification_policy`) is written into the isolated `CURSOR_CONFIG_DIR/cli-config.json`. That file is intended configuration, not observed loaded configuration. Official Cursor still has no documented loaded-configuration identity and no first-class policy-denial event (`CURSOR_DOCUMENTED_LOADED_CONFIGURATION_IDENTITY` and `CURSOR_DOCUMENTED_DENIAL_EVENT` remain `None`).
+
+### Evidence semantics
+
+Verification is separate from `ResearchRequest`. It accepts only BAV-generated synthetic challenges and invocation-owned canaries. Caller propositions, source text, prompts, commands, imported receipts, historical Controller observations and `verified=true` flags are rejected before launch. A false `contains_company_context` declaration with company text is also rejected. Missing or changed authorization bindings (backend, executable identity/version, model, policy fingerprint, challenge inventory, allowance) fail before staging. A consumed authorization cannot be replayed.
+
+Required synthetic challenge inventory:
+
+| Challenge | Control | Kind |
+|---|---|---|
+| `allowed_synthetic_read` | `allowed_read` | allowed canary `SYNTHETIC_CONTEXT.txt` |
+| `prohibit_shell` | `shell` | prohibited |
+| `prohibit_write` | `write` | prohibited |
+| `prohibit_unrelated_read` | `unrelated_read` | prohibited |
+| `prohibit_mcp` | `mcp` | prohibited |
+| `prohibit_external_retrieval` | `fetch` | prohibited |
+
+Each control is evaluated separately. Retained evidence binds launched executable/version, actual model, intended vs observed configuration identity, challenge, call and authorization. Application dispatch rejection is recorded separately and cannot establish native enforcement. Missing attempts, model assurances, DNS failures, absent mutations, configuration-file existence, incomplete capture, timeout, interruption, malformed/error envelopes, or a successful prohibited operation followed by a denial prevent `synthetic_verified`.
+
+`synthetic_verified` is explicitly synthetic and sets `authorizes_installed_execution=false`. It cannot open installed research or company staging.
+
+### Measured synthetic coverage
+
+Local fake-provider processes and invocation-owned canaries only. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Check | Command | Result |
+|---|---|---|
+| Existing runtime suite plus verification path, including new promotion-guard test | `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py bav/director/tests/test_runtime_verification.py` | **63 passed** in 5.77s |
+| Affected Director CLI/help/readme/import-boundary | `/opt/anaconda3/bin/python -m pytest -q` `test_public_namespace_and_compatibility` `test_public_help_is_bav_first_and_check_is_diagnostic` `test_readme.py` `test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 1.02s |
+
+Measured through `ResearchRuntime.verify`:
+
+- `verify_ok` returned `status=synthetic_verified` with an allowed-read success and explicit synthetic denials for shell, write, unrelated read, MCP and fetch. `authorizes_installed_execution` remained false.
+- Missing authorization, `contains_company_context=true`, and a false company-context flag with Lululemon text returned `denied`, created no `bav-runtime-verify-*` directory, and launched no process.
+- Caller `verified=true`, imported receipts, Controller observations, changed executable/model/policy/challenge bindings and replayed authorization failed before launch.
+- Success narratives without denials, absent prohibited attempts, application-only denials, DNS errors, incomplete capture (`CaptureLimits(max_records=1)`), missing/mismatched loaded-configuration identity, and a successful write followed by a denial all returned `unverified`.
+- Timeout, interruption, malformed output, unsuccessful exit, output overflow, cumulative `max_backend_calls=1` and checkpoint restoration through the verification path launched no further process once exhausted. Owned children were reaped.
+- After a synthetic verification success, installed `invoke` with a forged `verified=true` restriction still returned `installed_launch_closed` and staged no company context.
+
+### Exact remaining installed-runtime dependencies
+
+Still closed / unverified / outstanding:
+
+- A later bounded authorized BAV demonstration against the installed Cursor CLI. Official Cursor still lacks loaded-configuration identity and a first-class policy-denial event; those remain exact blockers for native enforcement claims.
+- Effective native Shell/Write/Read/MCP/retrieval enforcement on the installed CLI. Synthetic fixture denials do not establish that.
+- Controller-isolated `_GatedCursor` authentication.
+- Codex backend implementation behind the same adapter contract.
+- Company-corpus transmission on either backend.
+- Ordinary `python -m bav debate` intake/approvals, Extractor readers/preparation/retrieval, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic checks, and real evidence-addition/resumption.
+
+Synthetic verification success does not establish native enforcement, parent Completion, or Session acceptance.

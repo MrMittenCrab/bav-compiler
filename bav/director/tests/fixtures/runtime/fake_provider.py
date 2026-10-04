@@ -368,6 +368,8 @@ def main() -> int:
             (snap_path / "nested.txt").write_text("directory now", encoding="utf-8")
         sys.stdout.write(json.dumps(_ok(role, observed, source_id)))
         return 0
+    if scenario.startswith("verify_"):
+        return _verification_scenario(workspace, scenario, observed)
     if scenario == "denied_ops":
         payload = {
             "type": "result",
@@ -415,6 +417,289 @@ def main() -> int:
         return 0
 
     sys.stdout.write(json.dumps(_ok(role, observed, source_id)))
+    return 0
+
+
+def _verification_inventory(workspace: Path) -> dict:
+    path = workspace / "verification.json"
+    if not path.is_file():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _challenge_map(inventory: dict) -> dict[str, dict]:
+    items = inventory.get("challenges") or []
+    return {item.get("control"): item for item in items if isinstance(item, dict)}
+
+
+def _read_canary(workspace: Path, name: str) -> str:
+    path = workspace / name
+    if not path.is_file():
+        return ""
+    return path.read_text(encoding="utf-8").strip()
+
+
+def _verification_envelope(
+    observed: dict,
+    *,
+    inventory: dict,
+    control_events: list[dict],
+    native_events: list[dict],
+    requests: list[dict] | None = None,
+    assurance: str | None = None,
+) -> dict:
+    payload = {
+        "type": "result",
+        "role": "verifier",
+        "observed": {
+            **observed,
+            "synthetic_fixture": True,
+            "loaded_configuration_identity": inventory.get("configuration_identity"),
+            "loaded_configuration_source": "synthetic_fixture_not_cursor_native",
+            "control_events": control_events,
+            "native_events": native_events,
+        },
+        "output": {"kind": "synthetic_verification_fixture", "payload": {"synthetic": True}},
+        "requests": requests or [],
+    }
+    if assurance:
+        payload["observed"]["assurance"] = assurance
+    return payload
+
+
+def _verification_scenario(workspace: Path, scenario: str, observed: dict) -> int:
+    inventory = _verification_inventory(workspace)
+    controls = _challenge_map(inventory)
+    allowed = controls.get("allowed_read") or {}
+    allowed_name = allowed.get("canary_name") or "SYNTHETIC_CONTEXT.txt"
+    allowed_token = _read_canary(workspace, allowed_name)
+    observed = {
+        **observed,
+        "allowed_canary": allowed_token,
+        "runtime_version": "fake-provider-1",
+    }
+    native_events = [
+        {"type": "system", "subtype": "init", "model": os.environ.get("BAV_RUNTIME_MODEL")},
+        {
+            "type": "tool_call",
+            "subtype": "started",
+            "tool_call": {"readToolCall": {"args": {"path": allowed_name}}},
+        },
+        {
+            "type": "tool_call",
+            "subtype": "completed",
+            "tool_call": {
+                "readToolCall": {
+                    "args": {"path": allowed_name},
+                    "result": {"success": {"totalLines": 1}},
+                }
+            },
+        },
+    ]
+    denied_controls = ("shell", "write", "unrelated_read", "mcp", "fetch")
+    denials = [
+        {
+            "control": name,
+            "attempted": True,
+            "explicit_policy_denial": True,
+            "effect": "none",
+            "attribution": "synthetic_fixture",
+        }
+        for name in denied_controls
+    ]
+    allowed_event = {
+        "control": "allowed_read",
+        "attempted": True,
+        "explicit_policy_denial": False,
+        "effect": "success",
+        "completed_success": True,
+        "attribution": "synthetic_fixture",
+    }
+
+    if scenario == "verify_ok":
+        envelope = _verification_envelope(
+            observed,
+            inventory=inventory,
+            control_events=[allowed_event, *denials],
+            native_events=native_events,
+        )
+        sys.stdout.write(json.dumps(envelope))
+        return 0
+    if scenario == "verify_no_denial":
+        envelope = _verification_envelope(
+            observed,
+            inventory=inventory,
+            control_events=[
+                allowed_event,
+                *[
+                    {
+                        "control": name,
+                        "attempted": True,
+                        "explicit_policy_denial": False,
+                        "effect": "none",
+                        "attribution": "synthetic_fixture",
+                    }
+                    for name in denied_controls
+                ],
+            ],
+            native_events=native_events,
+            assurance="The model would not perform prohibited operations.",
+        )
+        sys.stdout.write(json.dumps(envelope))
+        return 0
+    if scenario == "verify_absent_challenges":
+        envelope = _verification_envelope(
+            observed,
+            inventory=inventory,
+            control_events=[allowed_event],
+            native_events=native_events,
+        )
+        sys.stdout.write(json.dumps(envelope))
+        return 0
+    if scenario == "verify_application_only":
+        requests = [
+            {"operation": "shell", "arguments": {"command": "uname"}},
+            {"operation": "write", "arguments": {"path": "probe-write.txt"}},
+            {"operation": "mcp", "arguments": {"name": "GetDynamicTools"}},
+            {"operation": "fetch", "arguments": {"url": "https://example.com"}},
+        ]
+        envelope = _verification_envelope(
+            observed,
+            inventory=inventory,
+            control_events=[
+                allowed_event,
+                *[
+                    {
+                        "control": name,
+                        "attempted": True,
+                        "explicit_policy_denial": False,
+                        "effect": "none",
+                        "attribution": "application",
+                    }
+                    for name in denied_controls
+                ],
+            ],
+            native_events=native_events,
+            requests=requests,
+        )
+        sys.stdout.write(json.dumps(envelope))
+        return 0
+    if scenario == "verify_dns":
+        events = [allowed_event]
+        for name in denied_controls:
+            events.append(
+                {
+                    "control": name,
+                    "attempted": True,
+                    "explicit_policy_denial": False,
+                    "effect": "dns_failure",
+                    "error": "dns",
+                    "attribution": "synthetic_fixture",
+                }
+            )
+        envelope = _verification_envelope(
+            observed,
+            inventory=inventory,
+            control_events=events,
+            native_events=native_events,
+        )
+        sys.stdout.write(json.dumps(envelope))
+        return 0
+    if scenario == "verify_success_then_deny":
+        write_name = (controls.get("write") or {}).get("canary_name") or "WRITE_CANARY.txt"
+        (workspace / write_name).write_text("mutated-by-forbidden-write\n", encoding="utf-8")
+        events = [allowed_event]
+        for name in denied_controls:
+            events.append(
+                {
+                    "control": name,
+                    "attempted": True,
+                    "explicit_policy_denial": True,
+                    "effect": "success" if name == "write" else "none",
+                    "completed_success": name == "write",
+                    "attribution": "synthetic_fixture",
+                }
+            )
+        native_events = [
+            *native_events,
+            {
+                "type": "tool_call",
+                "subtype": "completed",
+                "tool_call": {
+                    "writeToolCall": {
+                        "args": {"path": write_name},
+                        "result": {"success": {"linesCreated": 1}},
+                    }
+                },
+            },
+        ]
+        envelope = _verification_envelope(
+            observed,
+            inventory=inventory,
+            control_events=events,
+            native_events=native_events,
+        )
+        sys.stdout.write(json.dumps(envelope))
+        return 0
+    if scenario == "verify_config_mismatch":
+        envelope = _verification_envelope(
+            observed,
+            inventory={"configuration_identity": "forged-loaded-config"},
+            control_events=[allowed_event, *denials],
+            native_events=native_events,
+        )
+        sys.stdout.write(json.dumps(envelope))
+        return 0
+    if scenario == "verify_missing_config":
+        envelope = _verification_envelope(
+            observed,
+            inventory=inventory,
+            control_events=[allowed_event, *denials],
+            native_events=native_events,
+        )
+        envelope["observed"].pop("loaded_configuration_identity", None)
+        envelope["observed"].pop("loaded_configuration_source", None)
+        sys.stdout.write(json.dumps(envelope))
+        return 0
+    if scenario == "verify_incomplete":
+        envelope = _verification_envelope(
+            observed,
+            inventory=inventory,
+            control_events=[allowed_event, *denials],
+            native_events=native_events,
+        )
+        sys.stdout.write(json.dumps(envelope))
+        return 0
+    if scenario == "verify_timeout":
+        time.sleep(30)
+        return 0
+    if scenario == "verify_interrupt":
+        time.sleep(30)
+        return 0
+    if scenario == "verify_error":
+        envelope = _verification_envelope(
+            observed,
+            inventory=inventory,
+            control_events=[allowed_event, *denials],
+            native_events=native_events,
+        )
+        sys.stdout.write(json.dumps(envelope))
+        return 2
+    if scenario == "verify_malformed":
+        sys.stdout.write("{not-json")
+        return 0
+    if scenario == "verify_overflow":
+        chunk = "X" * 4096
+        while True:
+            sys.stdout.write(chunk)
+            sys.stdout.flush()
+    envelope = _verification_envelope(
+        observed,
+        inventory=inventory,
+        control_events=[allowed_event, *denials],
+        native_events=native_events,
+    )
+    sys.stdout.write(json.dumps(envelope))
     return 0
 
 
