@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import errno
 import hashlib
+import inspect
 import json
 import os
 import re
@@ -106,7 +108,18 @@ _CAPTURE_OPEN_FLAGS = (
     | getattr(os, "O_NOFOLLOW", 0)
     | getattr(os, "O_NONBLOCK", 0)
 )
+_DIR_OPEN_FLAGS = (
+    os.O_RDONLY
+    | getattr(os, "O_CLOEXEC", 0)
+    | getattr(os, "O_DIRECTORY", 0)
+    | getattr(os, "O_NOFOLLOW", 0)
+)
 _MAX_CAPTURE_DIAGNOSTICS = 32
+_REPLACEMENT_ERRNOS = {
+    errno.ELOOP,
+    errno.ENOTDIR,
+    getattr(errno, "EFTYPE", -1),
+}
 
 
 def canonical_json(value: Any) -> str:
@@ -698,6 +711,107 @@ def _read_owned_chunk(fd: int, size: int, observer: Callable[[Mapping[str, Any]]
     return data
 
 
+def _descriptor_traversal_supported() -> bool:
+    if not hasattr(os, "O_NOFOLLOW") or not hasattr(os, "O_DIRECTORY"):
+        return False
+    try:
+        parameters = inspect.signature(os.open).parameters
+    except (TypeError, ValueError):
+        return False
+    return "dir_fd" in parameters
+
+
+def _is_replacement_error(exc: OSError) -> bool:
+    return exc.errno in _REPLACEMENT_ERRNOS
+
+
+def _capture_diagnostic(root_name: str, relative: str) -> str:
+    return f"{root_name}/{relative or '.'}"
+
+
+def _unreadable_note(root_name: str, relative: str) -> str:
+    return f"unreadable:{_capture_diagnostic(root_name, relative)}"
+
+
+def _replaced_note(root_name: str, relative: str) -> str:
+    return f"replaced:{_capture_diagnostic(root_name, relative)}"
+
+
+def _fd_identity(fd: int) -> tuple[int, int] | None:
+    try:
+        info = os.fstat(fd)
+    except OSError:
+        return None
+    if not stat.S_ISDIR(info.st_mode):
+        return None
+    return (info.st_dev, info.st_ino)
+
+
+def _open_owned_directory(
+    path: Path | None = None,
+    *,
+    dir_fd: int | None = None,
+    name: str | None = None,
+) -> tuple[int | None, OSError | None]:
+    try:
+        if dir_fd is not None:
+            fd = os.open(name if name is not None else ".", _DIR_OPEN_FLAGS, dir_fd=dir_fd)
+        else:
+            fd = os.open(path, _DIR_OPEN_FLAGS)
+    except OSError as exc:
+        return None, exc
+    identity = _fd_identity(fd)
+    if identity is None:
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+        return None, OSError(errno.ENOTDIR, "owned directory identity lost")
+    return fd, None
+
+
+def _child_relative(parent_relative: str, name: str) -> str:
+    if not parent_relative or parent_relative == ".":
+        return name
+    return f"{parent_relative}/{name}"
+
+
+class _QueuedDirectory:
+    __slots__ = (
+        "root_name",
+        "relative",
+        "name",
+        "dir_fd",
+        "parent_fd",
+        "identity",
+        "depth",
+        "root_path",
+        "root_identity",
+    )
+
+    def __init__(
+        self,
+        root_name: str,
+        relative: str,
+        name: str,
+        dir_fd: int,
+        parent_fd: int | None,
+        identity: tuple[int, int],
+        depth: int,
+        root_path: Path | None = None,
+        root_identity: tuple[int, int] | None = None,
+    ) -> None:
+        self.root_name = root_name
+        self.relative = relative
+        self.name = name
+        self.dir_fd = dir_fd
+        self.parent_fd = parent_fd
+        self.identity = identity
+        self.depth = depth
+        self.root_path = root_path
+        self.root_identity = root_identity
+
+
 class _CaptureSession:
     def __init__(
         self,
@@ -720,6 +834,8 @@ class _CaptureSession:
         self.complete = True
         self.unstable = False
         self.stop = False
+        self._owned_fds: list[int] = []
+        self._scanners: list[Any] = []
 
     def elapsed_exceeded(self) -> bool:
         return (self.clock() - self.started) >= self.limits.max_elapsed_seconds
@@ -758,40 +874,110 @@ class _CaptureSession:
         self.entries_seen += 1
         return True
 
+    def retain_fd(self, fd: int) -> bool:
+        if len(self._owned_fds) >= self.limits.max_entries:
+            self.note("truncated")
+            self.stop = True
+            return False
+        self._owned_fds.append(fd)
+        return True
 
-def _observe_owned_entry(
-    path: Path,
+    def retain_scanner(self, scanner: Any) -> None:
+        self._scanners.append(scanner)
+
+    def release_scanner(self, scanner: Any) -> None:
+        try:
+            scanner.close()
+        except OSError:
+            pass
+        try:
+            self._scanners.remove(scanner)
+        except ValueError:
+            pass
+
+    def close_resources(self) -> None:
+        while self._scanners:
+            scanner = self._scanners.pop()
+            try:
+                scanner.close()
+            except OSError:
+                pass
+        while self._owned_fds:
+            fd = self._owned_fds.pop()
+            try:
+                os.close(fd)
+            except OSError:
+                pass
+
+
+def _probe_identity_mismatch(
+    expected: tuple[int, int],
+    path: Path | None = None,
+    *,
+    dir_fd: int | None = None,
+    name: str | None = None,
+) -> bool:
+    probe, _exc = _open_owned_directory(path, dir_fd=dir_fd, name=name)
+    if probe is None:
+        return True
+    try:
+        return _fd_identity(probe) != expected
+    finally:
+        try:
+            os.close(probe)
+        except OSError:
+            pass
+
+
+def _queued_directory_replaced(item: _QueuedDirectory) -> bool:
+    held = _fd_identity(item.dir_fd)
+    if held is None or held != item.identity:
+        return True
+    if item.parent_fd is not None and _probe_identity_mismatch(
+        item.identity, dir_fd=item.parent_fd, name=item.name
+    ):
+        return True
+    if item.root_path is not None and item.root_identity is not None:
+        return _probe_identity_mismatch(item.root_identity, item.root_path)
+    return False
+
+
+def _observe_symlink(
+    dir_fd: int,
+    name: str,
     *,
     root_name: str,
     relative: str,
     state: _CaptureSession,
-    kind: str | None = None,
 ) -> dict[str, Any]:
-    observed_kind = kind if kind is not None else _entry_kind(path)
     record: dict[str, Any] = {
         "root": root_name,
         "path": relative,
-        "type": observed_kind,
+        "type": "symlink",
         "content_complete": False,
     }
-    if observed_kind == "symlink":
-        try:
-            record["link"] = os.readlink(path)
-        except OSError:
-            record["limitation"] = "unreadable"
-            state.note(f"unreadable:{root_name}/{relative}" if relative != "." else f"unreadable:{root_name}")
-        return record
-    if observed_kind == "special":
-        record["limitation"] = "special_file_skipped"
-        state.note("special_file_skipped")
-        return record
-    if observed_kind == "directory":
-        return record
-    if observed_kind != "file":
-        if observed_kind == "unreadable":
-            record["limitation"] = "unreadable"
-            state.note(f"unreadable:{root_name}/{relative}" if relative != "." else f"unreadable:{root_name}")
-        return record
+    try:
+        record["link"] = os.readlink(name, dir_fd=dir_fd)
+    except OSError:
+        record["limitation"] = "unreadable"
+        state.note(_unreadable_note(root_name, relative))
+    return record
+
+
+def _observe_owned_file(
+    dir_fd: int,
+    name: str,
+    *,
+    root_name: str,
+    relative: str,
+    state: _CaptureSession,
+) -> dict[str, Any]:
+    record: dict[str, Any] = {
+        "root": root_name,
+        "path": relative,
+        "type": "file",
+        "content_complete": False,
+    }
     state.files_seen += 1
     remaining = state.limits.max_bytes_hashed - state.bytes_read
     if remaining <= 0 or state.files_seen > state.limits.max_files:
@@ -800,7 +986,7 @@ def _observe_owned_entry(
         return record
     fd: int | None = None
     try:
-        fd = os.open(path, _CAPTURE_OPEN_FLAGS)
+        fd = os.open(name, _CAPTURE_OPEN_FLAGS, dir_fd=dir_fd)
         info = os.fstat(fd)
         opened_kind = _kind_from_mode(info.st_mode)
         if opened_kind != "file":
@@ -808,11 +994,6 @@ def _observe_owned_entry(
             record["limitation"] = "unstable"
             state.unstable = True
             state.note("unstable")
-            if opened_kind == "symlink":
-                try:
-                    record["link"] = os.readlink(path)
-                except OSError:
-                    pass
             if opened_kind == "special":
                 record["limitation"] = "special_file_skipped"
                 state.note("special_file_skipped")
@@ -821,6 +1002,8 @@ def _observe_owned_entry(
         digest = hashlib.sha256()
         total_read = 0
         chunk_size = state.limits.read_chunk_bytes
+        chunk = b""
+        request = 0
         while True:
             if state.elapsed_exceeded():
                 record["limitation"] = "elapsed"
@@ -850,10 +1033,13 @@ def _observe_owned_entry(
         try:
             after = os.fstat(fd)
         except OSError:
-            after = None
-        if after is not None and (
+            record["limitation"] = "unreadable"
+            state.note(_unreadable_note(root_name, relative))
+            return record
+        if (
             after.st_size != info.st_size
             or after.st_ino != info.st_ino
+            or after.st_dev != info.st_dev
             or after.st_mtime_ns != info.st_mtime_ns
         ):
             record["limitation"] = "unstable"
@@ -869,27 +1055,19 @@ def _observe_owned_entry(
         record["limitation"] = "truncated"
         state.note("truncated")
         return record
-    except OSError:
-        restat_kind = _entry_kind(path)
-        if restat_kind != "file":
-            record["type"] = restat_kind
+    except OSError as exc:
+        if _is_replacement_error(exc):
+            record["type"] = "symlink"
             record["limitation"] = "unstable"
             state.unstable = True
             state.note("unstable")
-            if restat_kind == "symlink":
-                try:
-                    record["link"] = os.readlink(path)
-                except OSError:
-                    record["limitation"] = "unreadable"
-                    state.note(
-                        f"unreadable:{root_name}/{relative}" if relative != "." else f"unreadable:{root_name}"
-                    )
-            if restat_kind == "special":
-                record["limitation"] = "special_file_skipped"
-                state.note("special_file_skipped")
+            try:
+                record["link"] = os.readlink(name, dir_fd=dir_fd)
+            except OSError:
+                pass
             return record
         record["limitation"] = "unreadable"
-        state.note(f"unreadable:{root_name}/{relative}" if relative != "." else f"unreadable:{root_name}")
+        state.note(_unreadable_note(root_name, relative))
         return record
     finally:
         if fd is not None:
@@ -897,6 +1075,84 @@ def _observe_owned_entry(
                 os.close(fd)
             except OSError:
                 pass
+
+
+def _capture_result(state: _CaptureSession) -> dict[str, Any]:
+    if state.unstable:
+        state.note("unstable")
+    return {
+        "records": tuple(state.records),
+        "complete": state.complete and not state.stop,
+        "limitations": tuple(state.limitations),
+        "files_seen": state.files_seen,
+        "entries_seen": state.entries_seen,
+        "bytes_hashed": state.bytes_hashed,
+        "bytes_read": state.bytes_read,
+        "read_operations": state.read_operations,
+        "elapsed_ms": int((state.clock() - state.started) * 1000),
+        "unchanged_not_established": (not state.complete) or state.stop,
+    }
+
+
+def _queue_child_directory(
+    item: _QueuedDirectory,
+    name: str,
+    relative: str,
+    pending: deque[_QueuedDirectory],
+    state: _CaptureSession,
+) -> dict[str, Any]:
+    record: dict[str, Any] = {
+        "root": item.root_name,
+        "path": relative,
+        "type": "directory",
+        "content_complete": False,
+    }
+    if item.depth >= state.limits.max_depth:
+        state.note("truncated")
+        return record
+    if len(pending) >= state.limits.max_entries:
+        state.note("truncated")
+        state.stop = True
+        return record
+    child_fd, exc = _open_owned_directory(dir_fd=item.dir_fd, name=name)
+    if child_fd is None:
+        if exc is not None and _is_replacement_error(exc):
+            record["type"] = "symlink"
+            record["limitation"] = "unstable"
+            state.unstable = True
+            state.note(_replaced_note(item.root_name, relative))
+            try:
+                record["link"] = os.readlink(name, dir_fd=item.dir_fd)
+            except OSError:
+                pass
+            return record
+        record["limitation"] = "unreadable"
+        state.note(_unreadable_note(item.root_name, relative))
+        return record
+    identity = _fd_identity(child_fd)
+    if identity is None or not state.retain_fd(child_fd):
+        try:
+            os.close(child_fd)
+        except OSError:
+            pass
+        if identity is None:
+            record["limitation"] = "unstable"
+            state.note(_replaced_note(item.root_name, relative))
+        return record
+    pending.append(
+        _QueuedDirectory(
+            item.root_name,
+            relative,
+            name,
+            child_fd,
+            item.dir_fd,
+            identity,
+            item.depth + 1,
+            root_path=item.root_path,
+            root_identity=item.root_identity,
+        )
+    )
+    return record
 
 
 def capture_owned_paths(
@@ -908,7 +1164,22 @@ def capture_owned_paths(
 ) -> dict[str, Any]:
     limits = limits or CaptureLimits()
     state = _CaptureSession(limits, clock or time.monotonic, io_observer)
-    pending: deque[tuple[str, Path, Path, int]] = deque()
+    try:
+        return _capture_owned_paths_bound(roots, limits, state)
+    finally:
+        state.close_resources()
+
+
+def _capture_owned_paths_bound(
+    roots: Mapping[str, Path],
+    limits: CaptureLimits,
+    state: _CaptureSession,
+) -> dict[str, Any]:
+    if not _descriptor_traversal_supported():
+        state.note("unsafe_traversal_unavailable")
+        return _capture_result(state)
+
+    pending: deque[_QueuedDirectory] = deque()
 
     for root_name in OWNED_ROOT_NAMES:
         if state.stop:
@@ -920,52 +1191,83 @@ def capture_owned_paths(
             state.note("elapsed")
             state.stop = True
             break
-        try:
-            present = root.exists()
-        except OSError:
-            state.note(f"unreadable:{root_name}")
-            continue
-        if not present:
-            state.note(f"missing:{root_name}")
+        fd, exc = _open_owned_directory(root)
+        if fd is None:
+            if exc is not None and exc.errno == errno.ENOENT:
+                state.note(f"missing:{root_name}")
+            elif exc is not None and _is_replacement_error(exc):
+                state.note(f"replaced:{root_name}")
+            else:
+                state.note(f"unreadable:{root_name}")
             continue
         if not state.consume_entry():
+            try:
+                os.close(fd)
+            except OSError:
+                pass
             break
-        root_kind = _entry_kind(root)
+        identity = _fd_identity(fd)
+        if identity is None or not state.retain_fd(fd):
+            try:
+                os.close(fd)
+            except OSError:
+                pass
+            if identity is None:
+                state.note(f"replaced:{root_name}")
+            break
         root_record = {
             "root": root_name,
             "path": ".",
-            "type": root_kind,
+            "type": "directory",
             "content_complete": False,
         }
-        if root_kind == "directory":
-            state.retain(root_record)
-            if len(pending) >= limits.max_entries:
-                state.note("truncated")
-                state.stop = True
-                break
-            pending.append((root_name, root, root, 0))
-            continue
-        observed = _observe_owned_entry(
-            root, root_name=root_name, relative=".", state=state, kind=root_kind
+        if not state.retain(root_record):
+            break
+        if len(pending) >= limits.max_entries:
+            state.note("truncated")
+            state.stop = True
+            break
+        pending.append(
+            _QueuedDirectory(
+                root_name,
+                ".",
+                ".",
+                fd,
+                None,
+                identity,
+                0,
+                root_path=root,
+                root_identity=identity,
+            )
         )
-        state.retain(observed)
 
     while pending and not state.stop:
         if state.elapsed_exceeded():
             state.note("elapsed")
             state.stop = True
             break
-        root_name, root, current, depth = pending.popleft()
-        if depth > limits.max_depth:
+        item = pending.popleft()
+        if item.depth > limits.max_depth:
             state.note("truncated")
             continue
-        diagnostic = f"{root_name}/{_safe_relative(current, root) or '.'}"
+        diagnostic = _capture_diagnostic(item.root_name, item.relative)
+        if _queued_directory_replaced(item):
+            state.note(f"replaced:{diagnostic}")
+            continue
         try:
-            scanner = os.scandir(current)
+            scanner = os.scandir(item.dir_fd)
+        except TypeError:
+            state.note("unsafe_traversal_unavailable")
+            state.stop = True
+            break
         except OSError:
             state.note(f"unreadable:{diagnostic}")
             continue
+        state.retain_scanner(scanner)
         try:
+            if _queued_directory_replaced(item):
+                state.note(f"replaced:{diagnostic}")
+                continue
             while True:
                 if state.stop or state.elapsed_exceeded():
                     if state.elapsed_exceeded():
@@ -981,49 +1283,55 @@ def capture_owned_paths(
                     break
                 if not state.consume_entry():
                     break
-                child = current / entry.name
-                relative = _safe_relative(child, root)
-                if relative is None:
-                    state.note("omitted")
+                name = entry.name
+                if name in {".", ".."}:
                     continue
+                relative = _child_relative(item.relative, name)
                 kind = _kind_from_direntry(entry)
-                record = _observe_owned_entry(
-                    child,
-                    root_name=root_name,
-                    relative=relative,
-                    state=state,
-                    kind=kind,
-                )
+                if kind in {"file", "directory"} and _queued_directory_replaced(item):
+                    state.note(f"replaced:{diagnostic}")
+                    break
+                if kind == "symlink":
+                    record = _observe_symlink(
+                        item.dir_fd, name, root_name=item.root_name, relative=relative, state=state
+                    )
+                elif kind == "special":
+                    record = {
+                        "root": item.root_name,
+                        "path": relative,
+                        "type": "special",
+                        "content_complete": False,
+                        "limitation": "special_file_skipped",
+                    }
+                    state.note("special_file_skipped")
+                elif kind == "directory":
+                    record = _queue_child_directory(item, name, relative, pending, state)
+                elif kind == "file":
+                    record = _observe_owned_file(
+                        item.dir_fd,
+                        name,
+                        root_name=item.root_name,
+                        relative=relative,
+                        state=state,
+                    )
+                    if _queued_directory_replaced(item):
+                        state.note(f"replaced:{diagnostic}")
+                else:
+                    record = {
+                        "root": item.root_name,
+                        "path": relative,
+                        "type": kind,
+                        "content_complete": False,
+                    }
+                    if kind == "unreadable":
+                        record["limitation"] = "unreadable"
+                        state.note(_unreadable_note(item.root_name, relative))
                 if not state.retain(record):
                     break
-                if record.get("type") == "directory" and depth < limits.max_depth:
-                    if len(pending) >= limits.max_entries:
-                        state.note("truncated")
-                        state.stop = True
-                        break
-                    pending.append((root_name, root, child, depth + 1))
-                elif record.get("type") == "directory" and depth >= limits.max_depth:
-                    state.note("truncated")
         finally:
-            try:
-                scanner.close()
-            except OSError:
-                pass
+            state.release_scanner(scanner)
 
-    if state.unstable:
-        state.note("unstable")
-    return {
-        "records": tuple(state.records),
-        "complete": state.complete and not state.stop,
-        "limitations": tuple(state.limitations),
-        "files_seen": state.files_seen,
-        "entries_seen": state.entries_seen,
-        "bytes_hashed": state.bytes_hashed,
-        "bytes_read": state.bytes_read,
-        "read_operations": state.read_operations,
-        "elapsed_ms": int((state.clock() - state.started) * 1000),
-        "unchanged_not_established": (not state.complete) or state.stop,
-    }
+    return _capture_result(state)
 
 
 def mutation_records(

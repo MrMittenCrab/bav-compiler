@@ -500,3 +500,45 @@ Still closed / unverified / outstanding:
 - Ordinary `python -m bav debate` intake/approvals, Extractor readers/preparation/retrieval, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic checks, and real evidence-addition/resumption.
 
 Synthetic capture repair does not establish provider enforcement, parent Completion, or Session acceptance.
+
+**Correction (Step 12.1.11):** The 12.1.10 claim that classification-to-open `O_NOFOLLOW` plus post-open `fstat` handled symlink replacement, and that a successful full-content fingerprint required validated post-read metadata, is not supported. Queued directories were reopened with pathname `os.scandir`; replacing a queued directory or ancestor with an outside-root symlink could redirect enumeration and later reads. `O_NOFOLLOW` protects only the final open component. A failed post-read `fstat` was ignored (`after = None`) and could still set `content_complete=true` and publish a fingerprint. Those sentences above record the 12.1.10 intent, not measured replacement-safe or metadata-validated capture.
+
+## Step 12.1.11 — Repair capture traversal and metadata validation
+
+Repaired `capture_owned_paths` in `bav/director/runtime/policy.py`. Owned roots are acquired with `O_RDONLY|O_DIRECTORY|O_NOFOLLOW`. Enumeration uses the held directory descriptor (`os.scandir(fd)`). Child classification, opens, `readlink`, and metadata use `dir_fd`. Queued work stores the directory fd and `(st_dev, st_ino)` identity; before and during enumeration the implementation re-opens from the parent descriptor and re-opens the original root path with `O_NOFOLLOW` to detect replacement. Detected replacement sets `complete=false`, `unchanged_not_established=true`, and a `replaced:` diagnostic; outside symlink targets are not enumerated or read. Directory handles and scanners are closed on success, errors, allowance exhaustion, and interruption. Failed post-read `fstat`, inconsistent metadata, or uncertain completion omit the fingerprint, keep `content_complete=false`, and retain an explicit limitation. Incremental byte-bounded reads, shared accounting, empty/exact-boundary behavior, entry/depth/file/record/clock limits, and incomplete before/after mutation comparison are unchanged. If `dir_fd` / `O_NOFOLLOW` / `O_DIRECTORY` are unavailable, capture fails closed with `unsafe_traversal_unavailable` rather than falling back to pathname traversal. Installed launches remain closed.
+
+### Measured repair
+
+Local fake-provider processes, temporary directories, and labeled synthetic files only. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Check | Command | Result |
+|---|---|---|
+| Descriptor-relative traversal, replacement coverage, post-read `fstat` failure, descriptor/scanner cleanup, retained bounded-read/scan-error/wide/depth/clock/symlink/special/concurrent/adapter/binding/launch-closure tests | `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` | **49 passed** in 3.80s |
+| Affected Director CLI/help/readme/import-boundary | `/opt/anaconda3/bin/python -m pytest -q` `test_public_namespace_and_compatibility` `test_public_help_is_bav_first_and_check_is_diagnostic` `test_readme.py` `test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 0.82s |
+
+Synthetic measurements added in this step:
+
+- Replacing a queued `nested` directory with an outside-root symlink before `scandir` produced `replaced:workspace/nested`, `complete=false`, `unchanged_not_established=true`. Instrumented `os.open` / `os.scandir` / `os.read` did not open the outside inode or return its sentinel bytes.
+- Replacing an ancestor between entry classification and file open, and replacing the owned root during acquisition, produced `replaced:` coverage. Outside sentinel bytes were absent from records; instrumented opens/reads did not touch the outside target.
+- Injected post-read `fstat` failure on empty and exact-boundary files: no fingerprint, `content_complete=false`, `limitation=unreadable`, aggregate `complete=false`.
+- Directory fds and scanners were closed after nested `PermissionError` and after `max_entries=2` exhaustion. A normal `nested/child.txt` control remained `content_complete=true` with the expected digest.
+- Incomplete replacement observations compared against themselves produced no definitive unobserved add/remove.
+
+Retained 12.1.10 measurements: 35027-byte / 64-byte bounded read; shared empty/exact budget; root/nested/mid-iteration `PermissionError`; wide/depth/record/clock limits; file→symlink classify-to-open without TARGET body text; FIFO skip; concurrent rewrite `unstable`; adapter incomplete cleanup; forged installed-verification launches no process and stages no company context.
+
+### Observation limits after the repair
+
+Default `CaptureLimits` unchanged: `max_files=256`, `max_records=256`, `max_bytes_hashed=1_000_000`, `max_elapsed_seconds=2.0`, `max_depth=12`, `max_entries=256`, `read_chunk_bytes=4096`. Directory fds are bounded by `max_entries`. Replacement detection depends on a failed `O_NOFOLLOW` re-open or an identity mismatch; an unobserved replacement that never races a check remains a coverage limitation. Root-path re-open uses `O_NOFOLLOW` only as a replacement probe and is not a traversal path. Incomplete coverage still cannot conclude that the owned filesystem is unchanged.
+
+### Exact remaining mechanisms needed for installed acceptance
+
+Still closed / unverified / outstanding:
+
+- A supported BAV verification path that binds the actual installed executable, version, loaded configuration identity and a first-class policy-denial event.
+- Effective native Shell/Write/Read/MCP/retrieval enforcement on the installed CLI. Application dispatch denial and post-execution mutation detection do not constrain those native tools.
+- Controller-isolated `_GatedCursor` authentication.
+- Codex backend implementation behind the same adapter contract.
+- Company-corpus transmission on either backend.
+- Ordinary `python -m bav debate` intake/approvals, Extractor readers/preparation/retrieval, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic checks, and real evidence-addition/resumption.
+
+Synthetic traversal/metadata repair does not establish provider enforcement, parent Completion, or Session acceptance.

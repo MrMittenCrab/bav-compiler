@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import errno
 import hashlib
 import json
 import os
+import stat
 import sys
 import tempfile
 import threading
@@ -35,6 +37,49 @@ from bav.director.runtime.policy import capture_owned_paths, fingerprint, mutati
 ROOT = repository_root()
 FAKE_PROVIDER = Path(__file__).resolve().parent / "fixtures" / "runtime" / "fake_provider.py"
 MODEL = "synthetic-test"
+OUTSIDE_SENTINEL = b"OUTSIDE-TARGET-SENTINEL-BYTES-NOT-OWNED"
+
+
+def _dir_identity(path: Path) -> tuple[int, int]:
+    info = os.stat(path, follow_symlinks=False)
+    return (info.st_dev, info.st_ino)
+
+
+def _same_dir(path_or_fd: object, directory: Path) -> bool:
+    expected = _dir_identity(directory)
+    if isinstance(path_or_fd, int):
+        try:
+            info = os.fstat(path_or_fd)
+        except OSError:
+            return False
+        return (info.st_dev, info.st_ino) == expected
+    try:
+        candidate = Path(os.fsdecode(path_or_fd) if isinstance(path_or_fd, (bytes, bytearray)) else str(path_or_fd))
+        if candidate == directory:
+            return True
+        info = os.stat(candidate, follow_symlinks=False)
+        return (info.st_dev, info.st_ino) == expected
+    except OSError:
+        return False
+
+
+def _owned_roots(tmp_path: Path, workspace: Path) -> dict[str, Path]:
+    for name in ("home", "config", "data"):
+        (tmp_path / name).mkdir(exist_ok=True)
+    return {
+        "workspace": workspace,
+        "home": tmp_path / "home",
+        "config": tmp_path / "config",
+        "data": tmp_path / "data",
+    }
+
+
+def _replace_directory_with_outside_symlink(directory: Path, outside: Path) -> None:
+    relocated = directory.with_name(f"{directory.name}.relocated")
+    if relocated.exists():
+        raise AssertionError("relocation path already exists")
+    directory.rename(relocated)
+    directory.symlink_to(outside)
 
 
 def _source(source_id: str, text: str, name: str, origin: str = "synthetic") -> ApprovedSource:
@@ -1476,7 +1521,7 @@ def test_directory_scan_errors_are_incomplete(tmp_path, monkeypatch):
     real_scandir = os.scandir
 
     def deny_root(path):
-        if Path(path) == workspace:
+        if _same_dir(path, workspace):
             raise PermissionError("root denied")
         return real_scandir(path)
 
@@ -1495,7 +1540,7 @@ def test_directory_scan_errors_are_incomplete(tmp_path, monkeypatch):
     assert all(item.get("definitive") is not True or item["change"] == "type_changed" for item in unchanged)
 
     def deny_nested(path):
-        if Path(path) == nested:
+        if _same_dir(path, nested):
             raise PermissionError("nested denied")
         return real_scandir(path)
 
@@ -1525,7 +1570,7 @@ def test_directory_scan_errors_are_incomplete(tmp_path, monkeypatch):
 
     def fail_mid(path):
         handle = real_scandir(path)
-        if Path(path) == workspace:
+        if _same_dir(path, workspace):
             return MidIteration(handle)
         return handle
 
@@ -1601,11 +1646,13 @@ def test_symlink_replacement_special_files_and_concurrent_change(tmp_path, monke
     }
     real_open = os.open
 
-    def replace_then_open(path, flags, *args, **kwargs):
-        candidate = Path(path)
-        if candidate.name == "victim.bin" and candidate.is_file() and not candidate.is_symlink():
-            candidate.unlink()
-            candidate.symlink_to(ROOT / "TARGET.md")
+    def replace_then_open(path, flags, *args, dir_fd=None, **kwargs):
+        name = os.fsdecode(path) if isinstance(path, (bytes, bytearray)) else str(path)
+        if Path(name).name == "victim.bin" and victim.is_file() and not victim.is_symlink():
+            victim.unlink()
+            victim.symlink_to(ROOT / "TARGET.md")
+        if dir_fd is not None:
+            return real_open(path, flags, *args, dir_fd=dir_fd, **kwargs)
         return real_open(path, flags, *args, **kwargs)
 
     monkeypatch.setattr(os, "open", replace_then_open)
@@ -1671,3 +1718,290 @@ def test_adapter_incomplete_capture_survives_cleanup(tmp_path):
     if result.capture.workspace:
         assert not Path(result.capture.workspace).exists()
     assert runtime._child is None
+
+
+class _OutsideAccessGuard:
+    def __init__(self, outside: Path, monkeypatch) -> None:
+        self.outside = outside.resolve()
+        self.hits: list[tuple[str, object]] = []
+        self.ids = {_dir_identity(outside)}
+        for child in outside.rglob("*"):
+            try:
+                info = os.lstat(child)
+            except OSError:
+                continue
+            self.ids.add((info.st_dev, info.st_ino))
+        self._real_open = os.open
+        self._real_scandir = os.scandir
+        self._real_read = os.read
+        self._real_fstat = os.fstat
+        monkeypatch.setattr(os, "open", self.open)
+        monkeypatch.setattr(os, "scandir", self.scandir)
+        monkeypatch.setattr(os, "read", self.read)
+
+    def _record_if_outside(self, action: str, fd: int | None = None, path: object | None = None) -> None:
+        if fd is not None:
+            try:
+                info = self._real_fstat(fd)
+            except OSError:
+                info = None
+            if info is not None and (info.st_dev, info.st_ino) in self.ids:
+                self.hits.append((action, (info.st_dev, info.st_ino)))
+        if path is not None and not isinstance(path, int):
+            try:
+                candidate = Path(os.fsdecode(path) if isinstance(path, (bytes, bytearray)) else str(path))
+                if candidate.exists() or candidate.is_symlink():
+                    resolved = candidate.resolve()
+                    if resolved == self.outside or self.outside in resolved.parents:
+                        self.hits.append((action, str(resolved)))
+            except OSError:
+                pass
+
+    def open(self, path, flags, *args, dir_fd=None, **kwargs):
+        fd = (
+            self._real_open(path, flags, *args, dir_fd=dir_fd, **kwargs)
+            if dir_fd is not None
+            else self._real_open(path, flags, *args, **kwargs)
+        )
+        self._record_if_outside("open", fd=fd, path=path)
+        return fd
+
+    def scandir(self, path):
+        self._record_if_outside("scandir", fd=path if isinstance(path, int) else None, path=path)
+        return self._real_scandir(path)
+
+    def read(self, fd, size):
+        data = self._real_read(fd, size)
+        if OUTSIDE_SENTINEL in data:
+            self.hits.append(("read", data[:32]))
+        self._record_if_outside("read-fd", fd=fd)
+        return data
+
+
+def test_queued_directory_and_ancestor_replacement_never_reads_outside(tmp_path, monkeypatch):
+    workspace = tmp_path / "workspace"
+    nested = workspace / "nested"
+    nested.mkdir(parents=True)
+    (nested / "owned.txt").write_text("owned-nested-bytes", encoding="utf-8")
+    (workspace / "root.txt").write_text("owned-root-bytes", encoding="utf-8")
+    outside = tmp_path / "outside-root"
+    outside.mkdir()
+    (outside / "secret.bin").write_bytes(OUTSIDE_SENTINEL)
+    (outside / "extra.txt").write_text("outside-entry", encoding="utf-8")
+    roots = _owned_roots(tmp_path, workspace)
+    real_scandir = os.scandir
+
+    def replace_queued_nested_then_scan(path):
+        if _same_dir(path, nested) and nested.is_dir() and not nested.is_symlink():
+            _replace_directory_with_outside_symlink(nested, outside)
+        return real_scandir(path)
+
+    monkeypatch.setattr(os, "scandir", replace_queued_nested_then_scan)
+    queued = capture_owned_paths(
+        roots,
+        CaptureLimits(max_bytes_hashed=10_000, read_chunk_bytes=32),
+    )
+    monkeypatch.setattr(os, "scandir", real_scandir)
+    assert queued["complete"] is False
+    assert queued["unchanged_not_established"] is True
+    assert any(item.startswith("replaced:workspace/nested") or item == "replaced" for item in queued["limitations"])
+    dumped = json.dumps(queued)
+    assert "OUTSIDE-TARGET-SENTINEL" not in dumped
+    assert not any(item.get("path") in {"secret.bin", "extra.txt", "nested/secret.bin"} for item in queued["records"])
+
+    access = _OutsideAccessGuard(outside, monkeypatch)
+    real_open = os.open
+
+    def replace_ancestor_between_classify_and_open(path, flags, *args, dir_fd=None, **kwargs):
+        name = os.fsdecode(path) if isinstance(path, (bytes, bytearray)) else str(path)
+        if Path(name).name == "root.txt" and workspace.is_dir() and not workspace.is_symlink():
+            _replace_directory_with_outside_symlink(workspace, outside)
+        if dir_fd is not None:
+            return access.open(path, flags, *args, dir_fd=dir_fd, **kwargs)
+        return access.open(path, flags, *args, **kwargs)
+
+    workspace = tmp_path / "workspace-ancestor"
+    nested = workspace / "nested"
+    nested.mkdir(parents=True)
+    (nested / "child.txt").write_text("owned-child-bytes", encoding="utf-8")
+    (workspace / "root.txt").write_text("owned-root-bytes", encoding="utf-8")
+    ancestor_roots = _owned_roots(tmp_path, workspace)
+    monkeypatch.setattr(os, "open", replace_ancestor_between_classify_and_open)
+    ancestor = capture_owned_paths(
+        ancestor_roots,
+        CaptureLimits(max_bytes_hashed=10_000, read_chunk_bytes=32),
+    )
+    monkeypatch.setattr(os, "open", real_open)
+    assert ancestor["complete"] is False
+    assert ancestor["unchanged_not_established"] is True
+    assert any(str(item).startswith("replaced:") or item == "replaced" for item in ancestor["limitations"])
+    assert "OUTSIDE-TARGET-SENTINEL" not in json.dumps(ancestor)
+    assert access.hits == []
+
+    replaced_root = tmp_path / "workspace-root"
+    replaced_root.mkdir()
+    (replaced_root / "keep.txt").write_text("root-owned", encoding="utf-8")
+    root_access = _OutsideAccessGuard(outside, monkeypatch)
+    real_open = os.open
+
+    def replace_root_during_acquire(path, flags, *args, dir_fd=None, **kwargs):
+        if dir_fd is None and _same_dir(path, replaced_root) and replaced_root.is_dir() and not replaced_root.is_symlink():
+            _replace_directory_with_outside_symlink(replaced_root, outside)
+        if dir_fd is not None:
+            return root_access.open(path, flags, *args, dir_fd=dir_fd, **kwargs)
+        return root_access.open(path, flags, *args, **kwargs)
+
+    monkeypatch.setattr(os, "open", replace_root_during_acquire)
+    acquired = capture_owned_paths(
+        _owned_roots(tmp_path, replaced_root),
+        CaptureLimits(max_bytes_hashed=10_000),
+    )
+    assert acquired["complete"] is False
+    assert acquired["unchanged_not_established"] is True
+    assert any(item.startswith("replaced:workspace") or item == "replaced" for item in acquired["limitations"])
+    assert "OUTSIDE-TARGET-SENTINEL" not in json.dumps(acquired)
+    assert root_access.hits == []
+    assert not any(item.get("path") == "secret.bin" for item in acquired["records"])
+
+
+def test_post_read_fstat_failure_omits_fingerprint(tmp_path, monkeypatch):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    (workspace / "empty.bin").write_bytes(b"")
+    (workspace / "exact.bin").write_bytes(b"E" * 64)
+    roots = _owned_roots(tmp_path, workspace)
+    real_fstat = os.fstat
+    file_fstats: dict[int, int] = {}
+
+    def fail_post_read(fd):
+        info = real_fstat(fd)
+        if stat.S_ISREG(info.st_mode):
+            file_fstats[fd] = file_fstats.get(fd, 0) + 1
+            if file_fstats[fd] >= 2:
+                raise OSError(errno.EBADF, "injected post-read fstat")
+        return info
+
+    monkeypatch.setattr(os, "fstat", fail_post_read)
+    result = capture_owned_paths(roots, CaptureLimits(max_bytes_hashed=10_000, read_chunk_bytes=16))
+    files = [item for item in result["records"] if item["path"] in {"empty.bin", "exact.bin"}]
+    assert files
+    assert result["complete"] is False
+    assert result["unchanged_not_established"] is True
+    assert any(str(item).startswith("unreadable:") or item == "unreadable" for item in result["limitations"])
+    for item in files:
+        assert item.get("content_complete") is False
+        assert item.get("fingerprint") is None
+        assert item.get("limitation") == "unreadable"
+
+
+def test_descriptor_and_scanner_cleanup_on_failure_and_exhaustion(tmp_path, monkeypatch):
+    workspace = tmp_path / "workspace"
+    nested = workspace / "nested"
+    nested.mkdir(parents=True)
+    (nested / "child.txt").write_text("nested-control", encoding="utf-8")
+    (workspace / "root.txt").write_text("root-control", encoding="utf-8")
+    roots = _owned_roots(tmp_path, workspace)
+    opened: set[int] = set()
+    closed: set[int] = set()
+    scanners: list[object] = []
+    real_open = os.open
+    real_close = os.close
+    real_scandir = os.scandir
+
+    def track_open(path, flags, *args, dir_fd=None, **kwargs):
+        fd = (
+            real_open(path, flags, *args, dir_fd=dir_fd, **kwargs)
+            if dir_fd is not None
+            else real_open(path, flags, *args, **kwargs)
+        )
+        opened.add(fd)
+        return fd
+
+    def track_close(fd):
+        closed.add(fd)
+        return real_close(fd)
+
+    class TrackedScanner:
+        def __init__(self, real) -> None:
+            self._real = real
+            self.closed = False
+            scanners.append(self)
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            return next(self._real)
+
+        def close(self) -> None:
+            self.closed = True
+            self._real.close()
+
+    def track_scandir(path):
+        return TrackedScanner(real_scandir(path))
+
+    monkeypatch.setattr(os, "open", track_open)
+    monkeypatch.setattr(os, "close", track_close)
+    monkeypatch.setattr(os, "scandir", track_scandir)
+
+    def deny_nested(path):
+        if _same_dir(path, nested):
+            raise PermissionError("nested denied")
+        return track_scandir(path)
+
+    monkeypatch.setattr(os, "scandir", deny_nested)
+    failed = capture_owned_paths(roots)
+    assert failed["complete"] is False
+    assert opened <= closed
+    assert scanners
+    assert all(item.closed for item in scanners)
+
+    scanners.clear()
+    opened.clear()
+    closed.clear()
+    monkeypatch.setattr(os, "scandir", track_scandir)
+    exhausted = capture_owned_paths(roots, CaptureLimits(max_entries=2, max_records=2))
+    assert exhausted["complete"] is False
+    assert opened <= closed
+    assert all(item.closed for item in scanners)
+
+    scanners.clear()
+    opened.clear()
+    closed.clear()
+    control = capture_owned_paths(roots)
+    child = next(item for item in control["records"] if item["path"] == "nested/child.txt")
+    assert child.get("content_complete") is True
+    assert child.get("fingerprint") == hashlib.sha256(b"nested-control").hexdigest()
+    assert control["complete"] is True
+    assert opened <= closed
+    assert all(item.closed for item in scanners)
+
+
+def test_incomplete_replacement_observations_are_not_definitive(tmp_path, monkeypatch):
+    workspace = tmp_path / "workspace"
+    nested = workspace / "nested"
+    nested.mkdir(parents=True)
+    (nested / "owned.txt").write_text("owned", encoding="utf-8")
+    outside = tmp_path / "outside-incomplete"
+    outside.mkdir()
+    (outside / "secret.bin").write_bytes(OUTSIDE_SENTINEL)
+    roots = _owned_roots(tmp_path, workspace)
+    real_scandir = os.scandir
+
+    def replace_nested(path):
+        if _same_dir(path, nested) and nested.is_dir() and not nested.is_symlink():
+            _replace_directory_with_outside_symlink(nested, outside)
+        return real_scandir(path)
+
+    monkeypatch.setattr(os, "scandir", replace_nested)
+    after = capture_owned_paths(roots)
+    changes = mutation_records(
+        after["records"],
+        after["records"],
+        before_complete=after["complete"],
+        after_complete=after["complete"],
+    )
+    assert after["complete"] is False
+    assert after["unchanged_not_established"] is True
+    assert not any(item.get("definitive") is True and item["change"] in {"added", "removed"} for item in changes)
+    assert "OUTSIDE-TARGET-SENTINEL" not in json.dumps(after)

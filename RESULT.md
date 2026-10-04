@@ -1,3 +1,74 @@
+# RESULT.md — Step 12.1.11 Repair capture traversal and metadata validation
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 12.1.11 — Repair capture traversal and metadata validation
+**Work:** `e35d5703ccc14627a150a29b9e900502`
+**Plan:** `95cf2922e8ff4b92b5ad4d9976fc317d`
+**Finding:** Verify Debater benchmark sources and controlled runtime
+**Attempt:** `ab9afde8153c49408e70ff15ae42d0d1`
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. No AutoCycle edits, discovery, conversion, debate CLI, argument export, observation replay, ACP session, live provider calls, login/logout, credential-store reads, global configuration writes, or Debater publications. This record does not claim parent Completion, Session acceptance, controlled-backend acceptance, or end-to-end benchmark success.
+
+TARGET SHA-256 `9bfc5e439e5776cf3d1d89fd33363febe716a6744ad7d256942a24709ff3e77b` (60817).
+SESSION SHA-256 `ca72e1c149eb4cefd2f6c9f101be577fed5b8493975a8d19e2fce7c4e44fff94` (5897).
+IMPLEMENTATION SHA-256 `93a48e1253e9fcc126f820fd9f7cf72a37a30836e17a568b6eb8a248ea4f7538` (6922).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `8bd2d14da4584b661d1475751185cac643cfaa37` was ignored. HEAD/branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Ancestry parent was read from the Git object store.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `12.1.11` source | `b2da41fcf82620dc77ef029352caefedf87fab29` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; parent `2e5b2cdb3964f7ec3c383e3488f5e9457b65d3b5` is the Step 12.1.10 checkpoint / `reviewed_head` |
+| Bound running attempt | `ab9afde8153c49408e70ff15ae42d0d1`, `plan_sha` = B, phase `running`, `checkpoint_sha` absent |
+| `admitted_review` predecessor | `review_sha256` `c278f7ef0b66fa47c2c9770e74b6e0530cb3d442804b4b7f7c9db5e77bc71486`; `reviewed_head` `2e5b2cdb3964f7ec3c383e3488f5e9457b65d3b5` |
+| `latest-implementation` leftover HEAD | `8bd2d14da4584b661d1475751185cac643cfaa37` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `95cf2922e8ff4b92b5ad4d9976fc317d` |
+| Fail-closed | Not required |
+
+## Implemented repair
+
+Replaced pathname `os.scandir` / `os.open` traversal with descriptor-relative capture. Roots are acquired with `O_DIRECTORY|O_NOFOLLOW`; children are enumerated from the held directory fd and opened with `dir_fd`. Queued directories store fd identity; replacement of a queued directory, ancestor, or owned root is detected by a failed `O_NOFOLLOW` re-open or `(st_dev, st_ino)` mismatch and reported as `replaced:` incomplete coverage. Diagnostic paths are constructed from owned names, not by reopening full paths in error handling. Directory fds and scanners are closed on success, errors, allowance exhaustion, and interruption. A failed post-read `fstat` now omits the fingerprint, keeps `content_complete=false`, records `unreadable`, and sets aggregate `complete=false` / `unchanged_not_established=true`. Incremental byte-bounded reads, shared accounting, empty/exact-boundary behavior, scan-error coverage, and incomplete mutation comparison are preserved. Missing safe-traversal primitives fail closed. Installed launches remain closed. Blanket 12.1.10 symlink-replacement and complete-fingerprint claims in `BENCHMARK.md` were corrected.
+
+## Listed verification
+
+Local fake-provider processes, temporary directories, and labeled synthetic files. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Command | Measured result |
+|---|---|
+| `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` | **49 passed** in 3.80s |
+| `/opt/anaconda3/bin/python -m pytest -q` `bav/director/tests/test_current_build.py::test_public_namespace_and_compatibility` `…::test_public_help_is_bav_first_and_check_is_diagnostic` `bav/director/tests/test_readme.py` `bav/director/tests/test_research_handoff.py::test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 0.82s |
+
+Replacement and metadata measurements: queued-directory→outside symlink before enumeration never opened the outside inode or returned its sentinel; ancestor replacement between classify and open and owned-root replacement during acquisition produced `replaced:` coverage without outside bytes; post-read `fstat` failure on empty and exact-boundary files published no fingerprint; fds/scanners closed after nested scan failure and `max_entries` exhaustion; a nested-directory control still completed; incomplete replacement observations were not definitive add/remove. Existing bounded-read, shared-budget, scan-error, wide/depth/record/clock, file→symlink, FIFO, concurrent-rewrite, adapter-cleanup, and forged installed-verification tests still launched no installed process and staged no company context.
+
+Synthetic success is application-owned adapter behavior only, not installed-provider enforcement.
+
+## Preservation and plan changes
+
+Fast Retailing `publication_date` remains `null`; `financial_statement_approval.date` remains `2025-11-27`. Accepted financial inputs and neutral assumptions unchanged. Company outputs not rebuilt. Original filings, converter Markdown, assets, coverage limitations, probe artifacts, and historical controller receipts retained. No discovery or conversion replay. No new live provider call. `DEBATER.md` unchanged (`7578b44c…`, 62336).
+
+Required plan change: none.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `bav/director/runtime/adapter.py` | `2a71343abda82aa0a7c3f1af8c80b8d81fd28c27aa7fa5ef6a52d36a887b3613` | 47686 |
+| `bav/director/runtime/policy.py` | `5174893702e6c2b9db5734310dd736dc0dcd857a309b90b51957e8e4a1899104` | 51839 |
+| `bav/director/runtime/workspace.py` | `4dcb8e0261258869a8fa390929e65c8ca40f370b110dd32090fef20da48b3acc` | 5514 |
+| `bav/director/runtime/dispatch.py` | `008f4595435345bf7ddb728478116e3b6aa3fd7efbcc6f61da65d3ffa12d54de` | 7039 |
+| `bav/director/runtime/contract.py` | `5f75263ec5f91e3e4784b7f62bc0b88645203e46a4495ec6b68d8f73cfab6669` | 9355 |
+| `bav/director/tests/test_research_runtime.py` | `48ed9cb2d4f3786da0aa1490bc0c28822d5cc44ac8bf7caf4816f106058a8ef8` | 83534 |
+| `bav/director/tests/fixtures/runtime/fake_provider.py` | `4fd51d9f2f40d9e7d5c05eb48e33b2aa3d0d5f86887462791e41da3121cd9506` | 16409 |
+| `bav/director/docs/DEBATER.md` | `7578b44c6c56db0265fa50f0df9de68d6002d36f2327fa155c746a70a2c93f42` | 62336 |
+| `bav/director/docs/BENCHMARK.md` | `baf24b49efa10644b8949a21f5680e040cf3c4f85e91d64518cf7ced15881a81` | 64850 |
+
+## Remaining toward Completion
+
+Ordinary `python -m bav debate` intake/approvals, Extractor preparation/retrieval, Planner/Reviewer research, durable case integration, required readers, coherent JSON/Markdown exports, adversarial checks, and the real `--add`/resume benchmark remain outstanding. Controlled installed-runtime acceptance and Codex implementation remain unverified. Application dispatch denial and post-execution mutation detection do not constrain a provider's native tools. Missing installed mechanisms remain loaded-configuration identity and a policy-denial event. A later bounded real-runtime demonstration remains necessary before company transmission. Synthetic success cannot close parent Completion.
+
 # RESULT.md — Step 12.1.10 Repair bounded mutation capture and scan-error coverage
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
