@@ -1,3 +1,98 @@
+# RESULT.md — Step 12.1.1 Correct prerequisite provenance and diagnose Cursor configuration
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 12.1.1 — Correct prerequisite provenance and diagnose Cursor configuration
+**Work:** `e35d5703ccc14627a150a29b9e900502`
+**Plan:** `45b1ace4cadc433fac821627251ca69d`
+**Finding:** Verify Debater benchmark sources and controlled runtime
+**Attempt:** `a65e6784a3b74ee5aae4aab1533d12f5`
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. No AutoCycle edits, discovery, conversion, debate CLI, argument export, provider calls, or Debater publications. This record does not claim parent Completion, Session acceptance, or end-to-end benchmark success.
+
+TARGET SHA-256 `9bfc5e439e5776cf3d1d89fd33363febe716a6744ad7d256942a24709ff3e77b` (60817).
+SESSION SHA-256 `614f2e081b472ae75ef13e78b34120311181327c8f6a534bd3cfd35621344b8a` (4472).
+IMPLEMENTATION SHA-256 `df763177fa3ec707e8845249e27fee6c89ab54606724edc7ecb906f1b1c6d428` (7161).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `e4632a678…` was ignored. HEAD/branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Ancestry parent was read from the Git object store.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `12.1.1` source | `cdaeb1151cc1e7a60597ec7076d4fa6893b5ee4d` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; parent `4e057dd4613930206726eb8d858d81fb2c81ffce` is the Step 12.1 checkpoint / `reviewed_head` |
+| Bound running attempt | `a65e6784a3b74ee5aae4aab1533d12f5`, `plan_sha` = B, phase `running`, `checkpoint_sha` absent |
+| `admitted_review` predecessor | `review_sha256` `d9fff30ccfed32290b3b4e3e59349f55b187b2e935c0e0f6c5d4a5b83c0dedfc`; `reviewed_head` `4e057dd4613930206726eb8d858d81fb2c81ffce` |
+| `latest-implementation` leftover HEAD | `e4632a6782be2c1de705ed838bc95a26d6b0e909` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Fail-closed | Not required |
+
+## Date provenance correction
+
+`build/input/fast_retailing/research_sources/fastretailing-cfs-2025/manifest.json` no longer labels 2025-11-27 as `publication_date`.
+
+| Field | Result |
+|---|---|
+| `publication_date` | `null` / unknown |
+| `financial_statement_approval.date` | `2025-11-27` |
+| Approval basis | CFS note (2) in prepared `document.md` line 229 |
+| PDF CreationDate | `2026-01-29+09:00` recorded as non-publication metadata only |
+| Corrected manifest | SHA-256 `9a3d1cf0d884f293347d28ffd1ebc2312db4dcb1d477e61ff5d27e98046d63db` (4257) |
+| Original / prepared hashes | Unchanged `25a85db8…` / `632babd6…` |
+
+Snapshot `step_12_1_1_correction` records the same split. `BENCHMARK.md` no longer treats the approval date as publication.
+
+## Cursor configuration diagnosis
+
+Listed `evidence_routes` were executed. No provider call.
+
+| Command | Measured result |
+|---|---|
+| `/usr/bin/readlink /Users/lizhiguo/.local/bin/agent` | `…/versions/2026.10.01-e373342/cursor-agent` |
+| `agent --version` | `2026.10.01-e373342` |
+| `agent --help` | Print has write/shell; `--sandbox` overrides config; `--workspace` defaults to cwd; `--output-format` `text\|json\|stream-json`; `--force` unused |
+| `jq {permissions,sandbox}` global | `sandbox.mode=disabled`; `deny=[]`; 135 allow entries. Present file, not historical loading. SHA-256 `2bfeb4a70269f38892ecc6d99a44a57c9ad2b9029018046bce03b90bc6a663ed` |
+| `jq {permissions,sandbox}` project `.cursor/cli.json` | Allow Shell/Read/Write `*`; deny selected git mutations; `sandbox` null. SHA-256 `20497dfde3a6554d83f8d8e642246d017a44820e3d42a762c7efacc37a6635f2` |
+| `jq {permissions,sandbox}` probe `.cursor/cli.json` | Deny-all workspace file. SHA-256 `3ccf0421e10818262477c200d0e1378b915adc90fe101f61a383d53acec50a5b` |
+
+Official docs (`cli/headless`, `cli/reference/permissions`, `cli/reference/configuration`): global `~/.cursor/cli-config.json`; project permissions in `<project>/.cursor/cli.json`; deny precedes allow. They do not state `--workspace` project-file discovery or global/project merge, and they do not make file existence proof of historical loading.
+
+Invocation workspace vs working directory: Step 12.1 used `--workspace` = `runtime_probe`. Working directory of that process is **not recorded** in retained probe artifacts. Historical effective configuration: **unknown**.
+
+## Evidence classifications (replaces “effective traces”)
+
+| Item | Class |
+|---|---|
+| `cursor-call1.json` `e0d42d8eaa…` | Independently observed artifact: final narrative only; no tool events; no loaded-config record |
+| `probe-write.txt` `f0100f7073…` | Independently observed artifact: write-isolation failure only |
+| Probe / project / global `cli.json` files | Independently observed present files; not historical loading |
+| Cursor shell, unrelated reads, web rejection, MCP assertions | Model-reported actions; not retained execution events |
+| Which Cursor config was loaded | Unknown |
+| `codex-call1.jsonl` `d966011369…` | Independently observed command events: shell ran; write denied; `/etc/hosts` and `TARGET.md` ran; curl DNS-failed |
+
+Codex invocation **violates the required research boundary**. DNS failure is **not** policy denial.
+
+Removed unsupported assertion that only a human permission choice can resolve the Cursor problem. Remaining gap: no effective-configuration record and no Cursor tool-event capture. Documented candidate before any later probe: `--output-format stream-json`. No human decision is identified by this correction.
+
+## Preservation and plan changes
+
+Accepted financial inputs, conflicts, and neutral assumptions unchanged (re-hashed). Company outputs not rebuilt. `DEBATER.md` unchanged (`27d6615add…`, 61460). Original filings, converter Markdown, assets and coverage limitations retained. No discovery or conversion replay.
+
+Required plan change: none.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| FR research `manifest.json` | `9a3d1cf0d884f293347d28ffd1ebc2312db4dcb1d477e61ff5d27e98046d63db` | 4257 |
+| Snapshot `manifest.json` | `d06e7f5de40b070ff4376f96ad1f2e9ea8451528ef8c88e6646d4d454247f50f` | 3761 |
+| `cursor_config_diagnosis.json` | `acdbd4a6fd46b49530360775ade987765db20780f1feea9aa1c030b9a810d640` | 8091 |
+| `bav/director/docs/BENCHMARK.md` | `51bc08f05e3bb002683d831c542d70ed3b5b7bab65597dc0854745d12ba081c2` | 20107 |
+
+## Remaining toward Completion
+
+Ordinary `python -m bav debate` intake/approvals, Extractor preparation/retrieval, Planner/Reviewer, durable budgets/state, required readers, coherent JSON/Markdown exports, adversarial checks, and the real `--add`/resume benchmark remain outstanding. Prerequisite verification alone does not satisfy the Session 12 Endpoint. Cursor company-data transmission remains blocked while historical enforcement is unknown and the consumed JSON envelope cannot demonstrate restrictions.
+
 # RESULT.md — Step 12.1 Verify Debater benchmark sources and controlled runtime
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

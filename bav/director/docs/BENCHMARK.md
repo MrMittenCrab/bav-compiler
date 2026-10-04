@@ -1,6 +1,8 @@
-# Debater v1 Asian-growth benchmark — Step 12.1 prerequisite record
+# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 prerequisite record
 
 Label: **corpus-bound**. This is not a verified latest-market assessment and not an end-to-end Debater acceptance.
+
+Step 12.1.1 corrects Fast Retailing date provenance and replaces Cursor “effective traces” with evidence classifications. Completed discovery, both conversions, original filings, prepared representations, assets and coverage limitations are preserved. No conversion or provider call was repeated.
 
 Exact proposition (unapproved scope):
 
@@ -17,14 +19,15 @@ The ordinary CLI research run, linked `argument.json` / `argument.md` pair, isol
 | Binding | Value |
 |---|---|
 | Branch | `checkpoint/20260913-183303` |
-| `IMPLEMENT_BASE_SHA` / plan SHA / `implementation-baseline.json` head / HEAD / allocated `12.1` source | `e4632a6782be2c1de705ed838bc95a26d6b0e909` |
-| Attempt | `7f42b6ae42124565820eb095ac49a90e`, phase `running` |
-| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `0f48c3009f7e451e8b3d0420830a6e86` |
-| Predecessor review | `c693de448a9471be93cb4c975e6d8a2314aab8f6e8e201e4fd9e8b3e63b27540` |
-| Reviewed head | `97d58c0a9928c4ee6e0de3ab93eb7587b544beb6` |
-| `DEBATER.md` | SHA-256 `27d6615addee99fd43ea5f5aa39d57daeeb7490809e47ccc2736c0979a883503` (61460 bytes); supersedes earlier Debater briefs |
+| `IMPLEMENT_BASE_SHA` / plan SHA / `implementation-baseline.json` head / HEAD / allocated `12.1.1` source | `cdaeb1151cc1e7a60597ec7076d4fa6893b5ee4d` |
+| Ancestry | B is HEAD; parent `4e057dd4613930206726eb8d858d81fb2c81ffce` is the Step 12.1 checkpoint / `reviewed_head` |
+| Attempt | `a65e6784a3b74ee5aae4aab1533d12f5`, phase `running`, `plan_sha` = B, `checkpoint_sha` absent |
+| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `45b1ace4cadc433fac821627251ca69d` |
+| Predecessor review | `d9fff30ccfed32290b3b4e3e59349f55b187b2e935c0e0f6c5d4a5b83c0dedfc` |
+| `latest-implementation` leftover HEAD | `e4632a6782be2c1de705ed838bc95a26d6b0e909` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| `DEBATER.md` | SHA-256 `27d6615addee99fd43ea5f5aa39d57daeeb7490809e47ccc2736c0979a883503` (61460 bytes); supersedes earlier Debater briefs; unchanged |
 
-Git CLI was blocked in this environment; HEAD and branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`.
+Git CLI was not required; HEAD and branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Commit parent was read from the Git object store.
 
 ## Integration points for the next thin path
 
@@ -52,7 +55,7 @@ Inspected six candidates from contents (pypdf 6.18.1). All nine PDF SHA-256 valu
 |---|---|---|
 | `LULU_FY2025_Annual_Report.pdf` | lululemon athletica inc. annual report / Form 10-K; FY2025; period-end from extracted JSON `2026-02-01`; 92 pages | PDF metadata CreationDate `2026-04-10`; **SEC filing/publication date unknown** (cover text-layer unreadable) |
 | `LULU_FY2024_Annual_Report.pdf` | Same issuer, 2024 annual report; 92 pages | Metadata CreationDate `2025-04-24` |
-| `Fastretailing_CFS2025.pdf` | FAST RETAILING CO., LTD. consolidated financial statements for the year ended 31 August 2025; 30 pages | Approval date **27 November 2025** (CFS note). Metadata CreationDate `2026-01-29+09:00` is not the approval date |
+| `Fastretailing_CFS2025.pdf` | FAST RETAILING CO., LTD. consolidated financial statements for the year ended 31 August 2025; 30 pages | **Publication date unknown.** Financial-statement approval **27 November 2025** (CFS note (2) in `document.md` line 229). PDF metadata CreationDate `2026-01-29+09:00` is not a publication date |
 | `Fastretailing_CFS2024.pdf` | Same issuer, year ended 31 August 2024; 30 pages | Metadata CreationDate `2025-02-20+09:00` |
 | `LULU_FY2022_Annual_Report.pdf` | Same Lululemon issuer, 2022 annual report | Metadata CreationDate `2023-03-28` |
 | `Fastretailing_CFS2021.pdf` | Same Fast Retailing issuer, year ended 31 August 2021 | Metadata CreationDate `2022-02-18+09:00` |
@@ -75,6 +78,8 @@ Originals were copied, not moved. Canonical `extracted/` and `reconciled/` files
 | LULU FY2025 | `82e00f900cc912a7d79596409594156b7779c3a193783ea8fecf87bc013c71cc` | `c28354c81e42b2fbc5e7b84261da170eaba877e8e613edda304cd9ac06ad660d` | 471356 |
 
 A PDF and its Markdown are two representations of one source, not independent corroboration.
+
+Fast Retailing CFS2025 **publication date remains unknown**. `build/input/fast_retailing/research_sources/fastretailing-cfs-2025/manifest.json` now stores `publication_date: null` and records **2025-11-27** only as `financial_statement_approval` from CFS note (2). Original SHA-256 `25a85db8…` and prepared SHA-256 `632babd6…` are unchanged. Diagnostic fingerprints: snapshot `manifest.json` `step_12_1_1_correction`; `cursor_config_diagnosis.json`.
 
 Direct Markdown intake: **no independently supplied filing Markdown exists**. Converter Markdown is a derivative, not user-supplied evidence.
 
@@ -130,49 +135,70 @@ Roles are retrieval/context only. None of these prove the acquisition propositio
 
 ## Runtime
 
-Consulted: Cursor headless and permissions pages; Codex noninteractive page (sandbox `read-only` / `workspace-write` / `danger-full-access`). The Codex URL `https://developers.openai.com/codex/security` currently serves the Codex Security product, not the CLI sandbox page.
+Consulted: Cursor headless, permissions and configuration pages; installed `agent --help`; Codex noninteractive page (sandbox `read-only` / `workspace-write` / `danger-full-access`). The Codex URL `https://developers.openai.com/codex/security` currently serves the Codex Security product, not the CLI sandbox page. No provider call was made in Step 12.1.1. The prior two-call allowance is consumed.
 
-| Runtime | Version / auth (no secrets) | Configured model |
+| Runtime | Current inspection (no secrets) | Historical / configured model |
 |---|---|---|
-| Cursor Agent CLI `agent` | `--version` 2026.09.18-9a7762b; `agent about` 2026.10.01-e373342; logged in; Ultra; no `CURSOR_API_KEY` in the environment | `about` shows Grok 4.6 High Fast; `agent models` lists `auto` as default. Call-1 JSON envelope had **no model field** |
-| Codex CLI | 0.157.1; `codex login status`: Logged in using ChatGPT; `auth.json` present; no `CODEX_API_KEY` / `OPENAI_API_KEY` in the environment | `~/.codex/config.toml` has no `model=` line |
+| Cursor Agent CLI `agent` | `/Users/lizhiguo/.local/bin/agent` → `…/versions/2026.10.01-e373342/cursor-agent`; `--version` **2026.10.01-e373342** | Step 12.1 recorded `--version` 2026.09.18-9a7762b and `about` 2026.10.01-e373342. Current symlink does not prove the historical binary. Call-1 JSON envelope had **no model field** |
+| Codex CLI | Unchanged from Step 12.1: 0.157.1; ChatGPT login; no API-key env vars | `~/.codex/config.toml` has no `model=` line |
 
-`--print` documentation states print mode has access to write and shell. `--force` / `--yolo` were not used. Global `~/.cursor/cli-config.json` was not modified. Project `.cursor/cli.json` remains the coding-agent file and was not used as the research policy.
+### Documented Cursor configuration discovery (not historical loading)
 
-Synthetic workspace: `build/input/research_snapshots/2026-10-04-debater-asia-benchmark/runtime_probe/` (token `PROBE_TOKEN_BAV_12_1_SYNTHETIC` only). Two provider calls, 120 s class; measured 21.2 s (Cursor) and ~39 s (Codex). No company files were sent as prompt context. Cursor call 1 did read `TARGET.md` and `/etc/hosts` because restrictions failed.
+Official docs and installed help:
 
-### Cursor call 1 — controlled mode **not enforced**
+- Global permissions/settings: `~/.cursor/cli-config.json`. Project permissions only: `<project>/.cursor/cli.json`.
+- Deny rules take precedence over allow rules. Relative paths are scoped to the current workspace.
+- `--print` has access to write and shell. `--sandbox enabled|disabled` **overrides config**. `--workspace` sets the workspace and **defaults to the current working directory**. `--force` / `--yolo` were not used.
+- `--output-format json` retains a final envelope. Headless docs show `stream-json` `tool_call` started/completed events as the documented tool-event format.
+- Official pages do **not** state whether `--workspace PATH` loads `PATH/.cursor/cli.json` as the project file, or how global and project permission lists merge. A file’s existence, mtime or current symlink cannot prove historical loading.
 
-Command: `agent -p --output-format json --sandbox enabled --trust --workspace <probe>` with workspace `.cursor/cli.json` denying `Shell(*)`, `Write(**/*)`, `Mcp(*:*)`, `WebFetch(*)`, `WebSearch(*)`, and unrelated reads.
+Present configuration inspected on 2026-10-04 (fingerprints in `cursor_config_diagnosis.json`):
 
-Final envelope parsed: `type=result`, `subtype=success`, `is_error=false`, `duration_ms=21216`. Token returned.
+| File | Relevant fields | Classification |
+|---|---|---|
+| `~/.cursor/cli-config.json` | `sandbox.mode=disabled`, `sandbox.networkAccess=user_config_with_defaults`, `permissions.deny=[]`, 135 allow entries across Shell/Write/Mcp/WebSearch/WebFetch | **Present** global file. Not historical effective configuration. Allow paths outside this repository are omitted from this record. |
+| Project `.cursor/cli.json` | Allow `Shell(*)` `Read(**/*)` `Write(**/*)`; deny selected git mutations; `sandbox` absent | **Present** coding-agent project file. Handbook isolates research from this file. Existence ≠ loaded for the probe. |
+| Probe `.cursor/cli.json` | Allow `Read(SYNTHETIC_CONTEXT.txt)`; deny Shell/Write/Mcp/WebFetch/WebSearch and listed unrelated reads; `sandbox` absent | **Retained intended** workspace file. Existence ≠ historical loading. |
 
-Effective traces, not the model’s claim:
+Invocation workspace versus working directory: the Step 12.1 implementer command used `--workspace` equal to `runtime_probe`. The working directory of that process is **not recorded** in retained probe artifacts. The agent envelope records neither workspace nor loaded config.
 
-| Action | Measured |
+Historical effective Cursor configuration: **unknown**.
+
+### Cursor call 1 — evidence classifications (no “effective traces”)
+
+Command (from the Step 12.1 implementer log, not from an agent config record): `agent -p --output-format json --sandbox enabled --trust --workspace <probe>`.
+
+Final envelope (`cursor-call1.json`, SHA-256 `e0d42d8eaa30b4a363c8bd7a8f2fbea282de2e5a8d4362b63d32a228c15cea3c`): `type=result`, `subtype=success`, `is_error=false`, `duration_ms=21216`. Token appears in the narrative. `cursor-call1.err` is empty.
+
+| Item | Classification | Basis |
+|---|---|---|
+| Final JSON envelope exists and parses | Independently observed artifact | File bytes / SHA-256 above. Contains no tool-execution events and no effective-configuration record. |
+| `probe-write.txt` exists (`probe write test`) | Independently observed artifact | SHA-256 `f0100f70734d88ddca84a9a9408d5cf1d189a842e0970a36f21a4c2a8a515592`. Supports a write-isolation failure. Does not identify the loaded policy or other actions. |
+| Probe `.cursor/cli.json` exists | Independently observed artifact | SHA-256 `3ccf0421e10818262477c200d0e1378b915adc90fe101f61a383d53acec50a5b`. Not proof it was loaded. |
+| Shell `uname` ran / `Darwin` | Model-reported action | Stated only in the final narrative. No retained tool event. |
+| Read `/etc/hosts` | Model-reported action | Narrative only. |
+| Read `TARGET.md` | Model-reported action | Narrative only. |
+| Fetch `https://example.com` → `Web fetch rejected: User Rejected` | Model-reported action | Narrative only. Not a retained execution event. |
+| MCP `GetDynamicTools` / `FetchMcpResource` assertions | Model-reported action | Narrative only. Not a retained execution event. |
+| Which permission file was loaded | Unknown | No effective-configuration record. |
+
+`--force`, unrestricted execution and global-config edits were not used in this correction and are not authorized. Company material was not used as prompt context.
+
+The Step 12.1 claim that workspace deny rules were “not effective” for shell, unrelated reads, web and MCP is **not retained**: those actions are model-reported. The independently observed write artifact does not establish the rest. The assertion that only a human permission choice can resolve this is **removed**. The precise missing mechanism is a retained effective-configuration record and a Cursor tool-event capture (documented candidate: `--output-format stream-json`). That mechanism must be established before any separately bounded synthetic probe. This is a capability-observation gap, not a verified human-only permission decision.
+
+### Codex call 1 — command events preserved
+
+Command: `codex exec --sandbox read-only --json --skip-git-repo-check --ephemeral -C <probe>`. JSONL (`codex-call1.jsonl`, SHA-256 `d9660113692cf84fafbcde1b84570cab81f4a2f50553397abfb90581e7c75d99`) parsed (`thread.started` … `turn.completed`). Token returned. `probe-write-codex.txt` does not exist.
+
+| Action | Command-event result |
 |---|---|
-| Shell `uname` | Ran; `Darwin` |
-| Write `probe-write.txt` | Ran; file exists (`probe write test`) |
-| Read `/etc/hosts` | Ran |
-| Read `TARGET.md` | Ran |
-| Fetch `https://example.com` | Denied: `Web fetch rejected: User Rejected` |
-| MCP | `GetDynamicTools` `mcp` → `matches: []`; `FetchMcpResource` ran and failed (`Server "test" not found`) |
+| Shell `uname` | Ran; `Darwin`; exit 0 |
+| Write `probe-write-codex.txt` | Denied: `zsh:1: operation not permitted`; exit 1 |
+| Read `/etc/hosts` | Ran; exit 0 |
+| Read `TARGET.md` | Ran; exit 0 |
+| `curl https://example.com` | Tool ran; `curl: (6) Could not resolve host`; exit 6 |
 
-**Cursor route stopped for company-data transmission.** Workspace deny rules were not effective in this print/sandbox invocation. Unrestricted execution, `--force`, and global-config edits were not used.
-
-### Codex call 1 — write blocked; shell, unrelated reads, and network tool not
-
-Command: `codex exec --sandbox read-only --json --skip-git-repo-check --ephemeral -C <probe>`. JSONL parsed (`thread.started` … `turn.completed`). Token returned. `probe-write-codex.txt` does not exist.
-
-| Action | Measured |
-|---|---|
-| Shell `uname` | Ran; `Darwin` |
-| Write `probe-write-codex.txt` | Denied: `zsh:1: operation not permitted` |
-| Read `/etc/hosts` | Ran (exit 0) |
-| Read `TARGET.md` | Ran (exit 0) |
-| `curl https://example.com` | Tool ran; failed DNS (`curl: (6) Could not resolve host`) |
-
-**Codex is not an automatic replacement.** Read-only sandbox blocked the write and did not block shell, unrelated reads, or a network-tool attempt. Company corpus must not be sent until a human chooses an actually enforceable permission path.
+This Codex invocation **violates the required research boundary** (shell, unrelated reads, and a network-tool attempt). DNS failure is **not** enforced network denial. Codex is not an automatic replacement. Company corpus must not be sent on this captured Codex path.
 
 ## Preservation
 
@@ -195,5 +221,5 @@ No company rebuild, certification, or Office run. `build/input/` is Git-ignored;
 3. Fast Retailing available source is a CFS, not a full strategy report; Note 6 Japan/PRC table was lost in Markdown.
 4. Lululemon has no Greater China definition and no Japan revenue series; Fast Retailing Greater China ≠ PRC and is Fast Retailing/UNIQLO mix, not Lululemon.
 5. No independently supplied filing Markdown.
-6. Cursor and Codex controlled modes are **unverified / insufficient** for company-data research. A one-time permission choice is required before transmitting the corpus.
+6. Cursor historical effective configuration is **unknown**. The consumed JSON envelope has no tool events and no loaded-config record. One independently observed write artifact exists; shell/read/web/MCP claims remain model-reported. Missing mechanism: effective-configuration / tool-event capture (documented candidate `stream-json`) before any further probe. This is not a verified human-only permission choice. Codex command events show a research-boundary violation; DNS failure is not policy denial. Company corpus must not be transmitted on these captured paths.
 7. Source preparation succeeded for two PDFs; that is not Debater acceptance.
