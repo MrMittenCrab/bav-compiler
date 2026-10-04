@@ -567,6 +567,8 @@ Synthetic measurements added in this step:
 
 Retained 12.1.11 measurements: queued-child replacement; root replacement during final-component open; post-read `fstat` failure; bounded reads; shared empty/exact budget; scan-error coverage; wide/depth/record/clock limits; file→symlink classify-to-open; FIFO skip; concurrent rewrite `unstable`; forged installed-verification launches no process and stages no company context.
 
+**Qualification (Step 12.1.13):** The 12.1.12 “clock interruption” measurement expired the capture clock (`_ExpireAfter`) and recorded `elapsed`. That is allowance exhaustion, not `KeyboardInterrupt` or another `BaseException` during descriptor validation. It does not establish exception-safe acquisition cleanup.
+
 ### Observation limits after the repair
 
 Trust-anchor assumption: the filesystem root is a non-replaceable starting descriptor; only a symlink that is a direct child of `/` may be used as a system prefix, and only by walking its textual target from that same anchor. The implementation does not enumerate `/` or collect ancestor contents. Replacement detection still depends on a failed `O_NOFOLLOW` component open or an identity mismatch during a later probe; an unobserved replacement that never races a check remains a coverage limitation. Incomplete coverage still cannot conclude that the owned filesystem is unchanged. Synthetic ancestor repair does not establish provider enforcement.
@@ -583,3 +585,42 @@ Still closed / unverified / outstanding:
 - Ordinary `python -m bav debate` intake/approvals, Extractor readers/preparation/retrieval, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic checks, and real evidence-addition/resumption.
 
 Synthetic ancestor-safe capture repair does not establish provider enforcement, parent Completion, or Session acceptance.
+
+## Step 12.1.13 — Make capture descriptor acquisition exception-safe
+
+Repaired interruption cleanup in `bav/director/runtime/policy.py`. `_open_trust_anchor` and `_open_owned_directory` close a newly opened descriptor if later identity validation raises, including `KeyboardInterrupt` and other `BaseException` subclasses; ownership is transferred only on successful return. `_walk_names_from_anchor` registers every acquired descriptor before subsequent identity validation, including ordinary components and supported system-prefix components, and constructs the returned acquisition object before marking the walk successful. Unused ancestor descriptors are released before that handoff; an interrupted walk still closes remaining owned descriptors. `_probe_identity_mismatch` and `_probe_walk_replaced` release temporary probe descriptors when acquisition or later validation is interrupted. Surrounding `capture_owned_paths` cleanup still releases retained descriptors and scanners. Ordinary validation-failure and clock-exhaustion behavior are unchanged. No `workspace.py` or `adapter.py` lifecycle change was required. Installed launches remain closed.
+
+### Measured repair
+
+Local fake-provider processes, temporary directories, and labeled synthetic files only. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Check | Command | Result |
+|---|---|---|
+| Exception-interrupt acquisition cleanup, probe temporary release, retained ancestor/replacement/clock/launch-closure tests | `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` | **53 passed** in 5.04s |
+| Affected Director CLI/help/readme/import-boundary | `/opt/anaconda3/bin/python -m pytest -q` `test_public_namespace_and_compatibility` `test_public_help_is_bav_first_and_check_is_diagnostic` `test_readme.py` `test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 0.98s |
+
+Synthetic measurements added in this step:
+
+- Injecting `KeyboardInterrupt` into `_fd_identity` after the trust-anchor open and before ownership transfer closed the new descriptor, propagated the original interruption, and did not return a successful capture.
+- Independently interrupting `_open_owned_directory` validation and the subsequent walk validation, for an intermediate component, the final owned root, and the supported `/tmp` → `private/tmp` system prefix, closed the newly acquired descriptor and previously acquired ancestors exactly once. An unrelated caller-opened descriptor was not closed.
+- Direct identity probing and ancestor re-walk probing, interrupted during acquisition and after successful acquisition, closed temporary probe descriptors. Caller-owned parent/root descriptors remained open until their designated test cleanup. Capture-level probe interrupts still released session-retained descriptors and scanners.
+- Ordinary `_fd_identity` loss on the final root remained an incomplete `replaced`/`unreadable` capture, not an interruption. The nested-directory control still completed with a full `nested/child.txt` fingerprint. Clock exhaustion remains the separate 12.1.12 `_ExpireAfter` coverage.
+
+Retained 12.1.12 measurements: ancestor-above-root acquisition and probe rejection; instrumented outside-target denial; adapter limitation retention; partial/probe/`max_entries`/clock cleanup; queued-child and root substitution; post-read `fstat` failure; bounded reads; forged installed-verification launches no process and stages no company context.
+
+### Observation limits after the repair
+
+Exception-safe close applies to descriptors acquired by this capture walk or its probes. It does not make an interrupted capture successful or convert the interruption into complete evidence. Clock exhaustion remains a separate `elapsed` limitation. Synthetic cleanup success does not establish provider enforcement.
+
+### Exact remaining mechanisms needed for installed acceptance
+
+Still closed / unverified / outstanding:
+
+- A supported BAV verification path that binds the actual installed executable, version, loaded configuration identity and a first-class policy-denial event.
+- Effective native Shell/Write/Read/MCP/retrieval enforcement on the installed CLI. Application dispatch denial and post-execution mutation detection do not constrain those native tools.
+- Controller-isolated `_GatedCursor` authentication.
+- Codex backend implementation behind the same adapter contract.
+- Company-corpus transmission on either backend.
+- Ordinary `python -m bav debate` intake/approvals, Extractor readers/preparation/retrieval, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic checks, and real evidence-addition/resumption.
+
+Synthetic exception-safe acquisition cleanup does not establish provider enforcement, parent Completion, or Session acceptance.

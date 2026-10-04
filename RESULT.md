@@ -1,3 +1,74 @@
+# RESULT.md — Step 12.1.13 Make capture descriptor acquisition exception-safe
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 12.1.13 — Make capture descriptor acquisition exception-safe
+**Work:** `e35d5703ccc14627a150a29b9e900502`
+**Plan:** `dc71182b35f74e3099f003a2358c5714`
+**Finding:** Verify Debater benchmark sources and controlled runtime
+**Attempt:** `e815a79e43794a86b8d33f79dcbff2fc`
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. No AutoCycle edits, discovery, conversion, debate CLI, argument export, observation replay, ACP session, live provider calls, login/logout, credential-store reads, global configuration writes, or Debater publications. This record does not claim parent Completion, Session acceptance, controlled-backend acceptance, or end-to-end benchmark success.
+
+TARGET SHA-256 `9bfc5e439e5776cf3d1d89fd33363febe716a6744ad7d256942a24709ff3e77b` (60817).
+SESSION SHA-256 `ca72e1c149eb4cefd2f6c9f101be577fed5b8493975a8d19e2fce7c4e44fff94` (5897).
+IMPLEMENTATION SHA-256 `f7d2d142a02098abd8f01b2b4174314bf14393d8b8b770ebd5026f01b2e73c59` (6921).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `d6ed0e25d0748ba06be90dfe999f27f72ffef419` was ignored. HEAD/branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Ancestry parent was read from the Git object store.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `12.1.13` source | `55ce9888295ca9161c73e95e9821f779ed6126ec` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; parent `3794168bd7d660d1a626fedc8bb0c80b56189e75` is the Step 12.1.12 checkpoint / `reviewed_head` |
+| Bound running attempt | `e815a79e43794a86b8d33f79dcbff2fc`, `plan_sha` = B, phase `running`, `checkpoint_sha` absent |
+| `admitted_review` predecessor | `review_sha256` `30a643f88738b732bda71cd686f2f5b2fb8ca1e439045b439d27c76673348352`; `reviewed_head` `3794168bd7d660d1a626fedc8bb0c80b56189e75` |
+| `latest-implementation` leftover HEAD | `d6ed0e25d0748ba06be90dfe999f27f72ffef419` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `dc71182b35f74e3099f003a2358c5714` |
+| Fail-closed | Not required |
+
+## Implemented repair
+
+Made descriptor acquisition exception-safe in `bav/director/runtime/policy.py`. Newly opened trust-anchor and owned-directory descriptors are closed if identity validation raises, including `KeyboardInterrupt`; ownership transfers only on successful return. Walk registration now happens before subsequent identity validation for ordinary and system-prefix components. The returned acquisition object is constructed before the walk is marked successful. Probe helpers release temporary descriptors when acquisition or later validation is interrupted; capture cleanup still releases retained descriptors and scanners. Ordinary validation-failure and clock-exhaustion paths are unchanged. The previous 12.1.12 “clock interruption” claim is qualified in `BENCHMARK.md` as allowance exhaustion, not exception-interruption coverage.
+
+## Listed verification
+
+Local fake-provider processes, temporary directories, and labeled synthetic files. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Command | Measured result |
+|---|---|
+| `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` | **53 passed** in 5.04s |
+| `/opt/anaconda3/bin/python -m pytest -q` `bav/director/tests/test_current_build.py::test_public_namespace_and_compatibility` `…::test_public_help_is_bav_first_and_check_is_diagnostic` `bav/director/tests/test_readme.py` `bav/director/tests/test_research_handoff.py::test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 0.98s |
+
+Exception-interrupt measurements: `KeyboardInterrupt` after trust-anchor open closed the new descriptor and propagated; independent interrupts inside `_open_owned_directory` and later walk validation closed intermediate, final-root, and `/tmp` system-prefix descriptors plus previously acquired ancestors exactly once; an unrelated descriptor was not closed. Direct and re-walk probes, interrupted during and after acquisition, closed temporary fds while caller-owned handles survived until designated cleanup. Capture-level probe interrupts still released retained descriptors and scanners. Ordinary identity-None validation remained incomplete rather than an interruption. The nested-directory control still completed. Clock exhaustion remains the separate 12.1.12 coverage. Existing ancestor/root/queued-child substitution, outside-target denial, bounded capture, post-read `fstat`, incomplete mutation comparison, launch-binding, and forged installed-verification tests still launched no installed process and staged no company context.
+
+Synthetic cleanup success is application-owned adapter behavior only, not installed-provider enforcement.
+
+## Preservation and plan changes
+
+Fast Retailing `publication_date` remains `null`; `financial_statement_approval.date` remains `2025-11-27`. Accepted financial inputs and neutral assumptions unchanged. Company outputs not rebuilt. Original filings, converter Markdown, assets, coverage limitations, probe artifacts, and historical controller receipts retained. No discovery or conversion replay. No new live provider call. `DEBATER.md` unchanged (`7578b44c…`, 62336).
+
+Required plan change: none.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `bav/director/runtime/adapter.py` | `2a71343abda82aa0a7c3f1af8c80b8d81fd28c27aa7fa5ef6a52d36a887b3613` | 47686 |
+| `bav/director/runtime/policy.py` | `470e3387975bcb77d052769953e056bda87ea2744ff44d215b1892ec642132ac` | 60142 |
+| `bav/director/runtime/workspace.py` | `4dcb8e0261258869a8fa390929e65c8ca40f370b110dd32090fef20da48b3acc` | 5514 |
+| `bav/director/runtime/dispatch.py` | `008f4595435345bf7ddb728478116e3b6aa3fd7efbcc6f61da65d3ffa12d54de` | 7039 |
+| `bav/director/runtime/contract.py` | `5f75263ec5f91e3e4784b7f62bc0b88645203e46a4495ec6b68d8f73cfab6669` | 9355 |
+| `bav/director/tests/test_research_runtime.py` | `a307b54b916fb6282c963696d94831059518863d824e0b1a579494d06759b866` | 108332 |
+| `bav/director/tests/fixtures/runtime/fake_provider.py` | `4fd51d9f2f40d9e7d5c05eb48e33b2aa3d0d5f86887462791e41da3121cd9506` | 16409 |
+| `bav/director/docs/DEBATER.md` | `7578b44c6c56db0265fa50f0df9de68d6002d36f2327fa155c746a70a2c93f42` | 62336 |
+| `bav/director/docs/BENCHMARK.md` | `fc859b4838609214ef0f7052b1076232149fd97fd96ef95a3e6837362d87878b` | 75889 |
+
+## Remaining toward Completion
+
+Ordinary `python -m bav debate` intake/approvals, Extractor preparation/retrieval, Planner/Reviewer research, durable case integration, required readers, coherent JSON/Markdown exports, adversarial checks, and the real `--add`/resume benchmark remain outstanding. Controlled installed-runtime acceptance and Codex implementation remain unverified. Application dispatch denial and post-execution mutation detection do not constrain a provider's native tools. Missing installed mechanisms remain loaded-configuration identity and a policy-denial event. A later bounded real-runtime demonstration remains necessary before company transmission. Synthetic success cannot close parent Completion.
+
 # RESULT.md — Step 12.1.12 Repair ancestor-safe capture root acquisition
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

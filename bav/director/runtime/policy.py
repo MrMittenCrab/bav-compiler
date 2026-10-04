@@ -794,11 +794,16 @@ def _open_trust_anchor() -> tuple[int | None, tuple[int, int] | None, OSError | 
         fd = os.open(os.sep, _DIR_OPEN_FLAGS)
     except OSError as exc:
         return None, None, exc
-    identity = _fd_identity(fd)
-    if identity is None:
-        _close_fd(fd)
-        return None, None, OSError(errno.ENOTDIR, "trust anchor identity lost")
-    return fd, identity, None
+    close_on_exit = True
+    try:
+        identity = _fd_identity(fd)
+        if identity is None:
+            return None, None, OSError(errno.ENOTDIR, "trust anchor identity lost")
+        close_on_exit = False
+        return fd, identity, None
+    finally:
+        if close_on_exit:
+            _close_fd(fd)
 
 
 def _system_prefix_names(anchor_fd: int, name: str) -> tuple[str, ...] | None:
@@ -833,11 +838,16 @@ def _open_owned_directory(
         fd = os.open(name if name is not None else ".", _DIR_OPEN_FLAGS, dir_fd=dir_fd)
     except OSError as exc:
         return None, exc
-    identity = _fd_identity(fd)
-    if identity is None:
-        _close_fd(fd)
-        return None, OSError(errno.ENOTDIR, "owned directory identity lost")
-    return fd, None
+    close_on_exit = True
+    try:
+        identity = _fd_identity(fd)
+        if identity is None:
+            return None, OSError(errno.ENOTDIR, "owned directory identity lost")
+        close_on_exit = False
+        return fd, None
+    finally:
+        if close_on_exit:
+            _close_fd(fd)
 
 
 def _child_relative(parent_relative: str, name: str) -> str:
@@ -1040,7 +1050,6 @@ def _walk_names_from_anchor(
 
     owned: list[int] = []
     success = False
-    final_fd: int | None = None
     parent_out: int | None = None
     try:
         anchor, anchor_id, exc = _open_trust_anchor()
@@ -1075,22 +1084,20 @@ def _walk_names_from_anchor(
                             )
                             if prefix_fd is None:
                                 return None, _walk_error_kind(prefix_exc)
+                            owned.append(prefix_fd)
                             prefix_identity = _fd_identity(prefix_fd)
                             if prefix_identity is None:
-                                _close_fd(prefix_fd)
                                 return None, "replaced"
-                            owned.append(prefix_fd)
                             identities.append(prefix_identity)
                             current = prefix_fd
                         continue
                 return None, "replaced"
             if child is None:
                 return None, _walk_error_kind(child_exc)
+            owned.append(child)
             identity = _fd_identity(child)
             if identity is None:
-                _close_fd(child)
                 return None, "replaced"
-            owned.append(child)
             identities.append(identity)
             current = child
         if not identities:
@@ -1101,23 +1108,21 @@ def _walk_names_from_anchor(
         if retain_parent and parent_fd is not None:
             keep.add(parent_fd)
             parent_out = parent_fd
-        for fd in owned:
+        acquired = _RootAcquisition(
+            final_fd,
+            parent_out,
+            identities[-1],
+            identities[-2] if len(identities) >= 2 else None,
+            names[-1],
+            names,
+            tuple(identities),
+        )
+        for fd in list(owned):
             if fd not in keep:
                 _close_fd(fd)
-        owned = [fd for fd in owned if fd in keep]
+                owned.remove(fd)
         success = True
-        return (
-            _RootAcquisition(
-                final_fd,
-                parent_out,
-                identities[-1],
-                identities[-2] if len(identities) >= 2 else None,
-                names[-1],
-                names,
-                tuple(identities),
-            ),
-            None,
-        )
+        return (acquired, None)
     finally:
         if not success:
             for fd in owned:
@@ -1130,10 +1135,11 @@ def _probe_identity_mismatch(
     dir_fd: int,
     name: str,
 ) -> bool:
-    probe, _exc = _open_owned_directory(dir_fd=dir_fd, name=name)
-    if probe is None:
-        return True
+    probe: int | None = None
     try:
+        probe, _exc = _open_owned_directory(dir_fd=dir_fd, name=name)
+        if probe is None:
+            return True
         return _fd_identity(probe) != expected
     finally:
         _close_fd(probe)
@@ -1142,16 +1148,18 @@ def _probe_identity_mismatch(
 def _probe_walk_replaced(item: _QueuedDirectory, state: _CaptureSession) -> bool:
     if not item.walk_names or not item.walk_identities:
         return True
-    acquired, _kind = _walk_names_from_anchor(item.walk_names, state, retain_parent=False)
-    if acquired is None:
-        return True
+    acquired: _RootAcquisition | None = None
     try:
+        acquired, _kind = _walk_names_from_anchor(item.walk_names, state, retain_parent=False)
+        if acquired is None:
+            return True
         return acquired.walk_identities != item.walk_identities or (
             item.root_identity is not None and acquired.identity != item.root_identity
         )
     finally:
-        _close_fd(acquired.fd)
-        _close_fd(acquired.parent_fd)
+        if acquired is not None:
+            _close_fd(acquired.fd)
+            _close_fd(acquired.parent_fd)
 
 
 def _queued_directory_replaced(item: _QueuedDirectory, state: _CaptureSession) -> bool:

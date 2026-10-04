@@ -14,6 +14,7 @@ import time
 from pathlib import Path
 
 import pytest
+import shutil
 
 from bav.director.repository import repository_root
 from bav.director.runtime import (
@@ -33,6 +34,7 @@ from bav.director.runtime import (
 from bav.director.runtime import adapter as adapter_mod
 from bav.director.runtime.workspace import create_isolated_workspace
 from bav.director.runtime.contract import CURSOR_FORBIDDEN_FLAGS
+from bav.director.runtime import policy as policy_mod
 from bav.director.runtime.policy import capture_owned_paths, fingerprint, mutation_records
 
 ROOT = repository_root()
@@ -2267,3 +2269,372 @@ def test_incomplete_replacement_observations_are_not_definitive(tmp_path, monkey
     assert after["unchanged_not_established"] is True
     assert not any(item.get("definitive") is True and item["change"] in {"added", "removed"} for item in changes)
     assert "OUTSIDE-TARGET-SENTINEL" not in json.dumps(after)
+
+
+class _FdLifecycle:
+    def __init__(self) -> None:
+        self.opens: list[int] = []
+        self.close_counts: list[int] = []
+        self.live: dict[int, int] = {}
+        self.closes: list[int] = []
+        self.scanners: list[object] = []
+        self.caller_owned: set[int] = set()
+        self.unrelated_fd: int | None = None
+
+    def open(self, path, flags, *args, dir_fd=None, **kwargs):
+        fd = (
+            _REAL_OS_OPEN(path, flags, *args, dir_fd=dir_fd, **kwargs)
+            if dir_fd is not None
+            else _REAL_OS_OPEN(path, flags, *args, **kwargs)
+        )
+        self.opens.append(fd)
+        self.live[fd] = len(self.opens) - 1
+        self.close_counts.append(0)
+        return fd
+
+    def close(self, fd):
+        if fd in self.live:
+            idx = self.live.pop(fd)
+            self.close_counts[idx] += 1
+        self.closes.append(fd)
+        return _REAL_OS_CLOSE(fd)
+
+    def scandir(self, path):
+        return _TrackedScanner(_REAL_OS_SCANDIR(path), self.scanners)
+
+    def install(self, monkeypatch) -> None:
+        self.unrelated_fd = _REAL_OS_OPEN(os.sep, policy_mod._DIR_OPEN_FLAGS)
+        monkeypatch.setattr(os, "open", self.open)
+        monkeypatch.setattr(os, "close", self.close)
+        monkeypatch.setattr(os, "scandir", self.scandir)
+
+    def mark_caller_owned(self, fd: int) -> None:
+        self.caller_owned.add(fd)
+
+    def assert_invocation_owned_released_exactly_once(self) -> None:
+        leftover = {fd: idx for fd, idx in self.live.items() if fd not in self.caller_owned}
+        assert leftover == {}
+        for idx, fd in enumerate(self.opens):
+            still_held = fd in self.caller_owned and self.live.get(fd) == idx
+            if still_held:
+                assert self.close_counts[idx] == 0
+                continue
+            assert self.close_counts[idx] == 1, (idx, fd, self.close_counts[idx])
+        assert all(getattr(scanner, "closed", False) for scanner in self.scanners)
+        if self.unrelated_fd is not None:
+            os.fstat(self.unrelated_fd)
+            assert self.unrelated_fd not in self.closes
+
+    def release_test_resources(self) -> None:
+        for fd in list(self.live):
+            try:
+                _REAL_OS_CLOSE(fd)
+            except OSError:
+                pass
+            self.live.pop(fd, None)
+        self.caller_owned.clear()
+        if self.unrelated_fd is not None:
+            try:
+                _REAL_OS_CLOSE(self.unrelated_fd)
+            except OSError:
+                pass
+            self.unrelated_fd = None
+
+
+class _TrackedScanner:
+    def __init__(self, real, registry: list[object]) -> None:
+        self._real = real
+        self.closed = False
+        registry.append(self)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return next(self._real)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_args) -> None:
+        self.close()
+
+    def close(self) -> None:
+        if self.closed:
+            return
+        self.closed = True
+        self._real.close()
+
+
+def _fd_matches_path(fd: int, path: Path) -> bool:
+    try:
+        info = os.fstat(fd)
+        expected = os.stat(path, follow_symlinks=False)
+    except OSError:
+        return False
+    return (info.st_dev, info.st_ino) == (expected.st_dev, expected.st_ino)
+
+
+_REAL_FD_IDENTITY = policy_mod._fd_identity
+_REAL_OS_OPEN = os.open
+_REAL_OS_CLOSE = os.close
+_REAL_OS_SCANDIR = os.scandir
+
+
+def _interrupt_identity_on(monkeypatch, target: Path, *, nth: int) -> None:
+    counts: dict[tuple[int, int], int] = {}
+
+    def wrapped(fd: int):
+        if _fd_matches_path(fd, target):
+            key = (os.fstat(fd).st_dev, os.fstat(fd).st_ino)
+            counts[key] = counts.get(key, 0) + 1
+            if counts[key] == nth:
+                raise KeyboardInterrupt(f"identity {target} #{nth}")
+        return _REAL_FD_IDENTITY(fd)
+
+    monkeypatch.setattr(policy_mod, "_fd_identity", wrapped)
+
+
+def _nested_capture_roots(base: Path) -> dict[str, Path]:
+    workspace = base / "workspace"
+    nested = workspace / "nested"
+    nested.mkdir(parents=True)
+    (nested / "child.txt").write_text("nested-control", encoding="utf-8")
+    (workspace / "root.txt").write_text("root-control", encoding="utf-8")
+    roots = _owned_roots(base, workspace)
+    for path in roots.values():
+        path.mkdir(parents=True, exist_ok=True)
+    return roots
+
+
+def _run_interrupt(lifecycle: _FdLifecycle, action):
+    try:
+        with pytest.raises(KeyboardInterrupt):
+            result = action()
+            raise AssertionError(f"interrupted capture returned {result!r}")
+        lifecycle.assert_invocation_owned_released_exactly_once()
+    finally:
+        lifecycle.release_test_resources()
+
+
+def test_exception_interrupt_closes_acquisition_descriptors(tmp_path, monkeypatch):
+    lifecycle = _FdLifecycle()
+    lifecycle.install(monkeypatch)
+    roots = _nested_capture_roots(tmp_path)
+
+    _interrupt_identity_on(monkeypatch, Path(os.sep), nth=1)
+    _run_interrupt(lifecycle, lambda: capture_owned_paths(roots))
+
+    for target, nth in (
+        (tmp_path, 1),
+        (tmp_path, 2),
+        (roots["workspace"], 1),
+        (roots["workspace"], 2),
+    ):
+        lifecycle = _FdLifecycle()
+        lifecycle.install(monkeypatch)
+        _interrupt_identity_on(monkeypatch, target, nth=nth)
+        _run_interrupt(lifecycle, lambda: capture_owned_paths(roots))
+
+        prefix_base = Path(tempfile.mkdtemp(prefix="bav-cap-int-", dir="/tmp"))
+        try:
+            prefix_roots = _nested_capture_roots(prefix_base)
+            prefix_target = Path("/private/tmp")
+            assert prefix_target.is_dir()
+            for nth in (1, 2):
+                lifecycle = _FdLifecycle()
+                lifecycle.install(monkeypatch)
+                _interrupt_identity_on(monkeypatch, prefix_target, nth=nth)
+                _run_interrupt(lifecycle, lambda: capture_owned_paths(prefix_roots))
+        finally:
+            monkeypatch.setattr(os, "open", _REAL_OS_OPEN)
+            monkeypatch.setattr(os, "close", _REAL_OS_CLOSE)
+            monkeypatch.setattr(os, "scandir", _REAL_OS_SCANDIR)
+            shutil.rmtree(prefix_base, ignore_errors=True)
+
+    lifecycle = _FdLifecycle()
+    lifecycle.install(monkeypatch)
+
+    def lost_workspace(fd: int):
+        if _fd_matches_path(fd, roots["workspace"]):
+            return None
+        return _REAL_FD_IDENTITY(fd)
+
+    monkeypatch.setattr(policy_mod, "_fd_identity", lost_workspace)
+    try:
+        failed = capture_owned_paths(roots)
+        assert failed["complete"] is False
+        assert failed["unchanged_not_established"] is True
+        lifecycle.assert_invocation_owned_released_exactly_once()
+    finally:
+        lifecycle.release_test_resources()
+
+    lifecycle = _FdLifecycle()
+    lifecycle.install(monkeypatch)
+    monkeypatch.setattr(policy_mod, "_fd_identity", _REAL_FD_IDENTITY)
+    try:
+        control = capture_owned_paths(roots)
+        child = next(item for item in control["records"] if item["path"] == "nested/child.txt")
+        assert child.get("content_complete") is True
+        assert child.get("fingerprint") == hashlib.sha256(b"nested-control").hexdigest()
+        assert control["complete"] is True
+        lifecycle.assert_invocation_owned_released_exactly_once()
+    finally:
+        lifecycle.release_test_resources()
+
+
+def test_probe_interrupt_releases_temporary_descriptors(tmp_path, monkeypatch):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    (workspace / "owned.txt").write_text("owned", encoding="utf-8")
+    names = policy_mod._absolute_names(workspace)
+    assert names is not None
+    setup_state = policy_mod._CaptureSession(CaptureLimits(), time.monotonic, None)
+    acquired, kind = policy_mod._walk_names_from_anchor(names, setup_state, retain_parent=True)
+    assert acquired is not None and kind is None
+    walk_names = acquired.walk_names
+    walk_identities = acquired.walk_identities
+    policy_mod._close_fd(acquired.fd)
+    policy_mod._close_fd(acquired.parent_fd)
+
+    def _held_item(lifecycle: _FdLifecycle) -> policy_mod._QueuedDirectory:
+        parent_fd = os.open(os.fsdecode(os.fspath(tmp_path)), policy_mod._DIR_OPEN_FLAGS)
+        child_fd, exc = policy_mod._open_owned_directory(dir_fd=parent_fd, name="workspace")
+        assert child_fd is not None and exc is None
+        lifecycle.mark_caller_owned(parent_fd)
+        lifecycle.mark_caller_owned(child_fd)
+        identity = _REAL_FD_IDENTITY(child_fd)
+        assert identity is not None
+        return policy_mod._QueuedDirectory(
+            "workspace",
+            ".",
+            "workspace",
+            child_fd,
+            parent_fd,
+            identity,
+            0,
+            walk_names=walk_names,
+            walk_identities=walk_identities,
+            root_identity=identity,
+        )
+
+    def _assert_caller_survived(lifecycle: _FdLifecycle) -> None:
+        for fd in lifecycle.caller_owned:
+            os.fstat(fd)
+            assert fd in lifecycle.live
+
+    lifecycle = _FdLifecycle()
+    lifecycle.install(monkeypatch)
+    item = _held_item(lifecycle)
+    _interrupt_identity_on(monkeypatch, workspace, nth=1)
+    try:
+        with pytest.raises(KeyboardInterrupt):
+            policy_mod._probe_identity_mismatch(item.identity, dir_fd=item.parent_fd, name=item.name)
+        _assert_caller_survived(lifecycle)
+        lifecycle.assert_invocation_owned_released_exactly_once()
+    finally:
+        lifecycle.release_test_resources()
+
+    lifecycle = _FdLifecycle()
+    lifecycle.install(monkeypatch)
+    item = _held_item(lifecycle)
+    _interrupt_identity_on(monkeypatch, workspace, nth=2)
+    try:
+        with pytest.raises(KeyboardInterrupt):
+            policy_mod._probe_identity_mismatch(item.identity, dir_fd=item.parent_fd, name=item.name)
+        _assert_caller_survived(lifecycle)
+        lifecycle.assert_invocation_owned_released_exactly_once()
+    finally:
+        lifecycle.release_test_resources()
+
+    state = policy_mod._CaptureSession(CaptureLimits(), time.monotonic, None)
+    lifecycle = _FdLifecycle()
+    lifecycle.install(monkeypatch)
+    item = _held_item(lifecycle)
+    _interrupt_identity_on(monkeypatch, Path(os.sep), nth=1)
+    try:
+        with pytest.raises(KeyboardInterrupt):
+            policy_mod._probe_walk_replaced(item, state)
+        _assert_caller_survived(lifecycle)
+        lifecycle.assert_invocation_owned_released_exactly_once()
+    finally:
+        lifecycle.release_test_resources()
+
+    real_walk = policy_mod._walk_names_from_anchor
+
+    def raise_after_successful_walk(*args, **kwargs):
+        walked, walked_kind = real_walk(*args, **kwargs)
+        if walked is None:
+            return walked, walked_kind
+
+        class _AfterAcquire:
+            def __init__(self) -> None:
+                self.fd = walked.fd
+                self.parent_fd = walked.parent_fd
+                self.identity = walked.identity
+                self.name = walked.name
+                self.walk_names = walked.walk_names
+
+            @property
+            def walk_identities(self):
+                raise KeyboardInterrupt("after walk acquisition")
+
+        return _AfterAcquire(), walked_kind
+
+    lifecycle = _FdLifecycle()
+    lifecycle.install(monkeypatch)
+    item = _held_item(lifecycle)
+    monkeypatch.setattr(policy_mod, "_walk_names_from_anchor", raise_after_successful_walk)
+    try:
+        with pytest.raises(KeyboardInterrupt):
+            policy_mod._probe_walk_replaced(item, state)
+        _assert_caller_survived(lifecycle)
+        lifecycle.assert_invocation_owned_released_exactly_once()
+    finally:
+        monkeypatch.setattr(policy_mod, "_walk_names_from_anchor", real_walk)
+        lifecycle.release_test_resources()
+
+    roots = _nested_capture_roots(tmp_path)
+    walks = {"n": 0}
+
+    def count_walks(*args, **kwargs):
+        walks["n"] += 1
+        return real_walk(*args, **kwargs)
+
+    def interrupt_second_walk_identity(fd: int):
+        if walks["n"] >= 2:
+            raise KeyboardInterrupt("walk probe acquisition")
+        return _REAL_FD_IDENTITY(fd)
+
+    lifecycle = _FdLifecycle()
+    lifecycle.install(monkeypatch)
+    monkeypatch.setattr(policy_mod, "_walk_names_from_anchor", count_walks)
+    monkeypatch.setattr(policy_mod, "_fd_identity", interrupt_second_walk_identity)
+    _run_interrupt(lifecycle, lambda: capture_owned_paths(roots))
+
+    walks["n"] = 0
+
+    def wrap_later_walks(*args, **kwargs):
+        walked, walked_kind = real_walk(*args, **kwargs)
+        if kwargs.get("retain_parent", True) or walked is None:
+            return walked, walked_kind
+
+        class _AfterAcquire:
+            def __init__(self) -> None:
+                self.fd = walked.fd
+                self.parent_fd = walked.parent_fd
+                self.identity = walked.identity
+                self.name = walked.name
+                self.walk_names = walked.walk_names
+
+            @property
+            def walk_identities(self):
+                raise KeyboardInterrupt("after capture walk acquisition")
+
+        return _AfterAcquire(), walked_kind
+
+    lifecycle = _FdLifecycle()
+    lifecycle.install(monkeypatch)
+    monkeypatch.setattr(policy_mod, "_walk_names_from_anchor", wrap_later_walks)
+    monkeypatch.setattr(policy_mod, "_fd_identity", _REAL_FD_IDENTITY)
+    _run_interrupt(lifecycle, lambda: capture_owned_paths(roots))
