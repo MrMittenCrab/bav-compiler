@@ -157,6 +157,7 @@ class PendingItem:
     allowance_fingerprint: str
     displayed: Mapping[str, Any]
     consumed: bool = False
+    approval_binding: str | None = None
 
     def to_payload(self) -> dict[str, Any]:
         return {
@@ -169,6 +170,7 @@ class PendingItem:
             "allowance_fingerprint": self.allowance_fingerprint,
             "displayed": dict(self.displayed),
             "consumed": self.consumed,
+            "approval_binding": self.approval_binding,
         }
 
 

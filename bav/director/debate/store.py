@@ -108,6 +108,8 @@ def new_case_payload(
     last_display: Mapping[str, Any],
     approved_scope: Mapping[str, Any] | None = None,
     approved_plan: Mapping[str, Any] | None = None,
+    approved_binding: str | None = None,
+    authorized_actions: tuple[str, ...] | list[str] = (),
 ) -> dict[str, Any]:
     return {
         "schema_version": CASE_SCHEMA_VERSION,
@@ -119,6 +121,8 @@ def new_case_payload(
         "consumed_approvals": [],
         "approved_scope": approved_scope,
         "approved_plan": approved_plan,
+        "approved_binding": approved_binding,
+        "authorized_actions": list(authorized_actions),
         "backend": dict(backend),
         "allowance": dict(allowance),
         "corpus": dict(corpus),
@@ -269,6 +273,7 @@ def load_case(directory: Path) -> CaseRecord:
 def pending_from_payload(payload: Mapping[str, Any] | None) -> PendingItem | None:
     if not payload:
         return None
+    stored = payload.get("approval_binding")
     return PendingItem(
         item_id=str(payload["item_id"]),
         kind=payload["kind"],
@@ -279,4 +284,13 @@ def pending_from_payload(payload: Mapping[str, Any] | None) -> PendingItem | Non
         allowance_fingerprint=str(payload["allowance_fingerprint"]),
         displayed=dict(payload.get("displayed") or {}),
         consumed=bool(payload.get("consumed")),
+        approval_binding=str(stored) if stored else None,
     )
+
+
+def approval_authorization(payload: Mapping[str, Any]) -> str:
+    if not payload.get("approved_plan") and not payload.get("approved_scope"):
+        return "none"
+    if not payload.get("approved_binding"):
+        return "unbound_historical"
+    return "bound_local_plan"

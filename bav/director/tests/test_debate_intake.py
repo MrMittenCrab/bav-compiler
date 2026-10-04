@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import threading
 from pathlib import Path
 
@@ -14,6 +15,7 @@ from bav.director.cli import main
 from bav.director.debate import command as debate_command
 from bav.director.debate.command import execute_debate
 from bav.director.debate.store import canonical_json, locked_case
+from bav.director.repository import repository_root
 from bav.extractor.research.paths import sha256_text
 from bav.director.debate.terminal import format_terminal
 from bav.extractor.research.contracts import InventoryRecord, SnapshotInventory
@@ -377,3 +379,196 @@ def test_live_corpus_inventory_binds_benchmark_plan(tmp_path):
     assert payload["corpus"]["snapshot_fingerprint"] == inventory.snapshot_fingerprint
     assert "Japan and Greater China" in text
     assert envelope.provider_launched is False
+
+
+def _copy_canonical_case(tmp_path, slug: str) -> Path:
+    source = repository_root() / "build" / "input" / "cases" / slug
+    dest = tmp_path / slug
+    shutil.copytree(source, dest, ignore=shutil.ignore_patterns(".case.lock"))
+    return dest / "case.json"
+
+
+def _write_payload(path: Path, payload: dict) -> None:
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _product_fit_isolated(tmp_path, mutate=None):
+    path = _copy_canonical_case(tmp_path, "lululemon-fast-retailing-product-fit")
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if mutate is not None:
+        mutate(payload)
+        _write_payload(path, payload)
+    return path
+
+
+def _live_run(tmp_path, **values):
+    from bav.director.research_corpus import inventory_approved_snapshot
+
+    return execute_debate(
+        _args(**values),
+        cases_dir=tmp_path,
+        inventory=inventory_approved_snapshot(),
+        fixtures=load_intake_fixtures(),
+    )
+
+
+def test_product_fit_growth_measure_change_is_not_approved(tmp_path):
+    canonical = (
+        repository_root()
+        / "build"
+        / "input"
+        / "cases"
+        / "lululemon-fast-retailing-product-fit"
+        / "case.json"
+    )
+    before_canonical = canonical.read_text(encoding="utf-8")
+    original = None
+
+    def mutate(payload):
+        nonlocal original
+        original = payload["pending"]["displayed"]["plan"]["growth_measure"]
+        payload["pending"]["displayed"]["plan"]["growth_measure"] = (
+            "Store-count substitute invented for approval."
+        )
+
+    path = _product_fit_isolated(tmp_path, mutate)
+    fingerprints = json.loads(path.read_text(encoding="utf-8"))["pending"]
+    assert fingerprints["input_fingerprint"]
+    changed = _live_run(tmp_path, case="product fit", approve=True)
+    assert changed.kind == "approval_rebound"
+    assert changed.provider_launched is False
+    assert changed.company_transmitted is False
+    updated = json.loads(path.read_text(encoding="utf-8"))
+    assert updated.get("approved_scope") is None
+    assert updated["pending"]["displayed"]["plan"]["growth_measure"] == original
+    assert "Store-count substitute" not in json.dumps(updated)
+    assert updated["pending"]["approval_binding"]
+    assert updated["pending"]["input_fingerprint"] == fingerprints["input_fingerprint"]
+    assert canonical.read_text(encoding="utf-8") == before_canonical
+    approved = _live_run(tmp_path, case="product fit", approve=True)
+    assert approved.kind == "plan_approved"
+    saved = json.loads(path.read_text(encoding="utf-8"))
+    assert saved["approved_scope"]["growth_measure"] == original
+    assert saved["approved_binding"]
+    assert saved["authorized_actions"] == [
+        "accept_scope",
+        "accept_local_plan",
+        "halt_before_provider",
+    ]
+    assert approved.details["research_authorized"] is False
+    assert canonical.read_text(encoding="utf-8") == before_canonical
+
+
+def test_independent_content_fields_require_redisplay(tmp_path):
+    submitted = _run(tmp_path, proposition=BENCHMARK)
+    path = tmp_path / submitted.case_slug / "case.json"
+    prior = {
+        "growth_measure": "PRIOR AUTHORITY",
+        "comparison": "kept",
+    }
+
+    def with_prior(payload):
+        payload["approved_scope"] = dict(prior)
+        payload["approved_plan"] = {"revision": "prior"}
+
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    with_prior(payload)
+    _write_payload(path, payload)
+    mutations = [
+        lambda pending: pending["displayed"]["plan"]["claims"][0].__setitem__(
+            "statement", "Tampered nested claim."
+        ),
+        lambda pending: pending.__setitem__("actions", ["halt_before_provider", "accept_scope"]),
+        lambda pending: pending.__setitem__("revision", "deadbeefdeadbeef"),
+        lambda pending: pending.__setitem__("item_id", "proof_plan-forged"),
+    ]
+    for mutate in mutations:
+        current = json.loads(path.read_text(encoding="utf-8"))
+        mutate(current["pending"])
+        _write_payload(path, current)
+        result = _run(tmp_path, case="growth in Asia", approve=True)
+        assert result.kind == "approval_rebound"
+        after = json.loads(path.read_text(encoding="utf-8"))
+        assert after["approved_scope"] == prior
+        assert after["approved_plan"]["revision"] == "prior"
+        assert after["pending"]["consumed"] is False
+        assert after["pending"]["approval_binding"]
+        assert "Tampered nested claim." not in json.dumps(after["pending"]["displayed"]["plan"])
+        assert after["pending"]["actions"][0] == "accept_scope"
+
+
+def test_meaning_content_change_does_not_approve_plan(tmp_path):
+    first = _run(tmp_path, proposition=PRODUCT_FIT)
+    path = tmp_path / first.case_slug / "case.json"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["pending"]["displayed"]["meanings"][0] = "Forged complementary meaning."
+    _write_payload(path, payload)
+    changed = _run(tmp_path, case="product fit", approve=True, exclude="2,3")
+    assert changed.kind == "approval_rebound"
+    assert changed.pending_kind == "meanings"
+    updated = json.loads(path.read_text(encoding="utf-8"))
+    assert updated["approved_plan"] is None
+    assert "Forged complementary meaning." not in json.dumps(updated["pending"])
+    excluded = _run(tmp_path, case="product fit", approve=True, exclude="2,3")
+    assert excluded.kind == "meanings_approved"
+    assert excluded.pending_kind == "proof_plan"
+    after = json.loads(path.read_text(encoding="utf-8"))
+    assert after["approved_plan"] is None
+    approved = _run(tmp_path, case="product fit", approve=True)
+    assert approved.kind == "plan_approved"
+
+
+def test_legacy_unbound_pending_requires_redisplay(tmp_path):
+    path = _product_fit_isolated(tmp_path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert "approval_binding" not in payload["pending"]
+    original = payload["pending"]["displayed"]["plan"]["growth_measure"]
+    rebound = _live_run(tmp_path, case="product fit", approve=True)
+    assert rebound.kind == "approval_rebound"
+    updated = json.loads(path.read_text(encoding="utf-8"))
+    assert updated.get("approved_scope") is None
+    assert updated["pending"]["approval_binding"]
+    assert updated["pending"]["displayed"]["plan"]["growth_measure"] == original
+    approved = _live_run(tmp_path, case="product fit", approve=True)
+    assert approved.kind == "plan_approved"
+
+
+def test_unbound_historical_approval_is_not_research_authority(tmp_path):
+    path = _copy_canonical_case(
+        tmp_path,
+        "fast-retailing-acquisition-would-accelerate-lululemon-growth-in-asia",
+    )
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert payload["approved_plan"]
+    assert not payload.get("approved_binding")
+    status = _live_run(tmp_path, case="growth in Asia", status=True)
+    resume = _live_run(tmp_path, case="growth in Asia")
+    assert status.mutated is False
+    assert resume.mutated is False
+    assert status.details["approval_authorization"] == "unbound_historical"
+    assert resume.details["approval_authorization"] == "unbound_historical"
+    assert status.details["research_authorized"] is False
+    assert json.loads(path.read_text(encoding="utf-8"))["approved_plan"]["revision"] == payload[
+        "approved_plan"
+    ]["revision"]
+
+
+def test_ordinary_cli_reads_retained_corpus_without_mutation(tmp_path, monkeypatch, capsys):
+    root = repository_root() / "build" / "input" / "cases"
+    benchmark = root / "fast-retailing-acquisition-would-accelerate-lululemon-growth-in-asia" / "case.json"
+    product = root / "lululemon-fast-retailing-product-fit" / "case.json"
+    before = {path: path.read_text(encoding="utf-8") for path in (benchmark, product)}
+    monkeypatch.setattr(debate_command, "cases_root", lambda **_kwargs: root)
+    assert main(["debate", "--list"]) == 0
+    assert main(["debate", "--case", "growth in Asia", "--status"]) == 0
+    assert main(["debate", "--case", "product fit", "--status"]) == 0
+    out = capsys.readouterr().out
+    assert "Case:" in out
+    assert "Status:" not in out
+    assert before[benchmark] == benchmark.read_text(encoding="utf-8")
+    assert before[product] == product.read_text(encoding="utf-8")
+    assert debate_command.PROVIDER_LAUNCHES == {
+        "invoke": 0,
+        "verify": 0,
+        "company_transmission": 0,
+    }

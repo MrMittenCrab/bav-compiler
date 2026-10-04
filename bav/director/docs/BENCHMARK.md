@@ -1,4 +1,4 @@
-# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 / 12.1.6 / 12.1.7 / 12.1.8 / 12.1.9 / 12.1.10 / 12.1.11 / 12.1.12 / 12.1.13 / 12.1.14 / 12.1.15 / 12.1.16 / 12.1.17 record
+# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 / 12.1.6 / 12.1.7 / 12.1.8 / 12.1.9 / 12.1.10 / 12.1.11 / 12.1.12 / 12.1.13 / 12.1.14 / 12.1.15 / 12.1.16 / 12.1.17 / 12.1.18 record
 
 Label: **corpus-bound**. This is not a verified latest-market assessment and not an end-to-end Debater acceptance.
 
@@ -12,7 +12,7 @@ Treat the acquisition as hypothetical. Japan and Greater China must be assessed 
 
 ## Outstanding (not performed)
 
-Ordinary intake and local scope/proof-plan approval now exist. The ordinary CLI research run, linked `argument.json` / `argument.md` pair, isolated withheld-source `--add`, Planner/Reviewer contexts, semantic red-team checks, and end-to-end benchmark success remain **outstanding**. Intake-only success is not a research verdict. A later bounded real-runtime demonstration remains necessary before controlled-backend acceptance and company transmission.
+Ordinary intake exists. Local approval is now bound to the complete displayed plan or meanings, ordered actions, item identity, revision, input snapshot, provider boundary and allowance. Fingerprints or a saved revision label alone do not authorize consumption. The 12.1.17 approved benchmark record remains on disk without `approved_binding` and is **unbound historical authorization**, not permission for subsequent research. The ordinary CLI research run, linked `argument.json` / `argument.md` pair, isolated withheld-source `--add`, Planner/Reviewer contexts, semantic red-team checks, and end-to-end benchmark success remain **outstanding**. Intake-only or approval-binding success is not a research verdict. A later bounded real-runtime demonstration remains necessary before controlled-backend acceptance and company transmission.
 
 ## Baseline
 
@@ -805,4 +805,24 @@ Snapshot `2026-10-04-debater-asia-benchmark`, fingerprint `12aefb71e066b44069dcf
 
 Approved benchmark case path: `build/input/cases/fast-retailing-acquisition-would-accelerate-lululemon-growth-in-asia/case.json`. Intake operations 2. Local planning operations 1. Research backend/tool/time allowances unchanged. Backend remains `cursor` with `transmission=closed` and `installed_launch=closed`.
 
-This is intake-only success. It does not establish the research benchmark, `--add` resumption, `argument.json`/`argument.md` export, or controlled installed-runtime acceptance.
+This is intake-only success. It does not establish the research benchmark, `--add` resumption, `argument.json`/`argument.md` export, or controlled installed-runtime acceptance. The 12.1.17 approval check covered source, allowance and provider fingerprints; it did not bind displayed plan content. That coverage claim is corrected by Step 12.1.18. The historical commands and saved case bytes in this section are unchanged.
+
+## Step 12.1.18 — Bind approval to the complete displayed plan and actions
+
+Director now persists and recomputes an `approval_binding` over the complete displayed item before consumption. A changed outcome measure, nested plan field, action list, revision, item identity or meaning list is rejected, rebound from fixtures and live inventory, and requires a later approval. Redisplay does not execute actions and does not replace existing approved authority. Legacy pending items without a binding require redisplay. Historical approved records without `approved_binding` are `unbound_historical` and are not research authorization. Provider invocation and company transmission remain closed.
+
+### Focused reproduction
+
+Isolated copy of `build/input/cases/lululemon-fast-retailing-product-fit/case.json` (`f1b986bc…`). `pending.displayed.plan.growth_measure` was changed to a store-count substitute while input, allowance and provider fingerprints were left unchanged. Canonical files were not edited.
+
+| Command / check | Measured result |
+|---|---|
+| Isolated `--approve` after growth-measure tamper | `approval_rebound`. No approved scope. Restored fixture measure. New binding stored. |
+| Subsequent unchanged `--approve` | `plan_approved` of the restored measure. `approved_binding` set. `research_authorized=false`. |
+| Nested claim / actions / revision / item-id / meaning tampers | Each rebound; prior approved authority preserved; no actions executed. |
+| `--list` / `--status` on retained corpus | Read-only. Canonical product-fit `f1b986bc…` and benchmark `f0fc413f…` unchanged. |
+| Provider counters | `invoke=0`, `verify=0`, `company_transmission=0`. |
+
+Focused tests: `bav/debater/tests/test_intake.py` and `bav/director/tests/test_debate_intake.py` **28 passed** in 0.25s. Affected runtime/corpus/filing regressions **185 passed** in 10.89s. Public namespace/help **2 passed**.
+
+The retained benchmark case still holds the exact hypothetical acquisition, separate Japan and Greater China revenue-growth scope, continued independence, and excluded acquisition valuation. Its 12.1.17 approval remains an unbound historical record. Installed launch stays closed. This step does not establish the research benchmark or parent Completion.

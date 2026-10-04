@@ -1,3 +1,78 @@
+# RESULT.md — Step 12.1.18 Bind approval to the complete displayed plan and actions
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 12.1.18 — Bind approval to the complete displayed plan and actions
+**Work:** `e35d5703ccc14627a150a29b9e900502`
+**Plan:** `1e081815fda2407487c5b1a716ffa55a`
+**Finding:** Verify Debater benchmark sources and controlled runtime
+**Attempt:** `e1e88e2980b44a5c99d0a6e78b2950d7`
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. No AutoCycle edits, Developer-folder rediscovery, reconversion, argument export, observation replay, ACP session, live provider calls, login/logout, credential-store reads, global configuration writes, or Debater publications. This record does not claim parent Completion, Session acceptance, controlled-backend acceptance, or end-to-end benchmark success.
+
+TARGET SHA-256 `9bfc5e439e5776cf3d1d89fd33363febe716a6744ad7d256942a24709ff3e77b` (60817).
+SESSION SHA-256 `1b5cbd15249f28817c4c9655a1ff3f6b989c7082dd13adad9023bb9adabde1ec` (6676).
+IMPLEMENTATION SHA-256 `88214f356d3d1752b5664f756953af6397fdad1d8235825dbb8ff8c23e91ddc4` (6241).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `b802369d2a6ab094e138ff364f9065de3fbe1142` was ignored. HEAD/branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Ancestry parent was read from the Git object store (`zlib` inflate of `6c27bdca…`).
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `12.1.18` source | `6c27bdcaca7314fb6e29cd3acb74c72bb4bda0c9` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; parent `75cc1ae9633cb31e9faee8ff2259560559ed3137` is the Step 12.1.17 checkpoint / `reviewed_head` |
+| Bound running attempt | `e1e88e2980b44a5c99d0a6e78b2950d7`, `plan_sha` = B, phase `running`, `checkpoint_sha` absent |
+| `admitted_review` predecessor | `review_sha256` `4a659efc7b1062fc99d68c162523f174dd7325499df2430d2a153316b2f249a2`; `reviewed_head` `75cc1ae9633cb31e9faee8ff2259560559ed3137` |
+| `latest-implementation` leftover HEAD | `b802369d2a6ab094e138ff364f9065de3fbe1142` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `1e081815fda2407487c5b1a716ffa55a` |
+| Fail-closed | Not required |
+
+## Implemented path
+
+Pending items now store an `approval_binding` hashed from the complete displayed plan or meanings, ordered actions, item identity, revision, input snapshot, provider boundary and allowance. Director recomputes that digest from freshly loaded case state under the writer lock and also rebuilds the expected item from fixtures and live inventory. Stored revision labels and source fingerprints are not treated as proof that displayed content is unchanged.
+
+Changed growth measure, nested claim text, action order, revision, item identity or meanings reject consumption, persist a validated replacement with a new binding, and require a later invocation. Redisplay does not execute approved actions and does not replace existing approved authority. Meaning approval still cannot approve the resulting proof plan. Legacy pending items without a binding require redisplay. Historical approved records without `approved_binding` remain saved and are classified `unbound_historical`; they are not research authorization. Bound local approval still reports `research_authorized=false` and does not open provider transmission.
+
+The reviewed defect was reproduced on an isolated copy of the retained product-fit case. Canonical checkpoint cases were not modified to inject the defect.
+
+## Listed verification
+
+No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification. Isolated product-fit copies are test fixtures, not company evidence.
+
+| Command | Measured result |
+|---|---|
+| `/opt/anaconda3/bin/python -m pytest -q bav/debater/tests/test_intake.py bav/director/tests/test_debate_intake.py` | **28 passed** in 0.25s |
+| `/opt/anaconda3/bin/python -m pytest -q` `bav/extractor/tests/test_research_corpus.py` `bav/director/tests/test_research_runtime.py` `bav/director/tests/test_runtime_verification.py` `bav/director/tests/test_filing_cli.py` `bav/extractor/tests/test_filing_json.py` | **185 passed** in 10.89s |
+| `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_current_build.py -k 'test_public_namespace_and_compatibility or test_public_help_is_bav_first_and_check_is_diagnostic'` | **2 passed**, 18 deselected in 0.37s |
+
+Isolated product-fit copy: `pending.displayed.plan.growth_measure` changed to a store-count substitute while input, allowance and provider fingerprints were left unchanged. First `--approve` returned `approval_rebound`, saved no approved scope, and restored the fixture measure. A subsequent unchanged `--approve` saved that original measure with `approved_binding` set and `research_authorized=false`. Canonical product-fit `f1b986bc…` and benchmark `f0fc413f…` were unchanged. Ordinary `--list` / `--status` against the retained corpus did not mutate those files. Provider invoke/verify/transmission counters remained 0.
+
+## Preservation and plan changes
+
+Completed preparation and source bundles were not modified. Original/prepared hashes remain `82e00f90…` / `c28354c8…` (LULU) and `25a85db8…` / `632babd6…` (FR). Publication dates remain unknown. Lululemon garbled-body and Fast Retailing CFS-only / Note 6 D / merged Greater China row limitations were retained as coverage, not negative evidence. Accepted financial inputs and neutral assumptions unchanged. Company outputs not rebuilt. `DEBATER.md` unchanged (`7578b44c…`, 62336). Adjacent-qualification retrieval, missing-original rejection and unreadable-manifest isolation remain deferred.
+
+Required plan change: none.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `bav/debater/contracts.py` | `4878344fc8ff1c83a6d7ac0827ba711d60172e4201d26a68875970d90420c233` | 6037 |
+| `bav/debater/intake.py` | `463c4df281ec15d20b4ed184789d0f681b833fd2770b69d4ea775241691845dd` | 18317 |
+| `bav/debater/tests/test_intake.py` | `67f8029972f6cd4844af7e02f93b2995c9a8db5f1c99a81c09ebe7b0f3bf1170` | 5329 |
+| `bav/director/debate/command.py` | `19ee4bff0817f454ce5d41b9d476e9308b5e35f88b206d2372b5d592698a6991` | 28683 |
+| `bav/director/debate/store.py` | `8f46a862a931c5aa01980999ff47a48b4bb59b6bbdafc497934483216badec9d` | 9686 |
+| `bav/director/tests/test_debate_intake.py` | `29f3ef9d38b236adaeea6c283c554f2d4fce602f5bf2dd0935c6d07c774a8144` | 23137 |
+| `bav/director/docs/DEBATER.md` | `7578b44c6c56db0265fa50f0df9de68d6002d36f2327fa155c746a70a2c93f42` | 62336 |
+| `bav/director/docs/BENCHMARK.md` | `11a848866e2562fa7f9a156b0e64e25e73fb18b683d49195c953096d88a978fc` | 99298 |
+| `build/input/cases/lululemon-fast-retailing-product-fit/case.json` | `f1b986bc05fc265a8e4a954954e66b7d0315a793016268e41fe898de1570faec` | 16164 |
+| `build/input/cases/fast-retailing-acquisition-would-accelerate-lululemon-growth-in-asia/case.json` | `f0fc413f006ce703b87ba0ca264adb7ab0a0553c906b062b96650bef7025361d` | 15080 |
+
+## Remaining toward Completion
+
+Installed native-tool enforcement and controlled-runtime acceptance remain blocking unfinished parent obligations. The retained benchmark case’s 12.1.17 approval is an unbound historical record and is not authorization for subsequent research. Linked-argument research, remaining readers, supported Modeler calculations, separate Planner/Reviewer contexts, coherent JSON/Markdown exports, semantic acceptance, and the real `--add`/resume benchmark remain required subsequent work. Approval-binding tests do not establish the research benchmark or Session Endpoint.
+
 # RESULT.md — Step 12.1.17 Implement ordinary proposition intake and scope/proof approval
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

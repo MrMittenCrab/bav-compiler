@@ -2,14 +2,20 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
+from dataclasses import replace
 from pathlib import Path
 
 from bav.debater.intake import (
+    approval_binding_for,
+    bind_pending_item,
     build_local_plan,
     classify_proposition,
     conservative_proposition_match,
     load_intake_fixtures,
     parse_exclude,
+    pending_binding_matches,
+    pending_from_plan,
     proof_plan_display,
 )
 from bav.extractor.research.contracts import InventoryRecord, SnapshotInventory
@@ -117,3 +123,25 @@ def test_exclude_parser_rejects_invalid_values():
 def test_fixture_is_labeled_configuration():
     payload = load_intake_fixtures()
     assert "not company evidence" in payload["label"]
+
+
+def test_approval_binding_covers_displayed_plan_content():
+    plan = build_local_plan(classify_proposition(BENCHMARK), _inventory())
+    display = proof_plan_display(plan, case_fragment="growth in Asia")
+    pending = pending_from_plan(
+        plan,
+        input_fingerprint="in",
+        allowance_fingerprint="al",
+        provider_boundary={"backend": "cursor", "transmission": "closed", "installed_launch": "closed"},
+        display_lines=display,
+    )
+    assert pending.approval_binding
+    assert pending_binding_matches(pending)
+    displayed = deepcopy(dict(pending.displayed))
+    displayed["plan"]["growth_measure"] = "Store count invented as the measure."
+    loaded = replace(pending, displayed=displayed)
+    assert loaded.approval_binding == pending.approval_binding
+    assert not pending_binding_matches(loaded)
+    rebound = bind_pending_item(loaded)
+    assert rebound.approval_binding != pending.approval_binding
+    assert approval_binding_for(pending) == pending.approval_binding

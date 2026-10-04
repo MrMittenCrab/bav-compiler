@@ -11,6 +11,8 @@ import re
 from pathlib import Path
 from typing import Any, Mapping
 
+from dataclasses import replace
+
 from bav.debater.contracts import (
     IntakeClassification,
     LinkedClaimDraft,
@@ -282,6 +284,32 @@ def default_provider_boundary(fixtures: Mapping[str, Any] | None = None) -> dict
     }
 
 
+def approval_binding_for(item: PendingItem) -> str:
+    """Hash the complete displayed item. Ignore any stored binding or revision label."""
+    material = {
+        "actions": list(item.actions),
+        "allowance_fingerprint": item.allowance_fingerprint,
+        "displayed": dict(item.displayed),
+        "input_fingerprint": item.input_fingerprint,
+        "item_id": item.item_id,
+        "kind": item.kind,
+        "provider_boundary": dict(item.provider_boundary),
+        "revision": item.revision,
+    }
+    return sha256_text(json.dumps(material, sort_keys=True, separators=(",", ":"), ensure_ascii=True))
+
+
+def bind_pending_item(item: PendingItem) -> PendingItem:
+    return replace(item, approval_binding=approval_binding_for(item))
+
+
+def pending_binding_matches(item: PendingItem) -> bool:
+    stored = item.approval_binding
+    if not stored:
+        return False
+    return stored == approval_binding_for(item)
+
+
 def pending_from_meanings(
     classification: IntakeClassification,
     *,
@@ -297,15 +325,17 @@ def pending_from_meanings(
         "incoherent_together": classification.incoherent_together,
     }
     revision = sha256_text(json.dumps(displayed, sort_keys=True, separators=(",", ":")))[:16]
-    return PendingItem(
-        item_id=f"meanings-{revision}",
-        kind="meanings",
-        revision=revision,
-        actions=("accept_meanings",),
-        input_fingerprint=input_fingerprint,
-        provider_boundary=dict(provider_boundary),
-        allowance_fingerprint=allowance_fingerprint,
-        displayed=displayed,
+    return bind_pending_item(
+        PendingItem(
+            item_id=f"meanings-{revision}",
+            kind="meanings",
+            revision=revision,
+            actions=("accept_meanings",),
+            input_fingerprint=input_fingerprint,
+            provider_boundary=dict(provider_boundary),
+            allowance_fingerprint=allowance_fingerprint,
+            displayed=displayed,
+        )
     )
 
 
@@ -323,15 +353,17 @@ def pending_from_plan(
         "plan": plan.to_payload(),
         "lines": list(display_lines),
     }
-    return PendingItem(
-        item_id=f"proof_plan-{plan.revision}",
-        kind="proof_plan",
-        revision=plan.revision,
-        actions=("accept_scope", "accept_local_plan", "halt_before_provider"),
-        input_fingerprint=input_fingerprint,
-        provider_boundary=dict(provider_boundary),
-        allowance_fingerprint=allowance_fingerprint,
-        displayed=displayed,
+    return bind_pending_item(
+        PendingItem(
+            item_id=f"proof_plan-{plan.revision}",
+            kind="proof_plan",
+            revision=plan.revision,
+            actions=("accept_scope", "accept_local_plan", "halt_before_provider"),
+            input_fingerprint=input_fingerprint,
+            provider_boundary=dict(provider_boundary),
+            allowance_fingerprint=allowance_fingerprint,
+            displayed=displayed,
+        )
     )
 
 

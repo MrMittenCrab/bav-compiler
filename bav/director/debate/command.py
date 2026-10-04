@@ -20,6 +20,7 @@ from bav.debater.intake import (
     load_intake_fixtures,
     meanings_pending_display,
     parse_exclude,
+    pending_binding_matches,
     pending_from_meanings,
     pending_from_plan,
     proof_plan_display,
@@ -31,6 +32,8 @@ from bav.director.debate.store import (
     allocate_slug,
     allocate_title,
     allowance_fingerprint,
+    approval_authorization,
+    canonical_json,
     cases_root,
     default_allowance,
     find_by_proposition,
@@ -216,6 +219,11 @@ def _submit(
                 last_display=display,
                 approved_scope=approved_scope,
                 approved_plan=approved_plan,
+                approved_binding=(
+                    sha256_text(canonical_json(approved_scope))
+                    if approved_scope is not None and pending is None
+                    else None
+                ),
             )
             path = write_case_atomically(directory, payload)
             return _envelope(
@@ -301,11 +309,7 @@ def _approve(
                     details={"authority": current.authority},
                 )
             live_fp = _live_fingerprints(current, inventory)
-            if (
-                live_fp["input"] != pending.input_fingerprint
-                or live_fp["allowance"] != pending.allowance_fingerprint
-                or live_fp["provider"] != dict(pending.provider_boundary)
-            ):
+            if not _pending_is_unchanged(pending, current, inventory, fixtures, live_fp):
                 return _rebind_changed(current, inventory, fixtures, live_fp)
             payload = dict(current.payload)
             if pending.kind == "meanings":
@@ -424,6 +428,8 @@ def _approve_plan(payload: dict[str, Any], pending: PendingItem, directory) -> D
         "unresolved_parameters": list(plan.get("unresolved_parameters") or ()),
     }
     payload["approved_plan"] = plan
+    payload["approved_binding"] = pending.approval_binding
+    payload["authorized_actions"] = list(pending.actions)
     payload["allowance"] = increment_intake(payload["allowance"], planning=False)
     payload["revision"] = int(payload.get("revision") or 1) + 1
     lines = _runtime_blocker_lines(
@@ -444,7 +450,14 @@ def _approve_plan(payload: dict[str, Any], pending: PendingItem, directory) -> D
         case_slug=payload["slug"],
         kind="plan_approved",
         mutated=True,
-        details={"consumed": pending.item_id, "plan_revision": pending.revision},
+        details={
+            "consumed": pending.item_id,
+            "plan_revision": pending.revision,
+            "approved_binding": pending.approval_binding,
+            "authorized_actions": list(pending.actions),
+            "research_authorized": False,
+            "approval_authorization": "bound_local_plan",
+        },
     )
 
 
@@ -455,49 +468,14 @@ def _rebind_changed(
     live_fp: Mapping[str, Any],
 ) -> DebateEnvelope:
     payload = dict(record.payload)
-    pending = pending_from_payload(record.pending)
-    if pending is None:
+    new_pending = _rebuild_pending(record, inventory, fixtures, live_fp)
+    if new_pending is None:
         return _display_record(record, kind="resume", mutated=False)
-    classification = classify_proposition(payload["proposition"]["accepted"], fixtures=fixtures)
-    if pending.kind == "meanings":
-        classification = IntakeClassification(
-            original=classification.original,
-            accepted=classification.accepted,
-            clarity="ambiguous",
-            kind=classification.kind,
-            title=payload["title"],
-            fixture_id=classification.fixture_id,
-            plan_id=classification.plan_id,
-            meanings=tuple(
-                ProposedMeaning(index=i + 1, statement=str(item))
-                for i, item in enumerate(pending.displayed.get("meanings") or ())
-            ),
-            incoherent_together=bool(pending.displayed.get("incoherent_together")),
-            hypothetical=classification.hypothetical,
-            planning_limitation=classification.planning_limitation,
-        )
-        new_pending = pending_from_meanings(
-            classification,
-            input_fingerprint=str(live_fp["input"]),
-            allowance_fingerprint=str(live_fp["allowance"]),
-            provider_boundary=dict(live_fp["provider"]),
-        )
+    if new_pending.kind == "meanings":
+        classification = classify_proposition(payload["proposition"]["accepted"], fixtures=fixtures)
         lines = meanings_pending_display(classification) + (_approve_command(payload["title"]),)
     else:
-        retained = tuple(
-            ProposedMeaning(index=i + 1, statement=str(item))
-            for i, item in enumerate(payload["proposition"].get("meanings") or ())
-        )
-        plan = build_local_plan(classification, inventory, fixtures=fixtures, retained_meanings=retained)
-        display = proof_plan_display(plan, case_fragment=payload["title"])
-        new_pending = pending_from_plan(
-            plan,
-            input_fingerprint=str(live_fp["input"]),
-            allowance_fingerprint=str(live_fp["allowance"]),
-            provider_boundary=dict(live_fp["provider"]),
-            display_lines=display,
-        )
-        lines = display + (_approve_command(payload["title"]),)
+        lines = tuple(new_pending.displayed.get("lines") or ()) + (_approve_command(payload["title"]),)
     payload["pending"] = new_pending.to_payload()
     payload["corpus"] = _corpus_payload(inventory)
     payload["revision"] = int(payload.get("revision") or 1) + 1
@@ -514,6 +492,11 @@ def _rebind_changed(
         kind="approval_rebound",
         mutated=True,
         pending_kind=new_pending.kind,
+        details={
+            "approved_authority_preserved": True,
+            "research_authorized": False,
+            "approval_authorization": approval_authorization(payload),
+        },
     )
 
 
@@ -525,14 +508,16 @@ def _resume(
     pending = pending_from_payload(record.pending)
     if pending is not None and not pending.consumed:
         live_fp = _live_fingerprints(record, inventory)
-        if (
-            live_fp["input"] != pending.input_fingerprint
-            or live_fp["allowance"] != pending.allowance_fingerprint
-            or live_fp["provider"] != dict(pending.provider_boundary)
-        ):
+        if not _pending_is_unchanged(pending, record, inventory, fixtures, live_fp):
             try:
                 with locked_case(record.path.parent):
-                    return _rebind_changed(load_case(record.path.parent), inventory, fixtures, live_fp)
+                    current = load_case(record.path.parent)
+                    return _rebind_changed(
+                        current,
+                        inventory,
+                        fixtures,
+                        _live_fingerprints(current, inventory),
+                    )
             except CaseLocked:
                 return _error("The case is locked. Preserve the work and retry.", case_title=record.title)
     return _display_record(record, kind="resume", mutated=False)
@@ -550,7 +535,12 @@ def _display_record(record: CaseRecord, *, kind: str, mutated: bool) -> DebateEn
         kind=kind,
         mutated=mutated,
         pending_kind=pending.kind if pending and not pending.consumed else None,
-        details={"authority": record.authority, "revision": record.payload.get("revision")},
+        details={
+            "authority": record.authority,
+            "revision": record.payload.get("revision"),
+            "research_authorized": False,
+            "approval_authorization": approval_authorization(record.payload),
+        },
     )
 
 
@@ -641,6 +631,70 @@ def _live_fingerprints(record: CaseRecord, inventory: SnapshotInventory) -> dict
         "allowance": allowance_fingerprint(record.payload.get("allowance") or {}),
         "provider": boundary,
     }
+
+
+def _meanings_already_selected(payload: Mapping[str, Any]) -> bool:
+    return any(str(item).startswith("meanings-") for item in payload.get("consumed_approvals") or ())
+
+
+def _rebuild_pending(
+    record: CaseRecord,
+    inventory: SnapshotInventory,
+    fixtures: Mapping[str, Any],
+    live_fp: Mapping[str, Any],
+) -> PendingItem | None:
+    classification = classify_proposition(record.proposition, fixtures=fixtures)
+    if classification.clarity == "ambiguous" and not _meanings_already_selected(record.payload):
+        return pending_from_meanings(
+            classification,
+            input_fingerprint=str(live_fp["input"]),
+            allowance_fingerprint=str(live_fp["allowance"]),
+            provider_boundary=dict(live_fp["provider"]),
+        )
+    if classification.kind == "simple_fact":
+        return None
+    if _meanings_already_selected(record.payload):
+        retained = tuple(
+            ProposedMeaning(index=i + 1, statement=str(item))
+            for i, item in enumerate(record.payload.get("proposition", {}).get("meanings") or ())
+        )
+    else:
+        retained = classification.meanings
+    plan = build_local_plan(
+        classification,
+        inventory,
+        fixtures=fixtures,
+        retained_meanings=retained,
+    )
+    display = proof_plan_display(plan, case_fragment=record.title)
+    return pending_from_plan(
+        plan,
+        input_fingerprint=str(live_fp["input"]),
+        allowance_fingerprint=str(live_fp["allowance"]),
+        provider_boundary=dict(live_fp["provider"]),
+        display_lines=display,
+    )
+
+
+def _pending_is_unchanged(
+    pending: PendingItem,
+    record: CaseRecord,
+    inventory: SnapshotInventory,
+    fixtures: Mapping[str, Any],
+    live_fp: Mapping[str, Any],
+) -> bool:
+    if not pending_binding_matches(pending):
+        return False
+    if (
+        live_fp["input"] != pending.input_fingerprint
+        or live_fp["allowance"] != pending.allowance_fingerprint
+        or live_fp["provider"] != dict(pending.provider_boundary)
+    ):
+        return False
+    expected = _rebuild_pending(record, inventory, fixtures, live_fp)
+    if expected is None:
+        return False
+    return expected.approval_binding == pending.approval_binding
 
 
 def _runtime_blocker_lines(*, extra: tuple[str, ...] = ()) -> tuple[str, ...]:
