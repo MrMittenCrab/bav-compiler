@@ -1,8 +1,8 @@
-# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 prerequisite record
+# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 prerequisite record
 
 Label: **corpus-bound**. This is not a verified latest-market assessment and not an end-to-end Debater acceptance.
 
-Step 12.1.1 corrects Fast Retailing date provenance and replaces Cursor “effective traces” with evidence classifications. Step 12.1.2 records the Cursor isolation and observation route from official docs plus installed help/binary strings, without setting `CURSOR_CONFIG_DIR`, writing configuration, or repeating a provider call. Completed discovery, both conversions, original filings, prepared representations, assets and coverage limitations are preserved. Fast Retailing publication date remains unknown; 2025-11-27 remains only the separately sourced financial-statement approval date.
+Step 12.1.1 corrects Fast Retailing date provenance and replaces Cursor “effective traces” with evidence classifications. Step 12.1.2 records the Cursor isolation and observation route from official docs plus installed help/binary strings, without setting `CURSOR_CONFIG_DIR`, writing configuration, or repeating a provider call. Step 12.1.3 diagnoses Cursor authentication from the installed controller check and one ordinary `agent status --format json` run; it does not replay the observation, ACP session, or a reasoning-provider call. Completed discovery, both conversions, original filings, prepared representations, assets and coverage limitations are preserved. Fast Retailing publication date remains unknown; 2025-11-27 remains only the separately sourced financial-statement approval date. Ordinary CLI authentication does not establish controller-isolated authentication or effective research permissions.
 
 Exact proposition (unapproved scope):
 
@@ -19,12 +19,12 @@ The ordinary CLI research run, linked `argument.json` / `argument.md` pair, isol
 | Binding | Value |
 |---|---|
 | Branch | `checkpoint/20260913-183303` |
-| Step 12.1.2 `IMPLEMENT_BASE_SHA` / plan SHA / `implementation-baseline.json` head / HEAD / allocated `12.1.2` source | `d78b447706997eb7fe59ebaca16e44ed7dd185da` |
-| Ancestry | B is HEAD; parent `ab16ca39042ee28c2981b854e043494d6b050a8e` is the Step 12.1.1 checkpoint / `reviewed_head` |
-| Attempt | `9797ae0a14d34ccdbfbefe8c0cf5a218`, phase `running`, `plan_sha` = B, `checkpoint_sha` absent |
-| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `4c7098b778cd40889f51b9e5398b15b9` |
-| Predecessor review | `12034e178bf88c94eddb8f24e944f9c97e35a383aab39b9570cf895cf193adc5` |
-| `latest-implementation` leftover HEAD | `cdaeb1151cc1e7a60597ec7076d4fa6893b5ee4d` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Step 12.1.3 `IMPLEMENT_BASE_SHA` / plan SHA / `implementation-baseline.json` head / HEAD / allocated `12.1.3` source | `7ca7dc0e58bd953fa877988646fac80ac22bdda4` |
+| Ancestry | B is HEAD; parent `b4a7ba86e02d5fe74c289a8788b21ef4e6e219b8` is the Step 12.1.2 checkpoint / `reviewed_head` |
+| Attempt | `d2e879f518744089a3f076fc5352acc8`, phase `running`, `plan_sha` = B, `checkpoint_sha` absent |
+| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `f4d3b4b670f54c6eb88f0fb6e2927a36` |
+| Predecessor review | `3956a6be8fc2ce8db77cbf20d65ab0c7fd73f8c52f8fccf1a53e398429a66046` |
+| `latest-implementation` leftover HEAD | `d78b447706997eb7fe59ebaca16e44ed7dd185da` (ignored; `IMPLEMENT_BASE_SHA` populated) |
 | `DEBATER.md` | SHA-256 `27d6615addee99fd43ea5f5aa39d57daeeb7490809e47ccc2736c0979a883503` (61460 bytes); supersedes earlier Debater briefs; unchanged |
 
 Git CLI was not required; HEAD and branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Commit parent was read from the Git object store.
@@ -183,6 +183,18 @@ One concrete candidate route, with each element classified. **Not a verified con
 
 Hidden `--disable-project-configs` exists in the installed binary and is absent from official help/docs. It is not part of the route.
 
+### Step 12.1.3 — authentication diagnosis (no repeated probe)
+
+Authorization `20261004-073832-000000028` and the prior two-call allowance remain consumed. This step did not dispatch an observation, ACP session, synthetic probe, or reasoning-provider call. No login/logout, credential-store read, environment write, or company-corpus transmission.
+
+**Controller check (source only).** Installed `account_available` in `/Users/lizhiguo/.autocycle/cursor_observation.py` (lines 324–353) launches `_GatedCursor([agent, status, --format, json])` in a temporary isolated workspace with synthetic `HOME`, `CURSOR_CONFIG_DIR`, `CURSOR_DATA_DIR` and a restricted `PATH`. Timeout is `min(TIMEOUT, 15)` seconds (`TIMEOUT=90`). Accepted fields are exit 0, a JSON object, `status=="authenticated"`, and `isAuthenticated is True`. Every inspected failure path returns `False`, then `unavailable(...)` writes `status=UNAVAILABLE`, `exit_status=null`, `timed_out=false`. The historical receipt therefore cannot distinguish absent authentication from timeout, malformed output, or another execution failure. Receipt SHA-256 `3277ecabf0421cbd964abd0a7811220c4ab4c2882d1439b5465debf1038caa20` remains `UNAVAILABLE` with those hardcoded fields.
+
+The source comments that the macOS CLI uses the native keychain independently of `HOME` and `CURSOR_CONFIG_DIR`. AutoCycle does not read the credential store. That independence was not independently verified in the isolated launch context.
+
+**Ordinary CLI (once).** `/Users/lizhiguo/.local/bin/agent status --help` documents `status|whoami` and `--format text|json` and does not document JSON field names. One ordinary `/Users/lizhiguo/.local/bin/agent status --format json` run (15 s allowance, no retry): elapsed 1.39 s, exit 0, parse succeeded, stderr empty, 272 stdout bytes. Sanitized state: `status=authenticated`, `isAuthenticated=true`. Additional JSON keys were discarded. `CURSOR_CONFIG_DIR` was unset. This is the ordinary process context, not `_GatedCursor`.
+
+Ordinary success does **not** establish controller-isolated authentication. The isolated check cannot be reached independently from the admitted command list without replaying the consumed observation or changing infrastructure. That is the remaining verification-capability gap. This diagnosis does not infer that login is required or that controlled execution is impossible. Authentication success cannot close the permission fact; historical enforcement remains unknown.
+
 ### Cursor call 1 — evidence classifications (no “effective traces”)
 
 Command (from the Step 12.1 implementer log, not from an agent config record): `agent -p --output-format json --sandbox enabled --trust --workspace <probe>`.
@@ -240,5 +252,5 @@ No company rebuild, certification, or Office run. `build/input/` is Git-ignored;
 3. Fast Retailing available source is a CFS, not a full strategy report; Note 6 Japan/PRC table was lost in Markdown.
 4. Lululemon has no Greater China definition and no Japan revenue series; Fast Retailing Greater China ≠ PRC and is Fast Retailing/UNIQLO mix, not Lululemon.
 5. No independently supplied filing Markdown.
-6. Cursor historical effective configuration is **unknown**. Prospective isolation intent (`CURSOR_CONFIG_DIR` plus recorded startup cwd outside this checkout, `stream-json` plus filesystem capture) does not repair that gap and does not establish effective permissions. The consumed JSON envelope has no tool events and no loaded-config record. One independently observed write artifact exists; shell/read/web/MCP claims remain model-reported. `--workspace` alone cannot isolate project policy. Missing mechanisms remain loaded-configuration identity and a policy-denial event. This is not a verified human-only permission choice. Codex command events show a research-boundary violation; DNS failure is not policy denial. Company corpus must not be transmitted on these captured paths.
+6. Cursor historical effective configuration is **unknown**. Prospective isolation intent (`CURSOR_CONFIG_DIR` plus recorded startup cwd outside this checkout, `stream-json` plus filesystem capture) does not repair that gap and does not establish effective permissions. The consumed JSON envelope has no tool events and no loaded-config record. One independently observed write artifact exists; shell/read/web/MCP claims remain model-reported. `--workspace` alone cannot isolate project policy. Missing mechanisms remain loaded-configuration identity and a policy-denial event. Ordinary CLI `status` in this step was sanitized-authenticated; that does not establish the controller isolated `_GatedCursor` check. The historical UNAVAILABLE receipt collapses timeout, parse failure and predicate failure. Isolated authentication cannot be re-checked without replaying the consumed observation. This is not a verified human-only permission choice and does not imply login is required. Codex command events show a research-boundary violation; DNS failure is not policy denial. Company corpus must not be transmitted on these captured paths.
 7. Source preparation succeeded for two PDFs; that is not Debater acceptance.

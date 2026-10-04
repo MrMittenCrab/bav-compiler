@@ -1,3 +1,67 @@
+# RESULT.md — Step 12.1.3 Diagnose Cursor authentication without repeating the probe
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 12.1.3 — Diagnose Cursor authentication without repeating the probe
+**Work:** `e35d5703ccc14627a150a29b9e900502`
+**Plan:** `f4d3b4b670f54c6eb88f0fb6e2927a36`
+**Finding:** Verify Debater benchmark sources and controlled runtime
+**Attempt:** `d2e879f518744089a3f076fc5352acc8`
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. No AutoCycle edits, discovery, conversion, debate CLI, argument export, observation replay, ACP session, provider calls, login/logout, credential-store reads, configuration writes, or Debater publications. This record does not claim parent Completion, Session acceptance, or end-to-end benchmark success.
+
+TARGET SHA-256 `9bfc5e439e5776cf3d1d89fd33363febe716a6744ad7d256942a24709ff3e77b` (60817).
+SESSION SHA-256 `614f2e081b472ae75ef13e78b34120311181327c8f6a534bd3cfd35621344b8a` (4472).
+IMPLEMENTATION SHA-256 `22e64697ff40d727956225cbf876deb39b71b806a5a179144fc230cafb6caab0` (5977).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `d78b4477…` was ignored. HEAD/branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Ancestry parent was read from the Git object store.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `12.1.3` source | `7ca7dc0e58bd953fa877988646fac80ac22bdda4` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; parent `b4a7ba86e02d5fe74c289a8788b21ef4e6e219b8` is the Step 12.1.2 checkpoint / `reviewed_head` |
+| Bound running attempt | `d2e879f518744089a3f076fc5352acc8`, `plan_sha` = B, phase `running`, `checkpoint_sha` absent |
+| `admitted_review` predecessor | `review_sha256` `3956a6be8fc2ce8db77cbf20d65ab0c7fd73f8c52f8fccf1a53e398429a66046`; `reviewed_head` `b4a7ba86e02d5fe74c289a8788b21ef4e6e219b8` |
+| `latest-implementation` leftover HEAD | `d78b447706997eb7fe59ebaca16e44ed7dd185da` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Fail-closed | Not required |
+
+## Listed inspections (once)
+
+Admitted route only. Availability of `agent status` is executable support, not isolated-controller authentication or permission enforcement. No observation replay.
+
+| Command | Measured result |
+|---|---|
+| `/Users/lizhiguo/.local/bin/agent status --help` | Exit 0. Documents `status\|whoami` and `--format text\|json`. No JSON field schema. |
+| `/usr/bin/sed -n 320,420p /Users/lizhiguo/.autocycle/cursor_observation.py` | Exit 0. `account_available` uses `_GatedCursor([agent, status, --format, json])` in a synthetic isolated workspace; timeout `min(TIMEOUT,15)=15`; accepts exit 0 plus `status==authenticated` and `isAuthenticated is True`; all inspected failures return `False` then `unavailable(...)` with `exit_status=null` and `timed_out=false`. |
+| `/Users/lizhiguo/.local/bin/agent status --format json` | One ordinary-process run; 15 s allowance; no retry. Elapsed 1.39 s; exit 0; not timed out; parse succeeded; stderr empty; 272 stdout bytes. Sanitized state: `status=authenticated`, `isAuthenticated=true`. Extra JSON keys discarded. `CURSOR_CONFIG_DIR` unset. |
+
+Receipt SHA-256 `3277ecabf0421cbd964abd0a7811220c4ab4c2882d1439b5465debf1038caa20` unchanged: `status=UNAVAILABLE`, `timed_out=false`, `exit_status=null`, reason “normal Cursor account authentication unavailable; no provider observation dispatched”. Those timeout/exit fields are constants of `unavailable()` and do not identify the underlying failure class.
+
+Ordinary CLI authentication is **not** the controller isolated launch. Isolated `_GatedCursor` status cannot be reached independently from the admitted command list without replaying the consumed observation or changing infrastructure. This step does not infer that login is required or that controlled execution is impossible. Authentication success cannot close the permission fact. Historical enforcement remains unknown.
+
+## Preservation and plan changes
+
+Fast Retailing `publication_date` remains `null`; `financial_statement_approval.date` remains `2025-11-27`. Original/prepared hashes unchanged (`25a85db8…` / `632babd6…`). Accepted financial inputs and neutral assumptions unchanged. Company outputs not rebuilt. `DEBATER.md` unchanged (`27d6615add…`, 61460). Original filings, converter Markdown, assets, coverage limitations, and probe artifacts retained. No discovery or conversion replay. Controller receipt preserved.
+
+Required plan change: none.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| FR research `manifest.json` | `9a3d1cf0d884f293347d28ffd1ebc2312db4dcb1d477e61ff5d27e98046d63db` | 4257 |
+| Snapshot `manifest.json` | `21726869b0e22e3b5cf5b64827f1acb6ce4e81a8bb21f096f213f59ce28decb6` | 5173 |
+| `cursor_config_diagnosis.json` | `ad78e5e0d026e6eec9e4e8a8c707a8bd293c63e61df9a77f426ec55c5953a414` | 25257 |
+| `bav/director/docs/BENCHMARK.md` | `529446de16956585b83ee9e0805f1aa2858f761e23ce8a1e108efca1b2976448` | 27509 |
+| Docs retrieval `manifest.json` | `b9bc893af973f3de4ce05e0f40323b67bc90fce933ac63879fc0e4c47c59a547` | 1279 |
+| Controller receipt | `3277ecabf0421cbd964abd0a7811220c4ab4c2882d1439b5465debf1038caa20` | 46935 |
+
+## Remaining toward Completion
+
+Ordinary `python -m bav debate` intake/approvals, Extractor preparation/retrieval, Planner/Reviewer, durable budgets/state, required readers, coherent JSON/Markdown exports, adversarial checks, and the real `--add`/resume benchmark remain outstanding. Prerequisite verification alone does not satisfy the Session 12 Endpoint. Isolated Cursor authentication cannot be independently re-checked without replaying the consumed observation. Effective research permissions remain unestablished. Company-data transmission remains blocked.
+
 # RESULT.md — Step 12.1.2 Establish Cursor configuration isolation and observation route
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
