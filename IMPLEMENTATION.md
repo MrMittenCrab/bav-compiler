@@ -1,49 +1,49 @@
-# Step 12.1.4 — Implement the Director research runtime boundary
+# Step 12.1.5 — Repair BAV runtime validation, launch guards and cumulative limits
 
 ## Completion
 
 The replacement Debater specification is recorded, and a reproducible benchmark prerequisite record establishes the available company sources, conversion behavior and controlled runtime capabilities, distinguishing verified routes from exact missing dependencies or human decisions without claiming end-to-end Debater acceptance.
 
-INPUT_STATUS: COMPLETE
+AUTOCYCLE_PLAN: {"finding_key": "Verify Debater benchmark sources and controlled runtime", "inputs": [{"commitment": "Clarify the existing Session 12 Endpoint and Priority to separate BAV product research from AutoCycle implementation infrastructure; incorporate that separation into DEBATER.md and the existing BAV-owned adapter repairs and synthetic tests. Preserve Cursor preference and the separately selectable Codex obligation. Controlled installed-runtime acceptance, Codex implementation and the remaining research benchmark stay outstanding; historical Controller probes are neither acceptance nor prerequisites.", "id": "20261004-103058-000000030"}], "kind": "work", "minor": 5, "objective": "Repair BAV runtime validation, launch guards and cumulative limits", "plan_id": "3dc5fbb702f747b59be2e08f5b987b0b", "predecessor_review_sha256": "2fc31f834ff724e2ef622271929f56a625983ea5d7c018faf44fb27257f0f131", "step_id": "12.1.5", "work_id": "e35d5703ccc14627a150a29b9e900502"}
 
-AUTOCYCLE_PLAN: {"finding_key": "Verify Debater benchmark sources and controlled runtime", "kind": "work", "minor": 4, "objective": "Implement the Director research runtime boundary", "plan_id": "b068f42ab5fc41e992cc3ac6789ea5d2", "predecessor_review_sha256": "1854311f988114a47c4e29f3e13219675dc2c636962c124bf8f3936af1e344ef", "step_id": "12.1.4", "work_id": "e35d5703ccc14627a150a29b9e900502"}
+## Bounded work
 
-## Bounded implementation
+Continue work `e35d5703ccc14627a150a29b9e900502`, preserving the checkpoint implementation. Repair `bav/director/runtime/` and its existing synthetic fixtures without building the research loop or replaying Controller probes.
 
-Implement a thin target-owned runtime adapter under `bav/director/`, then immediately exercise its isolation, dispatch restrictions and evidence capture with local synthetic fixtures. Preserve work identity `e35d5703ccc14627a150a29b9e900502`. Controlled runtime enforcement remains an implementation and acceptance obligation; no independent prerequisite is established for this bounded work.
+- Authenticate baseline, branch, ancestry and attempt binding through normal controller records. Preserve unfinished work, ownership and recovery safeguards.
+- Incorporate the architecture clarification into `bav/director/docs/DEBATER.md` without replacing or weakening the admitted handbook.
+- AutoCycle → Cursor/Codex implements and tests repository code; BAV Director/Debater → Cursor/Codex performs product research. Shared executables and borrowed architectural ideas do not confer shared runtime dependencies.
+- BAV owns configuration, prompts, session/case state, workspace, permissions, budgets, evidence capture and lifecycle. Do not import `~/.autocycle`, invoke AutoCycle, or depend on its provider engine, stages, controller lifecycle, instruction database, evidence routes, locks, work-state, observation machinery, policy, budgets, logs or backend configuration.
+- Preserve Cursor as preferred and Codex as a separately selectable alternative behind the BAV contract. Do not silently switch backend/model; record Codex as unimplemented until demonstrated.
 
-- Authenticate the implementation baseline, branch, ancestry and attempt binding through normal controller records. Preserve ownership, recovery and unrelated-work safeguards.
-- Reuse retained runtime documentation and installed-tool findings. Verify any additional required interface through supported read-only inspection; do not assume undocumented flags or protocol capabilities.
-- Define one compact backend request/result contract for separate Planner and Reviewer contexts, explicit model/version, finite allowance, validated structured output and execution failures. Implement the Cursor path first; do not silently select Codex or another model.
-- Construct each context from an explicit approved snapshot. Launch in a dedicated workspace outside the checkout’s instruction/configuration ancestry, with startup cwd and workspace aligned and isolated runtime configuration. Do not inherit coding-agent policy, chat history or unrelated MCP configuration.
-- Keep credentials out of snapshots and diagnostics. Use existing supported authentication without reading or copying credential stores or changing global configuration.
-- Enforce restrictions before execution: no arbitrary agent shell, project writes, unrelated reads, MCP tools or agent-initiated external retrieval. Provider transport/authentication does not authorize research access.
-- Accept only typed application requests with validated operation names, arguments, approved source references and paths. Director dispatches allowlisted application functions; provider output and imported content cannot execute code or grant permissions.
-- Do not treat this application dispatcher as control over provider-native tools. Configure supported native restrictions and fail closed wherever a prohibited native capability cannot be controlled. Workspace placement, prompts and retrospective event inspection alone are insufficient.
-- Keep application-controlled Extractor conversion separate from provider tool authority. Do not implement a replacement parser, general sandbox platform or research loop in this continuation.
-- Bound calls, output size and elapsed execution; count attempted calls and failures. Preserve known results and uncertain outcomes without automatic retries. Terminate only owned child processes.
-- Capture sanitized request/context and policy fingerprints, runtime/model identity, call IDs, attempted operations, decisions with reasons, tool results, exit/error state and timeout. Missing or unbound results remain unknown; reject malformed or unsuccessful provider output.
+## Repairs
 
-## Immediate synthetic verification
+- Validate provider envelopes and typed operations before dispatch. Error indicators, unsuccessful exit state, malformed/truncated output and missing results must defeat success-shaped `output.kind`; reject conflicting success/error signals.
+- Validate request collections, operation names, argument mappings and operation-specific field types before coercion or execution. Cover `arguments=42`, null, strings and arrays; produce sanitized, call-bound failures instead of uncaught exceptions or plausible research results.
+- Replace unbounded `communicate()` buffering with bounded incremental consumption of both stdout and stderr. Enforce their combined byte ceiling during execution, terminate and reap only owned children on overflow, and bound retained diagnostics and cleanup.
+- Enforce cumulative active elapsed time across calls, failures and dispatch, using a monotonic clock and the remaining allowance as each call's upper bound. Validate finite limits; retain call/dispatch accounting and prevent launches or dispatch after exhaustion.
+- Provide a small BAV-owned allowance checkpoint/restore contract so runtime reconstruction and later backend selection cannot reset consumption. Exclude user waiting time; preserve known results and uncertain interrupted attempts without automatic retry. Full case orchestration remains later scope.
+- Remove caller-supplied `verified` as launch authority. Bind any accepted control evidence to the actual backend/executable/version, effective BAV policy/configuration and launch boundary; synthetic evidence cannot authorize installed execution.
+- Reject unknown provider modes, inconsistent backend/model identities and synthetic/installed mode confusion before launch. A caller's company-context flag must not bypass installed-runtime restrictions. Until a supported verification path exists, installed launches remain closed with an exact reason.
+- Preserve dedicated workspace/cwd alignment outside checkout instruction ancestry, isolated configuration and separate Planner/Reviewer contexts. Native shell/write/read/MCP/retrieval restrictions require effective enforcement; application dispatch, prompts and fingerprints alone do not prove it.
+- Keep authentication separate from research permissions, credentials out of captures, and Extractor-controlled conversion separate from provider tool authority.
 
-- Use local fake-provider processes and labeled synthetic files through the actual adapter launch and dispatch paths. These tests make no live reasoning-provider calls.
-- Verify approved context delivery and typed dispatch, separate role contexts, and exclusion of repository instructions, ambient configuration and unrelated source content.
-- Exercise outside-root reads, traversal/symlink escapes, writes, shell, MCP, fetch/search, unknown operations and source-contained instructions. Assert rejection before application execution and call-bound denial records.
-- Exercise malformed/truncated output, missing results, provider errors, timeout, allowance exhaustion and interrupted execution. Verify no plausible research result or automatic repeat is produced.
-- Test that unsupported or unverified native restrictions prevent company-context launch. Synthetic success establishes adapter behavior only, not installed-provider enforcement.
-- Run focused adapter tests and concretely affected Director regressions. Do not rebuild workbooks, run Office or repeat full certification.
+## Synthetic verification
 
-## Evidence and limits
+- Extend `bav/director/tests/test_research_runtime.py` and its fake provider through actual adapter launch/dispatch paths; use synthetic content only.
+- Reproduce error-marked success payloads and malformed operation arguments; assert no dispatch, no accepted research result and a recorded failure.
+- Exercise continuous stdout, stderr and combined overflow, timeout and interruption; verify bounded capture, owned-child cleanup and no retry.
+- Exercise multiple calls exhausting one elapsed allowance, failure accounting, checkpoint restoration and exhausted dispatch; verify no reset on runtime reconstruction.
+- Exercise forged verification, wrong backend/version/policy bindings, invalid modes and false company-context declarations; assert installed launch is prevented without starting a real provider.
+- Retain approved dispatch, separate contexts, outside-root/traversal/symlink denial, source-instruction rejection and ambient configuration exclusion coverage.
+- Run focused adapter tests and concretely affected Director regressions. Record actual commands and measured outcomes; do not rebuild workbooks, launch Office or repeat full certification.
 
-- Update `bav/director/docs/BENCHMARK.md` with implemented controls, measured synthetic results and remaining real-runtime acceptance requirements. Record changed artifacts, commands and outcomes in `RESULT.md`.
-- Preserve historical Controller receipts and uncertainty. The CAPTURED observation establishes authentication/protocol activity, not semantic acceptance; completed calls without results or denial reasons and unchanged fixtures do not prove enforcement.
-- Do not repeat consumed Controller observations, authentication diagnosis, ACP probes or prior provider calls. No new live provider call or company-corpus transmission is authorized by this continuation.
-- A later bounded real-runtime demonstration remains necessary before controlled-backend acceptance and company transmission. Report any concrete unsupported capability discovered without treating unfinished project controls as an external prerequisite.
-- Do not modify AutoCycle, relax implementation-provider restrictions, use unrestricted execution, install or upgrade tools, create new billing, or change global agent configuration.
-- Cursor must not modify `TARGET.md`, `SESSION.md` or `IMPLEMENTATION.md`. Leave Completion and implementation acceptance to Review.
+## Evidence and remaining scope
 
-## Preserved unfinished scope
+Update `BENCHMARK.md` with repaired controls, measured synthetic coverage and exact unverified installed-runtime capabilities. Record changes and completion evidence in `RESULT.md`, preserving historical records. Synthetic success cannot establish native enforcement, parent Completion or end-to-end acceptance.
 
-Preserve the full admitted handbook, completed discovery and conversions, originals/assets, source identities and coverage limitations. Fast Retailing’s publication date remains unknown and distinct from its financial-statement approval date. Do not replay preparation or alter accepted financial inputs, neutral assumptions, company outputs or six-component ownership.
+No live provider calls, company-corpus transmission, Controller observation/authentication/ACP replay, AutoCycle changes, relaxed coding-agent restrictions, credential-store access, global configuration changes, installations, upgrades or new billing are authorized here. Reuse retained interface findings; inspect additional local interfaces read-only only when needed.
 
-Extractor preparation/retrieval and required readers, ordinary debate CLI and approvals, Planner/Reviewer, durable case state and budgets, coherent JSON/Markdown exports, semantic checks, controlled real-backend acceptance and the real evidence-addition/resumption benchmark remain Session Endpoint obligations.
+Preserve completed source discovery/conversion, originals/assets, provenance and coverage limits; Fast Retailing's publication date remains unknown and distinct from financial-statement approval. Preserve financial inputs, neutral assumptions, company behavior and six-component ownership.
+
+Controlled real-runtime acceptance, Extractor readers/preparation/retrieval, ordinary debate CLI and approvals, Planner/Reviewer, durable case integration, coherent JSON/Markdown exports, semantic checks and real evidence-addition/resumption remain Endpoint obligations. Cursor must not edit `TARGET.md`, `SESSION.md` or `IMPLEMENTATION.md`; Review adjudicates acceptance.
