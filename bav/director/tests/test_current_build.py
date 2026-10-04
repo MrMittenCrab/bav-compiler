@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[3]
 def test_public_namespace_and_compatibility():
     result = subprocess.run([sys.executable, '-m', 'bav', '--help'], cwd=ROOT, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
-    for command in ('build', 'check', 'list', 'reconcile', 'validate-source', 'publish'):
+    for command in ('build', 'check', 'list', 'reconcile', 'validate-source', 'publish', 'debate'):
         assert command in result.stdout
     core = subprocess.run([sys.executable, '-m', 'core', '--help'], cwd=ROOT, capture_output=True, text=True)
     assert core.returncode != 0

@@ -1,4 +1,4 @@
-# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 / 12.1.6 / 12.1.7 / 12.1.8 / 12.1.9 / 12.1.10 / 12.1.11 / 12.1.12 / 12.1.13 / 12.1.14 / 12.1.15 / 12.1.16 record
+# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 / 12.1.6 / 12.1.7 / 12.1.8 / 12.1.9 / 12.1.10 / 12.1.11 / 12.1.12 / 12.1.13 / 12.1.14 / 12.1.15 / 12.1.16 / 12.1.17 record
 
 Label: **corpus-bound**. This is not a verified latest-market assessment and not an end-to-end Debater acceptance.
 
@@ -12,7 +12,7 @@ Treat the acquisition as hypothetical. Japan and Greater China must be assessed 
 
 ## Outstanding (not performed)
 
-The ordinary CLI research run, linked `argument.json` / `argument.md` pair, isolated withheld-source `--add`, unchanged resume/status, and semantic red-team checks are **outstanding**. No case, verdict, or end-to-end benchmark success is claimed. `python -m bav debate` does not exist (`bav/director/cli.py` has ingest/validate-source/reconcile/build/check/publish/list only). A later bounded real-runtime demonstration remains necessary before controlled-backend acceptance and company transmission.
+Ordinary intake and local scope/proof-plan approval now exist. The ordinary CLI research run, linked `argument.json` / `argument.md` pair, isolated withheld-source `--add`, Planner/Reviewer contexts, semantic red-team checks, and end-to-end benchmark success remain **outstanding**. Intake-only success is not a research verdict. A later bounded real-runtime demonstration remains necessary before controlled-backend acceptance and company transmission.
 
 ## Baseline
 
@@ -780,3 +780,29 @@ Synthetic adjacent-qualification fixture (not company evidence): “Revenue incr
 Changed prepared bytes without updating declared hashes: both a previously loaded inventory and a refreshed inventory reject cached hits, report `prepared_hash_mismatch`, and leave independently valid sources searchable.
 
 This step does not establish installed-runtime acceptance, ordinary `debate` intake, or end-to-end benchmark success.
+
+## Step 12.1.17 — Ordinary proposition intake and scope/proof approval
+
+Local, noninteractive `python -m bav debate` intake now exists. Director owns CLI, case persistence, approvals, allowances and Case/Status/Next formatting. Debater owns proposition classification and the local proof-plan contract. Extractor inventory is inspected as source candidates and coverage limitations, not as established premises. No provider was launched. No company corpus was transmitted. Plan approval is not installed-runtime acceptance and not a research verdict.
+
+### Ordinary CLI on the retained corpus
+
+Snapshot `2026-10-04-debater-asia-benchmark`, fingerprint `12aefb71e066b44069dcf874f7a1e7e240f7e268a64fada7ec45a60a31db8c55`. Source candidates `lulu-fy2025-annual-report` / `fastretailing-cfs-2025` with original hashes `82e00f90…` / `25a85db8…` and prepared hashes `c28354c8…` / `632babd6…`. Publication dates remain unknown. Lululemon garbled-body and Fast Retailing CFS-only / Note 6 D / merged Greater China row limitations were displayed as coverage, not as negative company evidence.
+
+| Command | Exit | Measured result |
+|---|---|---|
+| `python -m bav debate "Fast Retailing's acquisition of Lululemon would accelerate Lululemon's growth in Asia."` | 0 | Created case **Fast Retailing acquisition would accelerate Lululemon growth in Asia**. No Status. Displayed hypothetical acquisition wording, Japan and Greater China separately, continued-independence comparison, revenue-growth measure, unresolved uplift/closing date/forecast/horizon, transfer bridge, and excluded acquisition valuation. Plan revision `911a198eb7b8094f`. |
+| `python -m bav debate --case "growth in Asia" --status` | 0 | Read-only reprint of the pending plan. No mutation. |
+| `python -m bav debate --case "growth in Asia"` | 0 | Unchanged resume of the same pending plan. |
+| `python -m bav debate --case "growth in Asia" --approve` | 0 | Consumed `proof_plan-911a198eb7b8094f`. Saved approved scope/plan. Next reports installed launch closed. No Status and no research verdict. |
+| `python -m bav debate --case "Fast Retailing acquisition would accelerate Lululemon growth in Asia"` | 0 | Unchanged resume of the approved wait state. Allowance `backend_calls` still 12. |
+| `python -m bav debate growth` | 0 | Resubmit request. No case created. |
+| `python -m bav debate "Lululemon and Fast Retailing have product fit."` | 0 | Case **Lululemon-Fast Retailing product fit** with numbered meanings. |
+| `python -m bav debate --case "product fit" --exclude 2,3 --approve` | 0 | Meaning-only exclusion. New pending proof plan `cac792c7e61ec0f9` was not auto-approved. |
+| `python -m bav debate "… would not accelerate …"` | 0 | Separate negated case. Generic local plan, not the asia-growth fixture. |
+| `python -m bav debate --case "growth in Asia" --approve --backend codex` | 1 | Conflicting options. Approved benchmark case unchanged. |
+| `python -m bav debate --case Lululemon` | 0 | Multiple matching titles listed. No case selected. |
+
+Approved benchmark case path: `build/input/cases/fast-retailing-acquisition-would-accelerate-lululemon-growth-in-asia/case.json`. Intake operations 2. Local planning operations 1. Research backend/tool/time allowances unchanged. Backend remains `cursor` with `transmission=closed` and `installed_launch=closed`.
+
+This is intake-only success. It does not establish the research benchmark, `--add` resumption, `argument.json`/`argument.md` export, or controlled installed-runtime acceptance.

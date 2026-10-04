@@ -353,6 +353,12 @@ def cmd_publish(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_debate(args: argparse.Namespace) -> int:
+    from bav.director.debate.command import run_debate_command
+
+    return run_debate_command(args)
+
+
 def cmd_list(args: argparse.Namespace) -> int:
     from bav.modeler.semantic_io import group_components_by_family
 
@@ -498,6 +504,29 @@ def main(argv: list[str] | None = None) -> int:
     )
     p_publish.add_argument("company", help="Company name or ticker")
     p_publish.set_defaults(func=cmd_publish)
+
+    p_debate = sub.add_parser(
+        "debate",
+        help="Submit or resume a Debater case",
+        description=(
+            "Submit a proposition, resume a saved case, or approve the displayed "
+            "scope or proof plan. Noninteractive. Does not launch a research provider."
+        ),
+    )
+    p_debate.add_argument("proposition", nargs="?", help="Proposition to submit")
+    p_debate.add_argument("--case", help="Readable title or unique title fragment")
+    p_debate.add_argument("--list", action="store_true", help="List saved cases")
+    p_debate.add_argument("--status", action="store_true", help="Inspect a case without research")
+    p_debate.add_argument("--approve", action="store_true", help="Approve the displayed pending item")
+    p_debate.add_argument("--exclude", help="Displayed meaning numbers to drop before approval")
+    p_debate.add_argument("--add", action="append", help="Add a source file and resume")
+    p_debate.add_argument("--note", help="Add a note or availability response")
+    p_debate.add_argument(
+        "--backend",
+        choices=("cursor", "codex"),
+        help="Request a later backend after the data-sharing boundary is satisfied",
+    )
+    p_debate.set_defaults(func=cmd_debate)
 
     p_list = sub.add_parser(
         "list",

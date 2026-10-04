@@ -1,3 +1,78 @@
+# RESULT.md — Step 12.1.17 Implement ordinary proposition intake and scope/proof approval
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 12.1.17 — Implement ordinary proposition intake and scope/proof approval
+**Work:** `e35d5703ccc14627a150a29b9e900502`
+**Plan:** `ee3c57a9e2e940b1a9861f197678be52`
+**Finding:** Verify Debater benchmark sources and controlled runtime
+**Attempt:** `f2a16de41589474f8f665cdd7349d093`
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. No AutoCycle edits, Developer-folder rediscovery, reconversion, argument export, observation replay, ACP session, live provider calls, login/logout, credential-store reads, global configuration writes, or Debater publications. This record does not claim parent Completion, Session acceptance, controlled-backend acceptance, or end-to-end benchmark success.
+
+TARGET SHA-256 `9bfc5e439e5776cf3d1d89fd33363febe716a6744ad7d256942a24709ff3e77b` (60817).
+SESSION SHA-256 `1b5cbd15249f28817c4c9655a1ff3f6b989c7082dd13adad9023bb9adabde1ec` (6676).
+IMPLEMENTATION SHA-256 `4d66d716fbca7a66b58799687154eabec9b338ceda2ffb026bb3abbe72cf86ef` (7395).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `b94586f9bdddb8cf3e55a704a14954be396f9b80` was ignored. HEAD/branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Ancestry parent was read from the Git object store (`zlib` inflate of `b802369d…`).
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `12.1.17` source | `b802369d2a6ab094e138ff364f9065de3fbe1142` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; parent `a51f9f5c6379482768562023596f7d1c064bbaef` is the Step 12.1.16 checkpoint / `reviewed_head` |
+| Bound running attempt | `f2a16de41589474f8f665cdd7349d093`, `plan_sha` = B, phase `running`, `checkpoint_sha` absent |
+| `admitted_review` predecessor | `review_sha256` `907e724cb6057adfca6833b5f2836bc73624f140d455dc0048872eec341667b8`; `reviewed_head` `a51f9f5c6379482768562023596f7d1c064bbaef` |
+| `latest-implementation` leftover HEAD | `b94586f9bdddb8cf3e55a704a14954be396f9b80` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `ee3c57a9e2e940b1a9861f197678be52` |
+| Fail-closed | Not required |
+
+## Implemented path
+
+Ordinary `python -m bav debate` now routes submit, `--list`, `--status`, unchanged resume, `--approve` and meaning-only `--exclude`. Director owns CLI, atomic case persistence under `build/input/cases/<slug>/`, approval bindings and Case/Status/Next output. Debater owns proposition classification and the local proof-plan contract. Extractor inventory is reused as source candidates and coverage limitations. `--add` and `--note` are rejected as unimplemented. `--backend` cannot combine with approval and does not launch a provider or reset allowances.
+
+Clear propositions keep submitted wording and strength. The benchmark fixture displays the exact hypothetical acquisition, Japan and Greater China separately, continued independence, a proposed revenue-growth measure, unresolved numerical parameters, a transfer bridge, and excluded acquisition valuation. Unclear submissions create no case. Ambiguous fixture meanings require numbered confirmation. Atomic `--exclude … --approve` cannot approve a newly generated proof plan. Changed fingerprints redisplay a new pending item. Consumed, concurrent and conflicting approvals leave case authority unchanged.
+
+After local plan approval the command reports the installed-launch blocker. No Status is assigned. Local planning is not researched semantic judgment.
+
+## Listed verification
+
+No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification. Synthetic intake fixtures are labeled configuration, not company evidence.
+
+| Command | Measured result |
+|---|---|
+| `/opt/anaconda3/bin/python -m pytest -q bav/debater/tests/test_intake.py bav/director/tests/test_debate_intake.py` | **21 passed** in 0.09s |
+| `/opt/anaconda3/bin/python -m pytest -q` `bav/extractor/tests/test_research_corpus.py` `bav/director/tests/test_research_runtime.py` `bav/director/tests/test_runtime_verification.py` `test_public_namespace_and_compatibility` `test_public_help_is_bav_first_and_check_is_diagnostic` `bav/director/tests/test_filing_cli.py` | **95 passed** in 10.99s |
+| `/opt/anaconda3/bin/python -m pytest -q bav/extractor/tests/test_filing_json.py` plus the new intake files | **113 passed** in 0.16s |
+| Ordinary CLI on retained snapshot `12aefb71e066b44069dcf874f7a1e7e240f7e268a64fada7ec45a60a31db8c55` | Benchmark case created and approved; Status omitted; resume/status reused saved state; unclear created no case; product-fit meanings required exclude-and-approve without auto-approving the new plan; negated wording created a separate case; `--approve --backend` rejected; ambiguous fragment listed titles |
+
+Approved benchmark title `Fast Retailing acquisition would accelerate Lululemon growth in Asia`. Plan revision `911a198eb7b8094f`. Allowance `backend_calls` remained 12. Intake operations 2; local planning operations 1. Backend `cursor`, `transmission=closed`, `installed_launch=closed`.
+
+## Preservation and plan changes
+
+Completed preparation and source bundles were not modified. Original/prepared hashes remain `82e00f90…` / `c28354c8…` (LULU) and `25a85db8…` / `632babd6…` (FR). Publication dates remain unknown. Lululemon garbled-body and Fast Retailing CFS-only / Note 6 D / merged Greater China row limitations were retained as coverage, not negative evidence. Accepted financial inputs and neutral assumptions unchanged. Company outputs not rebuilt. `DEBATER.md` unchanged (`7578b44c…`, 62336). Missing-original rejection and unreadable-manifest isolation remain deferred.
+
+Required plan change: none.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `bav/debater/contracts.py` | `25dedbd5a298f3ee005d61a2cad0a6e3cd54ece58aa0553704a3bdfd13d677b7` | 5942 |
+| `bav/debater/intake.py` | `3bab2e060563391582c38ee0e65139c0c1efd3c2a741c0b23cb0814c2239628e` | 17217 |
+| `bav/debater/fixtures/intake.json` | `7c29d166478f8ccb02c8a3eb7e88c191c4d96b16eeeb75ca31d1cd7f80814363` | 9362 |
+| `bav/director/debate/command.py` | `4094ab839c74a2452668eefb54077fbee28da4f803ef92d8c7438e6c706e9ccb` | 27097 |
+| `bav/director/debate/store.py` | `5705e2201ae09d3fb0cf42ca0addfc7ad72ec28db504f3e52912f2992b7f77ff` | 9106 |
+| `bav/director/cli.py` | `796395bfa39e026ad7a26cc444cbd5e3a8ad653d959cc006471da21c6ac5479e` | 21453 |
+| `bav/director/docs/DEBATER.md` | `7578b44c6c56db0265fa50f0df9de68d6002d36f2327fa155c746a70a2c93f42` | 62336 |
+| `bav/director/docs/BENCHMARK.md` | `157262231c17afa0d3cddcf01376e3fab2b273f2b9631229f9859ec7ad61a988` | 96400 |
+| `build/input/cases/fast-retailing-acquisition-would-accelerate-lululemon-growth-in-asia/case.json` | `f0fc413f006ce703b87ba0ca264adb7ab0a0553c906b062b96650bef7025361d` | 15080 |
+
+## Remaining toward Completion
+
+Installed native-tool enforcement and controlled-runtime acceptance remain blocking unfinished parent obligations. Linked-argument research, remaining readers, supported Modeler calculations, separate Planner/Reviewer contexts, coherent JSON/Markdown exports, semantic acceptance, and the real `--add`/resume benchmark remain required subsequent work. Intake-only success does not establish the research benchmark or Session Endpoint.
+
 # RESULT.md — Step 12.1.16 Repair contextual retrieval and source-integrity cache reuse
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

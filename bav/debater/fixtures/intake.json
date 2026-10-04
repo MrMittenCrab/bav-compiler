@@ -1,0 +1,189 @@
+{
+  "label": "configuration fixture — benchmark entities, titles and local plan templates, not company evidence",
+  "snapshot_id": "2026-10-04-debater-asia-benchmark",
+  "planning_limitation": "Local deterministic planning only. Not researched semantic judgment.",
+  "default_provider_boundary": {
+    "backend": "cursor",
+    "transmission": "closed",
+    "installed_launch": "closed"
+  },
+  "propositions": [
+    {
+      "id": "asia-growth-benchmark",
+      "match": "exact",
+      "text": "Fast Retailing's acquisition of Lululemon would accelerate Lululemon's growth in Asia.",
+      "clarity": "clear",
+      "kind": "causal_strategic",
+      "plan_id": "asia-growth",
+      "title": "Fast Retailing acquisition would accelerate Lululemon growth in Asia",
+      "hypothetical": true,
+      "incoherent_together": false
+    },
+    {
+      "id": "product-fit-ambiguous",
+      "match": "exact",
+      "text": "Lululemon and Fast Retailing have product fit.",
+      "clarity": "ambiguous",
+      "kind": "causal_strategic",
+      "plan_id": "product-fit",
+      "title": "Lululemon-Fast Retailing product fit",
+      "hypothetical": false,
+      "incoherent_together": true,
+      "meanings": [
+        "Complementary product categories.",
+        "Distinct price tiers.",
+        "Complementary customer segments."
+      ]
+    }
+  ],
+  "plans": {
+    "asia-growth": {
+      "hypothetical": true,
+      "markets": ["Japan", "Greater China"],
+      "markets_relation_to_asia": "Japan and Greater China are the focus markets for this case. Findings there do not establish every Asian market.",
+      "comparison": "Lululemon growth versus realistic continued independence, not a mechanical rise in Fast Retailing consolidated revenue.",
+      "growth_measure": "Lululemon revenue growth in Japan and, separately, Greater China. Store count is not the measure.",
+      "unresolved_parameters": ["uplift", "closing date", "forecast", "horizon"],
+      "mechanism": "Capability transfer that could relax a standalone expansion constraint in the focus markets.",
+      "transfer_bridge": "The route needs a transfer from Fast Retailing capabilities to Lululemon outcomes. Two company descriptions are not a linked argument.",
+      "joint_inference": "The acquisition would accelerate Lululemon growth only if a real standalone constraint exists, Fast Retailing has relevant transferable capabilities, and using them would change Lululemon growth versus independence in each focus market.",
+      "excluded_obligations": ["acquisition valuation", "deal recommendation", "numerical uplift"],
+      "fallbacks": [
+        "If the registered corpus lacks a discriminating observation, request one specific filing passage or user file rather than inventing an answer."
+      ],
+      "permitted_local_actions": [
+        "inspect registered research-source inventory",
+        "retrieve prepared passages already in the snapshot",
+        "use supported Modeler selections when later research is authorized"
+      ],
+      "claims": [
+        {
+          "claim_id": "C1",
+          "statement": "Lululemon has a real expansion constraint in Japan and, separately, Greater China.",
+          "questions": [
+            {
+              "question_id": "Q1a",
+              "inquiry": "What delayed or capped openings or revenue capacity in Japan, and separately in Greater China?",
+              "why_it_matters": "A missing standalone constraint removes the need for an acquisition-driven change.",
+              "minimum_useful_data": "Market-specific capacity, pipeline, or disclosed constraint with period and cause."
+            },
+            {
+              "question_id": "Q1b",
+              "inquiry": "Could a non-site constraint explain the same standalone results in each market?",
+              "why_it_matters": "A different binding constraint would change the transfer target.",
+              "minimum_useful_data": "Attributed reasons that apply to Japan or Greater China, not a pooled Asia remainder."
+            }
+          ],
+          "assumptions": [
+            "The submitted acquisition remains hypothetical.",
+            "Issuer market definitions stay with their sources."
+          ],
+          "failure_conditions": [
+            "Evidence for one focus market is treated as proof for the other.",
+            "China Mainland or Rest of World is substituted for Greater China or Japan."
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "statement": "Fast Retailing has capabilities relevant to Japan and, separately, Greater China.",
+          "questions": [
+            {
+              "question_id": "Q2a",
+              "inquiry": "Which operating capabilities are evidenced in Japan and Greater China separately?",
+              "why_it_matters": "Capabilities confined to one market cannot carry the other market's claim.",
+              "minimum_useful_data": "Attributed operating, network, or organization facts by issuer market."
+            },
+            {
+              "question_id": "Q2b",
+              "inquiry": "Do those capabilities belong to Fast Retailing as a whole rather than only UNIQLO?",
+              "why_it_matters": "Substituting UNIQLO for Fast Retailing would change the acquirer.",
+              "minimum_useful_data": "Issuer-level versus brand-level attribution."
+            }
+          ],
+          "assumptions": [
+            "Presence of a capability is not proof it can be transferred."
+          ],
+          "failure_conditions": [
+            "UNIQLO is treated as Fast Retailing as a whole."
+          ]
+        },
+        {
+          "claim_id": "C3",
+          "statement": "Those capabilities are transferable to Lululemon without collapsing brand or autonomy.",
+          "questions": [
+            {
+              "question_id": "Q3a",
+              "inquiry": "What would block Lululemon from using Fast Retailing site, organization, or supply capability?",
+              "why_it_matters": "A blocked transfer leaves standalone growth unchanged.",
+              "minimum_useful_data": "Format, customer, autonomy, or access constraints that apply after a hypothetical acquisition."
+            }
+          ],
+          "assumptions": [
+            "Transfer is a proposed obligation, not an established premise."
+          ],
+          "failure_conditions": [
+            "Capability lists are concatenated without a transfer bridge."
+          ]
+        },
+        {
+          "claim_id": "C4",
+          "statement": "Transfer would raise Lululemon growth versus a realistic standalone path in each focus market.",
+          "questions": [
+            {
+              "question_id": "Q4a",
+              "inquiry": "What standalone trajectory is evidenced, and what increment would require the transfer?",
+              "why_it_matters": "Without a counterfactual, acceleration is assumed rather than tested.",
+              "minimum_useful_data": "Standalone growth or capacity facts by focus market. No invented uplift."
+            }
+          ],
+          "assumptions": [
+            "Would is preserved. The claim is not weakened to might.",
+            "Uplift, closing date, forecast, and horizon stay unresolved until later approved numerical work."
+          ],
+          "failure_conditions": [
+            "Store count is substituted for revenue growth.",
+            "Fast Retailing consolidated revenue is treated as Lululemon growth."
+          ]
+        }
+      ]
+    },
+    "product-fit": {
+      "hypothetical": false,
+      "markets": [],
+      "markets_relation_to_asia": "No Asian-growth scope is implied by a product-fit meaning.",
+      "comparison": "The retained meaning must be compared as stated, not enlarged into an acquisition-growth claim.",
+      "growth_measure": "Not a growth measure. The retained meaning is the proposed comparison.",
+      "unresolved_parameters": [],
+      "mechanism": "The retained meaning must supply its own comparison. Multiple unrelated fit stories are not one route.",
+      "transfer_bridge": "No acquisition transfer is authorized by product-fit meanings.",
+      "joint_inference": "One retained meaning can be planned locally. Several unrelated fit meanings do not form one linked argument.",
+      "excluded_obligations": ["acquisition valuation", "Asian-growth transfer"],
+      "fallbacks": [
+        "If retained meanings cannot share one route, request a narrower proposition."
+      ],
+      "permitted_local_actions": [
+        "inspect registered research-source inventory"
+      ],
+      "claims": [
+        {
+          "claim_id": "C1",
+          "statement": "The retained product-fit meaning can be tested as a single comparison.",
+          "questions": [
+            {
+              "question_id": "Q1a",
+              "inquiry": "What observations would confirm or undermine the retained meaning?",
+              "why_it_matters": "A meaning without a discriminating test is not a linked argument.",
+              "minimum_useful_data": "Category, price, or segment observations named by the retained meaning."
+            }
+          ],
+          "assumptions": [
+            "Excluded meanings are not premises."
+          ],
+          "failure_conditions": [
+            "Dropped meanings are treated as proven or as proof obligations."
+          ]
+        }
+      ]
+    }
+  }
+}
