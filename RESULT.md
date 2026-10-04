@@ -1,3 +1,72 @@
+# RESULT.md — Step 12.1.4 Implement the Director research runtime boundary
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 12.1.4 — Implement the Director research runtime boundary
+**Work:** `e35d5703ccc14627a150a29b9e900502`
+**Plan:** `b068f42ab5fc41e992cc3ac6789ea5d2`
+**Finding:** Verify Debater benchmark sources and controlled runtime
+**Attempt:** `bc1abf40802e4734bf7792290480b769`
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. No AutoCycle edits, discovery, conversion, debate CLI, argument export, observation replay, ACP session, live provider calls, login/logout, credential-store reads, global configuration writes, or Debater publications. This record does not claim parent Completion, Session acceptance, controlled-backend acceptance, or end-to-end benchmark success.
+
+TARGET SHA-256 `9bfc5e439e5776cf3d1d89fd33363febe716a6744ad7d256942a24709ff3e77b` (60817).
+SESSION SHA-256 `614f2e081b472ae75ef13e78b34120311181327c8f6a534bd3cfd35621344b8a` (4472).
+IMPLEMENTATION SHA-256 `65fb2a81b56b01509da34fdd3cff243ed7cb694031b57e66c66000f6386cc5ab` (6927).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `7ca7dc0e…` was ignored. HEAD/branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Ancestry parent was read from the Git object store.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `12.1.4` source | `0578c893844fd42390f85bdc6fb4b96886d718ce` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; parent `94fa89772d25e9b52248de772793af6697621032` is the Step 12.1.3 checkpoint / `reviewed_head` |
+| Bound running attempt | `bc1abf40802e4734bf7792290480b769`, `plan_sha` = B, phase `running`, `checkpoint_sha` absent |
+| `admitted_review` predecessor | `review_sha256` `1854311f988114a47c4e29f3e13219675dc2c636962c124bf8f3936af1e344ef`; `reviewed_head` `94fa89772d25e9b52248de772793af6697621032` |
+| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `b068f42ab5fc41e992cc3ac6789ea5d2` |
+| Fail-closed | Not required |
+
+## Implemented controls
+
+Thin Cursor-first adapter at `bav/director/runtime/`. One Planner/Reviewer request/result contract; explicit model; finite allowance; validated structured output; execution failures. Isolated workspace is created outside the checkout with aligned cwd/`--workspace`, isolated `CURSOR_CONFIG_DIR` / `CURSOR_DATA_DIR` / `HOME`, and no coding-agent policy, chat history, MCP, or credential copy. Director dispatches allowlisted `inspect_approved_source` only. Provider output cannot execute code or grant permissions. Installed native restrictions stay unverified; company-context launch fail-closes before write or process start. Documented Cursor argv is constructed and unit-checked only; it was not executed. Codex is not implemented. Extractor conversion remains outside this adapter.
+
+## Listed verification
+
+Local fake-provider processes and labeled synthetic files. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Command | Measured result |
+|---|---|
+| `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` | **13 passed** in 0.86s |
+| `/opt/anaconda3/bin/python -m pytest -q` `bav/director/tests/test_current_build.py::test_public_namespace_and_compatibility` `…::test_public_help_is_bav_first_and_check_is_diagnostic` `bav/director/tests/test_readme.py` `bav/director/tests/test_research_handoff.py::test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 0.93s |
+| `/Users/lizhiguo/.local/bin/agent --help` and `--version` | Documented flags only; version **2026.10.01-e373342**. Used to construct, not launch, the Cursor argv. |
+
+Synthetic path measured: approved context delivery; typed dispatch; separate Planner/Reviewer context fingerprints; exclusion of repository instructions, project `.cursor/cli.json`, ambient `~/.cursor/cli-config.json` and unrelated files; denial-before-execution for shell/write/MCP/fetch/search/unknown/outside-root/traversal/symlink/source-instruction/unapproved-source; malformed, truncated, missing, unsuccessful, timeout and allowance-exhausted outcomes yield no structured research result and no automatic retry; unverified native restrictions block company-context launch. Synthetic success is adapter behavior only, not installed-provider enforcement.
+
+## Preservation and plan changes
+
+Fast Retailing `publication_date` remains `null`; `financial_statement_approval.date` remains `2025-11-27`. Accepted financial inputs and neutral assumptions unchanged. Company outputs not rebuilt. `DEBATER.md` unchanged (`27d6615add…`, 61460). Original filings, converter Markdown, assets, coverage limitations, probe artifacts, and historical controller receipts retained. No discovery or conversion replay. No new live provider call.
+
+Required plan change: none.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `bav/director/runtime/__init__.py` | `c54f2985d65aa7e41613565319cb6bf8173ed640ea129f3e50a69ef87138e487` | 865 |
+| `bav/director/runtime/contract.py` | `e4874ef0087c44af3ec77c0ef0bad1d9406a1749b293629b74e19d0976c40cd7` | 5014 |
+| `bav/director/runtime/policy.py` | `1cd81b7b3b781a8c27920b48cf9e23bba7410aa6431bc6904efcdc7720e3c91c` | 5957 |
+| `bav/director/runtime/workspace.py` | `91bbf8664d725b403148b00f9deba58f1e0b49372689a278813d3af754350042` | 4466 |
+| `bav/director/runtime/dispatch.py` | `da72057c8278fdd2dccc7c66dcaca154c1a20d489da69dd02ec58e6140f71d86` | 3673 |
+| `bav/director/runtime/adapter.py` | `8ec76fb1e36ba33f9afd7cb833535eba5dcd75ae04d4fe7fcfdac77ff728a9ac` | 22145 |
+| `bav/director/tests/test_research_runtime.py` | `885d287de688dd253fd319ec311b0da40b70c69f4f2e682b7fb6f9da8b29f017` | 16003 |
+| `bav/director/tests/fixtures/runtime/fake_provider.py` | `4f0de9ecb74ea4607b12fc5d797d3d1cb4871209d3a2bfffe135d25135d0454f` | 5374 |
+| `bav/director/docs/BENCHMARK.md` | `b32961ce5d45c5289ec51b08611f01a7828b2f5cf1f6c12bad08d5e36e294dca` | 31244 |
+
+## Remaining toward Completion
+
+Ordinary `python -m bav debate` intake/approvals, Extractor preparation/retrieval, Planner/Reviewer research, durable budgets/state, required readers, coherent JSON/Markdown exports, adversarial checks, and the real `--add`/resume benchmark remain outstanding. A later bounded real-runtime demonstration remains necessary before controlled-backend acceptance and company transmission. Isolated Cursor authentication cannot be independently re-checked without replaying the consumed observation. Effective installed-provider permissions remain unestablished.
+
 # RESULT.md — Step 12.1.3 Diagnose Cursor authentication without repeating the probe
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

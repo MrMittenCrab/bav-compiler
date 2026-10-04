@@ -1,8 +1,8 @@
-# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 prerequisite record
+# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 record
 
 Label: **corpus-bound**. This is not a verified latest-market assessment and not an end-to-end Debater acceptance.
 
-Step 12.1.1 corrects Fast Retailing date provenance and replaces Cursor “effective traces” with evidence classifications. Step 12.1.2 records the Cursor isolation and observation route from official docs plus installed help/binary strings, without setting `CURSOR_CONFIG_DIR`, writing configuration, or repeating a provider call. Step 12.1.3 diagnoses Cursor authentication from the installed controller check and one ordinary `agent status --format json` run; it does not replay the observation, ACP session, or a reasoning-provider call. Completed discovery, both conversions, original filings, prepared representations, assets and coverage limitations are preserved. Fast Retailing publication date remains unknown; 2025-11-27 remains only the separately sourced financial-statement approval date. Ordinary CLI authentication does not establish controller-isolated authentication or effective research permissions.
+Step 12.1.1 corrects Fast Retailing date provenance and replaces Cursor “effective traces” with evidence classifications. Step 12.1.2 records the Cursor isolation and observation route from official docs plus installed help/binary strings, without setting `CURSOR_CONFIG_DIR`, writing configuration, or repeating a provider call. Step 12.1.3 diagnoses Cursor authentication from the installed controller check and one ordinary `agent status --format json` run; it does not replay the observation, ACP session, or a reasoning-provider call. Step 12.1.4 implements the Director research runtime adapter and exercises it with local fake-provider processes only. Completed discovery, both conversions, original filings, prepared representations, assets and coverage limitations are preserved. Fast Retailing publication date remains unknown; 2025-11-27 remains only the separately sourced financial-statement approval date. Ordinary CLI authentication does not establish controller-isolated authentication or effective research permissions. Synthetic adapter success is not installed-provider enforcement.
 
 Exact proposition (unapproved scope):
 
@@ -12,7 +12,7 @@ Treat the acquisition as hypothetical. Japan and Greater China must be assessed 
 
 ## Outstanding (not performed)
 
-The ordinary CLI research run, linked `argument.json` / `argument.md` pair, isolated withheld-source `--add`, unchanged resume/status, and semantic red-team checks are **outstanding**. No case, verdict, or end-to-end benchmark success is claimed. `python -m bav debate` does not exist (`bav/director/cli.py` has ingest/validate-source/reconcile/build/check/publish/list only).
+The ordinary CLI research run, linked `argument.json` / `argument.md` pair, isolated withheld-source `--add`, unchanged resume/status, and semantic red-team checks are **outstanding**. No case, verdict, or end-to-end benchmark success is claimed. `python -m bav debate` does not exist (`bav/director/cli.py` has ingest/validate-source/reconcile/build/check/publish/list only). A later bounded real-runtime demonstration remains necessary before controlled-backend acceptance and company transmission.
 
 ## Baseline
 
@@ -231,6 +231,31 @@ Command: `codex exec --sandbox read-only --json --skip-git-repo-check --ephemera
 
 This Codex invocation **violates the required research boundary** (shell, unrelated reads, and a network-tool attempt). DNS failure is **not** enforced network denial. Codex is not an automatic replacement. Company corpus must not be sent on this captured Codex path.
 
+## Step 12.1.4 — Director research runtime boundary
+
+Implemented under `bav/director/runtime/`. Planner and Reviewer use one request/result contract with separate snapshots, an explicit model, finite allowance, validated structured output, and execution-failure statuses. Only the Cursor backend is constructed; Codex is not selected. Application dispatch accepts `inspect_approved_source` only. Shell, write, MCP, fetch/search, unknown operations, outside-root reads, traversal/symlink escapes and source-contained instructions are denied before application execution. Extractor conversion remains outside provider tool authority.
+
+Launch writes an approved snapshot into a dedicated workspace outside this checkout. Startup cwd and `--workspace` are the same directory. Isolated `CURSOR_CONFIG_DIR` / `CURSOR_DATA_DIR` / `HOME` are created; coding-agent project policy, chat history and unrelated MCP configuration are not copied. Credentials are not copied into snapshots or diagnostics. Installed Cursor native restrictions remain **unverified** (no loaded-configuration identity, no policy-denial event). Company-context launch on the installed path fail-closes before workspace write or process start.
+
+Documented Cursor command (not executed in this step): `agent --print --output-format stream-json --sandbox enabled --trust --workspace <dedicated> --model <explicit>`. `--force`, `--yolo`, `--approve-mcps`, `--add-dir`, `--continue`, `--resume` and undocumented `--disable-project-configs` are excluded.
+
+### Measured synthetic results
+
+Local fake-provider processes and labeled synthetic files only. No live reasoning-provider call. No company-corpus transmission.
+
+| Check | Command | Result |
+|---|---|---|
+| Adapter isolation, dispatch, denial, parse, timeout, allowance, company-context fail-closed | `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` | **13 passed** in 0.86s |
+| Affected Director CLI/help/readme/import-boundary | `/opt/anaconda3/bin/python -m pytest -q` `test_public_namespace_and_compatibility` `test_public_help_is_bav_first_and_check_is_diagnostic` `test_readme.py` `test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 0.93s |
+
+Verified in the synthetic path: approved context delivery; typed dispatch; separate Planner/Reviewer fingerprints; exclusion of `TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md` / `AGENTS.md` / project `.cursor/cli.json` / ambient `~/.cursor/cli-config.json` / unrelated files; denial records for shell/write/MCP/fetch/search/unknown/outside-root/traversal/symlink/source-instruction/unapproved-source; malformed, truncated, missing, unsuccessful, timeout and allowance-exhausted outcomes produce no structured research result and no automatic retry; unverified native restrictions block company-context launch without launching.
+
+Synthetic success establishes adapter behavior only.
+
+### Remaining real-runtime acceptance
+
+Installed Cursor enforcement, controller-isolated authentication, company-corpus transmission, the ordinary `debate` loop, Planner/Reviewer research, and coherent `argument.json` / `argument.md` remain unaccepted. CAPTURED historical provider activity is not semantic acceptance.
+
 ## Preservation
 
 Accepted financial inputs and neutral assumptions were not changed (re-hashed after copies/conversions):
@@ -247,10 +272,10 @@ No company rebuild, certification, or Office run. `build/input/` is Git-ignored;
 
 ## Exact remaining limitations
 
-1. No `debate` CLI, case state, Planner/Reviewer, or argument export.
+1. No `debate` CLI, case state, Planner/Reviewer research loop, or argument export. Director now has a synthetic-verified runtime adapter only.
 2. Lululemon 10-K strategy text is not recoverable from the authorized text-layer converter; OCR was not authorized.
 3. Fast Retailing available source is a CFS, not a full strategy report; Note 6 Japan/PRC table was lost in Markdown.
 4. Lululemon has no Greater China definition and no Japan revenue series; Fast Retailing Greater China ≠ PRC and is Fast Retailing/UNIQLO mix, not Lululemon.
 5. No independently supplied filing Markdown.
-6. Cursor historical effective configuration is **unknown**. Prospective isolation intent (`CURSOR_CONFIG_DIR` plus recorded startup cwd outside this checkout, `stream-json` plus filesystem capture) does not repair that gap and does not establish effective permissions. The consumed JSON envelope has no tool events and no loaded-config record. One independently observed write artifact exists; shell/read/web/MCP claims remain model-reported. `--workspace` alone cannot isolate project policy. Missing mechanisms remain loaded-configuration identity and a policy-denial event. Ordinary CLI `status` in this step was sanitized-authenticated; that does not establish the controller isolated `_GatedCursor` check. The historical UNAVAILABLE receipt collapses timeout, parse failure and predicate failure. Isolated authentication cannot be re-checked without replaying the consumed observation. This is not a verified human-only permission choice and does not imply login is required. Codex command events show a research-boundary violation; DNS failure is not policy denial. Company corpus must not be transmitted on these captured paths.
+6. Cursor historical effective configuration is **unknown**. Prospective isolation intent (`CURSOR_CONFIG_DIR` plus recorded startup cwd outside this checkout, `stream-json` plus filesystem capture) does not repair that gap and does not establish effective permissions. The consumed JSON envelope has no tool events and no loaded-config record. One independently observed write artifact exists; shell/read/web/MCP claims remain model-reported. `--workspace` alone cannot isolate project policy. Missing mechanisms remain loaded-configuration identity and a policy-denial event. Ordinary CLI `status` in this step was sanitized-authenticated; that does not establish the controller isolated `_GatedCursor` check. The historical UNAVAILABLE receipt collapses timeout, parse failure and predicate failure. Isolated authentication cannot be re-checked without replaying the consumed observation. This is not a verified human-only permission choice and does not imply login is required. Codex command events show a research-boundary violation; DNS failure is not policy denial. Company corpus must not be transmitted on these captured paths. Step 12.1.4 fail-closes installed company-context launch for that reason; synthetic adapter tests do not close this limitation.
 7. Source preparation succeeded for two PDFs; that is not Debater acceptance.
