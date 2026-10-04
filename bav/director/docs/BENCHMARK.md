@@ -1,8 +1,8 @@
-# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 record
+# Debater v1 Asian-growth benchmark — Step 12.1 / 12.1.1 / 12.1.2 / 12.1.3 / 12.1.4 / 12.1.5 record
 
 Label: **corpus-bound**. This is not a verified latest-market assessment and not an end-to-end Debater acceptance.
 
-Step 12.1.1 corrects Fast Retailing date provenance and replaces Cursor “effective traces” with evidence classifications. Step 12.1.2 records the Cursor isolation and observation route from official docs plus installed help/binary strings, without setting `CURSOR_CONFIG_DIR`, writing configuration, or repeating a provider call. Step 12.1.3 diagnoses Cursor authentication from the installed controller check and one ordinary `agent status --format json` run; it does not replay the observation, ACP session, or a reasoning-provider call. Step 12.1.4 implements the Director research runtime adapter and exercises it with local fake-provider processes only. Completed discovery, both conversions, original filings, prepared representations, assets and coverage limitations are preserved. Fast Retailing publication date remains unknown; 2025-11-27 remains only the separately sourced financial-statement approval date. Ordinary CLI authentication does not establish controller-isolated authentication or effective research permissions. Synthetic adapter success is not installed-provider enforcement.
+Step 12.1.1 corrects Fast Retailing date provenance and replaces Cursor “effective traces” with evidence classifications. Step 12.1.2 records the Cursor isolation and observation route from official docs plus installed help/binary strings, without setting `CURSOR_CONFIG_DIR`, writing configuration, or repeating a provider call. Step 12.1.3 diagnoses Cursor authentication from the installed controller check and one ordinary `agent status --format json` run; it does not replay the observation, ACP session, or a reasoning-provider call. Step 12.1.4 implements the Director research runtime adapter and exercises it with local fake-provider processes only. Step 12.1.5 repairs BAV-owned envelope/argument validation, bounded stream capture, cumulative elapsed limits, allowance checkpoint/restore and installed launch guards; synthetic adapter success is still not installed-provider enforcement. Completed discovery, both conversions, original filings, prepared representations, assets and coverage limitations are preserved. Fast Retailing publication date remains unknown; 2025-11-27 remains only the separately sourced financial-statement approval date. Ordinary CLI authentication does not establish controller-isolated authentication or effective research permissions.
 
 Exact proposition (unapproved scope):
 
@@ -279,3 +279,38 @@ No company rebuild, certification, or Office run. `build/input/` is Git-ignored;
 5. No independently supplied filing Markdown.
 6. Cursor historical effective configuration is **unknown**. Prospective isolation intent (`CURSOR_CONFIG_DIR` plus recorded startup cwd outside this checkout, `stream-json` plus filesystem capture) does not repair that gap and does not establish effective permissions. The consumed JSON envelope has no tool events and no loaded-config record. One independently observed write artifact exists; shell/read/web/MCP claims remain model-reported. `--workspace` alone cannot isolate project policy. Missing mechanisms remain loaded-configuration identity and a policy-denial event. Ordinary CLI `status` in this step was sanitized-authenticated; that does not establish the controller isolated `_GatedCursor` check. The historical UNAVAILABLE receipt collapses timeout, parse failure and predicate failure. Isolated authentication cannot be re-checked without replaying the consumed observation. This is not a verified human-only permission choice and does not imply login is required. Codex command events show a research-boundary violation; DNS failure is not policy denial. Company corpus must not be transmitted on these captured paths. Step 12.1.4 fail-closes installed company-context launch for that reason; synthetic adapter tests do not close this limitation.
 7. Source preparation succeeded for two PDFs; that is not Debater acceptance.
+
+## Step 12.1.5 — Runtime validation, launch guards and cumulative limits
+
+Repaired under `bav/director/runtime/`. Architecture clarification was added to `DEBATER.md` without replacing handbook obligations: AutoCycle → Cursor/Codex implements repository code; BAV Director/Debater → Cursor/Codex performs product research. Shared executables do not confer AutoCycle runtime dependencies. Cursor remains preferred. Codex remains unimplemented and is not silently selected.
+
+Repaired controls:
+
+- Provider envelopes reject error indicators, unsuccessful exits, missing/truncated results and conflicting success/error signals before any research result is accepted.
+- Request collections, operation names and argument mappings are validated before coercion. `arguments=42`, `null`, strings and arrays produce call-bound denials with no dispatch.
+- stdout and stderr are consumed incrementally against a combined byte ceiling; overflow terminates and reaps only the owned child and retains a bounded diagnostic.
+- Active elapsed time is cumulative across calls, failures and dispatch on a monotonic clock. Each call’s timeout is the remaining allowance. Finite limits are validated. Reconstruction from a BAV `AllowanceCheckpoint` does not reset consumption. User waiting time between invokes is excluded. Interrupted attempts are recorded as uncertain and are not retried.
+- Caller-supplied `verified` is not launch authority. Synthetic restriction evidence cannot authorize installed execution. Unknown modes, backend/model identity mismatches and synthetic/installed confusion fail closed before process start. A false `contains_company_context=False` flag does not open installed launch. Installed launches remain closed until a supported verification path exists.
+
+### Measured synthetic results
+
+Local fake-provider processes and labeled synthetic files only. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Check | Command | Result |
+|---|---|---|
+| Adapter envelope, arguments, overflow, elapsed/checkpoint, launch guards, retained isolation | `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` | **19 passed** in 1.63s |
+| Affected Director CLI/help/readme/import-boundary | `/opt/anaconda3/bin/python -m pytest -q` `test_public_namespace_and_compatibility` `test_public_help_is_bav_first_and_check_is_diagnostic` `test_readme.py` `test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 0.74s |
+
+Synthetic coverage now also includes error-marked success payloads, malformed operation arguments, continuous stdout/stderr/combined overflow, cumulative elapsed exhaustion, checkpoint restore without reset, forged verification, wrong backend/policy bindings, invalid modes and false company-context declarations. Retained: approved dispatch, separate Planner/Reviewer contexts, outside-root/traversal/symlink denial, source-instruction rejection and ambient configuration exclusion.
+
+Synthetic success establishes repaired adapter behavior only. It does not establish native Cursor/Codex enforcement, parent Completion, or end-to-end Debater acceptance.
+
+### Exact unverified installed-runtime capabilities
+
+Still closed / unverified:
+
+- Installed Cursor launch (no supported BAV verification path binding executable, version, loaded configuration identity and a policy-denial event).
+- Effective native Shell/Write/Read/MCP/retrieval enforcement on the installed CLI.
+- Controller-isolated `_GatedCursor` authentication (ordinary `agent status` remains a different process context).
+- Codex backend implementation and any Codex research path.
+- Company-corpus transmission on either backend.

@@ -89,6 +89,55 @@ def main() -> int:
         return 0
     if scenario == "empty":
         return 0
+    if scenario == "error_marked_success":
+        payload = _ok(role, observed, source_id)
+        payload["error"] = "provider_reported_error"
+        sys.stdout.write(json.dumps(payload))
+        return 0
+    if scenario == "success_false":
+        payload = _ok(role, observed, source_id)
+        payload["success"] = False
+        sys.stdout.write(json.dumps(payload))
+        return 0
+    if scenario == "bad_arguments":
+        kind = os.environ.get("BAV_FAKE_ARGUMENTS", "42")
+        if kind == "null":
+            arguments: object = None
+        elif kind == "string":
+            arguments = "not-a-mapping"
+        elif kind == "array":
+            arguments = ["source_id", source_id]
+        elif kind == "requests_int":
+            payload = _ok(role, observed, source_id)
+            payload["requests"] = 42
+            sys.stdout.write(json.dumps(payload))
+            return 0
+        else:
+            arguments = 42
+        payload = _ok(role, observed, source_id)
+        payload["requests"] = [{"operation": "inspect_approved_source", "arguments": arguments}]
+        sys.stdout.write(json.dumps(payload))
+        return 0
+    if scenario == "stdout_overflow":
+        chunk = "X" * 4096
+        while True:
+            sys.stdout.write(chunk)
+            sys.stdout.flush()
+    if scenario == "stderr_overflow":
+        chunk = "E" * 4096
+        while True:
+            sys.stderr.write(chunk)
+            sys.stderr.flush()
+    if scenario == "combined_overflow":
+        while True:
+            sys.stdout.write("O" * 2048)
+            sys.stdout.flush()
+            sys.stderr.write("E" * 2048)
+            sys.stderr.flush()
+    if scenario == "slow_ok":
+        time.sleep(float(os.environ.get("BAV_FAKE_SLEEP", "0.35")))
+        sys.stdout.write(json.dumps(_ok(role, observed, source_id)))
+        return 0
     if scenario == "denied_ops":
         payload = {
             "type": "result",

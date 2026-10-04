@@ -13,9 +13,12 @@ import pytest
 
 from bav.director.repository import repository_root
 from bav.director.runtime import (
+    INSTALLED_LAUNCH_CLOSED_REASON,
+    AllowanceCheckpoint,
     AllowanceLimits,
     ApprovedSnapshot,
     ApprovedSource,
+    NativeRestrictionState,
     ResearchRequest,
     ResearchRuntime,
     build_cursor_command,
@@ -247,7 +250,7 @@ def test_malformed_timeout_error_and_missing_results(tmp_path):
         ("truncated", "malformed"),
         ("missing_result", "malformed"),
         ("empty", "malformed"),
-        ("error", "execution_failure"),
+        ("error", "malformed"),
     ):
         runtime = _runtime(tmp_path, scenario)
         result = _invoke(runtime, _request("planner", snapshot, f"call-{scenario}"), scenario)
@@ -299,7 +302,7 @@ def test_allowance_exhaustion_counts_failures(tmp_path):
     runtime = _runtime(tmp_path, "error", allowance=AllowanceLimits(max_backend_calls=1))
     first = _invoke(runtime, _request("planner", snapshot, "call-a"), "error")
     second = _invoke(runtime, _request("planner", snapshot, "call-b"), "error")
-    assert first.status == "execution_failure"
+    assert first.status == "malformed"
     assert second.status == "allowance_exhausted"
     assert second.capture.launched is False
     assert second.structured_output is None
@@ -332,12 +335,14 @@ def test_unverified_native_restrictions_block_company_context(tmp_path):
             provider_mode="installed",
         )
     )
-    assert result.status == "native_restriction_unverified"
+    assert result.status == "installed_launch_closed"
     assert result.capture.launched is False
     assert result.structured_output is None
     assert result.known_result is False
-    assert "loaded-configuration identity" in result.details["missing_controls"]
+    assert INSTALLED_LAUNCH_CLOSED_REASON in result.capture.error
+    assert result.details["caller_verified_ignored"] is True
     assert runtime.backend_calls_attempted == 1
+    assert runtime._child is None
 
 
 def test_cursor_command_uses_documented_flags_only():
@@ -373,3 +378,218 @@ def test_synthetic_success_is_not_installed_enforcement():
     cursor = cursor_unverified_restrictions()
     assert cursor.verified is False
     assert "policy-denial event" in cursor.missing_controls
+
+
+def test_error_marked_success_payloads_are_rejected(tmp_path):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+    for scenario in ("error_marked_success", "success_false"):
+        runtime = _runtime(tmp_path, scenario)
+        result = _invoke(runtime, _request("planner", snapshot, f"call-{scenario}"), scenario)
+        assert result.status == "malformed"
+        assert result.structured_output is None
+        assert result.known_result is False
+        assert result.retried is False
+        assert result.attempts == ()
+        assert result.capture.error == "conflicting_success_error_signals"
+        assert runtime.backend_failures == 1
+
+
+def test_malformed_operation_arguments_do_not_dispatch(tmp_path):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+    cases = (
+        ("42", "invalid_arguments"),
+        ("null", "invalid_arguments"),
+        ("string", "invalid_arguments"),
+        ("array", "invalid_arguments"),
+        ("requests_int", "invalid_request_collection"),
+    )
+    for kind, reason in cases:
+        runtime = _runtime(tmp_path, "bad_arguments")
+        runtime.extra_env["BAV_FAKE_ARGUMENTS"] = kind
+        result = _invoke(runtime, _request("planner", snapshot, f"call-args-{kind}"), "bad_arguments")
+        assert result.status == "malformed", (kind, result.status, result.capture.error)
+        assert result.structured_output is None
+        assert result.known_result is False
+        assert result.retried is False
+        assert result.attempts
+        assert all(item.executed is False for item in result.attempts)
+        assert any(item.reason == reason for item in result.attempts)
+
+
+def test_stdout_stderr_and_combined_overflow_are_bounded(tmp_path):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+    for scenario in ("stdout_overflow", "stderr_overflow", "combined_overflow"):
+        runtime = _runtime(
+            tmp_path,
+            scenario,
+            timeout_seconds=2.0,
+            allowance=AllowanceLimits(max_output_bytes=8192, max_elapsed_seconds=5),
+        )
+        started = time.monotonic()
+        result = _invoke(runtime, _request("planner", snapshot, f"call-{scenario}"), scenario)
+        elapsed = time.monotonic() - started
+        assert result.status == "malformed"
+        assert result.capture.error == "output_size_exceeded"
+        assert result.structured_output is None
+        assert result.known_result is False
+        assert result.retried is False
+        assert result.capture.output_bytes <= 8192
+        assert result.capture.launched is True
+        assert runtime._child is None
+        assert elapsed < 4
+
+
+def test_cumulative_elapsed_checkpoint_and_exhausted_dispatch(tmp_path):
+    source = _source("src-approved", "Approved synthetic passage.", "approved.md")
+    snapshot = _snapshot("planner", (source,))
+    runtime = _runtime(
+        tmp_path,
+        "timeout",
+        timeout_seconds=2.0,
+        allowance=AllowanceLimits(max_elapsed_seconds=0.45, max_backend_calls=6, max_tool_dispatches=20),
+    )
+    first = _invoke(runtime, _request("planner", snapshot, "call-elapsed-1"), "timeout")
+    second = _invoke(runtime, _request("planner", snapshot, "call-elapsed-2"), "timeout")
+    assert first.status == "timeout"
+    assert first.retried is False
+    assert first.structured_output is None
+    assert runtime.backend_failures >= 1
+    assert runtime.elapsed_active_seconds > 0
+    assert second.status == "allowance_exhausted"
+    assert second.capture.launched is False
+    assert second.structured_output is None
+    saved = runtime.checkpoint()
+    assert isinstance(saved, AllowanceCheckpoint)
+    assert saved.elapsed_active_seconds == runtime.elapsed_active_seconds
+    assert saved.backend_calls_attempted == runtime.backend_calls_attempted
+    rebuilt = ResearchRuntime.from_checkpoint(
+        saved,
+        model=MODEL,
+        provider_mode="synthetic",
+        provider_argv=[sys.executable, str(FAKE_PROVIDER)],
+        timeout_seconds=2.0,
+        allowance=AllowanceLimits(max_elapsed_seconds=0.45, max_backend_calls=6),
+        extra_env={"BAV_FAKE_SCENARIO": "ok"},
+    )
+    assert rebuilt.elapsed_active_seconds == saved.elapsed_active_seconds
+    assert rebuilt.backend_calls_attempted == saved.backend_calls_attempted
+    third = rebuilt.invoke(_request("planner", snapshot, "call-elapsed-3"))
+    assert third.status == "allowance_exhausted"
+    assert third.capture.launched is False
+    assert rebuilt.elapsed_active_seconds >= saved.elapsed_active_seconds
+
+    dispatch_runtime = _runtime(
+        tmp_path,
+        "ok",
+        allowance=AllowanceLimits(max_tool_dispatches=1, max_backend_calls=4, max_elapsed_seconds=30),
+    )
+    approved = _invoke(dispatch_runtime, _request("planner", snapshot, "call-dispatch-ok"), "ok")
+    assert approved.status == "ok"
+    assert dispatch_runtime.tool_dispatches == 1
+    blocked = _invoke(dispatch_runtime, _request("planner", snapshot, "call-dispatch-block"), "ok")
+    assert blocked.status == "allowance_exhausted"
+    assert blocked.structured_output is None
+    assert blocked.capture.launched is False
+
+
+def test_forged_verification_and_identity_cannot_authorize_installed(tmp_path):
+    source = _source("src-approved", "Labeled synthetic, not a live corpus.", "approved.md")
+    snapshot = _snapshot("planner", (source,), contains_company_context=False)
+    forged = NativeRestrictionState(
+        backend="cursor",
+        verified=True,
+        reason="forged synthetic verification",
+        documented_controls=("none",),
+        missing_controls=(),
+    )
+    wrong_backend = NativeRestrictionState(
+        backend="codex",
+        verified=True,
+        reason="wrong backend binding",
+        documented_controls=("none",),
+        missing_controls=(),
+    )
+    for restriction, call_id in ((forged, "call-forged"), (wrong_backend, "call-wrong-backend")):
+        runtime = ResearchRuntime(
+            model=MODEL,
+            provider_mode="installed",
+            provider_argv=[sys.executable, str(FAKE_PROVIDER)],
+            native_restriction=restriction,
+            timeout_seconds=1,
+            extra_env={"BAV_FAKE_SCENARIO": "ok"},
+        )
+        result = runtime.invoke(
+            ResearchRequest(
+                role="planner",
+                model=MODEL,
+                backend="cursor",
+                snapshot=snapshot,
+                call_id=call_id,
+                provider_mode="installed",
+            )
+        )
+        assert result.status == "installed_launch_closed"
+        assert result.capture.launched is False
+        assert result.structured_output is None
+        assert result.known_result is False
+        assert runtime._child is None
+        assert INSTALLED_LAUNCH_CLOSED_REASON in result.capture.error
+
+
+def test_invalid_modes_and_false_company_context_keep_installed_closed(tmp_path):
+    with pytest.raises(ValueError, match="unknown provider mode"):
+        ResearchRuntime(model=MODEL, provider_mode="headless")
+    with pytest.raises(ValueError, match="finite positive"):
+        AllowanceLimits(max_elapsed_seconds=float("inf"))
+    with pytest.raises(ValueError, match="finite positive"):
+        ResearchRuntime(model=MODEL, timeout_seconds=float("nan"))
+    source = _source("src-approved", "Labeled synthetic, not a live corpus.", "approved.md")
+    snapshot = _snapshot("planner", (source,), contains_company_context=False)
+    installed = ResearchRuntime(
+        model=MODEL,
+        provider_mode="installed",
+        provider_argv=[sys.executable, str(FAKE_PROVIDER)],
+        timeout_seconds=1,
+    )
+    closed = installed.invoke(
+        ResearchRequest(
+            role="planner",
+            model=MODEL,
+            backend="cursor",
+            snapshot=snapshot,
+            call_id="call-no-company-flag",
+            provider_mode="installed",
+        )
+    )
+    assert closed.status == "installed_launch_closed"
+    assert closed.capture.launched is False
+    assert closed.details["company_context"] is False
+    runtime = _runtime(tmp_path, "ok")
+    confused = runtime.invoke(
+        ResearchRequest(
+            role="planner",
+            model=MODEL,
+            backend="cursor",
+            snapshot=snapshot,
+            call_id="call-mode-confusion",
+            provider_mode="installed",
+        )
+    )
+    assert confused.status == "invalid_request"
+    assert confused.capture.launched is False
+    assert confused.structured_output is None
+    mismatched = runtime.invoke(
+        ResearchRequest(
+            role="planner",
+            model="other-model",
+            backend="cursor",
+            snapshot=snapshot,
+            call_id="call-model-mismatch",
+            provider_mode="synthetic",
+        )
+    )
+    assert mismatched.status == "invalid_request"
+    assert mismatched.capture.launched is False

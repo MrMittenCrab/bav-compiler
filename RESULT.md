@@ -1,3 +1,75 @@
+# RESULT.md — Step 12.1.5 Repair BAV runtime validation, launch guards and cumulative limits
+
+**Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)
+**Step:** 12.1.5 — Repair BAV runtime validation, launch guards and cumulative limits
+**Work:** `e35d5703ccc14627a150a29b9e900502`
+**Plan:** `3dc5fbb702f747b59be2e08f5b987b0b`
+**Finding:** Verify Debater benchmark sources and controlled runtime
+**Attempt:** `f07b4c8a67eb4bcabb092e53eceb0274`
+
+`TARGET.md` / `SESSION.md` / `IMPLEMENTATION.md`: read-only (unchanged). Historical RESULT sections were not rewritten. No commit / push / sync / checkpoint / branch change. No AutoCycle edits, discovery, conversion, debate CLI, argument export, observation replay, ACP session, live provider calls, login/logout, credential-store reads, global configuration writes, or Debater publications. This record does not claim parent Completion, Session acceptance, controlled-backend acceptance, or end-to-end benchmark success.
+
+TARGET SHA-256 `9bfc5e439e5776cf3d1d89fd33363febe716a6744ad7d256942a24709ff3e77b` (60817).
+SESSION SHA-256 `ca72e1c149eb4cefd2f6c9f101be577fed5b8493975a8d19e2fce7c4e44fff94` (5897).
+IMPLEMENTATION SHA-256 `70e7ea6b1215c77d39bc0b134c208b53fff5da59eddd5d414f9c63bdb1716a31` (7681).
+
+## Baseline authentication
+
+B resolved from populated `IMPLEMENT_BASE_SHA` in `.git/autocycle/resume-state`. `implementation-baseline.json` `head` matched. `latest-implementation` leftover `0578c893…` was ignored. HEAD/branch were read from `.git/HEAD` and `refs/heads/checkpoint/20260913-183303`. Ancestry parent was read from the Git object store.
+
+| Binding source | Value |
+|---|---|
+| `IMPLEMENT_BASE_SHA` / `PLAN_SHA` / `implementation-baseline.json` head / HEAD / allocated `12.1.5` source | `03e82d2dbfb4f77183662d4b89f9d2ac83bda6a9` |
+| Branch | `checkpoint/20260913-183303` |
+| Ancestry | B is HEAD; parent `40abd1a8f2e2a5b0c129c93144884c73bc9f1797` is the Step 12.1.4 checkpoint / `reviewed_head` |
+| Bound running attempt | `f07b4c8a67eb4bcabb092e53eceb0274`, `plan_sha` = B, phase `running`, `checkpoint_sha` absent |
+| `admitted_review` predecessor | `review_sha256` `2fc31f834ff724e2ef622271929f56a625983ea5d7c018faf44fb27257f0f131`; `reviewed_head` `40abd1a8f2e2a5b0c129c93144884c73bc9f1797` |
+| `latest-implementation` leftover HEAD | `0578c893844fd42390f85bdc6fb4b96886d718ce` (ignored; `IMPLEMENT_BASE_SHA` populated) |
+| Work / plan | `e35d5703ccc14627a150a29b9e900502` / `3dc5fbb702f747b59be2e08f5b987b0b` |
+| Fail-closed | Not required |
+
+## Implemented repairs
+
+Architecture clarification added to `bav/director/docs/DEBATER.md` without replacing handbook obligations. AutoCycle implements repository code; BAV Director/Debater performs product research. No `~/.autocycle` import or AutoCycle runtime dependency.
+
+`bav/director/runtime/` now validates envelopes and typed operations before dispatch; conflicting success/error signals, unsuccessful exits, malformed/truncated output and missing results yield no accepted research result. Request collections and `arguments` of 42/`null`/string/array fail bound to the call without uncaught exceptions. `communicate()` was replaced by bounded incremental stdout/stderr consumption with a combined byte ceiling, owned-child terminate/reap and bounded diagnostics. Cumulative active elapsed time uses a monotonic clock; each call’s upper bound is the remaining allowance; finite limits are validated. A BAV-owned `AllowanceCheckpoint` restores consumption so reconstruction and later backend selection cannot reset it. Caller-supplied `verified` is ignored. Installed launches stay closed with an exact reason until a supported verification path exists; company-context flags, forged synthetic evidence and identity mismatches cannot open them. Codex remains unimplemented.
+
+## Listed verification
+
+Local fake-provider processes and labeled synthetic files. No live reasoning-provider call. No company-corpus transmission. No workbook rebuild, Office, or full certification.
+
+| Command | Measured result |
+|---|---|
+| `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py` | **19 passed** in 1.63s |
+| `/opt/anaconda3/bin/python -m pytest -q` `bav/director/tests/test_current_build.py::test_public_namespace_and_compatibility` `…::test_public_help_is_bav_first_and_check_is_diagnostic` `bav/director/tests/test_readme.py` `bav/director/tests/test_research_handoff.py::test_modeler_import_boundary_excludes_downstream_owners` | **4 passed** in 0.74s |
+
+Synthetic path measured: error-marked success and `success:false` payloads rejected; malformed arguments not dispatched; stdout/stderr/combined overflow bounded and child reaped; elapsed exhaustion, failure accounting, checkpoint restore and exhausted dispatch; forged verification / wrong bindings / invalid modes / false company-context keep installed launch closed; retained approved dispatch, separate contexts, outside-root/traversal/symlink denial, source-instruction rejection and ambient configuration exclusion. Synthetic success is adapter behavior only, not installed-provider enforcement.
+
+## Preservation and plan changes
+
+Fast Retailing `publication_date` remains `null`; `financial_statement_approval.date` remains `2025-11-27`. Accepted financial inputs and neutral assumptions unchanged. Company outputs not rebuilt. Original filings, converter Markdown, assets, coverage limitations, probe artifacts, and historical controller receipts retained. No discovery or conversion replay. No new live provider call. `DEBATER.md` handbook body retained; architecture clarification added (`7578b44c…`, 62336). Previous exact handbook bytes `27d6615add…` / 61460 are no longer the current file.
+
+Required plan change: none.
+
+## Current file hashes
+
+| Path | SHA-256 | Bytes |
+|---|---|---|
+| `bav/director/runtime/__init__.py` | `af9986b8985c9d5b1c626411235dcc065d8488373bbf2a1784dfd24ed019a5d7` | 991 |
+| `bav/director/runtime/contract.py` | `1395908f0ce490c8763767fd2e3a9dc9934d5d73c4348848cf1faccd1a719a27` | 7819 |
+| `bav/director/runtime/policy.py` | `1a0aea6511e6ed05912b5a6f332e8377fe04e30e9bb525078076895092a58e28` | 8609 |
+| `bav/director/runtime/workspace.py` | `91bbf8664d725b403148b00f9deba58f1e0b49372689a278813d3af754350042` | 4466 |
+| `bav/director/runtime/dispatch.py` | `26f33c8d30e3ecab509a0bf689ceac0818274a86bfdc5834956c8cbe738a285d` | 3964 |
+| `bav/director/runtime/adapter.py` | `ea75684eee82ee62ab5fc6e2da83fb8fd72155df7e61af3d2c55013a6f7c45fc` | 34954 |
+| `bav/director/tests/test_research_runtime.py` | `b86a445ae1b1364cc848c7460b921c990c27ae7713817712c15527722e549f9b` | 25216 |
+| `bav/director/tests/fixtures/runtime/fake_provider.py` | `2d2c47011a5807129e2f5eb96f6de9f7be926f98f976ed582aa5434a109fafad` | 7213 |
+| `bav/director/docs/DEBATER.md` | `7578b44c6c56db0265fa50f0df9de68d6002d36f2327fa155c746a70a2c93f42` | 62336 |
+| `bav/director/docs/BENCHMARK.md` | `4496570582adc257595776dab5b828bcca161d7c722f4ee291a74bc9dc08a5a6` | 35158 |
+
+## Remaining toward Completion
+
+Ordinary `python -m bav debate` intake/approvals, Extractor preparation/retrieval, Planner/Reviewer research, durable case integration, required readers, coherent JSON/Markdown exports, adversarial checks, and the real `--add`/resume benchmark remain outstanding. Controlled installed-runtime acceptance and Codex implementation remain unverified. A later bounded real-runtime demonstration remains necessary before company transmission. Isolated Cursor authentication cannot be independently re-checked without replaying the consumed observation. Effective installed-provider permissions remain unestablished. Synthetic success cannot close parent Completion.
+
 # RESULT.md — Step 12.1.4 Implement the Director research runtime boundary
 
 **Status:** COMPLETE (this bounded attempt; Review adjudicates Step closure)

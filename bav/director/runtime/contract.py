@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Any, Literal, Mapping
 
 Role = Literal["planner", "reviewer"]
 BackendName = Literal["cursor"]
+ProviderMode = Literal["installed", "synthetic"]
 ResultStatus = Literal[
     "ok",
     "execution_failure",
@@ -16,8 +18,11 @@ ResultStatus = Literal[
     "interrupted",
     "denied",
     "native_restriction_unverified",
+    "installed_launch_closed",
     "invalid_request",
 ]
+SUPPORTED_PROVIDER_MODES = frozenset({"installed", "synthetic"})
+ALLOWANCE_CHECKPOINT_VERSION = 1
 
 ALLOWED_OPERATIONS = frozenset({"inspect_approved_source"})
 PROHIBITED_OPERATIONS = frozenset(
@@ -58,12 +63,60 @@ CURSOR_FORBIDDEN_FLAGS = frozenset(
 )
 
 
+def _require_finite_positive(name: str, value: Any, *, integer: bool = False) -> None:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{name} must be a finite positive limit")
+    if not math.isfinite(value) or value <= 0:
+        raise ValueError(f"{name} must be a finite positive limit")
+    if integer and (not isinstance(value, int) or isinstance(value, bool)):
+        raise ValueError(f"{name} must be a finite positive integer")
+
+
 @dataclass(frozen=True)
 class AllowanceLimits:
     max_backend_calls: int = 12
     max_tool_dispatches: int = 20
-    max_elapsed_seconds: int = 1200
+    max_elapsed_seconds: float = 1200
     max_output_bytes: int = 1_000_000
+
+    def __post_init__(self) -> None:
+        _require_finite_positive("max_backend_calls", self.max_backend_calls, integer=True)
+        _require_finite_positive("max_tool_dispatches", self.max_tool_dispatches, integer=True)
+        _require_finite_positive("max_elapsed_seconds", self.max_elapsed_seconds)
+        _require_finite_positive("max_output_bytes", self.max_output_bytes, integer=True)
+
+
+@dataclass(frozen=True)
+class AllowanceCheckpoint:
+    schema_version: int = ALLOWANCE_CHECKPOINT_VERSION
+    backend_calls_attempted: int = 0
+    backend_failures: int = 0
+    tool_dispatches: int = 0
+    elapsed_active_seconds: float = 0.0
+    last_known_result_call_id: str | None = None
+    last_status: str | None = None
+    interrupted_uncertain: bool = False
+    known_result_call_ids: tuple[str, ...] = ()
+    uncertain_attempt_call_ids: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if self.schema_version != ALLOWANCE_CHECKPOINT_VERSION:
+            raise ValueError("unsupported allowance checkpoint version")
+        for name in (
+            "backend_calls_attempted",
+            "backend_failures",
+            "tool_dispatches",
+        ):
+            value = getattr(self, name)
+            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                raise ValueError(f"{name} must be a non-negative integer")
+        if (
+            isinstance(self.elapsed_active_seconds, bool)
+            or not isinstance(self.elapsed_active_seconds, (int, float))
+            or not math.isfinite(self.elapsed_active_seconds)
+            or self.elapsed_active_seconds < 0
+        ):
+            raise ValueError("elapsed_active_seconds must be a finite non-negative value")
 
 
 @dataclass(frozen=True)
@@ -137,6 +190,14 @@ def synthetic_controlled_restrictions() -> NativeRestrictionState:
     )
 
 
+INSTALLED_LAUNCH_CLOSED_REASON = (
+    "Installed launch is closed: no supported BAV verification path binds the "
+    "actual backend, executable, version, effective BAV policy/configuration "
+    "and launch boundary. Caller-supplied verified flags and synthetic evidence "
+    "are not launch authority."
+)
+
+
 @dataclass(frozen=True)
 class ResearchRequest:
     role: Role
@@ -144,7 +205,7 @@ class ResearchRequest:
     backend: BackendName
     snapshot: ApprovedSnapshot
     call_id: str
-    provider_mode: Literal["installed", "synthetic"] = "synthetic"
+    provider_mode: ProviderMode = "synthetic"
     runtime_version: str | None = None
 
 
@@ -184,6 +245,9 @@ class CaptureRecord:
     backend_calls_attempted: int
     backend_failures: int
     launched: bool
+    elapsed_active_ms: int = 0
+    remaining_elapsed_seconds: float = 0.0
+    tool_dispatches: int = 0
 
 
 @dataclass(frozen=True)

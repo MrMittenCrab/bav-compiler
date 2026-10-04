@@ -26,8 +26,12 @@ class ApplicationDispatcher:
         return self._dispatch_count
 
     def handle(self, operation: str, arguments: Mapping[str, Any]) -> AttemptRecord:
+        if not isinstance(operation, str) or not operation.strip():
+            return AttemptRecord(str(operation), {}, "denied", "invalid_operation_name", False)
+        if not isinstance(arguments, Mapping):
+            return AttemptRecord(operation, {}, "denied", "invalid_arguments", False)
         kind = classify_operation(operation)
-        args = dict(arguments or {})
+        args = dict(arguments)
         if kind == "prohibited":
             reason = "prohibited_native_or_external_operation"
             if operation.lower() == "apply_source_policy" or self._cites_source_instruction(args):

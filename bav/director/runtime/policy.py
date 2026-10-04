@@ -16,6 +16,8 @@ from bav.director.runtime.contract import (
     ApprovedSnapshot,
 )
 
+_ERROR_INDICATOR_KEYS = ("error", "errors", "isError", "failed", "failure")
+
 _SECRET_KEY = re.compile(r"(api[_-]?key|token|password|authorization|secret|credential)", re.I)
 _INSTRUCTION_MARKERS = (
     "allow shell",
@@ -86,6 +88,78 @@ def snapshot_dict(snapshot: ApprovedSnapshot) -> dict[str, Any]:
         "contains_company_context": snapshot.contains_company_context,
         "content_hash": snapshot.content_hash,
     }
+
+
+def _has_error_indicator(value: Mapping[str, Any]) -> bool:
+    if value.get("success") is False or value.get("ok") is False:
+        return True
+    for key in _ERROR_INDICATOR_KEYS:
+        item = value.get(key)
+        if item in (None, False, "", (), [], {}):
+            continue
+        return True
+    return False
+
+
+def validate_provider_envelope(
+    payload: Mapping[str, Any] | None,
+    *,
+    exit_code: int | None,
+    expected_role: str,
+) -> str | None:
+    if payload is None:
+        return "missing_result"
+    unsuccessful = exit_code not in (0, None)
+    output = payload.get("output")
+    has_success_shape = isinstance(output, Mapping) and "kind" in output
+    error_indicated = unsuccessful or _has_error_indicator(payload)
+    if isinstance(output, Mapping) and _has_error_indicator(output):
+        error_indicated = True
+    if has_success_shape and error_indicated:
+        return "conflicting_success_error_signals"
+    if unsuccessful:
+        return "unsuccessful_provider_exit"
+    if error_indicated:
+        return "provider_error_indicator"
+    if output is None:
+        return "missing_result"
+    if not isinstance(output, Mapping) or "kind" not in output:
+        return "malformed"
+    if payload.get("role") not in (None, expected_role):
+        return "malformed"
+    return None
+
+
+def validate_request_collection(raw: Any) -> tuple[list[Mapping[str, Any]] | None, str | None]:
+    if raw is None:
+        return [], None
+    if not isinstance(raw, list):
+        return None, "invalid_request_collection"
+    items: list[Mapping[str, Any]] = []
+    for item in raw:
+        if not isinstance(item, Mapping):
+            return None, "invalid_request_item"
+        items.append(item)
+    return items, None
+
+
+def validate_operation_request(item: Mapping[str, Any]) -> tuple[str, dict[str, Any]] | str:
+    operation = item.get("operation")
+    if not isinstance(operation, str) or not operation.strip():
+        return "invalid_operation_name"
+    if "arguments" not in item:
+        arguments: Any = {}
+    else:
+        arguments = item.get("arguments")
+    if not isinstance(arguments, Mapping):
+        return "invalid_arguments"
+    if operation == "inspect_approved_source":
+        if "source_id" in arguments and not isinstance(arguments["source_id"], str):
+            return "invalid_argument_field"
+        if "path" in arguments and not isinstance(arguments["path"], str):
+            return "invalid_argument_field"
+    sanitized = {str(key): value for key, value in arguments.items()}
+    return operation, sanitized
 
 
 def classify_operation(name: str) -> str:
