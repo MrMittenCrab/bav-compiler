@@ -1,49 +1,52 @@
-# Step 12.1.7 — Unify provider event validation and failure accounting
+# Step 12.1.8 — Implement BAV-owned runtime enforcement and observation capture
 
 ## Completion
 
 The replacement Debater specification is recorded, and a reproducible benchmark prerequisite record establishes the available company sources, conversion behavior and controlled runtime capabilities, distinguishing verified routes from exact missing dependencies or human decisions without claiming end-to-end Debater acceptance.
 
-AUTOCYCLE_PLAN: {"finding_key": "Verify Debater benchmark sources and controlled runtime", "kind": "work", "minor": 7, "objective": "Unify provider event validation and failure accounting", "plan_id": "ced63d1a4b0748b4a1d008f4dc5aa71f", "predecessor_review_sha256": "419b1d41497570b1b5d41a8625fefc5734aad73dc80f38d0fff89a2b100ca5d2", "step_id": "12.1.7", "work_id": "e35d5703ccc14627a150a29b9e900502"}
+AUTOCYCLE_PLAN: {"finding_key": "Verify Debater benchmark sources and controlled runtime", "kind": "work", "minor": 8, "objective": "Implement BAV-owned runtime enforcement and observation capture", "plan_id": "a4badf45bf57471eac9c3ad70666a63c", "predecessor_review_sha256": "8b95c5851e0260397666598ddc2f3d28e5351e7cab287f94d11195fc155582c5", "step_id": "12.1.8", "work_id": "e35d5703ccc14627a150a29b9e900502"}
 
 ## Bounded work
 
-Continue work `e35d5703ccc14627a150a29b9e900502` with a bounded repair of the reviewed single-object bypass and malformed-discriminator crash.
+Continue work `e35d5703ccc14627a150a29b9e900502`. Implement the application-owned launch boundary and inspectable enforcement observations under `bav/director/runtime/`, exercising them immediately with synthetic subprocesses. Preserve installed-launch closure.
 
-- Authenticate baseline, branch, ancestry and attempt binding through normal controller records before edits. Preserve unfinished work and ownership/recovery safeguards.
-- In `bav/director/runtime/adapter.py` and `policy.py`, apply shared provider-event validation to both single-object responses and every stream event before accepting output or dispatching operations.
-- Reject single-object `type=error` or `subtype=error` envelopes even when they contain valid-looking `output.kind` and operation requests.
-- Validate present `type` and `subtype` values before membership tests or result selection. Reject non-string values with a stable validation failure; do not stringify, ignore or allow them to raise `TypeError`. Preserve valid envelopes that omit optional discriminators.
-- Retain existing protocol and applicable output-envelope error indicators, unsuccessful-exit handling, missing-result checks and malformed/truncated/non-object rejection. Inspect control envelopes without interpreting quoted evidence as provider instructions or error signals.
-- Complete all event validation before dispatch. Failures return no accepted structured result and pass through normal sanitized, call-bound capture and cumulative failure accounting without automatic retry.
-- Preserve valid single-object and stream responses, typed operations, separate Planner/Reviewer contexts, bounded capture, allowance restoration and installed-launch closure. Keep the existing adapter contract.
+- Authenticate the implementation baseline, branch, ancestry and bound attempt through normal controller records before edits. Preserve unfinished work and ownership/recovery safeguards.
+- Extend the existing adapter, workspace, policy, dispatcher and capture contracts; do not introduce another runtime framework or repeat completed discriminator repairs.
+- Make BAV's effective launch inputs authoritative. Reject environment overrides that replace isolated HOME, configuration/data directories, workspace, model or role, inject provider configuration, or enable unrelated tools. Use an explicit minimal environment policy rather than unrestricted `extra_env` merging.
+- Bind startup cwd, workspace, staged snapshot, source inventory, policy files, backend/model and executable identity to the invocation. Validate these bindings immediately before subprocess start; configuration intent must remain distinct from observed native enforcement.
+- Stage only approved context under unique safe managed names. Preserve original names as metadata; imported `AGENTS.md` content remains evidence without becoming runtime instructions. Reject source collisions and path escapes before staging or dispatch.
+- Enforce application operations through the existing typed dispatcher. Bind reads to the exact approved source identity and content fingerprint; a basename match or another source's path cannot grant access. Shell, writes, MCP, external retrieval and unknown operations remain denied.
+- Capture BAV decisions before application dispatch, including requested operation, source binding, allow/deny reason and whether execution occurred. Keep provider-reported native activity separately attributed; detecting an already executed action is not prevention.
+- Extend bounded call-bound capture with intended configuration fingerprints, actual launch inputs, observed provider events and before/after changes to BAV-owned temporary artifacts. Inspect only owned paths without following escaping symlinks.
+- Preserve sanitized diagnostics and observations before workspace cleanup on success, denial, malformed output, timeout and interruption. Record absent or truncated observations explicitly; no event, missing artifact or DNS failure establishes policy denial.
+- Preserve cumulative allowances, checkpoint restoration, separate Planner/Reviewer contexts, whole-response validation before dispatch, finite process cleanup and no automatic retry.
 
 ## Verification
 
-Extend `bav/director/tests/fixtures/runtime/fake_provider.py` and `bav/director/tests/test_research_runtime.py`.
+Extend `bav/director/tests/test_research_runtime.py` and its synthetic provider fixture.
 
-- Reproduce both reviewed defects through actual `ResearchRuntime.invoke` subprocess paths before repairing them.
-- Cover single-object `type=error` and `subtype=error` with success-shaped output and otherwise valid approved operation requests at exit zero.
-- Cover list, object, number, boolean and null discriminator values for both fields in single objects and stream events. Include malformed events before and after a valid result.
-- Assert no uncaught exception, no accepted result, zero dispatches, one attempted call, one recorded backend failure, sanitized diagnostics bound to the call and no retry. Verify checkpoint/restoration retains consumed allowance after rejection.
-- Retain whole-stream error-order, error-indicator, malformed-record and non-object regressions. Exercise valid single-object and stream controls for both Planner and Reviewer, including omitted optional discriminators and quoted error wording.
+- Exercise environment/configuration override attempts, source-name collisions, instruction-named evidence, mismatched source/path bindings and changed staged inputs. Assert rejection before the affected launch or dispatch.
+- Exercise approved source inspection and prohibited shell/write/MCP/retrieval requests through `ResearchRuntime.invoke`; verify application-owned decision records and unchanged synthetic sentinel artifacts.
+- Exercise fake native activity and owned-workspace changes. Verify capture identifies observed violations without representing post-execution detection as enforced denial.
+- Check evidence survives cleanup and failure paths, remains bounded and sanitized, and retains call/configuration/source bindings across allowance restoration.
+- Confirm installed mode launches no process and stages no company context despite caller verification flags, synthetic observations or changed backend/model declarations.
 - Run `/opt/anaconda3/bin/python -m pytest -q bav/director/tests/test_research_runtime.py`.
-- Run affected Director regressions under `bav/director/tests/`: `test_current_build.py::test_public_namespace_and_compatibility`, `test_current_build.py::test_public_help_is_bav_first_and_check_is_diagnostic`, `test_readme.py`, and `test_research_handoff.py::test_modeler_import_boundary_excludes_downstream_owners`.
+- Run affected Director regressions: `test_current_build.py::test_public_namespace_and_compatibility`, `test_current_build.py::test_public_help_is_bav_first_and_check_is_diagnostic`, `test_readme.py`, and `test_research_handoff.py::test_modeler_import_boundary_excludes_downstream_owners`.
 
 ## Constraints and remaining obligations
 
-BAV owns research configuration, contexts, permissions, state, budgets, capture and lifecycle. Preserve the full handbook and incorporated architecture clarification in `bav/director/docs/DEBATER.md`; AutoCycle remains implementation infrastructure without a product-runtime dependency or control changes.
+No live provider calls, company transmission, Controller probe/authentication/ACP replay, credential-store access, global configuration changes, installations, upgrades, new billing or relaxed permissions. Do not add a sandbox platform or invent unsupported provider controls.
 
-Installed launches remain closed. Caller verification flags, synthetic evidence, backend/model changes and company-context declarations cannot authorize them. Preserve Cursor preference and the separately selectable Codex obligation; Codex remains unimplemented.
+BAV owns research configuration, policy, state, budgets, capture and lifecycle. AutoCycle remains implementation infrastructure. Historical Controller observations neither establish BAV enforcement nor create a prerequisite for this implementation.
 
-No live provider calls, company transmission, Controller probe/authentication/ACP replay, credential-store access, global configuration changes, installations, upgrades, new billing or relaxed permissions. Historical Controller observations neither establish current enforcement nor block this target-owned repair.
+Installed research launches remain closed until a later bounded authorized demonstration establishes effective restrictions. Application dispatch denial does not constrain a provider's native tools. Preserve Cursor preference and the explicitly selectable Codex obligation; do not silently substitute providers.
 
-Preserve completed source discovery/conversion, originals/assets, provenance and coverage limits. Fast Retailing publication date remains unknown and distinct from financial-statement approval. Preserve financial inputs, neutral assumptions, company commands and six-component ownership.
+Preserve the full specification in `bav/director/docs/DEBATER.md`, completed source discovery/conversion, original assets, provenance and coverage limits. Fast Retailing publication date remains unknown and separate from financial-statement approval. Preserve company commands, financial inputs, neutral assumptions and six-component ownership.
 
-Controlled installed-runtime acceptance remains required through a later bounded authorized BAV demonstration. Extractor readers/preparation/retrieval, ordinary debate CLI and approvals, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic checks and real evidence-addition/resumption remain outstanding Endpoint obligations.
+Controlled runtime acceptance, Codex integration, Extractor readers/preparation/retrieval, ordinary debate CLI and approvals, Planner/Reviewer research, durable cases, coherent JSON/Markdown exports, semantic checks and real evidence-addition/resumption remain outstanding.
 
 ## Evidence
 
-Update `bav/director/docs/BENCHMARK.md` with measured validation coverage and exact remaining runtime limitations. Record changes, commands and measured outcomes in `RESULT.md`, preserving historical records. Synthetic checks do not establish installed enforcement, parent Completion or Session acceptance.
+Update `bav/director/docs/BENCHMARK.md` with measured application enforcement, separately attributed native observations and exact remaining mechanisms needed for installed acceptance. Record commands and measured outcomes in `RESULT.md`, preserving historical records. Synthetic success does not establish parent Completion or Session acceptance.
 
-Cursor must not modify `TARGET.md`, `SESSION.md` or `IMPLEMENTATION.md`. Do not repeat source preparation, workbook builds, Office verification or full certification for this repair.
+Cursor must not modify `TARGET.md`, `SESSION.md` or `IMPLEMENTATION.md`. Do not repeat source preparation, workbook builds, Office verification or full certification.
